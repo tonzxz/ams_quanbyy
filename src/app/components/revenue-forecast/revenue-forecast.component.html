@@ -1,0 +1,72 @@
+
+
+<hlm-table>
+  <hlm-caption>A list of your recent invoices.</hlm-caption>
+  <hlm-trow>
+    <hlm-th>Invoice</hlm-th>
+    <hlm-th>Status</hlm-th>
+    <hlm-th>Method</hlm-th>
+    <hlm-th>Amount</hlm-th>
+  </hlm-trow>
+  <hlm-trow>
+    <hlm-th>INV001</hlm-th>
+    <hlm-th>Paid</hlm-th>
+    <hlm-th>Credit Card</hlm-th>
+    <hlm-th>$250.00</hlm-th>
+  </hlm-trow>
+  <hlm-trow>
+    <hlm-th>INV001</hlm-th>
+    <hlm-th>Paid</hlm-th>
+    <hlm-th>Credit Card</hlm-th>
+    <hlm-th>$250.00</hlm-th>
+  </hlm-trow>
+  <hlm-trow>
+    <hlm-th>INV001</hlm-th>
+    <hlm-th>Paid</hlm-th>
+    <hlm-th>Credit Card</hlm-th>
+    <hlm-th>$250.00</hlm-th>
+  </hlm-trow>
+</hlm-table>
+
+
+<mat-card class="cardWithShadow">
+  
+    <mat-card-content>
+      <div class="hstack align-items-center flex-column flex-lg-row">
+        <div class="w-100">
+          <mat-card-title>Revenue Forecast</mat-card-title>
+          <h1 class="!text-green-500 text-xl font-black"> Test Tailwind</h1>
+        </div>
+        <div class="m-l-auto">
+            <mat-form-field class="theme-select" appearance="outline">
+                <mat-select value="mar">
+                  @for(month of months; track month.viewValue ) {
+                  <mat-option [value]="month.value">
+                    {{ month.viewValue }}
+                  </mat-option>
+                  }
+                </mat-select>
+              </mat-form-field>
+        </div>
+      </div>
+  
+      <!-- chart -->
+      <div class="m-t-16" style="height: 295px">
+        <apx-chart
+          [series]="revenueForecastChart.series"
+          [chart]="revenueForecastChart.chart"
+          [colors]="revenueForecastChart.colors"
+          [plotOptions]="revenueForecastChart.plotOptions"
+          [dataLabels]="revenueForecastChart.dataLabels"
+          [legend]="revenueForecastChart.legend"
+          [grid]="revenueForecastChart.grid"
+          [yaxis]="revenueForecastChart.yaxis"
+          [xaxis]="revenueForecastChart.xaxis"
+          [tooltip]="revenueForecastChart.tooltip"
+        ></apx-chart>
+      </div>
+  
+     
+    </mat-card-content>
+  </mat-card>
+  
