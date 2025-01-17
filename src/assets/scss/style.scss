@@ -1,5 +1,15 @@
+
+
+
+
 @use "@angular/material" as mat;
 @include mat.core();
+
+@import "tailwindcss/base";
+@import "tailwindcss/components";
+@import "tailwindcss/utilities";
+
+
 
 @import "variables";
 @import "helpers/color";
@@ -21,7 +31,3 @@
 @import "pages/auth";
 @import "pages/dashboard";
 
-
-@import "tailwindcss/base";
-@import "tailwindcss/components";
-@import "tailwindcss/utilities";
