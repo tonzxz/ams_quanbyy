@@ -38,6 +38,7 @@ export class HeaderComponent implements OnInit {
     this.items = [
       { icon: 'pi pi-home', route: '/installation' }, 
       { label: 'Delivery Receipts' }, 
+      { label: 'Supplier 01' }, 
       { label: 'DR-100391' }, 
     ];
 }
