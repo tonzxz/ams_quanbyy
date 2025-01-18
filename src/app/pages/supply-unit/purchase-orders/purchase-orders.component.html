@@ -1,7 +1,7 @@
 <mat-card class="cardWithShadow">
     <mat-card-content>
       <mat-card-title>Purchase Orders</mat-card-title>
-      <p-table [value]="purchaseOrders" sortField="purchaseOrder.customerName" sortMode="single" [scrollable]="true" scrollHeight="400px" rowGroupMode="subheader" groupRowsBy="purchaseOrder.id" [tableStyle]="{'min-width': '60rem'}">
+<p-table [value]="purchaseOrders" sortField="purchaseOrder.customerName" sortMode="single" [scrollable]="true" scrollHeight="600px" rowGroupMode="subheader" groupRowsBy="purchaseOrder.id" [tableStyle]="{'min-width': '60rem'}">
     <ng-template #header>
         <tr>
             <th pFrozen="left">Name</th>
