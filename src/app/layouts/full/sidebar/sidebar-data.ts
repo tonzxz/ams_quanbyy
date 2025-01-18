@@ -76,4 +76,14 @@ export const navItems: NavItem[] = [
     iconName: 'solar:planet-3-line-duotone',
     route: '/extra/sample-page',
   },
+  {
+    displayName: 'Validated',
+    iconName: 'solar:planet-3-line-duotone',
+    route: '/extra/validated',
+  },
+  {
+    displayName: 'Rejected',
+    iconName: 'solar:planet-3-line-duotone',
+    route: '/extra/rejected',
+  },
 ];
