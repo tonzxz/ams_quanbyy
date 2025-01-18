@@ -10,6 +10,30 @@ export const navItems: NavItem[] = [
     route: '/dashboard',
   },
   {
+    navCap: 'Supply Unit',
+    divider: true
+  },
+  {
+    displayName: 'Delivery Receipts',
+    iconName: 'solar:box-broken',
+    route: '/shared/delivery-receipts',
+  },
+  {
+    displayName: 'Purchase Orders',
+    iconName: 'solar:box-broken',
+    route: '/supply-unit/purchase-orders',
+  },
+  {
+    displayName: 'Assets',
+    iconName: 'solar:box-broken',
+    route: '/shared/assets',
+  },
+  {
+    displayName: 'Disbursement Vouchers',
+    iconName: 'solar:box-broken',
+    route: '/shared/disbursement-vouchers',
+  },
+  {
     navCap: 'Ui Components',
     divider: true
   },

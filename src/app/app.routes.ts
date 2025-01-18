@@ -18,7 +18,6 @@ export const routes: Routes = [
         path: 'dashboard',
         loadChildren: () =>
           import('./pages/pages.routes').then((m) => m.PagesRoutes),
-        canActivate: [dashboardGuard], 
       },
       {
         path: 'ui-components',
@@ -28,11 +27,26 @@ export const routes: Routes = [
           ),
       },
       {
+        path: 'supply-unit',
+        loadChildren: () =>
+          import('./pages/supply-unit/supply-unit.routes').then(
+            (m) => m.SupplyUnitRoutes
+          ),
+      },
+      {
+        path: 'shared',
+        loadChildren: () =>
+          import('./pages/shared/shared.routes').then(
+            (m) => m.SharedRoutes
+          ),
+      },
+      {
         path: 'extra',
         loadChildren: () =>
           import('./pages/extra/extra.routes').then((m) => m.ExtraRoutes),
       },
     ],
+    canActivate: [dashboardGuard], 
   },
   {
     path: '',
