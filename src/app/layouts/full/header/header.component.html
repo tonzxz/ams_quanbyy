@@ -17,13 +17,13 @@
   <!-- Breadcrumps -->
   <!-- --------------------------------------------------------------- -->
 
-  <div class="card flex justify-center">
-    <p-breadcrumb class="max-w-full h-10" [model]="items">
+  <div class="card text-xs px-4 py-4 flex justify-center">
+    <p-breadcrumb class="max-w-full" [model]="items">
         <ng-template #item let-item>
             <ng-container *ngIf="item.route; else elseBlock">
                 <a [routerLink]="item.route" class="p-breadcrumb-item-link">
                     <span [ngClass]="[item.icon ? item.icon : '', 'text-color']"></span>
-                    <span class="text-primary font-semibold">{{ item.label }}</span>
+                    <span class="text-primaryfont-semibold">{{ item.label }}</span>
                 </a>
             </ng-container>
             <ng-template #elseBlock>

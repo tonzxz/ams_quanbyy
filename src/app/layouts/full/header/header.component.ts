@@ -31,12 +31,15 @@ export class HeaderComponent implements OnInit {
   @Output() toggleCollapsed = new EventEmitter<void>();
 
   items:MenuItem[];
-  home:MenuItem;
 
   constructor(private userService:UserService) {}
 
   ngOnInit() {
-    this.items = [{ icon: 'pi pi-home', route: '/installation' }, { label: 'Components' }, { label: 'Form' }, { label: 'InputText', route: '/inputtext' }];
+    this.items = [
+      { icon: 'pi pi-home', route: '/installation' }, 
+      { label: 'Delivery Receipts' }, 
+      { label: 'DR-100391' }, 
+    ];
 }
 
   logout(){
