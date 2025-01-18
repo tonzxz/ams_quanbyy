@@ -30,9 +30,9 @@
         <tr class="hover:cursor-pointer">
             <td colspan="6" class="text-left pr-12 ">
                 <div class="flex items-center">
-                    <span class="font-semibold">Total Price: </span> <span>{{calculateItemPriceTotal(po.purchaseOrder.id)}}</span>
+                    <div class="flex gap-2"><span class="font-semibold">Total Price:  </span> <span> P{{calculateItemPriceTotal(po.purchaseOrder.id)}}</span></div>
                     <p-divider layout="vertical"  />
-                    <span class="font-semibold">Total Items: </span> <span>{{calculateItemTotal(po.purchaseOrder.id)}}</span>
+                    <div class="flex gap-2"><span class="font-semibold">Total Items:  </span> <span> {{calculateItemTotal(po.purchaseOrder.id)}}</span></div>
                 </div>
             </td>
         </tr>
