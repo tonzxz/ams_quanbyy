@@ -18,6 +18,7 @@ import {
 } from 'ng-apexcharts';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { LottieAnimationComponent } from 'src/app/pages/ui-components/lottie-animation/lottie-animation.component';
 
 
 
@@ -40,7 +41,11 @@ interface month {
 @Component({
   selector: 'app-revenue-forecast',
   standalone: true,
-  imports: [MaterialModule, TablerIconsModule,EditorModule, CommonModule, FormsModule ,NgApexchartsModule],
+  imports: [MaterialModule, TablerIconsModule,NgApexchartsModule,
+  // Test Imports
+    EditorModule, CommonModule, FormsModule, LottieAnimationComponent
+  
+  ],
   templateUrl: './revenue-forecast.component.html',
 })
 export class AppRevenueForecastComponent {
