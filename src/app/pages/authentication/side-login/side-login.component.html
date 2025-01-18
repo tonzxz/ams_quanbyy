@@ -1,6 +1,7 @@
-<div class="blank-layout-container justify-content-center align-items-center bg-light">
+<div class="blank-layout-container justify-content-center align-items-center">
+  <img src="assets/images/backgrounds/login-bg.jpg" class="w-full h-full z-0 absolute" alt="">
   <div
-    class="position-relative row w-100 h-100 bg-gredient justify-content-center"
+    class="position-relative row w-100 h-100 bg-gredient justify-content-center z-10"
   >
     <div class="col-xl-4  d-flex align-items-center">
       <mat-card class="boxed-auth rounded-[2rem]  border-solid border-8 border-black hover:border-purple-700  ">
@@ -8,7 +9,9 @@
           <div class="flex flex-col justify-center items-center">
            
             <div class="flex">
-              <app-lottie-animation animation="asset" class="flex-1 h-56" />
+              <div class="overflow-hidden h-56">
+                <app-lottie-animation animation="box" class="flex-1 h-64" />
+              </div>
             </div>
             <!-- <img
               src="./assets/images/logos/qbyy.png"
