@@ -1,18 +1,22 @@
 import { Injectable } from '@angular/core';
 
-export interface User {
-  fullname: string;
-  username: string;
-  password: string;
-  role:'superadmin'|'accounting'|'supply'|'bac'|'inspection'|'end-user';
-  profile: string;
-}
+import { z } from 'zod';
+
+export const userSchema = z.object({
+  fullname: z.string().min(1, "Full name is required"), // Ensure full name is non-empty
+  username: z.string().min(1, "Username is required"), // Ensure username is non-empty
+  password: z.string().min(6, "Password must be at least 6 characters"), // Password must be at least 6 characters
+  role: z.enum(['superadmin', 'accounting', 'supply', 'bac', 'inspection', 'end-user']), // Enums for role
+  profile: z.string().min(1, "Profile is required") // Ensure profile is non-empty
+});
+
+export type User = z.infer<typeof userSchema>;
 
 @Injectable({
   providedIn: 'root'
 })
-export class AuthService {
-
+export class UserService {
+  
   // Dummy user data with different roles
   private users: User[] = [
     {
@@ -59,17 +63,28 @@ export class AuthService {
     }
   ];
   
-
   user?:User;
 
   constructor() { }
 
-  login(username:string, password:string){
+  // Authentication Methods
+  async login(username:string, password:string){
 
+    await (new Promise(resolve => setTimeout(resolve, 1500)))    
+    for(let user of this.users){
+      if(user.username == username){
+        if(user.password == password){
+          this.user = user;
+          return;
+        }else{
+          throw new Error('Invalid credentials.');
+        }
+      }
+    }
+    throw new Error('User not found.');
   }
 
-  logout(){
+  async logout(){
     this.user = undefined;
   }
-
 }

@@ -2,38 +2,37 @@
   <div
     class="position-relative row w-100 h-100 bg-gredient justify-content-center"
   >
-    <div class="col-lg-4 d-flex align-items-center">
-      <mat-card class="cardWithShadow boxed-auth">
+    <div class="col-lg-10 d-flex align-items-center">
+      <mat-card class="boxed-auth rounded-3xl py-6 overflow-clip border-solid border-8 border-black">
         <mat-card-content class="p-32">
           <div class="flex justify-center items-center">
-          <a [routerLink]="['/dashboard']">
-            <img
-              src="./assets/images/logos/qbyy.png"
-              class="m-2 h-20"
-              alt="logo"
-            />
-          </a>
-        </div>
-
-
-         
-
-
-          <form class="m-t-30">
-            <mat-label class="mat-subtitle-2 f-s-14 f-w-600 m-b-12 d-block"
-              >Username</mat-label
-            >
-            <mat-form-field appearance="outline" class="w-100" color="primary">
-              <input matInput />
-            </mat-form-field>
-            <!-- password -->
-            <mat-label class="mat-subtitle-2 f-s-14 f-w-600 m-b-12 d-block"
-              >Password</mat-label
-            >
-            <mat-form-field appearance="outline" class="w-100" color="primary">
-              <input matInput type="password" />
-            </mat-form-field>
-
+              <img
+                src="./assets/images/logos/qbyy.png"
+                class="m-2 h-20"
+                alt="logo"
+              />
+            <app-lottie-animation animation="box" class="flex-1" />
+          </div>
+          <form [formGroup]="form" class="m-t-30 flex flex-col gap-16">
+            <p-iftalabel>
+              <input pInputText size="small"  id="username" formControlName="username" fluid/>
+              <label for="username" class="mt-1">Username</label>
+              <small 
+              *ngIf="form.get('username')?.invalid && form.get('username')?.touched"
+              id="username-error" class="ml-1 text-red-500">Username is required.</small>
+            </p-iftalabel>
+            <p-iftalabel>
+              <div class="relative">
+                <p-password  size="small" [toggleMask]="true" [feedback]="false"  inputId="password" type="password" class="rounded-xl" formControlName="password" fluid />
+              </div>
+              <label for="password" class="mt-1">Password</label>
+              <small 
+              *ngIf="form.get('password')?.hasError('required') && form.get('password')?.touched"
+              id="password-error" class="ml-1 text-red-500">Password is required.</small>
+              <small 
+              *ngIf="form.get('password')?.hasError('minlength') && form.get('password')?.touched"
+              id="password-error" class="ml-1 text-red-500">Minimum password length is 6 characters.</small>
+            </p-iftalabel>
             <div class="d-flex align-items-center m-b-12">
               <mat-checkbox color="primary">Remember this Device</mat-checkbox>
               <a
@@ -42,32 +41,20 @@
                 >Forgot Password ?</a
               >
             </div >
-            <div class="flex flex-col gap-10"> 
-            <a [routerLink]="['/']" mat-flat-button color="primary" class="w-100">
-              End User
-            </a>
-             <a [routerLink]="['/']" mat-flat-button color="primary" class="w-100">
-              Accounting Unit
-            </a>
-             <a [routerLink]="['/']" mat-flat-button color="primary" class="w-100">
-              CAF
-            </a>
-             <a [routerLink]="['/']" mat-flat-button color="primary" class="w-100">
-              Supply Management Unit
-            </a>
-             <a [routerLink]="['/']" mat-flat-button color="primary" class="w-100">
-              Inspection Team
-            </a>
+            <div class="flex flex-col gap-10 w-100 items-center"> 
+              <a [routerLink]="['/']" mat-flat-button color="primary" class="w-full">
+                Sign In
+              </a>
             </div>
             <!-- input -->
           </form>
           <span class="d-block f-w-500 text-center m-t-24"
-            >New to Matdash?
+            >Doesn't have an account?
             <a
               [routerLink]="['/authentication/register']"
               class="text-decoration-none text-primary f-w-500 f-s-14"
             >
-              Create an account</a
+              Request an account</a
             >
           </span>
         </mat-card-content>

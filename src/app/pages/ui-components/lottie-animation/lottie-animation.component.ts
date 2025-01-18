@@ -25,13 +25,13 @@ export class LottieAnimationComponent implements OnChanges {
   }
 
   ngOnChanges(changes: SimpleChanges): void {
-    // if(changes['animation']){
-    //   this.options = {
-    //     path: `/assets/animations/${this.animation}.json`,
-    //     loop: this.loop,
-    //     autoplay: true
-    //   }
-    // }
+    if(changes['animation']){
+      this.options = {
+        path: `/assets/animations/${this.animation}.json`,
+        loop: this.loop,
+        autoplay: true
+      }
+    }
   }
 }
 
