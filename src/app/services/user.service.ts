@@ -22,42 +22,42 @@ export class UserService {
     {
       fullname: 'John Doe',
       username: 'accounting',
-      password: 'test',
+      password: 'test123',
       role: 'accounting',
       profile: 'profile-pic-url-1'
     },
     {
       fullname: 'Jane Smith',
       username: 'superadmin',
-      password: 'test',
+      password: 'test123',
       role: 'superadmin',
       profile: 'profile-pic-url-2'
     },
     {
       fullname: 'Alice Johnson',
       username: 'supply',
-      password: 'test',
+      password: 'test123',
       role: 'supply',
       profile: 'profile-pic-url-3'
     },
     {
       fullname: 'Bob Brown',
       username: 'bac',
-      password: 'test',
+      password: 'test123',
       role: 'bac',
       profile: 'profile-pic-url-4'
     },
     {
       fullname: 'Charlie White',
       username: 'inspection',
-      password: 'test',
+      password: 'test123',
       role: 'inspection',
       profile: 'profile-pic-url-5'
     },
     {
       fullname: 'Diana Green',
       username: 'enduser',
-      password: 'test',
+      password: 'test123',
       role: 'end-user',
       profile: 'profile-pic-url-6'
     }
