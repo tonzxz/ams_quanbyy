@@ -15,12 +15,12 @@ export const navItems: NavItem[] = [
   },
   {
     displayName: 'Delivery Receipts',
-    iconName: 'solar:box-broken',
+    iconName: 'solar:documents-broken',
     route: '/shared/delivery-receipts',
   },
   {
     displayName: 'Purchase Orders',
-    iconName: 'solar:box-broken',
+    iconName: 'solar:inbox-archive-outline',
     route: '/supply-unit/purchase-orders',
   },
   {
@@ -30,7 +30,7 @@ export const navItems: NavItem[] = [
   },
   {
     displayName: 'Disbursement Vouchers',
-    iconName: 'solar:box-broken',
+    iconName: 'solar:ticket-sale-broken',
     route: '/shared/disbursement-vouchers',
   },
   {
