@@ -18,6 +18,7 @@ export const routes: Routes = [
         path: 'dashboard',
         loadChildren: () =>
           import('./pages/pages.routes').then((m) => m.PagesRoutes),
+        data: {breadcrumb:'Dashboard'}
       },
       {
         path: 'ui-components',
@@ -25,9 +26,11 @@ export const routes: Routes = [
           import('./pages/ui-components/ui-components.routes').then(
             (m) => m.UiComponentsRoutes
           ),
+          data: {breadcrumb:'UI Components '}
       },
       {
-        path: 'supply-unit',
+        path: 'supply-management',
+        data: { breadcrumb: 'Supply Management' },
         loadChildren: () =>
           import('./pages/supply-unit/supply-unit.routes').then(
             (m) => m.SupplyUnitRoutes
@@ -39,11 +42,13 @@ export const routes: Routes = [
           import('./pages/shared/shared.routes').then(
             (m) => m.SharedRoutes
           ),
+          data: {breadcrumb:'Shared'}
       },
       {
         path: 'extra',
         loadChildren: () =>
           import('./pages/extra/extra.routes').then((m) => m.ExtraRoutes),
+        data: {breadcrumb:'Extra'}
       },
     ],
     canActivate: [dashboardGuard], 
@@ -65,6 +70,6 @@ export const routes: Routes = [
   },
   {
     path: '**',
-    redirectTo: 'authentication/error',
+    redirectTo: '/dashboard',
   },
 ];
