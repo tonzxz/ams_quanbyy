@@ -15,10 +15,6 @@ import {
   NgApexchartsModule,
   ApexFill,
 } from 'ng-apexcharts';
-import { HlmTableComponent } from "../ui-table-helm/src/lib/hlm-table.component";
-import { HlmCaptionComponent } from "../ui-table-helm/src/lib/hlm-caption.component";
-import { HlmTrowComponent } from "../ui-table-helm/src/lib/hlm-trow.component";
-import { HlmThComponent } from "../ui-table-helm/src/lib/hlm-th.component";
 
 
 
@@ -41,7 +37,7 @@ interface month {
 @Component({
   selector: 'app-revenue-forecast',
   standalone: true,
-  imports: [MaterialModule, TablerIconsModule, NgApexchartsModule, HlmTableComponent, HlmCaptionComponent, HlmTrowComponent, HlmThComponent],
+  imports: [MaterialModule, TablerIconsModule, NgApexchartsModule],
   templateUrl: './revenue-forecast.component.html',
 })
 export class AppRevenueForecastComponent {
