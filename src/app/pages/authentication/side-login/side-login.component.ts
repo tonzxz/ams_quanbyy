@@ -19,6 +19,7 @@ import { ToastModule } from 'primeng/toast';
 import { LottieAnimationComponent } from '../../ui-components/lottie-animation/lottie-animation.component';
 import { MessageService } from 'primeng/api';
 import { UserService } from 'src/app/services/user.service';
+import { TooltipModule } from 'primeng/tooltip';
 @Component({
   selector: 'app-side-login',
   standalone: true,
@@ -34,7 +35,8 @@ import { UserService } from 'src/app/services/user.service';
     FluidModule,
     CommonModule,
     LottieAnimationComponent,
-    ToastModule
+    ToastModule,
+    TooltipModule
   ],
   providers: [MessageService],
   templateUrl: './side-login.component.html',

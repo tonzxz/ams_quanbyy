@@ -29,7 +29,7 @@
               <p class=" ml-1">Sign in using your account</p>
             </div>
             <p-iftalabel>
-              <input pInputText size="small"  id="username" formControlName="username" fluid/>
+              <input pInputText  pTooltip="Enter your username" tooltipPosition="left" size="small"  id="username" formControlName="username" fluid/>
               <label for="username" class="mt-1">Username</label>
               <small 
               *ngIf="form.get('username')?.invalid && form.get('username')?.touched"
@@ -37,7 +37,7 @@
             </p-iftalabel>
             <p-iftalabel>
               <div class="relative">
-                <p-password  size="small" [toggleMask]="true" [feedback]="false"  inputId="password" type="password" class="rounded-xl" formControlName="password" fluid />
+                <p-password  pTooltip="Enter your password" tooltipPosition="left"  size="small" [toggleMask]="true" [feedback]="false"  inputId="password" type="password" class="rounded-xl" formControlName="password" fluid />
               </div>
               <label for="password" class="mt-1">Password</label>
               <small 
