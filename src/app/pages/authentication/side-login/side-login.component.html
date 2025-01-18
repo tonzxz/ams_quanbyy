@@ -3,20 +3,28 @@
     class="position-relative row w-100 h-100 bg-gredient justify-content-center"
   >
     <div class="col-lg-10 d-flex align-items-center">
-      <mat-card class="boxed-auth rounded-3xl overflow-clip border-solid border-8 border-black">
+      <mat-card class="boxed-auth rounded-3xl  border-solid border-8 border-black hover:border-purple-700  ">
         <mat-card-content class="p-32">
           <div class="flex flex-col justify-center items-center">
            
-            <app-lottie-animation animation="box" class="flex-1 h-56" />
+            <div class="flex">
+              <app-lottie-animation animation="asset" class="flex-1 h-56" />
+            </div>
             <!-- <img
               src="./assets/images/logos/qbyy.png"
               class="m-2 h-20"
               alt="logo"
             /> -->
-            <h1 class="text-2xl font-extrabold tracking-tight">ASSET MANAGEMENT SYSTEM</h1>
-            <p class="">Efficiently track, manage, and grow your assets.</p>
+            
+            <div class="text-[1.8rem] font-extrabold tracking-tight text-transparent bg-clip-text mt-6 bg-gradient-to-r from-blue-800 via-blue-500 to-purple-700">ASSET MANAGEMENT SYSTEM</div>
+            <small class="text-sm ">Quanby Solutions Inc.</small>
+            <!-- <small class="text-xs">Efficiently track, manage, and grow your assets.</small> -->
           </div>
-          <form [formGroup]="form" class="m-t-30 flex flex-col gap-16">
+          <form [formGroup]="form" class="m-t-12 flex flex-col gap-16">
+            <div>
+              <h1 class="text-lg font-bold ml-1">Welcome back!</h1>
+              <p class=" ml-1">Sign in using your account</p>
+            </div>
             <p-iftalabel>
               <input pInputText size="small"  id="username" formControlName="username" fluid/>
               <label for="username" class="mt-1">Username</label>
@@ -36,7 +44,7 @@
               *ngIf="form.get('password')?.hasError('minlength') && form.get('password')?.touched"
               id="password-error" class="ml-1 text-red-500">Minimum password length is 6 characters.</small>
             </p-iftalabel>
-            <div class="d-flex align-items-center m-b-12">
+            <div class="d-flex align-items-center">
               <mat-checkbox color="primary">Remember this Device</mat-checkbox>
               <a
                 [routerLink]="['/']"
