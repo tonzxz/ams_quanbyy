@@ -11,12 +11,12 @@ export const SupplyUnitRoutes: Routes = [
       {
         path: 'purchase-orders',
         component: PurchaseOrdersComponent,
-        canActivate: [roleGuard],
+        // canActivate: [roleGuard],
         data: { roles: ['supply', 'superadmin'] } // specify roles here
       },
       {
         path: 'upload-delivery-receipt',
-        canActivate: [roleGuard],
+        // canActivate: [roleGuard],
         data: { roles: ['supply', 'superadmin'] } // specify roles here
       },
     ],
