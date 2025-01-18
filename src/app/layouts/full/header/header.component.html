@@ -1,4 +1,4 @@
-<mat-toolbar class="topbar">
+<mat-toolbar class="topbar select-none">
   <!-- Mobile Menu -->
   @if(!showToggle) {
   <button
@@ -38,7 +38,12 @@
   
   <span class="flex-1-auto"></span>
 
-
+  <!-- Name -->
+  <small class="font-light"> {{greeting}}</small>
+  <div class="py-10">
+    <p-divider layout="vertical"  />
+  </div>
+  <small class="font-light hover:text-purple-700 hover:cursor-pointer" [matMenuTriggerFor]="profilemenu">{{user?.fullname}}</small>
   <!-- --------------------------------------------------------------- -->
   <!-- profile Dropdown -->
   <!-- --------------------------------------------------------------- -->
@@ -84,7 +89,7 @@
 
     <div class="p-x-12 m-t-12">
       <button
-        (click)="logout()"
+        (click)="confirmLogout($event)"
         mat-stroked-button
         color="primary"
         class="w-100"
@@ -93,3 +98,6 @@
     </div>
   </mat-menu>
 </mat-toolbar>
+
+
+<p-confirmdialog />
