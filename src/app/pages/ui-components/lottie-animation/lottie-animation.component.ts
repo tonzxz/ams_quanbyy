@@ -1,7 +1,5 @@
 import { Component, Input, OnChanges, SimpleChanges } from '@angular/core';
-import { AnimationItem } from 'lottie-web';
 import { AnimationOptions, LottieComponent } from 'ngx-lottie';
-
 
 @Component({
   selector: 'app-lottie-animation',
@@ -19,17 +17,21 @@ export class LottieAnimationComponent implements OnChanges {
   options: AnimationOptions = {
     path: `/assets/animations/loader.json`,
     loop: true,
-    autoplay: true
+    autoplay: true,
   };
 
+  animationCreated(animation: any) {
+    console.log('Animation created', animation);
+  }
+
   ngOnChanges(changes: SimpleChanges): void {
-    if(changes['animation']){
-      this.options = {
-        path: `/assets/animations/${this.animation}.json`,
-        loop: this.loop,
-        autoplay: true
-      }
-    }
+    // if(changes['animation']){
+    //   this.options = {
+    //     path: `/assets/animations/${this.animation}.json`,
+    //     loop: this.loop,
+    //     autoplay: true
+    //   }
+    // }
   }
 }
 

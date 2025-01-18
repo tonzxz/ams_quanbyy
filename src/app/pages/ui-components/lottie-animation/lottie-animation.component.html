@@ -1,4 +1,7 @@
-<div [class]="'w-full h-full'">
+<div [class]="class">
     <ng-lottie
+    height="100%"
+    width="100%"
+    (animationCreated)="animationCreated($event)"
     [options]="options"  />
 </div>

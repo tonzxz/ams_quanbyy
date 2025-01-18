@@ -28,6 +28,7 @@ import { MaterialModule } from './material.module';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { providePrimeNG } from 'primeng/config';
 import Aura from '@primeng/themes/aura';
+import { provideCacheableAnimationLoader, provideLottieOptions } from 'ngx-lottie';
 
 export const appConfig: ApplicationConfig = {
   providers: [
@@ -52,6 +53,8 @@ export const appConfig: ApplicationConfig = {
             }
         }
     }),
+    provideLottieOptions({ player: () =>  import('lottie-web'), }),
+    provideCacheableAnimationLoader(),
     importProvidersFrom(
       FormsModule,
       ReactiveFormsModule,

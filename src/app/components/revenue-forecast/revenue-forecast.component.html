@@ -1,15 +1,15 @@
 
 <mat-card class="cardWithShadow">
-  
+
     <mat-card-content>
       <div class="hstack align-items-center flex-column flex-lg-row">
         <div class="w-100">
           <mat-card-title>Revenue Forecast</mat-card-title>
-          <h1 class="text-red-500 bg-red-200 p-2 text-sm font-black"> Test Tailwind</h1>
-          <p-editor [(ngModel)]="text" [style]="{ height: '320px' }" />
-          <app-lottie-animation class="w-72 h-72 2xl:w-96 2xl:h-96 animate-pop" animation="loader"></app-lottie-animation>
-        </div>
+   
+        </div>  
+
         <div class="m-l-auto">
+          
             <mat-form-field class="theme-select" appearance="outline">
                 <mat-select value="mar">
                   @for(month of months; track month.viewValue ) {
@@ -21,7 +21,11 @@
               </mat-form-field>
         </div>
       </div>
-  
+      <h1 class="text-red-500 bg-red-200 p-2 text-sm font-black"> Test Tailwind</h1>
+      <div class="flex">
+        <p-editor class="flex-[2_2_0%]" [(ngModel)]="text" [style]="{ height: '320px' }" />
+        <app-lottie-animation class="w-72 h-72 self-center flex-[1_1_0%]" animation="loader"></app-lottie-animation>
+      </div>
       <!-- chart -->
       <div class="m-t-16" style="height: 295px">
         <apx-chart
