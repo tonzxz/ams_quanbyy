@@ -17,8 +17,8 @@ export const SupplyUnitRoutes: Routes = [
       {
         path: 'upload-delivery-receipt',
         component: UploadDeliveryReceiptComponent,
-        // canActivate: [roleGuard],
-        // data: { roles: ['supply', 'superadmin'] } // specify roles here
+        canActivate: [roleGuard],
+        data: { roles: ['supply', 'superadmin'] } // specify roles here
       },
     ],
   },
