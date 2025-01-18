@@ -35,17 +35,9 @@ export class HeaderComponent implements OnInit {
 
   constructor(private userService:UserService) {}
 
-  ngOnInit(): void {
-    this.items = [
-      { label: 'Electronics' },
-      { label: 'Computer' },
-      { label: 'Accessories' },
-      { label: 'Keyboard' },
-      { label: 'Wireless' }
-    ];
-
-    this.home = { icon: 'pi pi-home', routerLink: '/' };
-  }
+  ngOnInit() {
+    this.items = [{ icon: 'pi pi-home', route: '/installation' }, { label: 'Components' }, { label: 'Form' }, { label: 'InputText', route: '/inputtext' }];
+}
 
   logout(){
     this.userService.logout();
