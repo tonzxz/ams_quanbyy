@@ -14,19 +14,11 @@
   </button>
   }
   <!-- --------------------------------------------------------------- -->
-  <!-- Notification Dropdown -->
+  <!-- Breadcrumps -->
   <!-- --------------------------------------------------------------- -->
-  <button
-    mat-mini-fab
-    color="inherit"
-    aria-label="Notifications"
-    class="d-flex justify-content-center"
-  >
-    <span  matBadge="1" matBadgeOverlap="false" matBadgeSize="small">
-      <i class="iconify icon-20 d-flex" data-icon="solar:bell-line-duotone"></i>
-    </span>
-  </button>
 
+  <p-breadcrumb class="max-w-full" [model]="items" [home]="home" />
+  
   <span class="flex-1-auto"></span>
 
 
