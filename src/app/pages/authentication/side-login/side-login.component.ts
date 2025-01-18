@@ -15,7 +15,10 @@ import { PasswordModule } from 'primeng/password';
 import { InputTextModule } from 'primeng/inputtext';
 import { FluidModule } from 'primeng/fluid';
 import { CommonModule } from '@angular/common';
+import { ToastModule } from 'primeng/toast';
 import { LottieAnimationComponent } from '../../ui-components/lottie-animation/lottie-animation.component';
+import { MessageService } from 'primeng/api';
+import { UserService } from 'src/app/services/user.service';
 @Component({
   selector: 'app-side-login',
   standalone: true,
@@ -30,12 +33,17 @@ import { LottieAnimationComponent } from '../../ui-components/lottie-animation/l
     InputTextModule,
     FluidModule,
     CommonModule,
-    LottieAnimationComponent
+    LottieAnimationComponent,
+    ToastModule
   ],
+  providers: [MessageService],
   templateUrl: './side-login.component.html',
 })
 export class AppSideLoginComponent {
-  constructor(private router: Router) {}
+  constructor(private router: Router, 
+    private userService:UserService,
+    private messageService:MessageService) {}
+
 
   form = new FormGroup({
     username: new FormControl('', [Validators.required]),
@@ -46,8 +54,25 @@ export class AppSideLoginComponent {
     return this.form.controls;
   }
 
-  submit() {
+  async submit() {
     // console.log(this.form.value);
-    this.router.navigate(['/']);
+    if(this.form.valid){
+      try{
+        this.messageService.add({severity: 'secondary', summary: 'Loading...', sticky:true, closable:false});
+        await this.userService.login(this.form.get('username')?.value!, this.form.get('password')?.value!);
+        this.messageService.clear()
+        this.messageService.add({severity: 'success', summary: 'Success', detail:'Redirecting, please wait...' , closable:false });
+        setTimeout(()=>{
+          this.router.navigate(['/']);
+        },1300)
+      } catch (e :any) {
+        this.messageService.clear()
+        this.messageService.add({ severity: 'error', summary: 'Login Failed', detail:e.message });
+      }
+  
+     
+    }else{
+      this.messageService.add({ severity: 'error', summary: 'Login Failed', detail: 'Please make sure username and password is valid.' });
+    }
   }
 }

@@ -2,8 +2,8 @@
   <div
     class="position-relative row w-100 h-100 bg-gredient justify-content-center"
   >
-    <div class="col-lg-10 d-flex align-items-center">
-      <mat-card class="boxed-auth rounded-3xl  border-solid border-8 border-black hover:border-purple-700  ">
+    <div class="col-xl-4  d-flex align-items-center">
+      <mat-card class="boxed-auth rounded-[2rem]  border-solid border-8 border-black hover:border-purple-700  ">
         <mat-card-content class="p-32">
           <div class="flex flex-col justify-center items-center">
            
@@ -20,7 +20,7 @@
             <small class="text-sm ">Quanby Solutions Inc.</small>
             <!-- <small class="text-xs">Efficiently track, manage, and grow your assets.</small> -->
           </div>
-          <form [formGroup]="form" class="m-t-12 flex flex-col gap-16">
+          <form [formGroup]="form" (submit)="submit()" class="m-t-12 flex flex-col gap-16">
             <div>
               <h1 class="text-lg font-bold ml-1">Welcome back!</h1>
               <p class=" ml-1">Sign in using your account</p>
@@ -53,9 +53,9 @@
               >
             </div >
             <div class="flex flex-col gap-10 w-100 items-center"> 
-              <a [routerLink]="['/']" mat-flat-button color="primary" class="w-full">
+              <button  mat-flat-button color="primary" class="w-full">
                 Sign In
-              </a>
+              </button>
             </div>
             <!-- input -->
           </form>
@@ -73,3 +73,6 @@
     </div>
   </div>
 </div>
+
+
+<p-toast  position="bottom-right" />

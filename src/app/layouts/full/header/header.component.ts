@@ -10,6 +10,7 @@ import { RouterModule } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { NgScrollbarModule } from 'ngx-scrollbar';
 import { MatButtonModule } from '@angular/material/button';
+import { UserService } from 'src/app/services/user.service';
 
 @Component({
   selector: 'app-header',
@@ -25,5 +26,9 @@ export class HeaderComponent {
   @Output() toggleMobileNav = new EventEmitter<void>();
   @Output() toggleCollapsed = new EventEmitter<void>();
 
-  constructor() {}
+  constructor(private userService:UserService) {}
+
+  logout(){
+    this.userService.logout();
+  }
 }

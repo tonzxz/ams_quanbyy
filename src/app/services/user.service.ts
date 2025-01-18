@@ -1,8 +1,10 @@
 import { Injectable } from '@angular/core';
+import { Router } from '@angular/router';
 
 import { z } from 'zod';
 
 export const userSchema = z.object({
+  id: z.string().length(32, "ID must be exactly 32 characters").optional(), 
   fullname: z.string().min(1, "Full name is required"), // Ensure full name is non-empty
   username: z.string().min(1, "Username is required"), // Ensure username is non-empty
   password: z.string().min(6, "Password must be at least 6 characters"), // Password must be at least 6 characters
@@ -63,18 +65,28 @@ export class UserService {
     }
   ];
   
-  user?:User;
+  private user?:User;
 
-  constructor() { }
+  constructor(private router:Router) { }
 
-  // Authentication Methods
+  
+  getUser():User|undefined{
+    const user_string = localStorage.getItem('user');
+    if(user_string){
+      this.user = JSON.parse(user_string) as User;
+    }
+    return this.user;
+  }
+
+  // Authentication Methods  
   async login(username:string, password:string){
 
-    await (new Promise(resolve => setTimeout(resolve, 1500)))    
+    await (new Promise(resolve => setTimeout(resolve, 1000)))    
     for(let user of this.users){
       if(user.username == username){
         if(user.password == password){
           this.user = user;
+          localStorage.setItem('user', JSON.stringify(this.user));
           return;
         }else{
           throw new Error('Invalid credentials.');
@@ -85,6 +97,8 @@ export class UserService {
   }
 
   async logout(){
+    localStorage.removeItem('user');
     this.user = undefined;
+    this.router.navigate(['/authentication/login']);
   }
 }
