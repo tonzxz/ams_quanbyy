@@ -4,6 +4,7 @@ import {
   OnChanges,
   Output,
   EventEmitter,
+  OnInit,
 } from '@angular/core';
 import { NavItem } from './nav-item';
 import { Router } from '@angular/router';
@@ -11,6 +12,7 @@ import { NavService } from '../../../../services/nav.service';
 import { TranslateModule } from '@ngx-translate/core';
 import { MaterialModule } from 'src/app/material.module';
 import { CommonModule } from '@angular/common';
+import { User, UserService } from 'src/app/services/user.service';
 
 @Component({
   selector: 'app-nav-item',
@@ -19,7 +21,7 @@ import { CommonModule } from '@angular/common';
   templateUrl: './nav-item.component.html',
   styleUrls: [],
 })
-export class AppNavItemComponent implements OnChanges {
+export class AppNavItemComponent implements OnChanges, OnInit {
   @Output() toggleMobileLink: any = new EventEmitter<void>();
   @Output() notify: EventEmitter<boolean> = new EventEmitter<boolean>();
 
@@ -27,10 +29,16 @@ export class AppNavItemComponent implements OnChanges {
   @Input() item: NavItem | any;
   @Input() depth: any;
 
-  constructor(public navService: NavService, public router: Router) {
+  user?:User;
+
+  constructor(public navService: NavService, public router: Router, private userService:UserService) {
     if (this.depth === undefined) {
       this.depth = 0;
     }
+  }
+  
+  ngOnInit(): void {
+     this.user = this.userService.getUser();
   }
 
   ngOnChanges() {

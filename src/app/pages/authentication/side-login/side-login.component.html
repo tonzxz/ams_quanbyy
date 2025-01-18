@@ -1,14 +1,17 @@
-<div class="blank-layout-container justify-content-center align-items-center bg-light">
+<div class="blank-layout-container justify-content-center align-items-center">
+  <img src="assets/images/backgrounds/login-bg.jpg" class="w-full h-full z-0 absolute" alt="">
   <div
-    class="position-relative row w-100 h-100 bg-gredient justify-content-center"
+    class="position-relative row w-100 h-100 bg-gredient justify-content-center z-10"
   >
-    <div class="col-lg-10 d-flex align-items-center">
-      <mat-card class="boxed-auth rounded-3xl  border-solid border-8 border-black hover:border-purple-700  ">
+    <div class="col-xl-4  d-flex align-items-center">
+      <mat-card class="boxed-auth rounded-[2rem]  border-solid border-8 border-black hover:border-purple-700  ">
         <mat-card-content class="p-32">
           <div class="flex flex-col justify-center items-center">
            
             <div class="flex">
-              <app-lottie-animation animation="asset" class="flex-1 h-56" />
+              <div class="overflow-hidden h-56">
+                <app-lottie-animation animation="box" class="flex-1 h-64" />
+              </div>
             </div>
             <!-- <img
               src="./assets/images/logos/qbyy.png"
@@ -20,13 +23,13 @@
             <small class="text-sm ">Quanby Solutions Inc.</small>
             <!-- <small class="text-xs">Efficiently track, manage, and grow your assets.</small> -->
           </div>
-          <form [formGroup]="form" class="m-t-12 flex flex-col gap-16">
+          <form [formGroup]="form" (submit)="submit()" class="m-t-12 flex flex-col gap-16">
             <div>
               <h1 class="text-lg font-bold ml-1">Welcome back!</h1>
               <p class=" ml-1">Sign in using your account</p>
             </div>
             <p-iftalabel>
-              <input pInputText size="small"  id="username" formControlName="username" fluid/>
+              <input pInputText  pTooltip="Enter your username" tooltipPosition="left" size="small"  id="username" formControlName="username" fluid/>
               <label for="username" class="mt-1">Username</label>
               <small 
               *ngIf="form.get('username')?.invalid && form.get('username')?.touched"
@@ -34,7 +37,7 @@
             </p-iftalabel>
             <p-iftalabel>
               <div class="relative">
-                <p-password  size="small" [toggleMask]="true" [feedback]="false"  inputId="password" type="password" class="rounded-xl" formControlName="password" fluid />
+                <p-password  pTooltip="Enter your password" tooltipPosition="left"  size="small" [toggleMask]="true" [feedback]="false"  inputId="password" type="password" class="rounded-xl" formControlName="password" fluid />
               </div>
               <label for="password" class="mt-1">Password</label>
               <small 
@@ -53,9 +56,9 @@
               >
             </div >
             <div class="flex flex-col gap-10 w-100 items-center"> 
-              <a [routerLink]="['/']" mat-flat-button color="primary" class="w-full">
+              <button  mat-flat-button color="primary" class="w-full">
                 Sign In
-              </a>
+              </button>
             </div>
             <!-- input -->
           </form>
@@ -73,3 +76,6 @@
     </div>
   </div>
 </div>
+
+
+<p-toast  position="bottom-right" />

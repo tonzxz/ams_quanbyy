@@ -1,0 +1,58 @@
+<mat-card class="cardWithShadow">
+    <mat-card-content>
+      <mat-card-title>Purchase Orders</mat-card-title>
+<p-table [value]="purchaseOrders" sortField="purchaseOrder.customerName" sortMode="single" [scrollable]="true" scrollHeight="600px" rowGroupMode="subheader" groupRowsBy="purchaseOrder.id" [tableStyle]="{'min-width': '60rem'}">
+    <ng-template #header>
+        <tr>
+            <th pFrozen="left">Name</th>
+            <th>Ticker</th>
+            <th>Price</th>
+            <th>Quantity</th>
+            <th>Date Added</th>
+            <th>Description</th>
+        </tr>
+    </ng-template>
+    
+    <ng-template #groupheader let-po>
+        <tr  class="hover:cursor-pointer" pRowGroupHeader>
+            <td colspan="6">
+                <div class="flex items-center gap-5">
+                    <img [alt]="po.purchaseOrder.customerName" src="assets/images/products/dash-prd-4.jpg" width="32" class="rounded-full" style="vertical-align: middle" />
+                    <span class="font-bold">{{ po.purchaseOrder.customerName}} </span>
+                    <p-divider layout="vertical"  />
+                    <span>Order Code : {{po.purchaseOrder.id.toUpperCase()}}</span>
+                </div>
+            </td>
+        </tr>
+    </ng-template>
+
+    <ng-template #groupfooter let-po>
+        <tr class="hover:cursor-pointer">
+            <td colspan="6" class="text-left pr-12 ">
+                <div class="flex items-center">
+                    <div class="flex gap-2"><span class="font-semibold">Total Price:  </span> <span> P{{calculateItemPriceTotal(po.purchaseOrder.id)}}</span></div>
+                    <p-divider layout="vertical"  />
+                    <div class="flex gap-2"><span class="font-semibold">Total Items:  </span> <span> {{calculateItemTotal(po.purchaseOrder.id)}}</span></div>
+                </div>
+            </td>
+        </tr>
+    </ng-template>
+
+    <ng-template #body let-po let-rowIndex="rowIndex">
+        <ng-container *ngFor="let item of po.items">
+            <tr  class="hover:cursor-pointer">
+                <td pFrozen="left">{{ item.name }}</td>
+                <td>{{ item.ticker }}</td>
+                <td>{{ item.price | currency }}</td>
+                <td>{{ item.quantity }}</td>
+                <td>{{ item.dateAdded | date: 'yyyy-MM-dd' }}</td>
+                <td>{{ item.description }}</td>
+            </tr>
+        </ng-container>
+    </ng-template>
+</p-table>
+
+    
+    </mat-card-content>
+  </mat-card>
+  

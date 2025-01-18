@@ -1,4 +1,4 @@
-<mat-toolbar class="topbar">
+<mat-toolbar class="topbar select-none">
   <!-- Mobile Menu -->
   @if(!showToggle) {
   <button
@@ -14,22 +14,36 @@
   </button>
   }
   <!-- --------------------------------------------------------------- -->
-  <!-- Notification Dropdown -->
+  <!-- Breadcrumps -->
   <!-- --------------------------------------------------------------- -->
-  <button
-    mat-mini-fab
-    color="inherit"
-    aria-label="Notifications"
-    class="d-flex justify-content-center"
-  >
-    <span  matBadge="1" matBadgeOverlap="false" matBadgeSize="small">
-      <i class="iconify icon-20 d-flex" data-icon="solar:bell-line-duotone"></i>
-    </span>
-  </button>
 
+  <div class="card mt-3 text-sm font-normal px-2 py-2 flex justify-center">
+    <p-breadcrumb class="max-w-full" [model]="items">
+        <ng-template #item let-item>
+            <ng-container *ngIf="item.route; else elseBlock">
+                <a [routerLink]="item.route" class="p-breadcrumb-item-link transition-all hover:text-purple-700">
+                    <span [ngClass]="[item.icon ? item.icon : '', 'text-color']"></span>
+                    <span class="text-primaryfont-semibold">{{ item.label }}</span>
+                </a>
+            </ng-container>
+            <ng-template #elseBlock>
+                <a [href]="item.url" class="transition-all hover:text-purple-700">
+                    <span class="text-color">{{ item.label }}</span>
+                </a>
+            </ng-template>
+        </ng-template>
+    </p-breadcrumb>
+</div>
+
+  
   <span class="flex-1-auto"></span>
 
-
+  <!-- Name -->
+  <small class="font-light"> {{greeting}}</small>
+  <div class="py-10">
+    <p-divider layout="vertical"  />
+  </div>
+  <small class="font-light hover:text-purple-700 hover:cursor-pointer" [matMenuTriggerFor]="profilemenu">{{user?.fullname}}</small>
   <!-- --------------------------------------------------------------- -->
   <!-- profile Dropdown -->
   <!-- --------------------------------------------------------------- -->
@@ -74,13 +88,16 @@
     </button>
 
     <div class="p-x-12 m-t-12">
-      <a
-        [routerLink]="['/authentication/login']"
+      <button
+        (click)="confirmLogout($event)"
         mat-stroked-button
         color="primary"
         class="w-100"
-        >Logout</a
+        >Logout</button
       >
     </div>
   </mat-menu>
 </mat-toolbar>
+
+
+<p-confirmdialog />
