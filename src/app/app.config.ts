@@ -45,11 +45,13 @@ export const appConfig: ApplicationConfig = {
     provideAnimationsAsync(),
     
     providePrimeNG({
-      theme: {
-          preset: Aura
-      }
+        theme: {
+            preset: Aura,
+            options: {
+                darkModeSelector: '.my-app-dark'
+            }
+        }
     }),
-
     importProvidersFrom(
       FormsModule,
       ReactiveFormsModule,

@@ -1,6 +1,7 @@
 import { Component, ViewChild } from '@angular/core';
 import { MaterialModule } from '../../material.module';
 import { TablerIconsModule } from 'angular-tabler-icons';
+import { EditorModule } from 'primeng/editor';
 
 
 import {
@@ -15,6 +16,8 @@ import {
   NgApexchartsModule,
   ApexFill,
 } from 'ng-apexcharts';
+import { CommonModule } from '@angular/common';
+import { FormsModule } from '@angular/forms';
 
 
 
@@ -37,7 +40,7 @@ interface month {
 @Component({
   selector: 'app-revenue-forecast',
   standalone: true,
-  imports: [MaterialModule, TablerIconsModule, NgApexchartsModule],
+  imports: [MaterialModule, TablerIconsModule,EditorModule, CommonModule, FormsModule ,NgApexchartsModule],
   templateUrl: './revenue-forecast.component.html',
 })
 export class AppRevenueForecastComponent {
@@ -49,6 +52,8 @@ export class AppRevenueForecastComponent {
     { value: 'apr', viewValue: 'Oct 2024' },
     { value: 'june', viewValue: 'Nov 2024' },
   ];
+
+  text:string = '';
 
   constructor() {
     this.revenueForecastChart = {
