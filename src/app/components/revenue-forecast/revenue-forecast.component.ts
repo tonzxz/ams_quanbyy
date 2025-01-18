@@ -41,10 +41,7 @@ interface month {
 @Component({
   selector: 'app-revenue-forecast',
   standalone: true,
-  imports: [MaterialModule, TablerIconsModule,NgApexchartsModule,
-  // Test Imports
-    EditorModule, CommonModule, FormsModule, LottieAnimationComponent
-  
+  imports: [MaterialModule, TablerIconsModule,NgApexchartsModule,  
   ],
   templateUrl: './revenue-forecast.component.html',
 })
