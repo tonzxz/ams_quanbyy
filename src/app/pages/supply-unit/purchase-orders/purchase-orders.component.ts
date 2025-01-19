@@ -81,7 +81,7 @@ export class PurchaseOrdersComponent {
   }
   calculateItemPriceTotal(purchaseOrderId: string): number {
     const purchaseOrder = this.purchaseOrders.find(order => order.purchaseOrder.id === purchaseOrderId);
-    return purchaseOrder ? purchaseOrder.items.reduce((acc,curr)=>acc+curr.price,0) : 0;
+    return purchaseOrder ? purchaseOrder.items.reduce((acc,curr)=>acc+curr.price * curr.quantity,0) : 0;
   }
 
   responsiveOptions: any[] = [
@@ -105,6 +105,8 @@ export class PurchaseOrdersComponent {
   showStockModal:boolean = false;
   selectedPurchaseOrder?:PurchaseOrder;
   openAddStockModal(purchase_order:PurchaseOrder){
+    this.selectedStock = undefined;
+    this.stockForm.reset();
     this.selectedPurchaseOrder = purchase_order;
     this.showStockModal= true;
   }
