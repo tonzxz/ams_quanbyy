@@ -134,6 +134,14 @@ export class DeliveryReceiptService {
     }
   }
 
+  async moveForInspection(id: string) {
+    const receiptIndex = this.receiptData.findIndex(item => item.id == id);
+    if (receiptIndex !== -1) {
+      this.receiptData[receiptIndex].status = 'processing';
+      localStorage.setItem('deliveryReceipts', JSON.stringify(this.receiptData));
+    }
+  }
+
   async deleteReceipt(id: string) {
     this.receiptData = this.receiptData.filter(item => item.id !== id);
     localStorage.setItem('deliveryReceipts', JSON.stringify(this.receiptData));
