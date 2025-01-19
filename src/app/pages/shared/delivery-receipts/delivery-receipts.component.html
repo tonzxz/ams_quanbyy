@@ -49,6 +49,7 @@
           <th>Supplier Name</th>
           <th>Delivery Date</th>
           <th>Total Amount</th>
+          <th>Notes</th>
           <th style="width: 5rem"></th>
         </tr>
       </ng-template>
@@ -64,18 +65,23 @@
           <td>{{ receipt.supplier_name }}</td>
           <td>{{ receipt.delivery_date | date: 'shortDate' }}</td>
           <td>{{ receipt.total_amount | currency:'PHP' }}</td>
+          <td>{{ receipt.notes || 'No notes written.' }}</td>
           <td>
             @if(receipt.status !='processing'){
             <div class="flex gap-3">
               @if(receipt.status != 'verified'){
-              <p-button severity="secondary" pTooltip="Click to edit receipt" (click)="null" [outlined]="true"
+                <p-button severity="secondary" pTooltip="Click to edit receipt" (click)="openEditReceiptModal(receipt)" [outlined]="true"
                 size="small" icon="pi pi-pencil" rounded />
+                <p-button severity="secondary" pTooltip="Click to delete receipt" [outlined]="true" (click)="confirmDeleteReceipt($event,receipt.id)"
+                size="small" icon="pi pi-trash" rounded />
+              }@else{
+                <p-button severity="secondary" pTooltip="Click to view supporting documents" (click)="null" [outlined]="true"
+                size="small" icon="pi pi-file-check" rounded />
               }
-              <p-button severity="secondary" pTooltip="Click to view delivery receipt" [outlined]="true" (click)="null"
-                size="small" icon="pi pi-receipt" rounded />
+              
               <p-button [outlined]="true" [severity]="getSeverityFromStatus(receipt.status)"
                 pTooltip="{{receipt.status == 'verified'? 'Click to proceed to purchase orders':'Click to submit for inspection'}}"
-                (click)="null" size="small" icon="pi pi-arrow-right" rounded />
+                (click)="receipt.status == 'verified'? proceedToPurchaseOrders(receipt): confirmForInspection($event,receipt.id)" size="small" icon="pi pi-arrow-right" rounded />
             </div>
             }@else{
             <div class="flex items-center justify-center gap-2 whitespace-nowrap">
@@ -94,10 +100,10 @@
   <ng-template #header>
     <div class="py-0 inline-flex items-center justify-center gap-3">
       <i class="pi pi-box text-lg"></i>
-      <span class="font-bold text-lg whitespace-nowrap">Add Receipt</span>
+      <span class="font-bold text-lg whitespace-nowrap">{{selectedDeliveryReceipt? 'Edit':'Add'}} Receipt</span>
     </div>
   </ng-template>
-  <span class="text-surface-500 dark:text-surface-400 block mb-2">Add a new receipt.</span>
+  <span class="text-surface-500 dark:text-surface-400 block mb-2">{{selectedDeliveryReceipt? 'Edit':'Add a new'}} receipt.</span>
   <form [formGroup]="form">
     <div class="flex items-center gap-4 mb-2">
       <label for="delivery_date" class="font-semibold w-32">Delivery Date</label>
@@ -134,6 +140,7 @@
         autocomplete="off"
       />
     </div>
+    
   
     <div class="flex items-center gap-4 mb-4">
       <label for="total_amount" class="font-semibold w-32">Total Amount</label>
@@ -148,12 +155,20 @@
         fluid
       ></p-inputnumber>
     </div>
+
+    <div class="flex items-center gap-4 mb-2">
+      <label for="notes" class="font-semibold w-32">Notes</label>
+      <textarea placeholder="Enter receipt notes (Optional)" formControlName="notes" pSize="small"
+          name="notes" rows="5" cols="25" pTextarea id="notes" class="flex-auto"
+          autocomplete="off"></textarea>
+    </div>
   
     <div class="flex items-center justify-center gap-4 mb-2 w-full">
       <div class="card w-full">
-        <p-toast></p-toast>
+
         <p-fileupload
           fluid
+          #fileUpload
           name="demo[]"
           class="w-full"
           url="/"
@@ -202,6 +217,10 @@
   </form>
   <ng-template #footer>
     <p-button label="Cancel" [text]="true" icon="pi pi-times" severity="secondary" (click)="showReceiptModal = false" />
-    <p-button label="Add" [outlined]="true" icon="pi pi-plus" severity="secondary" [disabled]="!form.valid" (click)="showReceiptModal = false" />
+    <p-button label="{{selectedDeliveryReceipt? 'Edit':'Add'}}" [outlined]="true" icon="pi pi-plus" severity="secondary" [disabled]="!form.valid" (click)="addReceipt()" />
   </ng-template>
 </p-dialog>
+
+<p-toast position="bottom-right" />
+
+<p-confirmpopup />
