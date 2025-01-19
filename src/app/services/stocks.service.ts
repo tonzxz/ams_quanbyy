@@ -111,4 +111,12 @@ export class StocksService {
   async addStock(stock:Stock){
     this.stockData.push(stock);
   }
+  async editStock(stock:Stock){
+    const stockIndex = this.stockData.findIndex(item=>item.id == stock.id);
+    this.stockData[stockIndex] = stock;
+  }
+
+  async deleteStock(id:string){
+    this.stockData = this.stockData.filter(item => item.id !== id);
+  }
 }

@@ -21,7 +21,7 @@ import { CarouselModule } from 'primeng/carousel';
 import { TooltipModule } from 'primeng/tooltip';
 import { InputNumberModule } from 'primeng/inputnumber';
 import { TextareaModule } from 'primeng/textarea';
-import { StocksService } from 'src/app/services/stocks.service';
+import { Stock, StocksService } from 'src/app/services/stocks.service';
 @Component({
   selector: 'app-purchase-orders',
   standalone: true,
@@ -104,16 +104,38 @@ export class PurchaseOrdersComponent {
 
   showStockModal:boolean = false;
   selectedPurchaseOrder?:PurchaseOrder;
-  openStockModal(purchase_order:PurchaseOrder){
+  openAddStockModal(purchase_order:PurchaseOrder){
     this.selectedPurchaseOrder = purchase_order;
     this.showStockModal= true;
+  }
+
+  selectedStock?:Stock;
+  openEditStockModal(purchase_order:PurchaseOrder,stock:Stock){
+    this.selectedPurchaseOrder = purchase_order;
+    this.selectedStock = stock;
+    this.stockForm.setValue({
+      name: this.selectedStock.name,
+      ticker: this.selectedStock.ticker,
+      price: this.selectedStock.price,
+      quantity: this.selectedStock.quantity,
+      description: this.selectedStock.description || '' 
+    })
+    this.showStockModal= true;
+  }
+
+
+  closeStockModal(){
+    this.selectedPurchaseOrder = undefined;
+    this.selectedStock = undefined;
+    this.stockForm.reset();
+    this.showStockModal= false;
   }
 
   stockForm = new FormGroup({
     name: new FormControl('', Validators.required),
     ticker: new FormControl('', Validators.required),
-    price: new FormControl(null, [Validators.required, Validators.min(0.001)]),
-    quantity: new FormControl(null, [Validators.required, Validators.min(1)]),
+    price: new FormControl<number|null>(null, [Validators.required, Validators.min(0.001)]),
+    quantity: new FormControl<number|null>(null, [Validators.required, Validators.min(1)]),
     description: new FormControl(''),
   });
 
@@ -131,10 +153,54 @@ export class PurchaseOrdersComponent {
     })
     this.stockForm.reset();
     this.messageService.add({ severity: 'success', summary: 'Success', detail: `Successfully added stock to Purchase ${this.selectedPurchaseOrder?.id}` });
-    this.selectedPurchaseOrder = undefined;
-    this.showStockModal = false;
+    this.closeStockModal()
     await this.fetchItems();
     this.switchStockTab(1);
+  }
+
+  async editStock(){
+    if (!this.stockForm.valid) return;
+    const stockData = this.stockForm.value;
+    await this.stockService.editStock({
+      id: this.selectedStock!.id,
+      purchase_order_id: this.selectedStock!.purchase_order_id,
+      dateAdded: this.selectedStock!.dateAdded,
+      name: stockData.name!,
+      ticker: stockData.ticker!.toUpperCase(),
+      price: Number(stockData.price!),
+      quantity: Number(stockData.quantity!),
+      description: stockData.description ?? undefined,
+    })
+    this.stockForm.reset();
+    this.messageService.add({ severity: 'success', summary: 'Success', detail: `Successfully edited stock on Purchase ${this.selectedPurchaseOrder?.id}` });
+    this.closeStockModal()
+    await this.fetchItems();
+    this.switchStockTab(1);
+  }
+
+  async confirmDeleteStock(event: Event,id:string){
+    this.confirmationService.confirm({
+      target: event.target as EventTarget,
+      message: 'Are you sure you want to delete this stocks in this purchase?',
+      icon: 'pi pi-exclamation-triangle',
+      rejectButtonProps: {
+          label: 'Cancel',
+          severity: 'secondary',
+          outlined: true
+      },
+      acceptButtonProps: {
+          label: 'Confirm'
+      },
+      accept: async () => {
+          await this.stockService.deleteStock(id);
+          this.messageService.add({ severity: 'success', summary: 'Success', detail: `Stock successfully deleted!` });
+          this.fetchItems();
+          this.switchStockTab(1);
+      },
+      reject: () => {
+          
+      }
+  });
   }
 
   confirmSubmit(event: Event, id:string) {
