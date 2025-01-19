@@ -22,6 +22,10 @@ import { TooltipModule } from 'primeng/tooltip';
 import { InputNumberModule } from 'primeng/inputnumber';
 import { TextareaModule } from 'primeng/textarea';
 import { Stock, StocksService } from 'src/app/services/stocks.service';
+import { BadgeModule } from 'primeng/badge';
+import { OverlayBadgeModule } from 'primeng/overlaybadge';
+
+
 @Component({
   selector: 'app-purchase-orders',
   standalone: true,
@@ -29,7 +33,7 @@ import { Stock, StocksService } from 'src/app/services/stocks.service';
     IconFieldModule,InputIconModule,InputTextModule, FluidModule, FormsModule,
     DialogModule,ButtonModule, ButtonGroupModule,ConfirmPopupModule, LottieAnimationComponent, 
     CarouselModule,InputNumberModule,ReactiveFormsModule,
-    ToastModule,TooltipModule,TextareaModule
+    ToastModule,TooltipModule,TextareaModule,BadgeModule,OverlayBadgeModule
   ],
   providers: [ConfirmationService,MessageService],
   templateUrl: './purchase-orders.component.html',
@@ -74,6 +78,14 @@ export class PurchaseOrdersComponent {
     this.stockTab = tab;
   }
 
+  countStocked(){
+    return this.allPurchaseOrders.filter(po=>po.purchaseOrder.stocked).length;
+  }
+
+  countUnstocked(){
+    return this.allPurchaseOrders.filter(po=>!po.purchaseOrder.stocked).length;
+  }
+
   // Utility method to calculate the total number of items in each group
   calculateItemTotal(purchaseOrderId: string): number {
     const purchaseOrder = this.purchaseOrders.find(order => order.purchaseOrder.id === purchaseOrderId);
@@ -81,7 +93,7 @@ export class PurchaseOrdersComponent {
   }
   calculateItemPriceTotal(purchaseOrderId: string): number {
     const purchaseOrder = this.purchaseOrders.find(order => order.purchaseOrder.id === purchaseOrderId);
-    return purchaseOrder ? purchaseOrder.items.reduce((acc,curr)=>acc+curr.price,0) : 0;
+    return purchaseOrder ? purchaseOrder.items.reduce((acc,curr)=>acc+curr.price * curr.quantity,0) : 0;
   }
 
   responsiveOptions: any[] = [
@@ -105,6 +117,8 @@ export class PurchaseOrdersComponent {
   showStockModal:boolean = false;
   selectedPurchaseOrder?:PurchaseOrder;
   openAddStockModal(purchase_order:PurchaseOrder){
+    this.selectedStock = undefined;
+    this.stockForm.reset();
     this.selectedPurchaseOrder = purchase_order;
     this.showStockModal= true;
   }

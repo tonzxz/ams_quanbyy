@@ -104,7 +104,11 @@ export class StocksService {
   ];
   constructor() { }
 
-  async getAll(){
+  async getAll():Promise<Stock[]>{
+    const local_stocks = localStorage.getItem('stocks');
+    if(local_stocks){
+      this.stockData =  JSON.parse(local_stocks) as Stock[];
+    }
     return this.stockData;
   }
 
@@ -114,13 +118,16 @@ export class StocksService {
       id: id,
       ...stock
     });
+    localStorage.setItem('stocks', JSON.stringify(this.stockData));
   }
   async editStock(stock:Stock){
     const stockIndex = this.stockData.findIndex(item=>item.id == stock.id);
     this.stockData[stockIndex] = stock;
+    localStorage.setItem('stocks', JSON.stringify(this.stockData));
   }
 
   async deleteStock(id:string){
     this.stockData = this.stockData.filter(item => item.id != id);
+    localStorage.setItem('stocks', JSON.stringify(this.stockData));
   }
 }
