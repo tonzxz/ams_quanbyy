@@ -10,10 +10,13 @@ import { TagModule } from 'primeng/tag';
 import {  IconFieldModule } from 'primeng/iconfield';
 import { InputTextModule } from 'primeng/inputtext';
 import { InputIconModule } from 'primeng/inputicon';
+import { LottieAnimationComponent } from '../../ui-components/lottie-animation/lottie-animation.component';
 @Component({
   selector: 'app-assets',
   standalone: true,
-  imports: [MaterialModule,DataViewModule, CommonModule, FormsModule, SelectButtonModule, ButtonModule, TagModule, IconFieldModule, InputTextModule,InputIconModule],
+  imports: [MaterialModule,DataViewModule, CommonModule, 
+    LottieAnimationComponent,
+    FormsModule, SelectButtonModule, ButtonModule, TagModule, IconFieldModule, InputTextModule,InputIconModule],
   templateUrl: './assets.component.html',
   styleUrl: './assets.component.scss'
 })
