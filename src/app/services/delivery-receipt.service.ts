@@ -6,7 +6,8 @@ export const deliveryReceiptSchema = z.object({
   receipt_number: z.string().length(10, 'Receipt number is required'),
   supplier_name: z.string().min(1, "Customer name is required"), // Ensuring customer name is not empty
   delivery_date: z.date(), // Date when the delivery was made
-  attachment_links: z.array(z.string()), // Array of image links as plain strings
+  receipt_images: z.array(z.string()), // Array of image links as plain strings
+  supporting_documents: z.array(z.string()).optional(), // Array of image links as plain strings
   total_amount: z.number().min(0, "Total amount must be a positive number"), // Total amount of the delivery receipt
   notes: z.string().max(500, "Notes cannot exceed 500 characters").optional(), // Optional notes for the receipt
   status: z.enum(['unverified','processing','verified'])
@@ -24,7 +25,7 @@ export class DeliveryReceiptService {
       receipt_number: 'REC0012345',
       supplier_name: 'John Doe',
       delivery_date: new Date('2023-01-15'),
-      attachment_links: [
+      receipt_images: [
         'assets/images/products/sample-receipt.png'
       ], // Just plain string links for images
       total_amount: 1051.00,
@@ -36,7 +37,7 @@ export class DeliveryReceiptService {
       receipt_number: 'REC0012346',
       supplier_name: 'Jane Smith',
       delivery_date: new Date('2023-02-20'),
-      attachment_links: [
+      receipt_images: [
         'assets/images/products/sample-receipt.png'
       ], // Just plain string links for images
       total_amount: 815.00,
@@ -48,7 +49,7 @@ export class DeliveryReceiptService {
       receipt_number: 'REC0012347',
       supplier_name: 'Alice Johnson',
       delivery_date: new Date('2023-03-05'),
-      attachment_links: [
+      receipt_images: [
         'assets/images/products/sample-receipt.png'
       ], // Just plain string links for images
       total_amount: 1250.75,
@@ -60,7 +61,7 @@ export class DeliveryReceiptService {
       receipt_number: 'REC0012348',
       supplier_name: 'Bob Williams',
       delivery_date: new Date('2023-03-10'),
-      attachment_links: [
+      receipt_images: [
         'assets/images/products/sample-receipt.png'
       ], // Just plain string links for images
       total_amount: 980.40,
@@ -72,7 +73,7 @@ export class DeliveryReceiptService {
       receipt_number: 'REC0012349',
       supplier_name: 'Cathy Brown',
       delivery_date: new Date('2023-03-12'),
-      attachment_links: [
+      receipt_images: [
         'assets/images/products/sample-receipt.png'
       ], // Just plain string links for images
       total_amount: 340.50,
@@ -84,7 +85,7 @@ export class DeliveryReceiptService {
       receipt_number: 'REC0012350',
       supplier_name: 'David Clark',
       delivery_date: new Date('2023-03-15'),
-      attachment_links: [
+      receipt_images: [
         'assets/images/products/sample-receipt.png'
       ], // Just plain string links for images
       total_amount: 1500.00,
@@ -96,7 +97,7 @@ export class DeliveryReceiptService {
       receipt_number: 'REC0012351',
       supplier_name: 'Emily White',
       delivery_date: new Date('2023-03-18'),
-      attachment_links: [
+      receipt_images: [
         'assets/images/products/sample-receipt.png'
       ], // Just plain string links for images
       total_amount: 920.00,
