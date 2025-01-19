@@ -60,9 +60,9 @@
                             </div>
                             @if(!po.purchaseOrder.stocked){
                                 <p-buttongroup>
-                                    <p-button (click)="openStockModal(po.purchaseOrder)" [outlined]="true" size="small" label="Stock" icon="pi pi-plus" />
-                                    <p-button [outlined]="true" (click)="viewReceipts(po.purchaseOrder.receipts)" size="small" label="Receipt" icon="pi pi-receipt"  />
-                                    <p-button (click)="confirmSubmit($event, po.purchaseOrder.id)" size="small" label="Submit" icon="pi pi-arrow-right" />
+                                    <p-button pTooltip="Click to add new stock" (click)="openStockModal(po.purchaseOrder)" [outlined]="true" size="small" label="Stock" icon="pi pi-plus" />
+                                    <p-button pTooltip="Click to view purchase receipt" [outlined]="true" (click)="viewReceipts(po.purchaseOrder.receipts)" size="small" label="Receipt" icon="pi pi-receipt"  />
+                                    <p-button pTooltip="Click to finalize stocking from purchase" (click)="confirmSubmit($event, po.purchaseOrder.id)" size="small" label="Submit" icon="pi pi-arrow-right" />
                                     <p-confirmpopup />
                                 </p-buttongroup>
                             }   
@@ -176,7 +176,7 @@
         <div class="flex-auto flex-col flex">
             <p-inputnumber placeholder="Enter quantity" formControlName="quantity" size="small" [showButtons]="true" inputId="quantity" class="flex-auto" mode="decimal" autocomplete="off" />
             @if(stockForm.get('quantity')?.hasError('required')  && stockForm.get('quantity')?.touched){
-                <small class="self-end text-red-500 mt-2">Quantity is required</small>
+                <small class="self-end text-red-500 mt-2">Stock quantity is required</small>
             }
             @if(stockForm.get('quantity')?.hasError('min')  && stockForm.get('quantity')?.touched){
                 <small class="self-end text-red-500 mt-2">Stock quantity must be greater zero</small>
