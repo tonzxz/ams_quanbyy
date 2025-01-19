@@ -50,6 +50,12 @@ export const routes: Routes = [
           import('./pages/extra/extra.routes').then((m) => m.ExtraRoutes),
         data: {breadcrumb:'Extra'}
       },
+      {
+        path: 'admin',
+        data: { breadcrumb: 'Admin' },
+        loadChildren: () =>
+          import('./pages/admin/admin.routes').then((m) => m.AdminRoutes), 
+      },
     ],
     canActivate: [dashboardGuard], 
   },

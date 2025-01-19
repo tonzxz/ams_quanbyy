@@ -38,6 +38,37 @@ export const navItems: NavItem[] = [
     route: '/shared/disbursement-vouchers',
     requiredRoles: ['supply','superadmin']
   },
+
+
+   {
+    navCap: 'Admin',
+  },
+  {
+    displayName: 'User Management',
+    iconName: 'solar:widget-add-line-duotone',
+    route: '/admin/user-management', 
+    requiredRoles: ['admin', 'superadmin'], 
+  },
+  {
+    displayName: 'Inventory',
+    iconName: 'solar:widget-add-line-duotone',
+    route: '/admin/inventory', 
+    requiredRoles: ['admin', 'superadmin'], 
+  },
+  {
+    displayName: 'Buildings',
+    iconName: 'solar:widget-add-line-duotone',
+    route: '/admin/buildings', 
+    requiredRoles: ['admin', 'superadmin'], 
+  },
+  {
+    displayName: 'Supplier List',
+    iconName: 'solar:widget-add-line-duotone',
+    route: '/admin/supplier-list', 
+    requiredRoles: ['admin', 'superadmin'], 
+  },
+
+
   {
     navCap: 'Ui Components',
     divider: true
