@@ -23,9 +23,9 @@
             </p-tablist>
         </p-tabs>
         <p-table #dt dataKey="purchaseOrder.id" [rowHover]="true" [value]="purchaseOrders"
-            sortField="purchaseOrder.customerName" sortMode="single" [scrollable]="true" scrollHeight="600px"
+            sortField="purchaseOrder.supplierName" sortMode="single" [scrollable]="true" scrollHeight="600px"
             rowGroupMode="subheader" groupRowsBy="purchaseOrder.id"
-            [globalFilterFields]="['purchaseOrder.customerName','purchaseOrder.id']"
+            [globalFilterFields]="['purchaseOrder.supplierName','purchaseOrder.id']"
             [tableStyle]="{'min-width': '60rem'}">
 
             <ng-template #header>
@@ -44,9 +44,9 @@
                     <td [attr.colspan]="!po.purchaseOrder.stocked?7:6">
                         <div class="flex items-center justify-between">
                             <div class="flex items-center gap-5">
-                                <img [alt]="po.purchaseOrder.customerName" src="assets/images/products/dash-prd-4.jpg"
+                                <img [alt]="po.purchaseOrder.supplierName" src="assets/images/products/dash-prd-4.jpg"
                                     width="32" class="rounded-full" style="vertical-align: middle" />
-                                <span class="font-bold">{{ po.purchaseOrder.customerName}} </span>
+                                <span class="font-bold">{{ po.purchaseOrder.supplierName}} </span>
                                 <p-divider layout="vertical" />
                                 <span>Purchase Code : {{po.purchaseOrder.id.toUpperCase()}}</span>
                             </div>
