@@ -10,13 +10,13 @@ export const SharedRoutes: Routes = [
     children: [
       {
         path: '',
-        redirectTo: '/assets',
+        redirectTo: '/inventory',
         pathMatch: 'full',
       },
       {
-        path: 'assets',
+        path: 'inventory',
         component: AssetsComponent,
-        data: {breadcrumb:'Assets'}
+        data: {breadcrumb:'Inventory'}
       },
       {
         path: 'disbursement-vouchers',
