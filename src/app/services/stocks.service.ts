@@ -107,4 +107,20 @@ export class StocksService {
   async getAll(){
     return this.stockData;
   }
+
+  async addStock(stock:Stock){
+    const id = (Math.random().toString(36) + Math.random().toString(36) + Date.now().toString(36)).substring(2, 34);
+    this.stockData.push({
+      id: id,
+      ...stock
+    });
+  }
+  async editStock(stock:Stock){
+    const stockIndex = this.stockData.findIndex(item=>item.id == stock.id);
+    this.stockData[stockIndex] = stock;
+  }
+
+  async deleteStock(id:string){
+    this.stockData = this.stockData.filter(item => item.id != id);
+  }
 }

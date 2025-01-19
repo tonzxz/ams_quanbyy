@@ -7,7 +7,7 @@ import {
   OnInit,
 } from '@angular/core';
 import { MaterialModule } from 'src/app/material.module';
-import { RouterModule } from '@angular/router';
+import { ActivatedRoute, NavigationEnd, Route, Router, RouterModule } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { NgScrollbarModule } from 'ngx-scrollbar';
 import { MatButtonModule } from '@angular/material/button';
@@ -16,6 +16,8 @@ import { BreadcrumbModule } from 'primeng/breadcrumb';
 import { ConfirmationService, MenuItem } from 'primeng/api';
 import { ConfirmDialogModule } from 'primeng/confirmdialog';
 import { DividerModule } from 'primeng/divider';
+import { BreadcrumbService } from 'src/app/services/breadcrump.service';
+import { filter } from 'rxjs';
 @Component({
   selector: 'app-header',
   standalone: true,
@@ -40,7 +42,11 @@ export class HeaderComponent implements OnInit {
   currentTime: Date = new Date();
   greeting: string;
 
-  constructor(private userService:UserService, private confirmationService:ConfirmationService) {}
+  constructor(private userService:UserService, 
+    private router:Router,
+    private activatedRoute:ActivatedRoute,
+    private breadcrumpService:BreadcrumbService,
+    private confirmationService:ConfirmationService) {}
 
   getGreeting(): string {
     const hour = this.currentTime.getHours();
@@ -61,11 +67,15 @@ export class HeaderComponent implements OnInit {
       this.greeting = this.getGreeting();
     }, 60000);  // 60000 milliseconds = 1 minute
     this.items = [
-      { icon: 'pi pi-home', route: '/installation' }, 
-      { label: 'Delivery Receipts' }, 
-      { label: 'Supplier 01' }, 
-      { label: 'DR-100391' }, 
-    ];
+      { icon: 'pi pi-home', route: '/dashboard' },
+      ...this.breadcrumpService.createBreadcrumbs(this.activatedRoute.root)];
+    this.router.events
+      .pipe(filter(event => event instanceof NavigationEnd))
+      .subscribe(() => {
+        this.items = [
+          { icon: 'pi pi-home', route: '/dashboard' },
+          ...this.breadcrumpService.createBreadcrumbs(this.activatedRoute.root)];
+      });
   }
 
   confirmLogout(event: Event) {

@@ -9,16 +9,24 @@ export const SharedRoutes: Routes = [
     path: '',
     children: [
       {
+        path: '',
+        redirectTo: '/assets',
+        pathMatch: 'full',
+      },
+      {
         path: 'assets',
         component: AssetsComponent,
+        data: {breadcrumb:'Assets'}
       },
       {
         path: 'disbursement-vouchers',
         component: DisbursementVouchersComponent,
+        data: {breadcrumb:'Disbursement Vouchers'}
       },
       {
         path: 'delivery-receipts',
         component: DeliveryReceiptsComponent,
+        data: {breadcrumb:'Delivery Receipts'}
       },
     ],
   },
