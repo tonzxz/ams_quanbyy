@@ -134,6 +134,7 @@ export class DeliveryReceiptsComponent implements OnInit {
   async editReceipt(){
     const dr = this.form.value;
     await this.deliveryService.editReceipt({
+      id: this.selectedDeliveryReceipt!.id,
       receipt_images:[
         'assets/images/products/sample-receipt.png'
       ],
