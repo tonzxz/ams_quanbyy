@@ -61,7 +61,7 @@
           </td>
           <td>{{ receipt.supplier_name }}</td>
           <td>{{ receipt.delivery_date | date: 'shortDate' }}</td>
-          <td>{{ receipt.total_amount | currency }}</td>
+          <td>{{ receipt.total_amount | currency:'PHP' }}</td>
           <td> 
             @if(receipt.status !='processing'){
               <div class="flex gap-3">
