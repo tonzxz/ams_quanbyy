@@ -1,58 +1,120 @@
 <mat-card class="cardWithShadow">
     <mat-card-content>
-      <mat-card-title>Purchase Orders</mat-card-title>
-<p-table [value]="purchaseOrders" sortField="purchaseOrder.customerName" sortMode="single" [scrollable]="true" scrollHeight="600px" rowGroupMode="subheader" groupRowsBy="purchaseOrder.id" [tableStyle]="{'min-width': '60rem'}">
-    <ng-template #header>
-        <tr>
-            <th pFrozen="left">Name</th>
-            <th>Ticker</th>
-            <th>Price</th>
-            <th>Quantity</th>
-            <th>Date Added</th>
-            <th>Description</th>
-        </tr>
-    </ng-template>
-    
-    <ng-template #groupheader let-po>
-        <tr  class="hover:cursor-pointer" pRowGroupHeader>
-            <td colspan="6">
-                <div class="flex items-center gap-5">
-                    <img [alt]="po.purchaseOrder.customerName" src="assets/images/products/dash-prd-4.jpg" width="32" class="rounded-full" style="vertical-align: middle" />
-                    <span class="font-bold">{{ po.purchaseOrder.customerName}} </span>
-                    <p-divider layout="vertical"  />
-                    <span>Order Code : {{po.purchaseOrder.id.toUpperCase()}}</span>
-                </div>
-            </td>
-        </tr>
-    </ng-template>
+        <mat-card-title class="select-none font-light">PURCHASE ORDERS</mat-card-title>
+        <div class="flex justify-end">
+            <p-iconfield>
+                <p-inputicon styleClass="pi pi-search" />
+                <input
+                [(ngModel)]="searchValue"
+                (input)="dt.filterGlobal(searchValue,'contains')" type="text" pInputText placeholder="Search" />
+                <p-inputicon styleClass="pi pi-spinner pi-spin" />
+            </p-iconfield>
+       </div>
+        <p-tabs value="0"  >
+            <p-tablist>
+                <p-tab value="0" (click)="switchStockTab(0)" >
+                    <i class="pi pi-box"></i>
+                    <span>In Stock</span>
+                </p-tab>
+                <p-tab value="1" (click)="switchStockTab(1)">
+                    <i class="pi pi-warehouse"></i>
+                    <span>To Stock</span>
+                </p-tab>
+            </p-tablist>
+        </p-tabs>
+        <p-table 
+            #dt
+            dataKey="purchaseOrder.id"
+            [rowHover]="true"
+            [value]="purchaseOrders" 
+            sortField="purchaseOrder.customerName" 
+            sortMode="single" 
+            [scrollable]="true"
+            scrollHeight="600px" 
+            rowGroupMode="subheader" 
+            groupRowsBy="purchaseOrder.id"
+            [globalFilterFields]="['purchaseOrder.customerName','purchaseOrder.id']"
+            [tableStyle]="{'min-width': '60rem'}">
+           
+            <ng-template #header>
+                <tr>
+                    <th pFrozen="left">Name</th>
+                    <th>Ticker</th>
+                    <th>Price</th>
+                    <th>Quantity</th>
+                    <th>Date Added</th>
+                    <th>Description</th>
+                </tr>
+            </ng-template>
 
-    <ng-template #groupfooter let-po>
-        <tr class="hover:cursor-pointer">
-            <td colspan="6" class="text-left pr-12 ">
-                <div class="flex items-center">
-                    <div class="flex gap-2"><span class="font-semibold">Total Price:  </span> <span> {{calculateItemPriceTotal(po.purchaseOrder.id) | currency:'PHP' }}</span></div>
-                    <p-divider layout="vertical"  />
-                    <div class="flex gap-2"><span class="font-semibold">Total Items:  </span> <span> {{calculateItemTotal(po.purchaseOrder.id)}}</span></div>
-                </div>
-            </td>
-        </tr>
-    </ng-template>
+            <ng-template #groupheader let-po>
+                <tr class="hover:cursor-pointer" pRowGroupHeader>
+                    <td colspan="6">
+                        <div class="flex items-center justify-between">
+                            <div class="flex items-center gap-5">
+                                <img [alt]="po.purchaseOrder.customerName" src="assets/images/products/dash-prd-4.jpg"
+                                    width="32" class="rounded-full" style="vertical-align: middle" />
+                                <span class="font-bold">{{ po.purchaseOrder.customerName}} </span>
+                                <p-divider layout="vertical" />
+                                <span>Purchase Code : {{po.purchaseOrder.id.toUpperCase()}}</span>
+                            </div>
+                            @if(!po.purchaseOrder.stocked){
+                                <p-buttongroup>
+                                    <p-button size="small" label="Add" icon="pi pi-plus p-button-primary" />
+                                    <p-button size="small" label="Receipt" icon="pi pi-receipt" />
+                                    <p-button size="small" label="Stock" icon="pi pi-arrow-right" />
+                                </p-buttongroup>
+                            }   
+                            
+                        </div>
+                    </td>
+                </tr>
+            </ng-template>
 
-    <ng-template #body let-po let-rowIndex="rowIndex">
-        <ng-container *ngFor="let item of po.items">
-            <tr  class="hover:cursor-pointer">
-                <td pFrozen="left">{{ item.name }}</td>
-                <td>{{ item.ticker }}</td>
-                <td>{{ item.price | currency:'PHP'   }}</td>
-                <td>{{ item.quantity }}</td>
-                <td>{{ item.dateAdded | date: 'yyyy-MM-dd' }}</td>
-                <td>{{ item.description }}</td>
-            </tr>
-        </ng-container>
-    </ng-template>
-</p-table>
+            <ng-template #groupfooter let-po>
+                <tr class="hover:cursor-pointer">
+                    <td colspan="6" class="text-left pr-12 ">
+                        <div class="flex items-center">
+                            <div class="flex gap-2"><span class="font-semibold">Total Price: </span> <span>
+                                    {{calculateItemPriceTotal(po.purchaseOrder.id) | currency:'PHP' }}</span></div>
+                            <p-divider layout="vertical" />
+                            <div class="flex gap-2"><span class="font-semibold">Total Items: </span> <span>
+                                    {{calculateItemTotal(po.purchaseOrder.id)}}</span></div>
+                        </div>
+                    </td>
+                </tr>
+            </ng-template>
 
-    
+            <ng-template #body let-po let-rowIndex="rowIndex">
+                @for(item of po.items;track item.id){
+                <tr class="hover:cursor-pointer">
+                    <td pFrozen="left">{{ item.name }}</td>
+                    <td>{{ item.ticker }}</td>
+                    <td>{{ item.price | currency:'PHP' }}</td>
+                    <td>{{ item.quantity }}</td>
+                    <td>{{ item.dateAdded | date: 'yyyy-MM-dd' }}</td>
+                    <td>{{ item.description }}</td>
+                </tr>
+                }
+            </ng-template>
+        </p-table>
+
+
     </mat-card-content>
-  </mat-card>
-  
+</mat-card>
+
+<p-dialog header="View Receipt" [modal]="true" [(visible)]="showViewPanel" [style]="{ width: '25rem' }">
+    <span class="p-text-secondary block mb-8">Update your information.</span>
+    <div class="flex items-center gap-4 mb-4">
+        <label for="username" class="font-semibold w-24">Username</label>
+        <input pInputText id="username" class="flex-auto" autocomplete="off" />
+    </div>
+    <div class="flex items-center gap-4 mb-8">
+        <label for="email" class="font-semibold w-24">Email</label>
+        <input pInputText id="email" class="flex-auto" autocomplete="off" />
+    </div>
+    <!-- <div class="flex justify-end gap-2">
+        <p-button label="Cancel" severity="secondary" (click)="visible = false" />
+        <p-button label="Save" (click)="visible = false" />
+    </div> -->
+</p-dialog>

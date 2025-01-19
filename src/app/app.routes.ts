@@ -42,7 +42,7 @@ export const routes: Routes = [
           import('./pages/shared/shared.routes').then(
             (m) => m.SharedRoutes
           ),
-          data: {breadcrumb:'Shared'}
+          data: {breadcrumb:'Views'}
       },
       {
         path: 'extra',

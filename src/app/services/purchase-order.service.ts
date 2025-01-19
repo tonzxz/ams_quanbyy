@@ -9,6 +9,7 @@ export const purchaseOrderSchema = z.object({
   totalAmount: z.number().min(0, 'Total Amount must be positive'),
   dateCreated: z.date(),
   status: z.enum(['Pending', 'Completed', 'Cancelled']),
+  stocked: z.boolean(),
 });
 export type PurchaseOrder = z.infer<typeof purchaseOrderSchema>;
 
@@ -28,6 +29,7 @@ export class PurchaseOrderService {
       totalAmount: 10500.50,
       dateCreated: new Date('2023-06-15'),
       status: 'Completed',
+      stocked: true,
     },
     {
       id: 'PO98765432',  // 10 characters ID (substring of original)
@@ -35,6 +37,7 @@ export class PurchaseOrderService {
       totalAmount: 4500.75,
       dateCreated: new Date('2022-11-30'),
       status: 'Pending',
+      stocked: true,
     },
     {
       id: 'PO54321abc',  // 10 characters ID (substring of original)
@@ -42,6 +45,25 @@ export class PurchaseOrderService {
       totalAmount: 2300.30,
       dateCreated: new Date('2023-01-10'),
       status: 'Cancelled',
+      stocked: true,
+    },
+
+    {
+      id: 'PO54300000',  // 10 characters ID (substring of original)
+      customerName: 'Joshua Corda',
+      totalAmount: 2300.30,
+      dateCreated: new Date('2023-01-10'),
+      status: 'Pending',
+      stocked:false
+    },
+
+    {
+      id: 'PO54300120',  // 10 characters ID (substring of original)
+      customerName: 'Anton Caesar Cabais',
+      totalAmount: 2300.30,
+      dateCreated: new Date('2023-01-10'),
+      status: 'Pending',
+      stocked: false,
     },
   ];
   constructor(private stockService:StocksService) { }
