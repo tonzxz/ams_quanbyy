@@ -1,7 +1,90 @@
 <mat-card class="cardWithShadow">
-    <mat-card-content>
-      <mat-card-title>DELIVERY RECEIPTS</mat-card-title>
-      <mat-card-subtitle class="mat-body-1">This is test page</mat-card-subtitle>
-    </mat-card-content>
-  </mat-card>
-  
+  <mat-card-content>
+    <mat-card-title>Delivery Receipts</mat-card-title>
+    <mat-card-subtitle class="mat-body-1  mb-10">View, track and manage delivery receipts in this section.</mat-card-subtitle>
+    <div class="card flex w-full py-3 px-4">
+      <div class="flex-1 px-6">
+        <p-stepper [(value)]="activeStep" class="w-full" fluid>
+          <p-step-list>
+            <p-step pTooltip="Click to show unverified receipts" [value]="1" class="flex flex-row flex-auto gap-2">
+              <ng-template #content let-activateCallback="activateCallback" let-value="value">
+                <button class="bg-transparent border-0 flex items-center gap-2 px-2" (click)="activateCallback();filterByStatus('unverified')">
+                  <i [ngClass]="{'text-primary':value == activeStep}" class="pi pi-inbox mr-1"></i>
+                  <span [ngClass]="{'text-primary':value == activeStep}">Unverified</span>
+                </button>
+              </ng-template>
+            </p-step>
+            <p-step pTooltip="Click to show processing receipts" [value]="2" class="flex flex-row flex-auto gap-2">
+              <ng-template #content let-activateCallback="activateCallback" let-value="value">
+                <button class="bg-transparent border-0 flex items-center gap-2 px-2" (click)="activateCallback();filterByStatus('processing')">
+                  <i [ngClass]="{'text-primary':value == activeStep}" class="pi pi-spinner-dotted mr-1"></i>
+                  <span [ngClass]="{'text-primary':value == activeStep}">Processing</span>
+                </button>
+              </ng-template>
+            </p-step>
+            <p-step pTooltip="Click to show verified receipts" [value]="3" class="flex flex-row flex-auto gap-2">
+              <ng-template #content let-activateCallback="activateCallback" let-value="value">
+                <button class="bg-transparent border-0 flex items-center gap-2 px-2" (click)="activateCallback();filterByStatus('verified')">
+                  <i [ngClass]="{'text-primary':value == activeStep}" class="pi pi-verified mr-1"></i>
+                  <span [ngClass]="{'text-primary':value == activeStep}">Verified</span>
+                </button>
+              </ng-template>
+            </p-step>
+          </p-step-list>
+        </p-stepper>
+      </div>
+      <p-button pTooltip="Click to add new receipt" [outlined]="true" size="small" label="Add Receipt" icon="pi pi-plus" />
+      
+    </div>
+    <p-table
+    [paginator]="true"
+    [rows]="5"
+    [rowsPerPageOptions]="[5, 10, 20]"
+     [value]="filteredReceipts" [tableStyle]="{ 'min-width': '50rem' }">
+      <ng-template #header>
+        <tr>
+          <th>Receipt Number</th>
+          <th>Supplier Name</th>
+          <th>Delivery Date</th>
+          <th>Total Amount</th>
+          <th style="width: 5rem"></th>
+        </tr>
+      </ng-template>
+
+      <ng-template #body let-receipt>
+        <tr>
+          <td>
+            <div class="flex gap-2.5 items-center">
+              <i class="pi pi-receipt"></i>
+              <span>{{ receipt.receipt_number }}</span>
+            </div>
+          </td>
+          <td>{{ receipt.supplier_name }}</td>
+          <td>{{ receipt.delivery_date | date: 'shortDate' }}</td>
+          <td>{{ receipt.total_amount | currency }}</td>
+          <td> 
+            @if(receipt.status !='processing'){
+              <div class="flex gap-3">
+                @if(receipt.status != 'verified'){
+                  <p-button severity="secondary" pTooltip="Click to edit receipt"
+                  (click)="null" [outlined]="true" size="small" icon="pi pi-pencil" rounded />
+                }
+                <p-button severity="secondary" pTooltip="Click to view delivery receipt" [outlined]="true"
+                    (click)="null" size="small" 
+                    icon="pi pi-receipt" rounded />
+                <p-button [outlined]="true" [severity]="getSeverityFromStatus(receipt.status)" pTooltip="{{receipt.status == 'verified'? 'Click to proceed to purchase orders':'Click to submit for inspection'}}"
+                    (click)="null" size="small" 
+                    icon="pi pi-arrow-right" rounded />
+              </div>
+            }@else{
+              <div class="flex items-center justify-center gap-2 whitespace-nowrap">
+                <i  class="pi  pi-spin pi-spinner-dotted mr-1"></i>
+                <span>Under inspection ...</span>
+              </div>
+            }
+          </td>
+        </tr>
+      </ng-template>
+    </p-table>
+  </mat-card-content>
+</mat-card>

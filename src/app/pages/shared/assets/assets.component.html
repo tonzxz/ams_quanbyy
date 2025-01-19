@@ -1,7 +1,7 @@
 <mat-card class="cardWithShadow">
     <mat-card-content>
         <mat-card-title>Inventory</mat-card-title>
-        <mat-card-subtitle class="mat-body-1">This is a list of the overall assets in the company</mat-card-subtitle>
+        <mat-card-subtitle class="mat-body-1">View and track all assets in this section.</mat-card-subtitle>
         <div class="card">
             <p-dataview #dv [value]="filteredAssets()" [layout]="layout" [rows]="8" [paginator]="true">
                 <ng-template #header>
