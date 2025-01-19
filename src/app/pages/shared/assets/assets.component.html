@@ -6,9 +6,9 @@
             <p-dataview #dv [value]="filteredAssets()" [layout]="layout" [rows]="8" [paginator]="true">
                 <ng-template #header>
                     <div class="flex justify-end gap-3">
-                        <p-iconfield>
+                        <p-iconfield fluid class="w-full max-w-72">
                             <p-inputicon styleClass="pi pi-search" />
-                            <input pSize="small" [(ngModel)]="search"  (input)="filterBySearch()"  type="text"
+                            <input fluid class="w-full" pSize="small" [(ngModel)]="search"  (input)="filterBySearch()"  type="text"
                                 pInputText placeholder="Search" />
                             <!-- <p-inputicon styleClass="pi pi-spinner pi-spin" /> -->
                         </p-iconfield>

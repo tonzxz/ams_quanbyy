@@ -3,9 +3,9 @@
         <mat-card-title class="select-none font-light">Purchase Orders</mat-card-title>
         <div class="flex justify-between">
             <p>View and manage purchase orders in this section.</p>
-            <p-iconfield>
+            <p-iconfield fluid class="w-full max-w-72">
                 <p-inputicon styleClass="pi pi-search" />
-                <input [(ngModel)]="searchValue" (input)="dt.filterGlobal(searchValue,'contains')" type="text"
+                <input fluid class="w-full" pSize="small" [(ngModel)]="searchValue" (input)="dt.filterGlobal(searchValue,'contains')" type="text"
                     pInputText placeholder="Search" />
                 <!-- <p-inputicon styleClass="pi pi-spinner pi-spin" /> -->
             </p-iconfield>
