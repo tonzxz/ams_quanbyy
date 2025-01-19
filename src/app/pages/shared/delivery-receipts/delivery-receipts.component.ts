@@ -14,11 +14,13 @@ import { FileUploadModule, UploadEvent } from 'primeng/fileupload';
 import { DatePickerModule } from 'primeng/datepicker';
 import { InputNumberModule } from 'primeng/inputnumber';
 import { MessageService } from 'primeng/api';
+import { ToastModule } from 'primeng/toast';
+import { FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 @Component({
   selector: 'app-delivery-receipts',
   standalone: true,
   imports: [MaterialModule,CommonModule, StepperModule, TableModule, ButtonModule, ButtonGroupModule, 
-    FileUploadModule,DatePickerModule,InputNumberModule,
+    FileUploadModule,DatePickerModule,InputNumberModule, ToastModule, ReactiveFormsModule,
     FluidModule, TooltipModule, DialogModule, InputTextModule],
   providers:[MessageService],
   templateUrl: './delivery-receipts.component.html',
@@ -26,13 +28,18 @@ import { MessageService } from 'primeng/api';
 })
 export class DeliveryReceiptsComponent implements OnInit {
   activeStep:number = 1;
-
-  uploadedFiles: File[] = [];
-
   receipts:DeliveryReceipt[]=[];
   filteredReceipts:DeliveryReceipt[]=[];
 
   showReceiptModal:boolean = false;
+
+  form = new FormGroup({
+    delivery_date: new FormControl('', [Validators.required]),
+    receipt_number:  new FormControl('',[ Validators.required]),
+    supplier_name:  new FormControl('',[Validators.required]),
+    total_amount:  new FormControl( null,[Validators.required, Validators.min(0.001)]),
+    files:  new FormControl(null,[ Validators.required]), // You can later manage file upload logic in the component
+  });
 
   constructor(
     private messageService:MessageService,
@@ -54,12 +61,13 @@ export class DeliveryReceiptsComponent implements OnInit {
     return status == 'verified' ? 'success' : 'secondary';
   }
 
-  onUpload(event:any) {
-      for(let file of event.files) {
-          this.uploadedFiles.push(file);
-      }
-      this.messageService.add({severity: 'info', summary: 'File Uploaded', detail: ''});
-  }
+  files:File[] = [];
+  onSelectedFiles(event:any) {
+    this.files = event.currentFiles ?? [],
+    this.form.patchValue({
+      files: event.currentFiles,
+    });
+}
 
   async fetchItems(){
     this.receipts = await this.deliveryService.getAll();
