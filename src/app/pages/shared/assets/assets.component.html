@@ -3,9 +3,15 @@
         <mat-card-title>Assets</mat-card-title>
         <mat-card-subtitle class="mat-body-1">This is a list of the overall assets in the company</mat-card-subtitle>
         <div class="card">
-            <p-dataview #dv [value]="assets()" [layout]="layout" [rows]="8" [paginator]="true">
+            <p-dataview #dv [value]="filteredAssets()" [layout]="layout" [rows]="8" [paginator]="true">
                 <ng-template #header>
-                    <div class="flex justify-end">
+                    <div class="flex justify-end gap-2">
+                        <p-iconfield>
+                            <p-inputicon styleClass="pi pi-search" />
+                            <input pSize="small" [(ngModel)]="search"  (input)="filterBySearch()"  type="text"
+                                pInputText placeholder="Search" />
+                            <!-- <p-inputicon styleClass="pi pi-spinner pi-spin" /> -->
+                        </p-iconfield>
                         <p-selectbutton [(ngModel)]="layout" [options]="options" [allowEmpty]="false">
                             <ng-template #item let-item>
                                 <i class="pi "
