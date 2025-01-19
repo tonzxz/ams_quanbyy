@@ -47,9 +47,9 @@ export const navItems: NavItem[] = [
     requiredRoles: ['admin', 'superadmin'], 
   },
   {
-    displayName: 'Buildings',
+    displayName: 'Department',
     iconName: 'solar:widget-add-line-duotone',
-    route: '/admin/buildings', 
+    route: '/admin/department', 
     requiredRoles: ['admin', 'superadmin'], 
   },
   {
