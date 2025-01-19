@@ -104,7 +104,7 @@
     </div>
   </ng-template>
   <span class="text-surface-500 dark:text-surface-400 block mb-2">{{selectedDeliveryReceipt? 'Edit':'Add a new'}} receipt.</span>
-  <form [formGroup]="form">
+  <form [formGroup]="form" (submit)="selectedDeliveryReceipt? editReceipt():addReceipt()">
     <div class="flex items-center gap-4 mb-2">
       <label for="delivery_date" class="font-semibold w-32">Delivery Date</label>
       <p-datepicker
