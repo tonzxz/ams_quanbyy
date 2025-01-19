@@ -22,6 +22,10 @@ import { TooltipModule } from 'primeng/tooltip';
 import { InputNumberModule } from 'primeng/inputnumber';
 import { TextareaModule } from 'primeng/textarea';
 import { Stock, StocksService } from 'src/app/services/stocks.service';
+import { BadgeModule } from 'primeng/badge';
+import { OverlayBadgeModule } from 'primeng/overlaybadge';
+
+
 @Component({
   selector: 'app-purchase-orders',
   standalone: true,
@@ -29,7 +33,7 @@ import { Stock, StocksService } from 'src/app/services/stocks.service';
     IconFieldModule,InputIconModule,InputTextModule, FluidModule, FormsModule,
     DialogModule,ButtonModule, ButtonGroupModule,ConfirmPopupModule, LottieAnimationComponent, 
     CarouselModule,InputNumberModule,ReactiveFormsModule,
-    ToastModule,TooltipModule,TextareaModule
+    ToastModule,TooltipModule,TextareaModule,BadgeModule,OverlayBadgeModule
   ],
   providers: [ConfirmationService,MessageService],
   templateUrl: './purchase-orders.component.html',
@@ -72,6 +76,14 @@ export class PurchaseOrdersComponent {
       this.purchaseOrders =this.allPurchaseOrders.filter(po=>!po.purchaseOrder.stocked);
     }
     this.stockTab = tab;
+  }
+
+  countStocked(){
+    return this.allPurchaseOrders.filter(po=>po.purchaseOrder.stocked).length;
+  }
+
+  countUnstocked(){
+    return this.allPurchaseOrders.filter(po=>!po.purchaseOrder.stocked).length;
   }
 
   // Utility method to calculate the total number of items in each group
