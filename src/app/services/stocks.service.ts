@@ -107,4 +107,8 @@ export class StocksService {
   async getAll(){
     return this.stockData;
   }
+
+  async addStock(stock:Stock){
+    this.stockData.push(stock);
+  }
 }

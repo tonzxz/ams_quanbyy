@@ -10,6 +10,7 @@ export const purchaseOrderSchema = z.object({
   dateCreated: z.date(),
   status: z.enum(['Pending', 'Completed', 'Cancelled']),
   stocked: z.boolean(),
+  receipts: z.array(z.string()),
 });
 export type PurchaseOrder = z.infer<typeof purchaseOrderSchema>;
 
@@ -30,6 +31,7 @@ export class PurchaseOrderService {
       dateCreated: new Date('2023-06-15'),
       status: 'Completed',
       stocked: true,
+      receipts:['assets/images/products/sample-receipt.png'],
     },
     {
       id: 'PO98765432',  // 10 characters ID (substring of original)
@@ -38,6 +40,7 @@ export class PurchaseOrderService {
       dateCreated: new Date('2022-11-30'),
       status: 'Pending',
       stocked: true,
+      receipts:['assets/images/products/sample-receipt.png'],
     },
     {
       id: 'PO54321abc',  // 10 characters ID (substring of original)
@@ -46,6 +49,7 @@ export class PurchaseOrderService {
       dateCreated: new Date('2023-01-10'),
       status: 'Cancelled',
       stocked: true,
+      receipts:['assets/images/products/sample-receipt.png'],
     },
 
     {
@@ -54,7 +58,8 @@ export class PurchaseOrderService {
       totalAmount: 2300.30,
       dateCreated: new Date('2023-01-10'),
       status: 'Pending',
-      stocked:false
+      stocked:false,
+      receipts:[],
     },
 
     {
@@ -64,6 +69,7 @@ export class PurchaseOrderService {
       dateCreated: new Date('2023-01-10'),
       status: 'Pending',
       stocked: false,
+      receipts:['assets/images/products/sample-receipt.png', 'assets/images/products/sample-receipt.png'],
     },
   ];
   constructor(private stockService:StocksService) { }
@@ -78,8 +84,12 @@ export class PurchaseOrderService {
         items:stocks.filter(stock=>stock.purchase_order_id == purchaseOrder.id)
       })
     }
-    console.log(joined);
     return joined;
+  }
+
+  async markAsStocked(id:string){
+    const purchaseindex = this.purchaseOrders.findIndex(purchaseOrder => purchaseOrder.id==id);
+    this.purchaseOrders[purchaseindex].stocked = true;
   }
 
 }
