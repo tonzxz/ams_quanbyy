@@ -217,7 +217,7 @@
   </form>
   <ng-template #footer>
     <p-button size="small" label="Cancel" [text]="true" icon="pi pi-times" severity="secondary" (click)="showReceiptModal = false" />
-    <p-button size="small" label="{{selectedDeliveryReceipt? 'Edit':'Add'}}" icon="pi pi-plus" [disabled]="!form.valid" (click)="addReceipt()" />
+    <p-button size="small" label="{{selectedDeliveryReceipt? 'Edit':'Add'}}" icon="pi pi-plus" [disabled]="!form.valid" (click)="selectedDeliveryReceipt? editReceipt():addReceipt()" />
   </ng-template>
 </p-dialog>
 
