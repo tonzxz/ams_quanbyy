@@ -17,19 +17,19 @@ export const navItems: NavItem[] = [
   {
     displayName: 'Pending PRs',
     iconName: 'solar:documents-broken',
-    route: '/shared/delivery-receipts',
+    route: '/inspection/pending-pr/pending',
     requiredRoles: ['inspection','superadmin']
   },
   {
     displayName: 'Validated PRs',
     iconName: 'solar:documents-broken',
-    route: '/pages/inspection/validated-pr',
+    route: '/inspection/validated-pr/validated',
     requiredRoles: ['inspection','superadmin']
   },
   {
     displayName: 'Rejected',
     iconName: 'solar:documents-broken',
-    route: '/shared/delivery-receipts',
+    route: '/inspection/rejected-pr/rejected',
     requiredRoles: ['inspection','superadmin']
   },
   {
