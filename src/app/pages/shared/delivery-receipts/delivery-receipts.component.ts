@@ -158,6 +158,35 @@ export class DeliveryReceiptsComponent implements OnInit {
 
 
 
+  nextStep(){
+    this.activeStep++;
+    switch (this.activeStep) {
+      case 1:
+        this.filterByStatus('unverified');
+        break;
+      case 2:
+        this.filterByStatus('processing');
+        break;
+      case 3:
+        this.filterByStatus('verified');
+        break;
+    }
+  }
+  backStep(){
+    this.activeStep--;
+    switch (this.activeStep) {
+      case 1:
+        this.filterByStatus('unverified');
+        break;
+      case 2:
+        this.filterByStatus('processing');
+        break;
+      case 3:
+        this.filterByStatus('verified');
+        break;
+    }
+  }
+
   async confirmDeleteReceipt(event: Event,id:string){
     this.confirmationService.confirm({
       target: event.target as EventTarget,
