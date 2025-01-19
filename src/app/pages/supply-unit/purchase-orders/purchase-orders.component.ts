@@ -105,6 +105,8 @@ export class PurchaseOrdersComponent {
   showStockModal:boolean = false;
   selectedPurchaseOrder?:PurchaseOrder;
   openAddStockModal(purchase_order:PurchaseOrder){
+    this.selectedStock = undefined;
+    this.stockForm.reset();
     this.selectedPurchaseOrder = purchase_order;
     this.showStockModal= true;
   }
