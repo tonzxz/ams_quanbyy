@@ -78,6 +78,11 @@ export class PurchaseOrderService {
     const stocks = await this.stockService.getAll(); 
     const joined:PurchaseOrderItems[] = [];
 
+    const local_purchase_orders = localStorage.getItem('purchase_orders');
+    if(local_purchase_orders){
+      this.purchaseOrders = JSON.parse(local_purchase_orders) as PurchaseOrder[];
+    }
+
     for(let purchaseOrder of this.purchaseOrders){
       joined.push({
         purchaseOrder: purchaseOrder,
@@ -90,6 +95,7 @@ export class PurchaseOrderService {
   async markAsStocked(id:string){
     const purchaseindex = this.purchaseOrders.findIndex(purchaseOrder => purchaseOrder.id==id);
     this.purchaseOrders[purchaseindex].stocked = true;
+    localStorage.setItem('purchase_orders', JSON.stringify(this.purchaseOrders));
   }
 
 }
