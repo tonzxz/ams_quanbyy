@@ -3,7 +3,7 @@
         <mat-card-title>Assets</mat-card-title>
         <mat-card-subtitle class="mat-body-1">This is a list of the overall assets in the company</mat-card-subtitle>
         <div class="card">
-            <p-dataview #dv [value]="assets()" [layout]="layout">
+            <p-dataview #dv [value]="assets()" [layout]="layout" [rows]="8" [paginator]="true">
                 <ng-template #header>
                     <div class="flex justify-end">
                         <p-selectbutton [(ngModel)]="layout" [options]="options" [allowEmpty]="false">
