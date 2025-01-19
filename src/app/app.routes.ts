@@ -27,6 +27,13 @@ export const routes: Routes = [
           ),
       },
       {
+        path: 'inspection',
+        loadChildren: () =>
+          import('./pages/inspection/inspection.routes').then(
+            (m) => m.InspectionRoutes
+          ),
+      },
+      {
         path: 'supply-unit',
         loadChildren: () =>
           import('./pages/supply-unit/supply-unit.routes').then(

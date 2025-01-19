@@ -10,6 +10,29 @@ export const navItems: NavItem[] = [
     route: '/dashboard',
   },
   {
+    navCap: 'Inspection',
+    divider: true,
+    requiredRoles:['inspection','superadmin']
+  },
+  {
+    displayName: 'Pending PRs',
+    iconName: 'solar:documents-broken',
+    route: '/shared/delivery-receipts',
+    requiredRoles: ['inspection','superadmin']
+  },
+  {
+    displayName: 'Validated PRs',
+    iconName: 'solar:documents-broken',
+    route: '/pages/inspection/validated-pr',
+    requiredRoles: ['inspection','superadmin']
+  },
+  {
+    displayName: 'Rejected',
+    iconName: 'solar:documents-broken',
+    route: '/shared/delivery-receipts',
+    requiredRoles: ['inspection','superadmin']
+  },
+  {
     navCap: 'Supply Unit',
     divider: true,
     requiredRoles:['supply','superadmin']
