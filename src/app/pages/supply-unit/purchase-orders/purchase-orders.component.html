@@ -13,19 +13,28 @@
         <p-tabs [value]="stockTab">
             <p-tablist>
                 <p-tab [value]="0" (click)="switchStockTab(0)">
-                    <i class="pi pi-box"></i>
+                    <p-overlaybadge badgeSize="small" [value]="countStocked()">
+                        <div class="px-3 flex gap-6">
+                            <i class="pi pi-box"></i>
                     <span>In Stock</span>
+                        </div>
+                    </p-overlaybadge>
                 </p-tab>
                 <p-tab [value]="1" (click)="switchStockTab(1)">
-                    <i class="pi pi-warehouse"></i>
-                    <span>To Stock</span>
+                    <p-overlaybadge badgeSize="small" [value]="countUnstocked()">
+                        <div class="px-3 flex gap-6">
+                            <i class="pi pi-warehouse"></i>
+                            <span>To Stock</span>
+                        </div>
+                    </p-overlaybadge>
+                    
                 </p-tab>
             </p-tablist>
         </p-tabs>
         <p-table #dt dataKey="purchaseOrder.id" [rowHover]="true" [value]="purchaseOrders"
-            sortField="purchaseOrder.customerName" sortMode="single" [scrollable]="true" scrollHeight="600px"
+            sortField="purchaseOrder.supplierName" sortMode="single" [scrollable]="true" scrollHeight="600px"
             rowGroupMode="subheader" groupRowsBy="purchaseOrder.id"
-            [globalFilterFields]="['purchaseOrder.customerName','purchaseOrder.id']"
+            [globalFilterFields]="['purchaseOrder.supplierName','purchaseOrder.id']"
             [tableStyle]="{'min-width': '60rem'}">
 
             <ng-template #header>
@@ -44,9 +53,9 @@
                     <td [attr.colspan]="!po.purchaseOrder.stocked?7:6">
                         <div class="flex items-center justify-between">
                             <div class="flex items-center gap-5">
-                                <img [alt]="po.purchaseOrder.customerName" src="assets/images/products/dash-prd-4.jpg"
+                                <img [alt]="po.purchaseOrder.supplierName" src="assets/images/products/dash-prd-4.jpg"
                                     width="32" class="rounded-full" style="vertical-align: middle" />
-                                <span class="font-bold">{{ po.purchaseOrder.customerName}} </span>
+                                <span class="font-bold">{{ po.purchaseOrder.supplierName}} </span>
                                 <p-divider layout="vertical" />
                                 <span>Purchase Code : {{po.purchaseOrder.id.toUpperCase()}}</span>
                             </div>
@@ -147,7 +156,7 @@
     [style]="{ width: '25rem' }">
     <span class="p-text-secondary block">{{selectedStock ?'Editing' :'Adding new'}} stock from Purchase
         {{selectedPurchaseOrder?.id}}.</span>
-    <small class="p-text-secondary block mb-4">(Please fill out all forms)</small>
+    <small class="p-text-secondary block mb-4">(Please fill out all form fields)</small>
 
     <form [formGroup]="stockForm" (submit)="selectedStock ? editStock(): addStock()">
         <div class="flex items-center gap-4 mb-2">
