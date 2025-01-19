@@ -181,7 +181,7 @@ export class PurchaseOrdersComponent {
   async confirmDeleteStock(event: Event,id:string){
     this.confirmationService.confirm({
       target: event.target as EventTarget,
-      message: 'Are you sure you want to delete this stocks in this purchase?',
+      message: 'Are you sure you want to delete this stock in this purchase?',
       icon: 'pi pi-exclamation-triangle',
       rejectButtonProps: {
           label: 'Cancel',
@@ -194,7 +194,7 @@ export class PurchaseOrdersComponent {
       accept: async () => {
           await this.stockService.deleteStock(id);
           this.messageService.add({ severity: 'success', summary: 'Success', detail: `Stock successfully deleted!` });
-          this.fetchItems();
+          await this.fetchItems();
           this.switchStockTab(1);
       },
       reject: () => {
