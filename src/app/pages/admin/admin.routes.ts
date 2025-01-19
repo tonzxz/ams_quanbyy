@@ -1,10 +1,10 @@
 import { Routes } from '@angular/router';
-import { BuildingsComponent } from './buildings/buildings.component';
 import { InventoryComponent } from './inventory/inventory.component';
 import { SupplierListComponent } from './supplier-list/supplier-list.component';
 import { UserManagementComponent } from './user-management/user-management.component';
 import { roleGuard } from 'src/app/guards/role.guard';
 import { ProductTypeComponent } from './product-type/product-type.component';
+import { DepartmentComponent } from './department/department.component';
 
 export const AdminRoutes: Routes = [
   {
@@ -12,14 +12,14 @@ export const AdminRoutes: Routes = [
     children: [
       {
         path: '',
-        redirectTo: '/buildings',
+        redirectTo: '/department',
         pathMatch: 'full',
       },
       {
-        path: 'buildings',
-        component: BuildingsComponent,
+        path: 'department',
+        component: DepartmentComponent,
         canActivate: [roleGuard],
-        data: { roles: ['admin', 'superadmin'], breadcrumb: 'Buildings' } 
+        data: { roles: ['admin', 'superadmin'], breadcrumb: 'Department' } 
       },
       {
         path: 'inventory',
