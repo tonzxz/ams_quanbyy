@@ -48,7 +48,7 @@
                     <th>Quantity</th>
                     <th>Date Added</th>
                     <th>Description</th>
-                    @if(!purchaseOrders[0].purchaseOrder.stocked){
+                    @if(purchaseOrders.length > 0 && !purchaseOrders[0].purchaseOrder.stocked){
                         <th></th>
                     }
                 </tr>
