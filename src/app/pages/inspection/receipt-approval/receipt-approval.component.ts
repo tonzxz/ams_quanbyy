@@ -21,16 +21,16 @@ import { ConfirmPopupModule } from 'primeng/confirmpopup';
 import { Router } from '@angular/router';
 import { PurchaseOrderService } from 'src/app/services/purchase-order.service';
 @Component({
-  selector: 'app-delivery-receipts',
+  selector: 'app-receipt-approval',
   standalone: true,
   imports: [MaterialModule,CommonModule, StepperModule, TableModule, ButtonModule, ButtonGroupModule, 
     FileUploadModule,DatePickerModule,InputNumberModule, ToastModule, ReactiveFormsModule, TextareaModule,
     FluidModule, TooltipModule, DialogModule, InputTextModule,ConfirmPopupModule],
   providers:[MessageService, ConfirmationService],
-  templateUrl: './delivery-receipts.component.html',
-  styleUrl: './delivery-receipts.component.scss'
+  templateUrl: './receipt-approval.component.html',
+  styleUrl: './receipt-approval.component.scss'
 })
-export class DeliveryReceiptsComponent implements OnInit {
+export class ReceiptApprovalComponent implements OnInit {
 
   @ViewChild('fileUpload') fileUpload: FileUpload;
 
@@ -41,10 +41,6 @@ export class DeliveryReceiptsComponent implements OnInit {
   showReceiptModal:boolean = false;
 
   form = new FormGroup({
-    delivery_date: new FormControl('', [Validators.required]),
-    receipt_number:  new FormControl('',[ Validators.required]),
-    supplier_name:  new FormControl('',[Validators.required]),
-    total_amount:  new FormControl<number|null>( null,[Validators.required, Validators.min(0.001)]),
     notes:  new FormControl(''),
     files:  new FormControl<any>(null,[ Validators.required]), // You can later manage file upload logic in the component
   });
@@ -53,7 +49,6 @@ export class DeliveryReceiptsComponent implements OnInit {
     private router:Router,
     private confirmationService:ConfirmationService,
     private messageService:MessageService,
-    private purchaseOrderService:PurchaseOrderService,
     private deliveryService:DeliveryReceiptService){}
 
   ngOnInit(): void {
@@ -72,19 +67,14 @@ export class DeliveryReceiptsComponent implements OnInit {
 
   selectedDeliveryReceipt?:DeliveryReceipt;
 
-  openEditReceiptModal(dr: DeliveryReceipt){
+  openUploadReportsModal(dr: DeliveryReceipt){
     this.form.reset();
     this.files = [];
     if (this.fileUpload) {
       this.fileUpload.clear(); 
     }
-    const date = dr.delivery_date.toString().split('T')[0].split('-');
     this.form.patchValue({
       files:dr.receipts,
-      receipt_number: dr.receipt_number,
-      supplier_name: dr.supplier_name!,
-      delivery_date: `${date[1]}/${date[2]}/${date[0]}`,
-      total_amount: Number(dr.total_amount!),
       notes:dr.notes ?? '',
     })
     this.selectedDeliveryReceipt = dr;
@@ -107,53 +97,15 @@ export class DeliveryReceiptsComponent implements OnInit {
     });
   }
 
-  async addReceipt(){
+  async uploadReports(){
     const dr = this.form.value;
-    await this.deliveryService.addReceipt({
-      receipts:[
-        'assets/images/products/sample-receipt.png'
-      ],
-      receipt_number: dr.receipt_number!.toUpperCase(),
-      supplier_name: dr.supplier_name!,
-      delivery_date: new Date(dr.delivery_date!),
-      total_amount: dr.total_amount!,
-      notes:dr.notes ?? '',
-      status:'unverified',
-      stocked:false,
-    })
     this.form.reset();
     this.files = [];
     if (this.fileUpload) {
       this.fileUpload.clear(); 
     }
     this.showReceiptModal = false;
-    this.messageService.add({ severity: 'success', summary: 'Success', detail: `Successfully added receipt no. ${dr.receipt_number?.toUpperCase()}` });
-    await this.fetchItems();
-    this.activeStep = 1;
-  }
-
-  async editReceipt(){
-    const dr = this.form.value;
-    await this.deliveryService.editReceipt({
-      id: this.selectedDeliveryReceipt!.id,
-      receipts:[
-        'assets/images/products/sample-receipt.png'
-      ],
-      receipt_number: dr.receipt_number!.toUpperCase(),
-      supplier_name: dr.supplier_name!,
-      delivery_date: new Date(dr.delivery_date!),
-      total_amount: dr.total_amount!,
-      notes:dr.notes ?? '',
-      status:'unverified',
-      stocked:false
-    })
-    this.form.reset();
-    this.files = [];
-    if (this.fileUpload) {
-      this.fileUpload.clear(); 
-    }
-    this.showReceiptModal = false;
-    this.messageService.add({ severity: 'success', summary: 'Success', detail: `Successfully edited receipt no. ${dr.receipt_number?.toUpperCase()}` });
+    this.messageService.add({ severity: 'success', summary: 'Success', detail: `Successfully uploaded inspection reports to Receipt No. ${this.selectedDeliveryReceipt?.receipt_number?.toUpperCase()}` });
     await this.fetchItems();
     this.activeStep = 1;
   }
@@ -164,12 +116,9 @@ export class DeliveryReceiptsComponent implements OnInit {
     this.activeStep++;
     switch (this.activeStep) {
       case 1:
-        this.filterByStatus('unverified');
-        break;
-      case 2:
         this.filterByStatus('processing');
         break;
-      case 3:
+      case 2:
         this.filterByStatus('verified');
         break;
     }
@@ -178,21 +127,18 @@ export class DeliveryReceiptsComponent implements OnInit {
     this.activeStep--;
     switch (this.activeStep) {
       case 1:
-        this.filterByStatus('unverified');
-        break;
-      case 2:
         this.filterByStatus('processing');
         break;
-      case 3:
+      case 2:
         this.filterByStatus('verified');
         break;
     }
   }
 
-  async confirmDeleteReceipt(event: Event,id:string){
+  async confirmToVerification(event: Event,id:string){
     this.confirmationService.confirm({
       target: event.target as EventTarget,
-      message: 'Are you sure you want to delete this receipt?',
+      message: 'Are you sure you want to submit this receipt to verified receipts?',
       icon: 'pi pi-exclamation-triangle',
       rejectButtonProps: {
           label: 'Cancel',
@@ -203,35 +149,10 @@ export class DeliveryReceiptsComponent implements OnInit {
           label: 'Confirm'
       },
       accept: async () => {
-          await this.deliveryService.deleteReceipt(id)
-          this.messageService.add({ severity: 'success', summary: 'Success', detail: `Successfully deleted receipt.` });
+          await this.deliveryService.moveToVerified(id)
+          this.messageService.add({ severity: 'success', summary: 'Success', detail: `Successfully submitted receipt to verified receipts.` });
           await this.fetchItems();
-          this.activeStep = 1;
-      },
-      reject: () => {
-          
-      }
-  });
-  }
-
-  async confirmForInspection(event: Event,id:string){
-    this.confirmationService.confirm({
-      target: event.target as EventTarget,
-      message: 'Are you sure you want to submit this receipt for inspection?',
-      icon: 'pi pi-exclamation-triangle',
-      rejectButtonProps: {
-          label: 'Cancel',
-          severity: 'secondary',
-          outlined: true
-      },
-      acceptButtonProps: {
-          label: 'Confirm'
-      },
-      accept: async () => {
-          await this.deliveryService.moveForInspection(id)
-          this.messageService.add({ severity: 'success', summary: 'Success', detail: `Successfully submitted receipt for inspection.` });
-          await this.fetchItems();
-          this.filterByStatus('processing');
+          this.filterByStatus('verified');
           this.activeStep = 2;
       },
       reject: () => {
@@ -240,12 +161,34 @@ export class DeliveryReceiptsComponent implements OnInit {
     });
   }
 
-  async proceedToStocking(dr:DeliveryReceipt){
-    this.router.navigate(['/supply-management/stocking'])
+  async confirmToReject(event: Event,id:string){
+    this.confirmationService.confirm({
+      target: event.target as EventTarget,
+      message: 'Are you sure you want to reject this receipt?',
+      icon: 'pi pi-exclamation-triangle',
+      rejectButtonProps: {
+          label: 'Cancel',
+          severity: 'secondary',
+          outlined: true
+      },
+      acceptButtonProps: {
+          label: 'Confirm'
+      },
+      accept: async () => {
+          await this.deliveryService.moveToRejected(id)
+          this.messageService.add({ severity: 'success', summary: 'Success', detail: `Successfully rejected receipt.` });
+          await this.fetchItems();
+          this.filterByStatus('processing');
+          this.activeStep = 1;
+      },
+      reject: () => {
+          
+      }
+    });
   }
-  
+
   async fetchItems(){
     this.receipts = await this.deliveryService.getAll();
-    this.filterByStatus('unverified');
+    this.filterByStatus('processing');
   }
 }

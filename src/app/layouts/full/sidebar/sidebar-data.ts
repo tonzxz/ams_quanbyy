@@ -10,6 +10,23 @@ export const navItems: NavItem[] = [
     route: '/dashboard',
   },
   {
+    navCap: 'Inspection',
+    divider: true,
+    requiredRoles:['inspection','superadmin']
+  },
+  {
+    displayName: 'Purchase Requests',
+    iconName: 'solar:documents-broken',
+    route: '/inspection/purchase-request/purchase-request',
+    requiredRoles: ['inspection','superadmin']
+  },
+  {
+    displayName: 'Receipt Approval',
+    iconName: 'solar:documents-broken',
+    route: '/inspection/receipt-approval',
+    requiredRoles: ['inspection','superadmin']
+  },
+  {
     navCap: 'Supply Unit',
     divider: true,
     requiredRoles:['supply','superadmin']
@@ -21,9 +38,9 @@ export const navItems: NavItem[] = [
     requiredRoles: ['supply','superadmin']
   },
   {
-    displayName: 'Purchase Orders',
+    displayName: 'Stocking',
     iconName: 'solar:inbox-archive-outline',
-    route: '/supply-management/purchase-orders',
+    route: '/supply-management/stocking',
     requiredRoles: ['supply','superadmin']
   },
   {

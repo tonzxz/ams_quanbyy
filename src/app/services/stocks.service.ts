@@ -4,7 +4,7 @@ import { z } from 'zod';
 
 export const stockSchema = z.object({
   id: z.string().length(32, "ID must be exactly 32 characters").optional(), 
-  purchase_order_id: z.string().length(10, 'Purchase Order ID is required'),  
+  dr_id: z.string().length(10, 'Receipt  ID is required'),  
   name: z.string().min(1, "Name is required"), // Ensuring the name is not empty
   ticker: z.string().min(1, "Ticker symbol is required"), // Ticker symbol of the stock (e.g., "AAPL")
   price: z.number().min(0, "Price must be a positive number"), // Positive number for stock price
@@ -20,7 +20,7 @@ export type Stock = z.infer<typeof stockSchema>;
   providedIn: 'root'
 })
 export class StocksService {
-  private stockData:Stock[] = [
+  private stockData: Stock[] = [
     {
       id: '12345678901234567890123456789012',  // 32 characters ID
       name: 'Tesla Inc.',
@@ -29,7 +29,7 @@ export class StocksService {
       quantity: 10,
       dateAdded: new Date('2023-06-15'),
       description: 'Electric vehicle manufacturer.',
-      purchase_order_id: 'PO12345678',  // 10-character purchase_order_id
+      dr_id: 'REC0012351',  // Linked to the stocked and verified receipt for Emily White
     },
     {
       id: '98765432109876543210987654321098',  // 32 characters ID
@@ -39,7 +39,7 @@ export class StocksService {
       quantity: 50,
       dateAdded: new Date('2022-11-30'),
       description: 'Technology company, creator of iPhones.',
-      purchase_order_id: 'PO12345678',  // 10-character purchase_order_id
+      dr_id: 'REC0012351',  // Linked to the stocked and verified receipt for Emily White
     },
     {
       id: 'abcdefabcdefabcdefabcdefabcdefabcd',  // 32 characters ID
@@ -49,7 +49,7 @@ export class StocksService {
       quantity: 5,
       dateAdded: new Date('2023-01-10'),
       description: 'E-commerce giant, AWS, and more.',
-      purchase_order_id: 'PO12345678',  // 10-character purchase_order_id
+      dr_id: 'REC0012351',  // Linked to the stocked and verified receipt for David Clark
     },
     {
       id: '23456789012345678901234567890123',  // 32 characters ID
@@ -59,7 +59,7 @@ export class StocksService {
       quantity: 20,
       dateAdded: new Date('2023-05-22'),
       description: 'Technology company, developer of Windows OS.',
-      purchase_order_id: 'PO98765432',  // 10-character purchase_order_id
+      dr_id: 'REC0012350',  // Linked to the stocked and verified receipt for David Clark
     },
     {
       id: '34567890123456789012345678901234',  // 32 characters ID
@@ -69,7 +69,7 @@ export class StocksService {
       quantity: 15,
       dateAdded: new Date('2022-12-10'),
       description: 'Graphics card and AI hardware leader.',
-      purchase_order_id: 'PO98765432',  // 10-character purchase_order_id
+      dr_id: 'REC0012350',  // Linked to the stocked and verified receipt for David Clark
     },
     {
       id: '45678901234567890123456789012345',  // 32 characters ID
@@ -79,7 +79,7 @@ export class StocksService {
       quantity: 8,
       dateAdded: new Date('2023-04-10'),
       description: 'Google parent company, focuses on AI, advertising.',
-      purchase_order_id: 'PO54321abc',  // 10-character purchase_order_id
+      dr_id: 'REC0012350',  // Linked to the stocked and verified receipt for Emily White
     },
     {
       id: '56789012345678901234567890123456',  // 32 characters ID
@@ -89,7 +89,7 @@ export class StocksService {
       quantity: 25,
       dateAdded: new Date('2023-07-14'),
       description: 'Social media giant, owner of Facebook and Instagram.',
-      purchase_order_id: 'PO54321abc',  // 10-character purchase_order_id
+      dr_id: 'REC0012351',  // Linked to the stocked and verified receipt for Emily White
     },
     {
       id: '67890123456789012345678901234567',  // 32 characters ID
@@ -99,9 +99,10 @@ export class StocksService {
       quantity: 12,
       dateAdded: new Date('2022-09-01'),
       description: 'Streaming service for movies and TV shows.',
-      purchase_order_id: 'PO54321abc',  // 10-character purchase_order_id
+      dr_id: 'REC0012350',  // Linked to the stocked and verified receipt for David Clark
     }
   ];
+  
   constructor() { }
 
   async getAll():Promise<Stock[]>{

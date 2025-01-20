@@ -157,7 +157,7 @@ export class PurchaseOrdersComponent {
     if (!this.stockForm.valid) return;
     const stockData = this.stockForm.value;
     await this.stockService.addStock({
-      purchase_order_id: this.selectedPurchaseOrder?.id!,
+      dr_id: this.selectedPurchaseOrder?.id!,
       dateAdded: new Date(),
       name: stockData.name!,
       ticker: stockData.ticker!.toUpperCase(),
@@ -177,7 +177,7 @@ export class PurchaseOrdersComponent {
     const stockData = this.stockForm.value;
     await this.stockService.editStock({
       id: this.selectedStock!.id,
-      purchase_order_id: this.selectedStock!.purchase_order_id,
+      dr_id: this.selectedStock!.dr_id,
       dateAdded: this.selectedStock!.dateAdded,
       name: stockData.name!,
       ticker: stockData.ticker!.toUpperCase(),
@@ -231,7 +231,7 @@ export class PurchaseOrdersComponent {
             label: 'Confirm'
         },
         accept: async () => {
-            await this.purchaseOrderService.markAsStocked(id);
+            // await this.purchaseOrderService.markAsStocked(id);
             this.messageService.add({ severity: 'success', summary: 'Success', detail: `Purchase ${id.toUpperCase()} successfully stocked!` });
             this.fetchItems();
         },

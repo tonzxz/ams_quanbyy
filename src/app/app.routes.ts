@@ -29,6 +29,14 @@ export const routes: Routes = [
           data: {breadcrumb:'UI Components '}
       },
       {
+        path: 'inspection',
+        loadChildren: () =>
+          import('./pages/inspection/inspection.routes').then(
+            (m) => m.InspectionRoutes
+          ),
+          data: { breadcrumb: 'Inspection' }
+      },
+      {
         path: 'supply-management',
         data: { breadcrumb: 'Supply Management' },
         loadChildren: () =>
