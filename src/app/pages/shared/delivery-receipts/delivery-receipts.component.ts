@@ -240,8 +240,8 @@ export class DeliveryReceiptsComponent implements OnInit {
   });
   }
 
-  async proceedToPurchaseOrders(dr:DeliveryReceipt){
-    this.router.navigate(['/supply-management/stocks'])
+  async proceedToStocking(dr:DeliveryReceipt){
+    this.router.navigate(['/supply-management/stocking'])
   }
   
   async fetchItems(){
