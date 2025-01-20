@@ -50,21 +50,18 @@ export const navItems: NavItem[] = [
     requiredRoles: ['supply','superadmin']
   },
   {
-    displayName: 'Assets',
-    iconName: 'solar:box-broken',
-    route: '/shared/assets',
-    requiredRoles: ['supply','superadmin'],
-  },
-  {
     displayName: 'Disbursement Vouchers',
     iconName: 'solar:ticket-sale-broken',
     route: '/shared/disbursement-vouchers',
     requiredRoles: ['supply','superadmin']
   },
+  
 
-
-   {
+  
+  {
     navCap: 'Admin',
+    divider: true,
+    requiredRoles:['admin','superadmin']
   },
   {
     displayName: 'User Management',
@@ -73,15 +70,9 @@ export const navItems: NavItem[] = [
     requiredRoles: ['admin', 'superadmin'], 
   },
   {
-    displayName: 'Inventory',
+    displayName: 'Department',
     iconName: 'solar:widget-add-line-duotone',
-    route: '/admin/inventory', 
-    requiredRoles: ['admin', 'superadmin'], 
-  },
-  {
-    displayName: 'Buildings',
-    iconName: 'solar:widget-add-line-duotone',
-    route: '/admin/buildings', 
+    route: '/admin/department', 
     requiredRoles: ['admin', 'superadmin'], 
   },
   {
@@ -90,8 +81,26 @@ export const navItems: NavItem[] = [
     route: '/admin/supplier-list', 
     requiredRoles: ['admin', 'superadmin'], 
   },
+  {
+    displayName: 'Product Type',
+    iconName: 'solar:widget-add-line-duotone',
+    route: '/admin/product-type', 
+    requiredRoles: ['admin', 'superadmin'], 
+  },
 
+  
+  {
+    navCap: 'Views',
+    divider: true,
+    requiredRoles:['supply', 'admin','superadmin']
+  },
 
+  {
+    displayName: 'Inventory',
+    iconName: 'solar:box-broken',
+    route: '/shared/inventory',
+    requiredRoles: ['supply','superadmin'],
+  },
   {
     navCap: 'Ui Components',
     divider: true

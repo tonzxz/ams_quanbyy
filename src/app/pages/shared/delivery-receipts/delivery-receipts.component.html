@@ -1,7 +1,230 @@
 <mat-card class="cardWithShadow">
-    <mat-card-content>
-      <mat-card-title>DELIVERY RECEIPTS</mat-card-title>
-      <mat-card-subtitle class="mat-body-1">This is test page</mat-card-subtitle>
-    </mat-card-content>
-  </mat-card>
+  <mat-card-content>
+    <mat-card-title>Delivery Receipts</mat-card-title>
+    <mat-card-subtitle class="mat-body-1  mb-10">View, track and manage delivery receipts in this
+      section.</mat-card-subtitle>
+    <div class="card flex w-full py-3 px-4">
+      <div class="flex-1 px-6">
+        <p-stepper [(value)]="activeStep" class="w-full" fluid>
+          <p-step-list>
+            <p-step pTooltip="Click to show unverified receipts" [value]="1" class="flex flex-row flex-auto gap-2">
+              <ng-template #content let-activateCallback="activateCallback" let-value="value">
+                <button class="bg-transparent border-0 flex items-center gap-2 px-2"
+                  (click)="activateCallback();filterByStatus('unverified')">
+                  <i [ngClass]="{'text-primary':value == activeStep}" class="pi pi-inbox mr-1"></i>
+                  <span [ngClass]="{'text-primary':value == activeStep}">Unverified</span>
+                </button>
+              </ng-template>
+            </p-step>
+            <p-step pTooltip="Click to show processing receipts" [value]="2" class="flex flex-row flex-auto gap-2">
+              <ng-template #content let-activateCallback="activateCallback" let-value="value">
+                <button class="bg-transparent border-0 flex items-center gap-2 px-2"
+                  (click)="activateCallback();filterByStatus('processing')">
+                  <i [ngClass]="{'text-primary':value == activeStep}" class="pi pi-spinner-dotted mr-1"></i>
+                  <span [ngClass]="{'text-primary':value == activeStep}">Processing</span>
+                </button>
+              </ng-template>
+            </p-step>
+            <p-step pTooltip="Click to show verified receipts" [value]="3" class="flex flex-row flex-auto gap-2">
+              <ng-template #content let-activateCallback="activateCallback" let-value="value">
+                <button class="bg-transparent border-0 flex items-center gap-2 px-2"
+                  (click)="activateCallback();filterByStatus('verified')">
+                  <i [ngClass]="{'text-primary':value == activeStep}" class="pi pi-verified mr-1"></i>
+                  <span [ngClass]="{'text-primary':value == activeStep}">Verified</span>
+                </button>
+              </ng-template>
+            </p-step>
+          </p-step-list>
+        </p-stepper>
+      </div>
+      <p-button pTooltip="Click to add new receipt" [outlined]="true" size="small" label="Add Receipt"
+        (click)="openReceiptModal()" icon="pi pi-plus" />
+
+    </div>
+    <p-table [paginator]="true" [rows]="5" [rowsPerPageOptions]="[5, 10, 20]" [value]="filteredReceipts"
+      [tableStyle]="{ 'min-width': '50rem' }">
+      <ng-template #header>
+        <tr>
+          <th>Receipt Number</th>
+          <th>Supplier Name</th>
+          <th>Delivery Date</th>
+          <th>Total Amount</th>
+          <th>Notes</th>
+          <th style="width: 5rem"></th>
+        </tr>
+      </ng-template>
+
+      <ng-template #body let-receipt>
+        <tr>
+          <td>
+            <div class="flex gap-2.5 items-center">
+              <i class="pi pi-receipt"></i>
+              <span>{{ receipt.receipt_number }}</span>
+            </div>
+          </td>
+          <td>{{ receipt.supplier_name }}</td>
+          <td>{{ receipt.delivery_date | date: 'shortDate' }}</td>
+          <td>{{ receipt.total_amount | currency:'PHP' }}</td>
+          <td>{{ receipt.notes || 'No notes written.' }}</td>
+          <td>
+            @if(receipt.status !='processing'){
+            <div class="flex gap-3">
+              @if(receipt.status != 'verified'){
+                <p-button severity="secondary" pTooltip="Click to edit receipt" (click)="openEditReceiptModal(receipt)" [outlined]="true"
+                size="small" icon="pi pi-pencil" rounded />
+                <p-button severity="secondary" pTooltip="Click to delete receipt" [outlined]="true" (click)="confirmDeleteReceipt($event,receipt.id)"
+                size="small" icon="pi pi-trash" rounded />
+              }@else{
+                <p-button severity="secondary" pTooltip="Click to view supporting documents" (click)="null" [outlined]="true"
+                size="small" icon="pi pi-file-check" rounded />
+              }
+              
+              <p-button [outlined]="true" [severity]="getSeverityFromStatus(receipt.status)"
+                pTooltip="{{receipt.status == 'verified'? 'Click to proceed to purchase orders':'Click to submit for inspection'}}"
+                (click)="receipt.status == 'verified'? proceedToPurchaseOrders(receipt): confirmForInspection($event,receipt.id)" size="small" icon="pi pi-arrow-right" rounded />
+            </div>
+            }@else{
+            <div class="flex items-center justify-center gap-2 whitespace-nowrap">
+              <i class="pi  pi-spin pi-spinner-dotted mr-1"></i>
+              <span>Under inspection ...</span>
+            </div>
+            }
+          </td>
+        </tr>
+      </ng-template>
+    </p-table>
+    <div class="card flex justify-between">
+      <p-button [disabled]="activeStep <= 1" outlined size="small" label="Back" icon="pi pi-arrow-left" (click)="backStep()" />
+      <p-button [disabled]="activeStep >= 3" outlined size="small" label="Next" icon="pi pi-arrow-right" (click)="nextStep()" iconPos="right" />
+    </div>
+  </mat-card-content>
+</mat-card>
+
+<p-dialog [(visible)]="showReceiptModal" [modal]="true" [style]="{ width: '30rem' }">
+  <ng-template #header>
+    <div class="py-0 inline-flex items-center justify-center gap-3">
+      <i class="pi pi-receipt text-lg"></i>
+      <span class="font-bold text-lg whitespace-nowrap">{{selectedDeliveryReceipt? 'Edit':'Add'}} Receipt</span>
+    </div>
+  </ng-template>
+  <span class="text-surface-500 dark:text-surface-400 block mb-2">{{selectedDeliveryReceipt? 'Edit':'Add a new'}} receipt.</span>
+  <form [formGroup]="form" (submit)="selectedDeliveryReceipt? editReceipt():addReceipt()">
+    <div class="flex items-center gap-4 mb-2">
+      <label for="delivery_date" class="font-semibold w-32">Delivery Date</label>
+      <p-datepicker
+        fluid
+        [size]="'small'"
+        class="flex-auto !text-xs"
+        showIcon
+        iconDisplay="input"
+        formControlName="delivery_date"
+      ></p-datepicker>
+    </div>
   
+    <div class="flex items-center gap-4 mb-2">
+      <label for="receipt_number" class="font-semibold w-32">Receipt Number</label>
+      <input
+        pSize="small"
+        formControlName="receipt_number"
+        pInputText
+        id="receipt_number"
+        class="flex-auto uppercase placeholder:normal-case"
+        autocomplete="off"
+      />
+    </div>
+  
+    <div class="flex items-center gap-4 mb-2">
+      <label for="supplier_name" class="font-semibold w-32">Supplier Name</label>
+      <input
+        pSize="small"
+        formControlName="supplier_name"
+        pInputText
+        id="supplier_name"
+        class="flex-auto"
+        autocomplete="off"
+      />
+    </div>
+    
+  
+    <div class="flex items-center gap-4 mb-4">
+      <label for="total_amount" class="font-semibold w-32">Total Amount</label>
+      <p-inputnumber
+        size="small"
+        class="flex-1"
+        formControlName="total_amount"
+        inputId="currency-us"
+        mode="currency"
+        currency="PHP"
+        locale="en-PH"
+        fluid
+      ></p-inputnumber>
+    </div>
+
+    <div class="flex items-center gap-4 mb-2">
+      <label for="notes" class="font-semibold w-32">Notes</label>
+      <textarea placeholder="Enter receipt notes (Optional)" formControlName="notes" pSize="small"
+          name="notes" rows="5" cols="25" pTextarea id="notes" class="flex-auto"
+          autocomplete="off"></textarea>
+    </div>
+  
+    <div class="flex items-center justify-center gap-4 mb-2 w-full">
+      <div class="card w-full">
+
+        <p-fileupload
+          fluid
+          #fileUpload
+          name="demo[]"
+          class="w-full"
+          url="/"
+          [multiple]="true"
+          (onSelect)="onSelectedFiles($event)"
+          (onRemove)="onSelectedFiles($event)"
+          accept="image/*"
+          maxFileSize="10000000"
+          mode="advanced"
+        >
+          <ng-template #header let-files let-chooseCallback="chooseCallback" let-clearCallback="clearCallback">
+            <div class="flex gap-3 w-full">
+              <p-button
+                fluid
+                class="flex-1"
+                size="small"
+                (onClick)="chooseCallback()"
+                severity="secondary"
+                icon="pi pi-plus"
+                label="Choose"
+                [outlined]="true"
+              ></p-button>
+              <p-button
+                fluid
+                class="flex-1"
+                size="small"
+                (onClick)="clearCallback()"
+                icon="pi pi-times"
+                label="Clear"
+                [outlined]="true"
+                severity="danger"
+                [disabled]="!files || files.length === 0"
+              ></p-button>
+            </div>
+          </ng-template>
+  
+          <ng-template #content>
+            <div *ngIf="files.length <= 0" class="text-gray-500 flex flex-col gap-6 items-center py-8">
+              <i class="pi pi-cloud-upload !text-3xl "></i>
+              <span>Drag and drop files to here to upload.</span>
+            </div>
+          </ng-template>
+        </p-fileupload>
+      </div>
+    </div>
+  </form>
+  <ng-template #footer>
+    <p-button size="small" label="Cancel" [text]="true" icon="pi pi-times" severity="secondary" (click)="showReceiptModal = false" />
+    <p-button size="small" label="{{selectedDeliveryReceipt? 'Edit':'Add'}}" icon="pi pi-plus" [disabled]="!form.valid" (click)="selectedDeliveryReceipt? editReceipt():addReceipt()" />
+  </ng-template>
+</p-dialog>
+
+<p-toast position="bottom-right" />
+
+<p-confirmpopup />

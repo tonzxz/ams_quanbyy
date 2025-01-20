@@ -92,6 +92,14 @@ export class PurchaseOrderService {
     return joined;
   }
 
+  async generatePurchaseOrder(purchaseOrder:PurchaseOrder){
+     if(this.purchaseOrders.find(p=>p.id == purchaseOrder.id)) return;
+      this.purchaseOrders.push({
+        ...purchaseOrder
+      });
+      localStorage.setItem('purchase_orders', JSON.stringify(this.purchaseOrders));
+  }
+  
   async markAsStocked(id:string){
     const purchaseindex = this.purchaseOrders.findIndex(purchaseOrder => purchaseOrder.id==id);
     this.purchaseOrders[purchaseindex].stocked = true;

@@ -1,11 +1,17 @@
 <mat-card class="cardWithShadow">
     <mat-card-content>
-        <mat-card-title>Assets</mat-card-title>
-        <mat-card-subtitle class="mat-body-1">This is a list of the overall assets in the company</mat-card-subtitle>
+        <mat-card-title>Inventory</mat-card-title>
+        <mat-card-subtitle class="mat-body-1">View and track all assets in this section.</mat-card-subtitle>
         <div class="card">
-            <p-dataview #dv [value]="assets()" [layout]="layout" [rows]="8" [paginator]="true">
+            <p-dataview #dv [value]="filteredAssets()" [layout]="layout" [rows]="8" [paginator]="true">
                 <ng-template #header>
-                    <div class="flex justify-end">
+                    <div class="flex justify-end gap-3">
+                        <p-iconfield fluid class="w-full max-w-72">
+                            <p-inputicon styleClass="pi pi-search" />
+                            <input fluid class="w-full" pSize="small" [(ngModel)]="search"  (input)="filterBySearch()"  type="text"
+                                pInputText placeholder="Search" />
+                            <!-- <p-inputicon styleClass="pi pi-spinner pi-spin" /> -->
+                        </p-iconfield>
                         <p-selectbutton [(ngModel)]="layout" [options]="options" [allowEmpty]="false">
                             <ng-template #item let-item>
                                 <i class="pi "
@@ -115,6 +121,14 @@
                                 </div>
                             </div>
                         </div>
+                    </div>
+                </ng-template>
+                <ng-template #emptymessage>
+                    <div class="flex flex-col w-full items-center justify-center mb-8">
+                        <div class="overflow-hidden h-64 w-64 mr-8 ">
+                            <app-lottie-animation animation="box" class="w-72 h-72"></app-lottie-animation>
+                        </div>
+                        <span class="text-lg">Aww, no assets found.</span>
                     </div>
                 </ng-template>
             </p-dataview>
