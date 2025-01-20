@@ -86,6 +86,11 @@ export const navItems: NavItem[] = [
     iconName: 'solar:widget-add-line-duotone',
     route: '/admin/product-type', 
     requiredRoles: ['admin', 'superadmin'], 
+  }, {
+    displayName: 'Approval Sequence',
+    iconName: 'solar:widget-add-line-duotone',
+    route: '/admin/approval-sequence', 
+    requiredRoles: ['admin', 'superadmin'], 
   },
 
   
