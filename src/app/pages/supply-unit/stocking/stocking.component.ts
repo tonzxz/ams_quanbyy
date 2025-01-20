@@ -230,7 +230,7 @@ export class StockingComponent {
               label: 'Confirm'
           },
           accept: async () => {
-              await this.deliveryReceiptService.markAsStocked(id);
+              await this.deliveryReceiptService.markAsStocked(dr.id);
               this.messageService.add({ severity: 'success', summary: 'Success', detail: `Receipt No. ${dr.receipt_number.toUpperCase()} successfully stocked!` });
               this.fetchItems();
           },
