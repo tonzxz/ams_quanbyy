@@ -1,7 +1,7 @@
 import { Routes } from '@angular/router';
-import { PurchaseOrdersComponent } from './purchase-orders/purchase-orders.component';
 import { UploadDeliveryReceiptComponent } from './upload-delivery-receipt/upload-delivery-receipt.component';
 import { roleGuard } from 'src/app/guards/role.guard';
+import { StockingComponent } from './stocking/stocking.component';
 
 
 export const SupplyUnitRoutes: Routes = [
@@ -10,14 +10,14 @@ export const SupplyUnitRoutes: Routes = [
     children: [
       {
         path: '',
-        redirectTo: '/purchase-orders',
+        redirectTo: '/stocking',
         pathMatch: 'full',
       },
       {
-        path: 'purchase-orders',
-        component: PurchaseOrdersComponent,
+        path: 'stocking',
+        component: StockingComponent,
         canActivate: [roleGuard],
-        data: { roles: ['supply', 'superadmin'], breadcrumb: 'Purchase Orders'  } // specify roles here
+        data: { roles: ['supply', 'superadmin'], breadcrumb: 'Stocking'  } // specify roles here
       },
       {
         path: 'upload-delivery-receipt',

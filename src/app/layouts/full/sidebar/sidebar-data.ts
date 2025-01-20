@@ -32,9 +32,9 @@ export const navItems: NavItem[] = [
     requiredRoles: ['supply','superadmin']
   },
   {
-    displayName: 'Purchase Orders',
+    displayName: 'Stocking',
     iconName: 'solar:inbox-archive-outline',
-    route: '/supply-management/purchase-orders',
+    route: '/supply-management/stocking',
     requiredRoles: ['supply','superadmin']
   },
   {

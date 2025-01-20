@@ -20,7 +20,7 @@
               <ng-template #content let-activateCallback="activateCallback" let-value="value">
                 <button class="bg-transparent border-0 flex items-center gap-2 px-2"
                   (click)="activateCallback();filterByStatus('processing')">
-                  <i [ngClass]="{'text-primary':value == activeStep}" class="pi pi-spinner-dotted mr-1"></i>
+                  <i [ngClass]="{'text-primary':value == activeStep}" class="pi pi-spin pi-spinner-dotted mr-1"></i>
                   <span [ngClass]="{'text-primary':value == activeStep}">Processing</span>
                 </button>
               </ng-template>
@@ -74,14 +74,11 @@
                 size="small" icon="pi pi-pencil" rounded />
                 <p-button severity="secondary" pTooltip="Click to delete receipt" [outlined]="true" (click)="confirmDeleteReceipt($event,receipt.id)"
                 size="small" icon="pi pi-trash" rounded />
-              }@else{
-                <p-button severity="secondary" pTooltip="Click to view supporting documents" (click)="null" [outlined]="true"
-                size="small" icon="pi pi-file-check" rounded />
               }
               
               <p-button [outlined]="true" [severity]="getSeverityFromStatus(receipt.status)"
-                pTooltip="{{receipt.status == 'verified'? 'Click to proceed to purchase orders':'Click to submit for inspection'}}"
-                (click)="receipt.status == 'verified'? proceedToPurchaseOrders(receipt): confirmForInspection($event,receipt.id)" size="small" icon="pi pi-arrow-right" rounded />
+                pTooltip="{{receipt.status == 'verified'? 'Click to proceed to stocking':'Click to submit for inspection'}}"
+                (click)="receipt.status == 'verified'? proceedToStocking(receipt): confirmForInspection($event,receipt.id)" size="small" icon="pi pi-arrow-right" rounded />
             </div>
             }@else{
             <div class="flex items-center justify-center gap-2 whitespace-nowrap">

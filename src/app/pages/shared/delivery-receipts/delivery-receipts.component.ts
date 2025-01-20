@@ -80,7 +80,7 @@ export class DeliveryReceiptsComponent implements OnInit {
     }
     const date = dr.delivery_date.toString().split('T')[0].split('-');
     this.form.patchValue({
-      files:dr.receipt_images,
+      files:dr.receipts,
       receipt_number: dr.receipt_number,
       supplier_name: dr.supplier_name!,
       delivery_date: `${date[1]}/${date[2]}/${date[0]}`,
@@ -110,7 +110,7 @@ export class DeliveryReceiptsComponent implements OnInit {
   async addReceipt(){
     const dr = this.form.value;
     await this.deliveryService.addReceipt({
-      receipt_images:[
+      receipts:[
         'assets/images/products/sample-receipt.png'
       ],
       receipt_number: dr.receipt_number!.toUpperCase(),
@@ -119,6 +119,7 @@ export class DeliveryReceiptsComponent implements OnInit {
       total_amount: dr.total_amount!,
       notes:dr.notes ?? '',
       status:'unverified',
+      stocked:false,
     })
     this.form.reset();
     this.files = [];
@@ -135,7 +136,7 @@ export class DeliveryReceiptsComponent implements OnInit {
     const dr = this.form.value;
     await this.deliveryService.editReceipt({
       id: this.selectedDeliveryReceipt!.id,
-      receipt_images:[
+      receipts:[
         'assets/images/products/sample-receipt.png'
       ],
       receipt_number: dr.receipt_number!.toUpperCase(),
@@ -144,6 +145,7 @@ export class DeliveryReceiptsComponent implements OnInit {
       total_amount: dr.total_amount!,
       notes:dr.notes ?? '',
       status:'unverified',
+      stocked:false
     })
     this.form.reset();
     this.files = [];
@@ -238,17 +240,8 @@ export class DeliveryReceiptsComponent implements OnInit {
   });
   }
 
-  async proceedToPurchaseOrders(dr:DeliveryReceipt){
-    await this.purchaseOrderService.generatePurchaseOrder({
-      id: dr.receipt_number,
-      status: 'Pending',
-      supplierName: dr.supplier_name,
-      totalAmount: dr.total_amount,
-      dateCreated: new Date(),
-      stocked: false,
-      receipts: dr.receipt_images
-    });
-    this.router.navigate(['/supply-management/purchase-orders'])
+  async proceedToStocking(dr:DeliveryReceipt){
+    this.router.navigate(['/supply-management/stocking'])
   }
   
   async fetchItems(){
