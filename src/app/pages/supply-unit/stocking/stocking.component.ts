@@ -156,7 +156,7 @@ export class StockingComponent {
       if (!this.stockForm.valid) return;
       const stockData = this.stockForm.value;
       await this.stockService.addStock({
-        dr_id: this.selectedDeliveryReceipt?.id!,
+        dr_id: this.selectedDeliveryReceipt?.receipt_number!,
         dateAdded: new Date(),
         name: stockData.name!,
         ticker: stockData.ticker!.toUpperCase(),
