@@ -5,6 +5,7 @@ import { UserManagementComponent } from './user-management/user-management.compo
 import { roleGuard } from 'src/app/guards/role.guard';
 import { ProductTypeComponent } from './product-type/product-type.component';
 import { DepartmentComponent } from './department/department.component';
+import { ApprovalSequenceComponent } from './approval-sequence/approval-sequence.component';
 
 export const AdminRoutes: Routes = [
   {
@@ -44,6 +45,12 @@ export const AdminRoutes: Routes = [
         component: ProductTypeComponent,
         canActivate: [roleGuard],
         data: { roles: ['admin', 'superadmin'], breadcrumb: 'Product Type' } 
+        },
+         {
+        path: 'approval-sequence',
+        component: ApprovalSequenceComponent,
+        canActivate: [roleGuard],
+        data: { roles: ['admin', 'superadmin'], breadcrumb: 'Approval Sequence' } 
       },
     ],
   },

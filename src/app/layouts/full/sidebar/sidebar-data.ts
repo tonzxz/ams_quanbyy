@@ -10,6 +10,29 @@ export const navItems: NavItem[] = [
     route: '/dashboard',
   },
   {
+    navCap: 'Inspection',
+    divider: true,
+    requiredRoles:['inspection','superadmin']
+  },
+  {
+    displayName: 'Pending PRs',
+    iconName: 'solar:documents-broken',
+    route: '/inspection/pending-pr/pending',
+    requiredRoles: ['inspection','superadmin']
+  },
+  {
+    displayName: 'Validated PRs',
+    iconName: 'solar:documents-broken',
+    route: '/inspection/validated-pr/validated',
+    requiredRoles: ['inspection','superadmin']
+  },
+  {
+    displayName: 'Rejected',
+    iconName: 'solar:documents-broken',
+    route: '/inspection/rejected-pr/rejected',
+    requiredRoles: ['inspection','superadmin']
+  },
+  {
     navCap: 'Supply Unit',
     divider: true,
     requiredRoles:['supply','superadmin']
@@ -62,6 +85,11 @@ export const navItems: NavItem[] = [
     displayName: 'Product Type',
     iconName: 'solar:widget-add-line-duotone',
     route: '/admin/product-type', 
+    requiredRoles: ['admin', 'superadmin'], 
+  }, {
+    displayName: 'Approval Sequence',
+    iconName: 'solar:widget-add-line-duotone',
+    route: '/admin/approval-sequence', 
     requiredRoles: ['admin', 'superadmin'], 
   },
 

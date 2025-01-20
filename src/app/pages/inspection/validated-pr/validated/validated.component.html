@@ -1,0 +1,98 @@
+<p-card header="Validated Purchase Requests">
+    <div class="flex flex-row justify-between">
+        <p>Review validated purchase requests here.</p>
+        <div class="gap-3 flex flex-row">
+            <p-iconfield>
+                <p-inputicon styleClass="pi pi-search"/>
+                <input type="text" pInputText placeholder="Search" />
+                <!-- <p-inputicon styleClass="pi pi-spinner pi-spin" /> -->
+            </p-iconfield>
+            <div class="card flex justify-center">
+                <p-buttongroup >
+                    <p-button severity="secondary" label="Filter" icon="pi pi-filter" pTooltip="Filter Table by Department"/>
+                    <p-button severity="secondary" label="Refresh" icon="pi pi-refresh" pTooltip="Refresh Table"/>
+                </p-buttongroup>
+            </div>      
+        </div>
+    </div>
+        
+    <p-table class="mt-5" [paginator]="true" [rows]="8" [value]="purchaseRequests" [tableStyle]="{ 'min-width': '50rem' }" selectionMode="single" (onRowSelect)="onRowSelect($event)">
+        <ng-template pTemplate="header">
+            <tr>
+                <th>PR#</th>
+                <th>Requestor</th>
+                <th>Department</th>
+                <th>Item</th>
+                <th>Image</th>
+                <th>Quantity</th>
+                <th>Date</th>
+                <th>Actions</th>
+            </tr>
+        </ng-template>
+        <ng-template pTemplate="body" let-request>
+            <tr pSelectableRow>
+                <td>{{ request.code }}</td>
+                <td>{{ request.name }}</td>
+                <td>{{ request.department }}</td>
+                <td>{{ request.item }}</td>
+                <td>
+                    <img
+                        [src]="'https://primefaces.org/cdn/primeng/images/demo/product/'"
+                        [alt]="request.item"
+                        class="w-24 rounded"
+                    >
+                <td>{{ request.quantity }}</td>
+                <td>{{ request.date }}</td>
+                <td class="">
+                    <button pButton pTooltip="Revalidate" showDelay="600" hideDelay="300" type="button" icon="pi pi-replay" [rounded]="true" size="small" class="mr-2" severity="secondary"></button>
+                </td>
+            </tr>
+        </ng-template>    </p-table>
+
+    <p-dialog header="Purchase Request Details"   [(visible)]="displayModal" [modal]="true" [closable]="true" [style]="{ width: '25rem' }" (onHide)="hideModal()">
+        <div class="flex justify-center mb-5"> 
+            <p-image src="https://primefaces.org/cdn/primeng/images/galleria/galleria11.jpg" [preview]="true" alt="Image" width="250">
+                <ng-template #indicator>
+                    <i class="pi pi-search"></i>    
+                </ng-template>
+                <div class="flex w justify-center items-center">
+                    <img src="https://primefaces.org/cdn/primeng/images/galleria/galleria11.jpg" alt="image" width="300" />
+                </div>
+            </p-image>
+        </div>
+        <div class="flex items-center gap-4 mb-4 text-base">
+            <label class="font-semibold w-24">PR#:</label>
+            <span>PR001</span>
+        </div>
+        <div class="flex flex-row">
+            <div class="flex flex-col">
+                <div class="flex items-center gap-4 mb-2 text-base">
+                    <label class="font-semibold w-24">Requestor:</label>
+                    <span>John Doe</span>
+                </div>
+                <div class="flex items-center gap-4 mb-2 text-base">
+                    <label class="font-semibold w-24">Item:</label>
+                    <span>Laptop</span>
+                </div>
+                
+            </div>
+            <div class="flex flex-col justify-between ml-5">
+                <div class="flex items-center gap-4 mb-2 text-base">
+                    <label class="font-semibold w-24">Department:</label>
+                    <span>IT</span>
+                </div>
+                <div class="flex items-center gap-4 mb-2 text-base">
+                    <label class="font-semibold w-24">Quantity:</label>
+                    <span>1</span>
+                </div>
+            </div>
+        </div>
+        <div class="flex text-base mb-5">
+            <label class="font-semibold w-24">Remarks:</label>
+            <span class="ml-7">Lorem ipsum dolor sit amet, consectetur adipiscing elit.</span>
+        </div>
+        <ng-template #footer>
+            <button pButton pTooltip="Accept Purchase Request" showDelay="600" hideDelay="300" label="Accept" type="button" icon="pi pi-return"  size="small" class="p-button-success mr-2"></button>
+        </ng-template>
+    </p-dialog>
+</p-card>
