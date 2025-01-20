@@ -72,7 +72,7 @@
                                 <p-button pTooltip="Click to view delivery receipt" [outlined]="true"
                                     (click)="viewReceipts(po.deliveryReceipt.receipts)" size="small" label="Receipt"
                                     icon="pi pi-receipt" />
-                                <p-button pTooltip="Click to finalize stocking from receipt"
+                                <p-button [disabled]="po.items.length <=0" pTooltip="Click to finalize stocking from receipt"
                                     (click)="confirmSubmit($event, po.deliveryReceipt)" size="small" label="Submit"
                                     icon="pi pi-arrow-right" />
 
