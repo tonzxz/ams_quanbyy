@@ -196,7 +196,7 @@ export class DeliveryReceiptService {
   async markAsStocked(id:string){
     const drIndex = this.receiptData.findIndex(dr => dr.id==id);
     this.receiptData[drIndex].stocked = true;
-    localStorage.setItem('purchase_orders', JSON.stringify(this.receiptData));
+    localStorage.setItem('deliveryReceipts', JSON.stringify(this.receiptData));
   }
 
   async deleteReceipt(id: string) {
