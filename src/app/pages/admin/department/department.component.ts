@@ -132,50 +132,48 @@ export class DepartmentComponent implements OnInit {
   }
 
   async saveDepartment(): Promise<void> {
-    this.submitted = true;
+  this.submitted = true;
 
-    if (this.departmentForm.invalid) {
-      return;
-    }
+  if (this.departmentForm.invalid) {
+    return;
+  }
 
-    const currentDepartment = this.isEditMode ? 
-      this.departments.find(d => d.id === this.currentDepartmentId) : null;
+  const departmentData = {
+    ...this.departmentForm.value,
+    buildings: [],
+    dateEstablished: new Date()
+  };
 
-    const departmentData = {
-      ...this.departmentForm.value,
-      buildings: currentDepartment?.buildings || [],
-      dateEstablished: currentDepartment?.dateEstablished || new Date()
-    };
-
-    try {
-      if (this.isEditMode && this.currentDepartmentId) {
-        await this.departmentsService.updateDepartment({
-          ...departmentData,
-          id: this.currentDepartmentId
-        });
-        this.messageService.add({
-          severity: 'success',
-          summary: 'Success',
-          detail: 'Department updated successfully!'
-        });
-      } else {
-        await this.departmentsService.addDepartment(departmentData);
-        this.messageService.add({
-          severity: 'success',
-          summary: 'Success',
-          detail: 'Department added successfully!'
-        });
-      }
-      this.departmentDialog = false;
-      this.loadDepartments();
-    } catch (error) {
+  try {
+    if (this.isEditMode && this.currentDepartmentId) {
+      await this.departmentsService.updateDepartment({
+        ...departmentData,
+        id: this.currentDepartmentId,
+      });
       this.messageService.add({
-        severity: 'error',
-        summary: 'Error',
-        detail: 'An error occurred while saving the department.'
+        severity: 'success',
+        summary: 'Success',
+        detail: 'Department updated successfully!'
+      });
+    } else {
+      await this.departmentsService.addDepartment(departmentData);
+      this.messageService.add({
+        severity: 'success',
+        summary: 'Success',
+        detail: 'Department added successfully!'
       });
     }
+    this.departmentDialog = false;
+    await this.loadDepartments();
+    this.departmentForm.reset();
+  } catch (error) {
+    this.messageService.add({
+      severity: 'error',
+      summary: 'Error',
+      detail: 'An error occurred while saving the department.'
+    });
   }
+}
 
   deleteDepartment(department: Department): void {
     this.confirmationService.confirm({
@@ -220,22 +218,14 @@ openNewBuildingDialog(): void {
 
  async saveBuilding(): Promise<void> {
   this.buildingSubmitted = true;
-  if (this.buildingForm.invalid || !this.selectedDepartment?.id) {
-    return;
-  }
-
-  const buildingData = {
-    ...this.buildingForm.value,
-    offices: []  // Initialize empty offices array for new building
-  };
+  if (this.buildingForm.invalid || !this.selectedDepartment?.id) return;
 
   try {
     if (this.currentBuilding?.id) {
-      // Update existing building
       await this.departmentsService.updateBuilding(
         this.selectedDepartment.id,
         {
-          ...buildingData,
+          ...this.buildingForm.value,
           id: this.currentBuilding.id,
           offices: this.currentBuilding.offices || []
         }
@@ -246,10 +236,9 @@ openNewBuildingDialog(): void {
         detail: 'Building updated successfully!'
       });
     } else {
-      // Add new building
       await this.departmentsService.addBuildingToDepartment(
         this.selectedDepartment.id,
-        buildingData
+        this.buildingForm.value
       );
       this.messageService.add({
         severity: 'success',
@@ -258,8 +247,9 @@ openNewBuildingDialog(): void {
       });
     }
     await this.loadDepartments();
-    this.currentBuilding = null;
     this.buildingForm.reset();
+    this.currentBuilding = null;
+    this.showBuildingForm = false;  // This will return to table view
   } catch (error) {
     this.messageService.add({
       severity: 'error',
@@ -325,22 +315,15 @@ openNewBuildingDialog(): void {
 
   async saveOffice(): Promise<void> {
   this.officeSubmitted = true;
-  if (this.officeForm.invalid || !this.selectedDepartment?.id || !this.selectedBuilding?.id) {
-    return;
-  }
-
-  const officeData = {
-    ...this.officeForm.value
-  };
+  if (this.officeForm.invalid || !this.selectedDepartment?.id || !this.selectedBuilding?.id) return;
 
   try {
     if (this.currentOffice?.id) {
-      // Update existing office
       await this.departmentsService.updateOffice(
         this.selectedDepartment.id,
         this.selectedBuilding.id,
         {
-          ...officeData,
+          ...this.officeForm.value,
           id: this.currentOffice.id
         }
       );
@@ -350,11 +333,10 @@ openNewBuildingDialog(): void {
         detail: 'Office updated successfully!'
       });
     } else {
-      // Add new office
       await this.departmentsService.addOfficeToBuilding(
         this.selectedDepartment.id,
         this.selectedBuilding.id,
-        officeData
+        this.officeForm.value
       );
       this.messageService.add({
         severity: 'success',
@@ -363,8 +345,9 @@ openNewBuildingDialog(): void {
       });
     }
     await this.loadDepartments();
-    this.currentOffice = null;
     this.officeForm.reset();
+    this.currentOffice = null;
+    this.showOfficeForm = false;  // This will return to table view
   } catch (error) {
     this.messageService.add({
       severity: 'error',
