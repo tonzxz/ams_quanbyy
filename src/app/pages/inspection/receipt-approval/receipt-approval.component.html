@@ -29,7 +29,9 @@
           </p-stepper>
         </div>
       </div>
-      <p-table [paginator]="true" [rows]="5" [rowsPerPageOptions]="[5, 10, 20]" [value]="filteredReceipts"
+      <p-table 
+        [sortField]="'stocked'"
+        [paginator]="true" [rows]="5" [rowsPerPageOptions]="[5, 10, 20]" [value]="filteredReceipts"
         [tableStyle]="{ 'min-width': '50rem' }">
         <ng-template #header>
           <tr>
@@ -67,7 +69,11 @@
                   (click)="confirmToVerification($event, receipt.id)" size="small" icon="pi pi-arrow-right" rounded />
           
                 }@else{
-                    <i  class="pi pi-verified mr-1 text-2xl text-green-500"></i>
+                    @if(!receipt.stocked){
+                      <i  class="pi pi-verified text-2xl text-green-500"></i>
+                    }@else {
+                      <i  class="pi pi-box text-2xl"></i>
+                    }
                 }
                 
               

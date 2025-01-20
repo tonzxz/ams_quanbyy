@@ -241,7 +241,7 @@ export class DeliveryReceiptsComponent implements OnInit {
     });
   }
 
-  async proceedToStocking(dr:DeliveryReceipt){
+  async proceedToStocking(){
     this.router.navigate(['/supply-management/stocking'])
   }
   

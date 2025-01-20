@@ -41,7 +41,9 @@
         (click)="openReceiptModal()" icon="pi pi-plus" />
 
     </div>
-    <p-table [paginator]="true" [rows]="5" [rowsPerPageOptions]="[5, 10, 20]" [value]="filteredReceipts"
+    <p-table 
+      [sortField]="'stocked'"
+      [paginator]="true" [rows]="5" [rowsPerPageOptions]="[5, 10, 20]" [value]="filteredReceipts"
       [tableStyle]="{ 'min-width': '50rem' }">
       <ng-template #header>
         <tr>
@@ -76,9 +78,14 @@
                 size="small" icon="pi pi-trash" rounded />
               }
               
-              <p-button [outlined]="true" [severity]="getSeverityFromStatus(receipt.status)"
+              @if(!receipt.stocked){
+                <p-button [outlined]="true" [severity]="getSeverityFromStatus(receipt.status)"
                 pTooltip="{{receipt.status == 'verified'? 'Click to proceed to stocking':'Click to submit for inspection'}}"
-                (click)="receipt.status == 'verified'? proceedToStocking(receipt): confirmForInspection($event,receipt.id)" size="small" icon="pi pi-arrow-right" rounded />
+                (click)="receipt.status == 'verified'? proceedToStocking(): confirmForInspection($event,receipt.id)" size="small" icon="pi pi-arrow-right" rounded />
+              }@else{
+                <p-button disabled="true" [outlined]="true" [severity]="'secondary'"
+                 size="small" icon="pi pi-box" rounded />
+              }
             </div>
             }@else{
             <div class="flex items-center justify-center gap-2 whitespace-nowrap">
