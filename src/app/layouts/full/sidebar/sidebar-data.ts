@@ -38,7 +38,7 @@ export const navItems: NavItem[] = [
     requiredRoles: ['supply','superadmin']
   },
   {
-    displayName: 'Stocking',
+    displayName: 'Supply Stocking',
     iconName: 'solar:inbox-archive-outline',
     route: '/supply-management/stocking',
     requiredRoles: ['supply','superadmin']

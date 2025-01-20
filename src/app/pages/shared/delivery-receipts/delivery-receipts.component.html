@@ -1,10 +1,17 @@
 <mat-card class="cardWithShadow">
   <mat-card-content>
     <mat-card-title>Delivery Receipts</mat-card-title>
-    <mat-card-subtitle class="mat-body-1  mb-10">View, track and manage delivery receipts in this
-      section.</mat-card-subtitle>
-    <div class="card flex w-full py-3 px-4">
-      <div class="flex-1 px-6">
+    <mat-card-subtitle class="mat-body-1  mb-10 !flex justify-between items-center">
+      <span> View, track and manage delivery receipts in this section.</span>
+      <p-iconfield fluid class="w-full  max-w-72">
+        <p-inputicon styleClass="pi pi-search" />
+        <input fluid class="w-full" pSize="small" [(ngModel)]="searchValue" (input)="dt.filterGlobal(searchValue,'contains')" type="text"
+            pInputText placeholder="Search" />
+        <!-- <p-inputicon styleClass="pi pi-spinner pi-spin" /> -->
+      </p-iconfield>
+    </mat-card-subtitle>
+    <div class="card flex items-center w-full py-3 px-4 gap-3">
+      <div class="flex-1 px-6 border-dotted rounded-xl border-gray-700/25 border-2">
         <p-stepper [(value)]="activeStep" class="w-full" fluid>
           <p-step-list>
             <p-step pTooltip="Click to show unverified receipts" [value]="1" class="flex flex-row flex-auto gap-2">
@@ -39,11 +46,14 @@
       </div>
       <p-button pTooltip="Click to add new receipt" [outlined]="true" size="small" label="Add Receipt"
         (click)="openReceiptModal()" icon="pi pi-plus" />
-
     </div>
     <p-table 
+      #dt
       [sortField]="'stocked'"
-      [paginator]="true" [rows]="5" [rowsPerPageOptions]="[5, 10, 20]" [value]="filteredReceipts"
+      [paginator]="true" 
+      [rows]="5" 
+      [globalFilterFields]="['receipt_number','supplier_name']"
+      [rowsPerPageOptions]="[5, 10, 20]" [value]="filteredReceipts"
       [tableStyle]="{ 'min-width': '50rem' }">
       <ng-template #header>
         <tr>
