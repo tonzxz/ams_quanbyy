@@ -33,6 +33,12 @@ export const navItems: NavItem[] = [
     requiredRoles: ['inspection','superadmin']
   },
   {
+    displayName: 'Receipt Approval',
+    iconName: 'solar:documents-broken',
+    route: '/inspection/receipt-approval',
+    requiredRoles: ['inspection','superadmin']
+  },
+  {
     navCap: 'Supply Unit',
     divider: true,
     requiredRoles:['supply','superadmin']
