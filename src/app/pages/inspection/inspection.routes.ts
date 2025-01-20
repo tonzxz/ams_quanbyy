@@ -1,8 +1,6 @@
 import { Routes } from '@angular/router';
 
-import { PendingComponent } from './pending-pr/pending/pending.component';
-import { ValidatedComponent } from './validated-pr/validated/validated.component';
-import { RejectedComponent } from './rejected-pr/rejected/rejected.component';
+import { PurchaseRequestComponent } from './purchase-request/purchase-request/purchase-request.component';
 import { ReceiptApprovalComponent } from './receipt-approval/receipt-approval.component';
 
 export const InspectionRoutes: Routes = [
@@ -10,16 +8,10 @@ export const InspectionRoutes: Routes = [
     path: '',
     children: [
       {
-        path: 'pending-pr/pending',
-        component: PendingComponent,
-      },
-      {
-        path: 'validated-pr/validated',
-        component: ValidatedComponent,
-      },
-      {
-        path: 'rejected-pr/rejected',
-        component: RejectedComponent,
+        path: 'purchase-request/purchase-request',
+        component: PurchaseRequestComponent,
+        data: {breadcrumb: 'Purchase Requests'}
+
       },
       {
         path: 'receipt-approval',

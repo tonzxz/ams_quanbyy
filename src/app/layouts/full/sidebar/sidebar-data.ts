@@ -15,21 +15,9 @@ export const navItems: NavItem[] = [
     requiredRoles:['inspection','superadmin']
   },
   {
-    displayName: 'Pending PRs',
+    displayName: 'Purchase Requests',
     iconName: 'solar:documents-broken',
-    route: '/inspection/pending-pr/pending',
-    requiredRoles: ['inspection','superadmin']
-  },
-  {
-    displayName: 'Validated PRs',
-    iconName: 'solar:documents-broken',
-    route: '/inspection/validated-pr/validated',
-    requiredRoles: ['inspection','superadmin']
-  },
-  {
-    displayName: 'Rejected',
-    iconName: 'solar:documents-broken',
-    route: '/inspection/rejected-pr/rejected',
+    route: '/inspection/purchase-request/purchase-request',
     requiredRoles: ['inspection','superadmin']
   },
   {

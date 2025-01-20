@@ -34,6 +34,7 @@ export const routes: Routes = [
           import('./pages/inspection/inspection.routes').then(
             (m) => m.InspectionRoutes
           ),
+          data: { breadcrumb: 'Inspection' }
       },
       {
         path: 'supply-management',

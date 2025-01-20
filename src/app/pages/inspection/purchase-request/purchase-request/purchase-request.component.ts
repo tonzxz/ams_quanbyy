@@ -1,7 +1,11 @@
-import { Component, OnInit } from '@angular/core';
+import { Component } from '@angular/core';
+import { RouterModule } from '@angular/router';
+import { CommonModule } from '@angular/common';
+import { TabsModule  } from 'primeng/tabs';
+import { CardModule } from 'primeng/card';
 import { TableModule, TableRowSelectEvent } from 'primeng/table';
 import { ButtonModule } from 'primeng/button';
-import { CardModule } from 'primeng/card';
+import { TabViewModule } from 'primeng/tabview';
 import { TooltipModule } from 'primeng/tooltip';
 import { IconFieldModule } from 'primeng/iconfield';
 import { InputIconModule } from 'primeng/inputicon';
@@ -19,14 +23,16 @@ interface PurchaseRequest {
   date: string;
 }
 
+
 @Component({
-  selector: 'app-rejected',
+  selector: 'app-purchase-request',
   standalone: true,
-  imports: [ButtonModule, TableModule, CardModule, TooltipModule, IconFieldModule, InputIconModule, InputTextModule, DialogModule, ImageModule, ButtonGroupModule],
-  templateUrl: './rejected.component.html',
-  styleUrls: ['./rejected.component.scss']
+  imports: [TabsModule, RouterModule, CommonModule, CardModule, TabViewModule, TooltipModule, IconFieldModule, InputIconModule, InputTextModule, DialogModule, ImageModule, ButtonGroupModule, TableModule, ButtonModule],
+  templateUrl: './purchase-request.component.html',
+  styleUrl: './purchase-request.component.scss'
 })
-export class RejectedComponent implements OnInit {
+export class PurchaseRequestComponent {
+
   purchaseRequests: PurchaseRequest[] = [
     { code: 'PR001', name: 'John Doe', department: 'IT', item: 'Laptop', quantity: 1, date: '2023-01-01' },
     { code: 'PR002', name: 'Jane Smith', department: 'HR', item: 'Office Chair', quantity: 5, date: '2023-01-02' },
@@ -42,16 +48,17 @@ export class RejectedComponent implements OnInit {
 
   displayModal: boolean = false;
   selectedRequest: PurchaseRequest | null = null;
-
+  
   ngOnInit(): void {}
-
+  
   onRowSelect(event: TableRowSelectEvent): void {
     this.selectedRequest = event.data;
     this.displayModal = true;
   }
-
+  
   hideModal(): void {
     this.displayModal = false;
     this.selectedRequest = null;
   }
 }
+
