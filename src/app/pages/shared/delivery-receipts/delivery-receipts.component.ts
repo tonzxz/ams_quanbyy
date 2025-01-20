@@ -20,11 +20,12 @@ import { TextareaModule } from 'primeng/textarea';
 import { ConfirmPopupModule } from 'primeng/confirmpopup';
 import { Router } from '@angular/router';
 import { PurchaseOrderService } from 'src/app/services/purchase-order.service';
+import { LottieAnimationComponent } from '../../ui-components/lottie-animation/lottie-animation.component';
 @Component({
   selector: 'app-delivery-receipts',
   standalone: true,
   imports: [MaterialModule,CommonModule, StepperModule, TableModule, ButtonModule, ButtonGroupModule, 
-    FileUploadModule,DatePickerModule,InputNumberModule, ToastModule, ReactiveFormsModule, TextareaModule,
+    FileUploadModule,DatePickerModule,InputNumberModule, ToastModule, ReactiveFormsModule, TextareaModule,LottieAnimationComponent,
     FluidModule, TooltipModule, DialogModule, InputTextModule,ConfirmPopupModule],
   providers:[MessageService, ConfirmationService],
   templateUrl: './delivery-receipts.component.html',
