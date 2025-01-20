@@ -7,6 +7,8 @@ import { IconFieldModule } from 'primeng/iconfield';
 import { InputIconModule } from 'primeng/inputicon';
 import { InputTextModule } from 'primeng/inputtext';
 import { DialogModule } from 'primeng/dialog';
+import { ImageModule } from 'primeng/image';
+import { ButtonGroupModule } from 'primeng/buttongroup';
 
 interface PurchaseRequest {
   code: string;
@@ -20,7 +22,7 @@ interface PurchaseRequest {
 @Component({
   selector: 'app-pending',
   standalone: true,
-  imports: [ButtonModule, TableModule, CardModule, TooltipModule, IconFieldModule, InputIconModule, InputTextModule, DialogModule],
+  imports: [ButtonModule, TableModule, CardModule, TooltipModule, IconFieldModule, InputIconModule, InputTextModule, DialogModule, ImageModule, ButtonGroupModule],
   templateUrl: './pending.component.html',
   styleUrls: ['./pending.component.scss']
 })
