@@ -177,6 +177,22 @@ export class DeliveryReceiptService {
     }
   }
 
+  async moveToVerified(id: string) {
+    const receiptIndex = this.receiptData.findIndex(item => item.id == id);
+    if (receiptIndex !== -1) {
+      this.receiptData[receiptIndex].status = 'verified';
+      localStorage.setItem('deliveryReceipts', JSON.stringify(this.receiptData));
+    }
+  }
+
+  async moveToRejected(id: string) {
+    const receiptIndex = this.receiptData.findIndex(item => item.id == id);
+    if (receiptIndex !== -1) {
+      this.receiptData[receiptIndex].status = 'unverified';
+      localStorage.setItem('deliveryReceipts', JSON.stringify(this.receiptData));
+    }
+  }
+
   async markAsStocked(id:string){
     const drIndex = this.receiptData.findIndex(dr => dr.id==id);
     this.receiptData[drIndex].stocked = true;

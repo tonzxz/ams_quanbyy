@@ -237,7 +237,7 @@ export class DeliveryReceiptsComponent implements OnInit {
       reject: () => {
           
       }
-  });
+    });
   }
 
   async proceedToStocking(dr:DeliveryReceipt){
