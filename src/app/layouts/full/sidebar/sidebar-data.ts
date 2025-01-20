@@ -44,6 +44,12 @@ export const navItems: NavItem[] = [
     requiredRoles: ['supply','superadmin']
   },
   {
+    displayName: 'Delivered Items',
+    iconName: 'fluent:check-24-regular',
+    route: '/shared/delivered-items',
+    requiredRoles: ['supply','superadmin']
+  },
+  {
     displayName: 'Disbursement Vouchers',
     iconName: 'solar:ticket-sale-broken',
     route: '/shared/disbursement-vouchers',

@@ -1,0 +1,127 @@
+// services/pdf-generator.service.ts
+import { Injectable } from '@angular/core';
+import jsPDF from 'jspdf';
+import 'jspdf-autotable';
+import { DeliveredItem } from './delivered-items.interface';
+
+@Injectable({
+  providedIn: 'root'
+})
+export class PdfGeneratorService {
+  generateDeliveryReceipt(item: DeliveredItem): Blob {
+    const doc = new jsPDF();
+
+    // Header
+    doc.setFontSize(20);
+    doc.text('DELIVERY RECEIPT', 105, 15, { align: 'center' });
+    
+    // Information
+    doc.setFontSize(12);
+    doc.text(`Receipt No: ${item.id}`, 15, 30);
+    doc.text(`Date: ${new Date(item.dateDelivered).toLocaleDateString()}`, 15, 40);
+    
+    // Supplier Info
+    doc.text('Supplier Information:', 15, 55);
+    doc.text(`Name: ${item.supplierName}`, 25, 65);
+    doc.text(`ID: ${item.supplierId}`, 25, 75);
+    doc.text(`Department: ${item.department}`, 25, 85);
+
+    // Items Table
+    const tableData = item.items.map(i => [
+      i.id,
+      i.name,
+      i.quantity.toString(),
+      i.isDelivered ? 'Delivered' : 'Pending'
+    ]);
+
+    (doc as any).autoTable({
+      startY: 95,
+      head: [['Item ID', 'Item Name', 'Quantity', 'Status']],
+      body: tableData,
+      theme: 'grid',
+      styles: { fontSize: 10 },
+      headStyles: { fillColor: [41, 128, 185], textColor: 255 }
+    });
+
+    // Signatures
+    const finalY = (doc as any).lastAutoTable.finalY + 30;
+    
+    doc.text('Received by:', 15, finalY);
+    doc.line(15, finalY + 25, 85, finalY + 25);
+    doc.text('Signature over Printed Name', 25, finalY + 35);
+    doc.text('Position/Designation:', 25, finalY + 45);
+    doc.text('Date:', 25, finalY + 55);
+
+    doc.text('Delivered by:', 120, finalY);
+    doc.line(120, finalY + 25, 190, finalY + 25);
+    doc.text('Signature over Printed Name', 130, finalY + 35);
+    doc.text('Position/Designation:', 130, finalY + 45);
+    doc.text('Date:', 130, finalY + 55);
+
+    return doc.output('blob');
+  }
+
+  generateInspectionReport(item: DeliveredItem): Blob {
+    const doc = new jsPDF();
+
+    // Header
+    doc.setFontSize(18);
+    doc.text('INSPECTION AND ACCEPTANCE REPORT', 105, 15, { align: 'center' });
+    
+    // Document Info
+    doc.setFontSize(12);
+    doc.text(`IAR No: ${item.id}`, 15, 30);
+    doc.text(`Date: ${new Date().toLocaleDateString()}`, 15, 40);
+
+    // Supplier Info
+    doc.text('Supplier Information:', 15, 55);
+    doc.text(`Name: ${item.supplierName}`, 25, 65);
+    doc.text(`ID: ${item.supplierId}`, 25, 75);
+    doc.text(`Department: ${item.department}`, 25, 85);
+
+    // Items Table
+    const tableData = item.items.map(i => [
+      i.id,
+      i.name,
+      i.quantity.toString(),
+      i.isDelivered ? 'Pass' : 'Pending',
+      '' // Remarks
+    ]);
+
+    (doc as any).autoTable({
+      startY: 95,
+      head: [['Item ID', 'Item Description', 'Quantity', 'Inspection', 'Remarks']],
+      body: tableData,
+      theme: 'grid',
+      styles: { fontSize: 10 },
+      headStyles: { fillColor: [41, 128, 185], textColor: 255 }
+    });
+
+    // Inspection Details
+    const finalY = (doc as any).lastAutoTable.finalY + 30;
+    
+    doc.text('INSPECTION', 15, finalY);
+    doc.text('Date Inspected: _________________', 25, finalY + 10);
+    doc.text('Time Started: ___________________', 25, finalY + 20);
+    doc.text('Time Finished: __________________', 25, finalY + 30);
+
+    // Checkboxes
+    doc.text('Inspection Findings:', 15, finalY + 45);
+    doc.rect(25, finalY + 50, 5, 5); // Checkbox
+    doc.text('Inspected and verified the items as to quantity and specifications', 35, finalY + 54);
+    
+    doc.rect(25, finalY + 60, 5, 5); // Checkbox
+    doc.text('Complete and in good condition', 35, finalY + 64);
+
+    // Signatures
+    doc.text('Inspected by:', 15, finalY + 80);
+    doc.line(15, finalY + 100, 85, finalY + 100);
+    doc.text('Inspector', 35, finalY + 110);
+
+    doc.text('Accepted by:', 120, finalY + 80);
+    doc.line(120, finalY + 100, 190, finalY + 100);
+    doc.text('Property Officer', 140, finalY + 110);
+
+    return doc.output('blob');
+  }
+}
