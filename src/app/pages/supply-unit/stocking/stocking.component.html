@@ -12,14 +12,6 @@
         </div>
         <p-tabs [value]="stockTab">
             <p-tablist>
-                <p-tab [value]="0" (click)="switchStockTab(0)">
-                    <p-overlaybadge badgeSize="small" [value]="countStocked()">
-                        <div class="px-3 flex gap-6">
-                            <i class="pi pi-box"></i>
-                            <span>In Stock</span>
-                        </div>
-                    </p-overlaybadge>
-                </p-tab>
                 <p-tab [value]="1" (click)="switchStockTab(1)">
                     <p-overlaybadge badgeSize="small" [value]="countUnstocked()">
                         <div class="px-3 flex gap-6">
@@ -27,7 +19,14 @@
                             <span>To Stock</span>
                         </div>
                     </p-overlaybadge>
-                    
+                </p-tab>
+                <p-tab [value]="0" (click)="switchStockTab(0)">
+                    <p-overlaybadge badgeSize="small" [value]="countStocked()">
+                        <div class="px-3 flex gap-6">
+                            <i class="pi pi-box"></i>
+                            <span>In Stock</span>
+                        </div>
+                    </p-overlaybadge>
                 </p-tab>
             </p-tablist>
         </p-tabs>
@@ -175,7 +174,7 @@
         </div>
     </ng-template>
     <span class="p-text-secondary block">{{selectedStock ?'Editing' :'Adding new'}} stock from Receipt No. 
-        {{selectedDeliveryReceipt?.id}}.</span>
+        {{selectedDeliveryReceipt?.receipt_number}}.</span>
     <small class="p-text-secondary block mb-6">(Please fill out all form fields)</small>
 
     <form [formGroup]="stockForm" (submit)="selectedStock ? editStock(): addStock()">

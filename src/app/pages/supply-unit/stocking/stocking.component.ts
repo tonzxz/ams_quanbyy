@@ -42,7 +42,7 @@ export class StockingComponent {
     drItems: DeliveryReceiptItems[] = [];  // List of purchase orders with items
     allDRItems: DeliveryReceiptItems[] = [];  // List of purchase orders with items
     searchValue:string='';
-    stockTab:number=0;
+    stockTab:number=1;
     showReceipt:boolean=false;
     selectedReceipts:string[]=[
      'assets/images/products/sample-receipt.png'
@@ -65,7 +65,7 @@ export class StockingComponent {
     async fetchItems(){
       // Fetch the purchase orders with items
       this.allDRItems = await this.deliveryReceiptService.getAllDRItems();
-      this.switchStockTab(0);
+      this.switchStockTab(1);
     }
   
     switchStockTab(tab:number){
@@ -194,7 +194,7 @@ export class StockingComponent {
     async confirmDeleteStock(event: Event,id:string){
       this.confirmationService.confirm({
         target: event.target as EventTarget,
-        message: 'Are you sure you want to delete this stock in this purchase?',
+        message: 'Are you sure you want to delete this stock in this receipt?',
         icon: 'pi pi-exclamation-triangle',
         rejectButtonProps: {
             label: 'Cancel',
@@ -219,7 +219,7 @@ export class StockingComponent {
     confirmSubmit(event: Event, id:string) {
       this.confirmationService.confirm({
           target: event.target as EventTarget,
-          message: 'Are you sure you want to finalize stocks for this purchase?',
+          message: 'Are you sure you want to finalize stocks for this receipt?',
           icon: 'pi  pi-exclamation-triangle',
           rejectButtonProps: {
               label: 'Cancel',
