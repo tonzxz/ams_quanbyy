@@ -55,6 +55,19 @@ export const navItems: NavItem[] = [
     route: '/shared/disbursement-vouchers',
     requiredRoles: ['supply','superadmin']
   },
+
+   {
+    navCap: 'Accounting',
+    divider: true,
+    requiredRoles:['supply', 'admin','superadmin']
+  },
+
+  {
+    displayName: 'Budget',
+    iconName: 'solar:box-broken',
+    route: '/accounting/budget',
+    requiredRoles: ['supply','superadmin'],
+  },
   
 
   

@@ -64,6 +64,12 @@ export const routes: Routes = [
         loadChildren: () =>
           import('./pages/admin/admin.routes').then((m) => m.AdminRoutes), 
       },
+      {
+        path: 'accounting',
+        data: { breadcrumb: 'Accounting' },
+        loadChildren: () =>
+          import('./pages/accounting/accounting.routes').then((m) => m.AccountingRoutes), 
+      },
     ],
     canActivate: [dashboardGuard], 
   },
