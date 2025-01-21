@@ -91,6 +91,18 @@ export const navItems: NavItem[] = [
     requiredRoles: ['supply', 'superadmin'], // Only visible to supply and superadmin roles
   },
 
+    {
+    navCap: 'Accounting',
+    divider: true,
+    requiredRoles: ['admin', 'superadmin'], // Only visible to admin and superadmin roles
+  },
+  {
+    displayName: 'Budget',
+    iconName: 'solar:widget-add-line-duotone',
+    route: '/accounting/budget',
+    requiredRoles: ['admin', 'superadmin'], // Only visible to admin and superadmin roles
+  },
+
   // Admin Section
   {
     navCap: 'Admin',
