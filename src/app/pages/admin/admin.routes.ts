@@ -6,6 +6,7 @@ import { roleGuard } from 'src/app/guards/role.guard';
 import { ProductTypeComponent } from './product-type/product-type.component';
 import { DepartmentComponent } from './department/department.component';
 import { ApprovalSequenceComponent } from './approval-sequence/approval-sequence.component';
+import { PaymentTermsComponent } from './payment-terms/payment-terms.component';
 
 export const AdminRoutes: Routes = [
   {
@@ -51,6 +52,13 @@ export const AdminRoutes: Routes = [
         component: ApprovalSequenceComponent,
         canActivate: [roleGuard],
         data: { roles: ['admin', 'superadmin'], breadcrumb: 'Approval Sequence' } 
+        },
+         
+         {
+        path: 'payment-terms',
+        component: PaymentTermsComponent,
+        canActivate: [roleGuard],
+        data: { roles: ['admin', 'superadmin'], breadcrumb: 'Payment Terms' } 
       },
     ],
   },
