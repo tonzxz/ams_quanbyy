@@ -140,8 +140,6 @@ export class DeliveryReceiptService {
             items:stocks.filter(stock=>stock.dr_id == dr.receipt_number)
           })
         }
-      
-    
         return joined;
   }
   async getAll(): Promise<DeliveryReceipt[]> {
