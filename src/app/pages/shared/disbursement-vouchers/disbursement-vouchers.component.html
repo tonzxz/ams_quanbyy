@@ -81,8 +81,17 @@
               @if(voucher.status != 'processing'){
                  @if(voucher.status == 'recorded'){
                     <i  class="pi pi-verified text-2xl text-green-500"></i>
-                 }@else{
+                 }@else{>
                     <div class="flex gap-3">
+                        <p-button
+                          severity="secondary"
+                          pTooltip="Click to send to accounting"
+                          [outlined]="true"
+                          size="small"
+                          icon="pi pi-receipt"
+                          rounded
+                          (click)="printVoucher(voucher)"
+                        ></p-button>
                         <p-button
                           severity="secondary"
                           pTooltip="Click to send to accounting"

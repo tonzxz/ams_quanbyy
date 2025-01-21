@@ -18,6 +18,7 @@ import { FluidModule } from 'primeng/fluid';
 import { TooltipModule } from 'primeng/tooltip';
 import { DialogModule } from 'primeng/dialog';
 import { ConfirmPopup, ConfirmPopupModule } from 'primeng/confirmpopup';
+import { PdfGeneratorService } from 'src/app/services/pdf-generator.service';
 
 @Component({
   selector: 'app-disbursement-vouchers',
@@ -54,6 +55,7 @@ export class DisbursementVouchersComponent {
       private router:Router,
       private confirmationService:ConfirmationService,
       private messageService:MessageService,
+      private pdfService:PdfGeneratorService,
       private deliveryReceiptService:DeliveryReceiptService,
       private disbursementVoucherService:DisbursementVoucherService){}
   
@@ -126,6 +128,15 @@ export class DisbursementVouchersComponent {
             
         }
       });
+    }
+
+    printVoucher(voucher:DisbursementVoucher){
+      const blob = this.pdfService.generateDisbursementVoucher(voucher);
+      const url = window.URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = `disbursement-voucher-${voucher.voucherNo}.pdf`;
+      link.click();
     }
   
   
