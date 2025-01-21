@@ -1,0 +1,41 @@
+<div class="p-grid p-m-4">
+    <div class="p-col-12">
+      <p-card header="Create Work and Financial Plan (WFP)">
+        <form [formGroup]="planForm" (ngSubmit)="onSubmit()">
+          <div class="p-field">
+            <label for="title">Title</label>
+            <input id="title" pInputText formControlName="title" />
+            @if (planForm.get('title')?.invalid) {
+              <small class="p-error">Title is required.</small>
+            }
+          </div>
+  
+          <div class="p-field">
+            <label for="description">Description</label>
+            <textarea id="description" pTextarea formControlName="description"></textarea>
+            @if (planForm.get('description')?.invalid) {
+              <small class="p-error">Description is required.</small>
+            }
+          </div>
+  
+          <div class="p-field">
+            <label for="estimatedCost">Estimated Cost</label>
+            <input id="estimatedCost" pInputText formControlName="estimatedCost" type="number" />
+            @if (planForm.get('estimatedCost')?.invalid) {
+              <small class="p-error">Valid cost is required.</small>
+            }
+          </div>
+  
+          <div class="p-field">
+            <label for="justification">Justification</label>
+            <textarea id="justification" pTextarea formControlName="justification"></textarea>
+            @if (planForm.get('justification')?.invalid) {
+              <small class="p-error">Justification is required.</small>
+            }
+          </div>
+  
+          <button pButton type="submit" label="Submit Plan" [disabled]="planForm.invalid"></button>
+        </form>
+      </p-card>
+    </div>
+  </div>

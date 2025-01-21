@@ -3,6 +3,7 @@ import { BlankComponent } from './layouts/blank/blank.component';
 import { FullComponent } from './layouts/full/full.component';
 import { authGuard } from './guards/auth.guard';
 import { dashboardGuard } from './guards/dashboard.guard';
+import { enduserRoutes } from './pages/enduser/enduser.routes';
 
 export const routes: Routes = [
   {
@@ -18,7 +19,7 @@ export const routes: Routes = [
         path: 'dashboard',
         loadChildren: () =>
           import('./pages/pages.routes').then((m) => m.PagesRoutes),
-        data: {breadcrumb:'Dashboard'}
+        data: { breadcrumb: 'Dashboard' },
       },
       {
         path: 'ui-components',
@@ -26,7 +27,7 @@ export const routes: Routes = [
           import('./pages/ui-components/ui-components.routes').then(
             (m) => m.UiComponentsRoutes
           ),
-          data: {breadcrumb:'UI Components '}
+        data: { breadcrumb: 'UI Components' },
       },
       {
         path: 'inspection',
@@ -34,7 +35,7 @@ export const routes: Routes = [
           import('./pages/inspection/inspection.routes').then(
             (m) => m.InspectionRoutes
           ),
-          data: { breadcrumb: 'Inspection' }
+        data: { breadcrumb: 'Inspection' },
       },
       {
         path: 'supply-management',
@@ -47,25 +48,29 @@ export const routes: Routes = [
       {
         path: 'shared',
         loadChildren: () =>
-          import('./pages/shared/shared.routes').then(
-            (m) => m.SharedRoutes
-          ),
-          data: {breadcrumb:'Views'}
+          import('./pages/shared/shared.routes').then((m) => m.SharedRoutes),
+        data: { breadcrumb: 'Views' },
       },
       {
         path: 'extra',
         loadChildren: () =>
           import('./pages/extra/extra.routes').then((m) => m.ExtraRoutes),
-        data: {breadcrumb:'Extra'}
+        data: { breadcrumb: 'Extra' },
       },
       {
         path: 'admin',
         data: { breadcrumb: 'Admin' },
         loadChildren: () =>
-          import('./pages/admin/admin.routes').then((m) => m.AdminRoutes), 
+          import('./pages/admin/admin.routes').then((m) => m.AdminRoutes),
+      },
+      {
+        path: 'enduser',
+        data: { breadcrumb: 'End User' },
+        loadChildren: () =>
+          import('./pages/enduser/enduser.routes').then((m) => m.enduserRoutes),
       },
     ],
-    canActivate: [dashboardGuard], 
+    canActivate: [dashboardGuard], // Apply dashboardGuard to all child routes
   },
   {
     path: '',
@@ -77,8 +82,7 @@ export const routes: Routes = [
           import('./pages/authentication/authentication.routes').then(
             (m) => m.AuthenticationRoutes
           ),
-
-          canActivate: [authGuard], 
+        canActivate: [authGuard], // Apply authGuard to authentication routes
       },
     ],
   },
