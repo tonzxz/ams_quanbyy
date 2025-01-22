@@ -24,6 +24,8 @@ import { Stock, StocksService } from 'src/app/services/stocks.service';
 import { BadgeModule } from 'primeng/badge';
 import { OverlayBadgeModule } from 'primeng/overlaybadge'
 import { DeliveryReceipt, DeliveryReceiptItems, DeliveryReceiptService } from 'src/app/services/delivery-receipt.service';
+import { SelectModule } from 'primeng/select';
+import { InventoryLocation, InventoryService } from 'src/app/services/inventory.service';
 
 @Component({
   selector: 'app-stocking',
@@ -31,7 +33,7 @@ import { DeliveryReceipt, DeliveryReceiptItems, DeliveryReceiptService } from 's
   imports: [MaterialModule,TableModule, CommonModule, DividerModule,TabsModule,
     IconFieldModule,InputIconModule,InputTextModule, FluidModule, FormsModule,
     DialogModule,ButtonModule, ButtonGroupModule,ConfirmPopupModule, LottieAnimationComponent, 
-    CarouselModule,InputNumberModule,ReactiveFormsModule,
+    CarouselModule,InputNumberModule,ReactiveFormsModule, SelectModule,
     ToastModule,TooltipModule,TextareaModule,BadgeModule,OverlayBadgeModule
   ],
   providers: [ConfirmationService,MessageService],
@@ -41,6 +43,8 @@ import { DeliveryReceipt, DeliveryReceiptItems, DeliveryReceiptService } from 's
 export class StockingComponent {
     drItems: DeliveryReceiptItems[] = [];  // List of purchase orders with items
     allDRItems: DeliveryReceiptItems[] = [];  // List of purchase orders with items
+    inventories: InventoryLocation[];
+    allInventories:InventoryLocation[];
     searchValue:string='';
     stockTab:number=1;
     showReceipt:boolean=false;
@@ -52,6 +56,7 @@ export class StockingComponent {
       private messageService: MessageService,
       private stockService:StocksService,
       private confirmationService: ConfirmationService, 
+      private inventoryService: InventoryService,
       private deliveryReceiptService: DeliveryReceiptService) {}
   
     ngOnInit() {
@@ -65,6 +70,8 @@ export class StockingComponent {
     async fetchItems(){
       // Fetch the purchase orders with items
       this.allDRItems = await this.deliveryReceiptService.getAllDRItems();
+      this.inventories = await this.inventoryService.getAllLocations();
+      this.allInventories = await this.inventoryService.getAllLocations();
       this.switchStockTab(1);
     }
   
@@ -115,10 +122,11 @@ export class StockingComponent {
   
     showStockModal:boolean = false;
     selectedDeliveryReceipt?:DeliveryReceipt;
-    openAddStockModal(dr:DeliveryReceipt){
+    async openAddStockModal(dr:DeliveryReceipt){
       this.selectedStock = undefined;
       this.stockForm.reset();
       this.selectedDeliveryReceipt = dr;
+      this.inventories = await this.inventoryService.getLocationsOnDepartment(this.selectedDeliveryReceipt.department_id);
       this.showStockModal= true;
     }
   
@@ -130,6 +138,7 @@ export class StockingComponent {
         name: this.selectedStock.name,
         ticker: this.selectedStock.ticker,
         price: this.selectedStock.price,
+        storage: this.allInventories.find(inv=>inv.id == this.selectedStock!.storage_id)??null,
         quantity: this.selectedStock.quantity,
         description: this.selectedStock.description || '' 
       })
@@ -147,6 +156,7 @@ export class StockingComponent {
     stockForm = new FormGroup({
       name: new FormControl('', Validators.required),
       ticker: new FormControl('', Validators.required),
+      storage: new FormControl<InventoryLocation|null>(null, Validators.required),
       price: new FormControl<number|null>(null, [Validators.required, Validators.min(0.001)]),
       quantity: new FormControl<number|null>(null, [Validators.required, Validators.min(1)]),
       description: new FormControl(''),
@@ -159,6 +169,7 @@ export class StockingComponent {
         dr_id: this.selectedDeliveryReceipt?.receipt_number!,
         dateAdded: new Date(),
         name: stockData.name!,
+        storage_id: stockData.storage?.id,
         ticker: stockData.ticker!.toUpperCase(),
         price: Number(stockData.price!),
         quantity: Number(stockData.quantity!),
@@ -179,6 +190,7 @@ export class StockingComponent {
         dr_id: this.selectedStock!.dr_id,
         dateAdded: this.selectedStock!.dateAdded,
         name: stockData.name!,
+        storage_id: stockData.storage?.id,
         ticker: stockData.ticker!.toUpperCase(),
         price: Number(stockData.price!),
         quantity: Number(stockData.quantity!),

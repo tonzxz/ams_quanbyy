@@ -5,6 +5,7 @@ import { z } from 'zod';
 export const stockSchema = z.object({
   id: z.string().length(32, "ID must be exactly 32 characters").optional(), 
   dr_id: z.string().length(10, 'Receipt  ID is required'),  
+  storage_id: z.string().min(1, 'Storage  ID is required').optional(),  
   name: z.string().min(1, "Name is required"), // Ensuring the name is not empty
   ticker: z.string().min(1, "Ticker symbol is required"), // Ticker symbol of the stock (e.g., "AAPL")
   price: z.number().min(0, "Price must be a positive number"), // Positive number for stock price

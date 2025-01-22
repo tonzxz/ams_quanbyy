@@ -1,5 +1,6 @@
 import { Injectable } from '@angular/core';
 import { z } from 'zod';
+import { DepartmentService } from './departments.service';
 
 // InventoryLocation schema
 export const inventoryLocationSchema = z.object({
@@ -33,7 +34,9 @@ export class InventoryService {
   private inventoryList: Inventory[] = [];
   private locations: InventoryLocation[] = [];
 
-  constructor() {
+  constructor(
+    private departmentService: DepartmentService,
+  ) {
     this.loadFromLocalStorage();
     if (!this.inventoryList.length && !this.locations.length) {
       this.loadDummyData();
@@ -155,5 +158,17 @@ export class InventoryService {
   async deleteInventory(id: string): Promise<void> {
     this.inventoryList = this.inventoryList.filter(i => i.id !== id);
     this.saveToLocalStorage();
+  }
+
+  async getLocationsOnDepartment(id?:string): Promise<InventoryLocation[]>{
+    const offices = await this.departmentService.getAllOffices();
+    const officeList = offices.reduce((acc,curr)=> {
+      if(curr.departmentId==id){
+        return [...acc,curr.id!];
+      }else{
+        return acc;
+      }
+    },[] as String[])
+    return this.locations.filter(loc=>officeList.includes(loc.officeId))
   }
 }

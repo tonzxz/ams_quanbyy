@@ -5,6 +5,9 @@ import { Stock, StocksService } from './stocks.service';
 export const deliveryReceiptSchema = z.object({
   id: z.string().length(32, "ID must be exactly 32 characters").optional(),
   receipt_number: z.string().length(10, 'Receipt number is required'),
+  supplier_id: z.string().length(32, "Supplier ID must be exactly 32 characters"),
+  department_id: z.string().length(32, "Supplier ID must be exactly 32 characters").optional(),
+  department_name: z.string().min(1, "Department name is required").optional(),
   supplier_name: z.string().min(1, "Customer name is required"), // Ensuring customer name is not empty
   delivery_date: z.date(), // Date when the delivery was made
   supporting_documents: z.array(z.string()).optional(), // Array of image links as plain strings
@@ -32,92 +35,99 @@ export class DeliveryReceiptService {
       id: '12345678901234567890123456789012',  // 32 characters ID
       receipt_number: 'REC0012345',
       supplier_name: 'John Doe',
+      supplier_id: '23456789012345678901234567890123',  // Example Supplier ID
       delivery_date: new Date('2023-01-15'),
       receipts: [
         'assets/images/products/sample-receipt.png'
-      ], // Just plain string links for images
+      ],
       total_amount: 1051.00,
       notes: 'Customer requested expedited shipping.',
-      status: 'unverified',  // Status: Unverified
-      stocked:false,
+      status: 'unverified',
+      stocked: false,
     },
     {
-      id: '23456789012345678901234567890123',  // 32 characters ID
+      id: '23456789012345678901234567890123',
       receipt_number: 'REC0012346',
       supplier_name: 'Jane Smith',
+      supplier_id: '23456789012345678901234567890123',  // Added Supplier ID for Jane Smith
       delivery_date: new Date('2023-02-20'),
       receipts: [
         'assets/images/products/sample-receipt.png'
-      ], // Just plain string links for images
+      ],
       total_amount: 815.00,
       notes: 'Delivery on the 20th.',
-      status: 'unverified',  // Status: Unverified
-      stocked:false,
+      status: 'unverified',
+      stocked: false,
     },
     {
-      id: '34567890123456789012345678901234',  // 32 characters ID
+      id: '34567890123456789012345678901234',
       receipt_number: 'REC0012347',
       supplier_name: 'Alice Johnson',
+      supplier_id: '34567890123456789012345678901234',  // Example Supplier ID for Alice Johnson
       delivery_date: new Date('2023-03-05'),
       receipts: [
         'assets/images/products/sample-receipt.png'
-      ], // Just plain string links for images
+      ],
       total_amount: 1250.75,
       notes: 'Customer requested special handling.',
-      status: 'unverified',  // Status: Unverified (New Unverified Receipt)
-      stocked:false,
+      status: 'unverified',
+      stocked: false,
     },
     {
-      id: '45678901234567890123456789012345',  // 32 characters ID
+      id: '45678901234567890123456789012345',
       receipt_number: 'REC0012348',
       supplier_name: 'Bob Williams',
+      supplier_id: '45678901234567890123456789012345',  // Example Supplier ID for Bob Williams
       delivery_date: new Date('2023-03-10'),
       receipts: [
         'assets/images/products/sample-receipt.png'
-      ], // Just plain string links for images
+      ],
       total_amount: 980.40,
       notes: 'Delayed due to weather conditions.',
-      status: 'verified',  // Status: Processing (New Processing Receipt)
-      stocked:false,
+      status: 'verified',
+      stocked: false,
     },
     {
-      id: '56789012345678901234567890123456',  // 32 characters ID
+      id: '56789012345678901234567890123456',
       receipt_number: 'REC0012349',
       supplier_name: 'Cathy Brown',
+      supplier_id: '56789012345678901234567890123456',  // Example Supplier ID for Cathy Brown
       delivery_date: new Date('2023-03-12'),
       receipts: [
         'assets/images/products/sample-receipt.png'
-      ], // Just plain string links for images
+      ],
       total_amount: 340.50,
       notes: 'Urgent delivery, needs confirmation.',
-      status: 'verified',  // Status: Processing (New Processing Receipt)
-      stocked:false,
+      status: 'verified',
+      stocked: false,
     },
     {
-      id: '67890123456789012345678901234567',  // 32 characters ID
+      id: '67890123456789012345678901234567',
       receipt_number: 'REC0012350',
       supplier_name: 'David Clark',
+      supplier_id: '67890123456789012345678901234567',  // Example Supplier ID for David Clark
       delivery_date: new Date('2023-03-15'),
       receipts: [
         'assets/images/products/sample-receipt.png'
-      ], // Just plain string links for images
+      ],
       total_amount: 1500.00,
       notes: 'Payment confirmed.',
-      status: 'verified',  // Status: Verified (New Verified Receipt)
-      stocked:true,
+      status: 'verified',
+      stocked: true,
     },
     {
-      id: '78901234567890123456789012345678',  // 32 characters ID
+      id: '78901234567890123456789012345678',
       receipt_number: 'REC0012351',
       supplier_name: 'Emily White',
+      supplier_id: '78901234567890123456789012345678',  // Example Supplier ID for Emily White
       delivery_date: new Date('2023-03-18'),
       receipts: [
         'assets/images/products/sample-receipt.png'
-      ], // Just plain string links for images
+      ],
       total_amount: 920.00,
       notes: 'Verified and completed.',
-      status: 'verified',  // Status: Verified (New Verified Receipt)
-      stocked:true,
+      status: 'verified',
+      stocked: true,
     }
   ];
   
@@ -125,7 +135,7 @@ export class DeliveryReceiptService {
   constructor(private stockService:StocksService) { }
 
 
-  async getAllDRItems(){
+  async getAllDRItems():Promise<DeliveryReceiptItems[]>{
         const stocks = await this.stockService.getAll(); 
         const joined:DeliveryReceiptItems[] = [];
         const local_dr_items = localStorage.getItem('deliveryReceipts');

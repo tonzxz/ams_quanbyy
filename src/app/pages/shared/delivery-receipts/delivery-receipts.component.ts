@@ -23,11 +23,14 @@ import { PurchaseOrderService } from 'src/app/services/purchase-order.service';
 import { LottieAnimationComponent } from '../../ui-components/lottie-animation/lottie-animation.component';
 import {  IconFieldModule } from 'primeng/iconfield';
 import { InputIconModule } from 'primeng/inputicon';
+import { Supplier, SuppliersService } from 'src/app/services/suppliers.service';
+import { SelectModule } from 'primeng/select';
+import { Department, DepartmentService } from 'src/app/services/departments.service';
 @Component({
   selector: 'app-delivery-receipts',
   standalone: true,
   imports: [MaterialModule,CommonModule, StepperModule, TableModule, ButtonModule, ButtonGroupModule, 
-    InputTextModule, InputIconModule,IconFieldModule, FormsModule,
+    InputTextModule, InputIconModule,IconFieldModule, FormsModule, SelectModule,
     FileUploadModule,DatePickerModule,InputNumberModule, ToastModule, ReactiveFormsModule, TextareaModule,LottieAnimationComponent,
     FluidModule, TooltipModule, DialogModule, InputTextModule,ConfirmPopupModule],
   providers:[MessageService, ConfirmationService],
@@ -41,7 +44,8 @@ export class DeliveryReceiptsComponent implements OnInit {
   activeStep:number = 1;
   receipts:DeliveryReceipt[]=[];
   filteredReceipts:DeliveryReceipt[]=[];
-
+  suppliers:Supplier[];
+  departments:Department[];
   searchValue:string='';
 
   showReceiptModal:boolean = false;
@@ -49,7 +53,8 @@ export class DeliveryReceiptsComponent implements OnInit {
   form = new FormGroup({
     delivery_date: new FormControl('', [Validators.required]),
     receipt_number:  new FormControl('',[ Validators.required]),
-    supplier_name:  new FormControl('',[Validators.required]),
+    supplier:  new FormControl<Supplier|null>(null,[Validators.required]),
+    department:  new FormControl<Department|null>(null,[Validators.required]),
     total_amount:  new FormControl<number|null>( null,[Validators.required, Validators.min(0.001)]),
     notes:  new FormControl(''),
     files:  new FormControl<any>(null,[ Validators.required]), // You can later manage file upload logic in the component
@@ -59,7 +64,8 @@ export class DeliveryReceiptsComponent implements OnInit {
     private router:Router,
     private confirmationService:ConfirmationService,
     private messageService:MessageService,
-    private purchaseOrderService:PurchaseOrderService,
+    private departmentService:DepartmentService,
+    private supplierService:SuppliersService,
     private deliveryService:DeliveryReceiptService){}
 
   ngOnInit(): void {
@@ -88,7 +94,8 @@ export class DeliveryReceiptsComponent implements OnInit {
     this.form.patchValue({
       files:dr.receipts,
       receipt_number: dr.receipt_number,
-      supplier_name: dr.supplier_name!,
+      supplier: this.suppliers.find(supplier => supplier.id ==dr.supplier_id),
+      department: this.departments.find(department => department.id ==dr.department_id),
       delivery_date: `${date[1]}/${date[2]}/${date[0]}`,
       total_amount: Number(dr.total_amount!),
       notes:dr.notes ?? '',
@@ -120,7 +127,10 @@ export class DeliveryReceiptsComponent implements OnInit {
         'assets/images/products/sample-receipt.png'
       ],
       receipt_number: dr.receipt_number!.toUpperCase(),
-      supplier_name: dr.supplier_name!,
+      supplier_name: dr.supplier!.contactPerson,
+      supplier_id: dr.supplier!.id!,
+      department_id: dr.department!.id!,
+      department_name: dr.department!.name!,
       delivery_date: new Date(dr.delivery_date!),
       total_amount: dr.total_amount!,
       notes:dr.notes ?? '',
@@ -146,7 +156,10 @@ export class DeliveryReceiptsComponent implements OnInit {
         'assets/images/products/sample-receipt.png'
       ],
       receipt_number: dr.receipt_number!.toUpperCase(),
-      supplier_name: dr.supplier_name!,
+      supplier_name: dr.supplier!.contactPerson,
+      supplier_id: dr.supplier!.id!,
+      department_id: dr.department!.id!,
+      department_name: dr.department!.name!,
       delivery_date: new Date(dr.delivery_date!),
       total_amount: dr.total_amount!,
       notes:dr.notes ?? '',
@@ -252,6 +265,8 @@ export class DeliveryReceiptsComponent implements OnInit {
   
   async fetchItems(){
     this.receipts = await this.deliveryService.getAll();
+    this.suppliers = await this.supplierService.getAll();
+    this.departments = await this.departmentService.getAllDepartments();
     this.filterByStatus('unverified');
   }
 }
