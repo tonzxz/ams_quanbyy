@@ -1,0 +1,173 @@
+<mat-card class="cardWithShadow">
+  <mat-card-content>
+    <p-tabView>
+
+      <!-- TAB 1: CREATE -->
+      <p-tabPanel header="Create Approval">
+        <mat-card-title>Create Approval</mat-card-title>
+        <mat-card-subtitle class="text-sm text-gray-500">
+          Send a request to another user for approval.
+        </mat-card-subtitle>
+
+        <form [formGroup]="approvalForm" class="mt-4 space-y-4 w-full max-w-md">
+          <!-- SELECT USER -->
+          <div>
+            <label class="block mb-1 font-semibold">Select User</label>
+            <p-dropdown
+              formControlName="toUserId"
+              [options]="userDropdownOptions"
+              optionLabel="label"
+              optionValue="value"
+              placeholder="Choose a user"
+              class="w-full"
+            ></p-dropdown>
+            <small class="text-red-500"
+              *ngIf="submitted && approvalForm.get('toUserId')?.errors?.['required']"
+            >
+              User is required.
+            </small>
+          </div>
+
+          <!-- MESSAGE -->
+          <div>
+            <label class="block mb-1 font-semibold">Message</label>
+            <input
+              pInputText
+              formControlName="message"
+              placeholder="Type approval request here"
+              class="w-full"
+            />
+            <small class="text-red-500"
+              *ngIf="submitted && approvalForm.get('message')?.errors?.['required']"
+            >
+              Message is required.
+            </small>
+          </div>
+
+          <!-- SEND -->
+          <div>
+            <button
+              pButton
+              type="button"
+              label="Send"
+              icon="pi pi-send"
+              class="p-button-info"
+              (click)="onSend()"
+            ></button>
+          </div>
+        </form>
+      </p-tabPanel>
+
+      <!-- TAB 2: MY SENT APPROVAL REQUESTS -->
+      <p-tabPanel header="My Sent Requests">
+        <mat-card-title>My Sent Approvals</mat-card-title>
+        <mat-card-subtitle class="text-sm text-gray-500">
+          View requests you've sent to others.
+        </mat-card-subtitle>
+
+        <p-table
+          [value]="mySentApprovals"
+          [rows]="10"
+          [paginator]="true"
+          [rowsPerPageOptions]="[5, 10, 20]"
+          styleClass="p-datatable-sm mt-4"
+        >
+          <ng-template pTemplate="header">
+            <tr>
+              <th>To User</th>
+              <th>Message</th>
+              <th>Status</th>
+              <th>Date Created</th>
+            </tr>
+          </ng-template>
+
+          <ng-template pTemplate="body" let-ap>
+            <tr>
+              <td>{{ getUserFullName(ap.toUserId) }}</td>
+              <td>{{ ap.message }}</td>
+              <td>{{ ap.status }}</td>
+              <td>{{ ap.dateCreated | date:'short' }}</td>
+            </tr>
+          </ng-template>
+
+          <ng-template pTemplate="emptymessage">
+            <tr>
+              <td colspan="4">
+                <div class="flex flex-col w-full items-center justify-center py-8">
+                  <span>No sent approvals found.</span>
+                </div>
+              </td>
+            </tr>
+          </ng-template>
+        </p-table>
+      </p-tabPanel>
+
+      <!-- TAB 3: RECEIVED APPROVAL REQUESTS -->
+      <p-tabPanel header="Received Requests">
+        <mat-card-title>My Received Approvals</mat-card-title>
+        <mat-card-subtitle class="text-sm text-gray-500">
+          Approve or reject requests sent to you.
+        </mat-card-subtitle>
+
+        <p-table
+          [value]="myReceivedApprovals"
+          [rows]="10"
+          [paginator]="true"
+          [rowsPerPageOptions]="[5, 10, 20]"
+          styleClass="p-datatable-sm mt-4"
+        >
+          <ng-template pTemplate="header">
+            <tr>
+              <th>From User</th>
+              <th>Message</th>
+              <th>Status</th>
+              <th>Date Created</th>
+              <th>Actions</th>
+            </tr>
+          </ng-template>
+
+          <ng-template pTemplate="body" let-ap>
+            <tr>
+              <td>{{ getUserFullName(ap.fromUserId) }}</td>
+              <td>{{ ap.message }}</td>
+              <td>{{ ap.status }}</td>
+              <td>{{ ap.dateCreated | date:'short' }}</td>
+              <td>
+                <div *ngIf="ap.status === 'pending'" class="flex gap-2">
+                  <button
+                    pButton
+                    label="Approve"
+                    icon="pi pi-check"
+                    class="p-button-success p-button-sm"
+                    (click)="onApprove(ap.id)"
+                  ></button>
+                  <button
+                    pButton
+                    label="Reject"
+                    icon="pi pi-times"
+                    class="p-button-danger p-button-sm"
+                    (click)="onReject(ap.id)"
+                  ></button>
+                </div>
+                <div *ngIf="ap.status !== 'pending'">
+                  <span class="text-gray-500">({{ ap.status | uppercase }})</span>
+                </div>
+              </td>
+            </tr>
+          </ng-template>
+
+          <ng-template pTemplate="emptymessage">
+            <tr>
+              <td colspan="5">
+                <div class="flex flex-col w-full items-center justify-center py-8">
+                  <span>No approvals found for you.</span>
+                </div>
+              </td>
+            </tr>
+          </ng-template>
+        </p-table>
+      </p-tabPanel>
+
+    </p-tabView>
+  </mat-card-content>
+</mat-card>

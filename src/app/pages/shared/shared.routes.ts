@@ -3,6 +3,7 @@ import { AssetsComponent } from './assets/assets.component';
 import { DisbursementVouchersComponent } from './disbursement-vouchers/disbursement-vouchers.component';
 import { DeliveryReceiptsComponent } from './delivery-receipts/delivery-receipts.component';
 import { DeliveredItemsComponent } from './delivered-items/delivered-items.component';
+import { ApprovalsComponent } from './approvals/approvals.component';
 
 
 export const SharedRoutes: Routes = [
@@ -33,6 +34,11 @@ export const SharedRoutes: Routes = [
         path: 'delivery-receipts',
         component: DeliveryReceiptsComponent,
         data: {breadcrumb:'Delivery Receipts'}
+      },
+       {
+        path: 'approvals',
+        component: ApprovalsComponent,
+        data: {breadcrumb:'Approvals'}
       },
     ],
   },

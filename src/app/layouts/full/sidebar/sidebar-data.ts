@@ -9,6 +9,11 @@ export const navItems: NavItem[] = [
     iconName: 'solar:widget-add-line-duotone',
     route: '/dashboard',
   },
+   {
+    displayName: 'Approvals',
+    iconName: 'solar:widget-add-line-duotone',
+    route: '/shared/approvals',
+  },
 
   // End User Section
   {
