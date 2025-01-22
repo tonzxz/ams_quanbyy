@@ -5,6 +5,8 @@ export interface DeliveryItem {
     quantity: number;
     status: 'pending' | 'delivered' | 'missing';
     isDelivered: boolean;
+    remarks?: string;
+  dateChecked?: Date;
   }
   
   export interface DeliveredItem {
@@ -16,4 +18,8 @@ export interface DeliveryItem {
     documentUrl: string;
     status: 'pending' | 'accepted' | 'rejected';
     items: DeliveryItem[];
+    totalAmount?: number;
+    poNumber?: string;
+    remarks?: string;
+    lastUpdated?: Date;
   }
