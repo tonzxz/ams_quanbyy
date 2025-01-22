@@ -138,6 +138,12 @@ export const navItems: NavItem[] = [
     route: '/admin/supplier-list',
     requiredRoles: ['admin', 'superadmin'], // Only visible to admin and superadmin roles
   },
+   {
+    displayName: 'End-User List',
+    iconName: 'solar:widget-add-line-duotone',
+    route: '/admin/end-user-list',
+    requiredRoles: ['admin', 'superadmin'], // Only visible to admin and superadmin roles
+  },
   {
     displayName: 'Product Type',
     iconName: 'solar:widget-add-line-duotone',

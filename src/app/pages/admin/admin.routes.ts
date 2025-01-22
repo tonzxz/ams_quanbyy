@@ -8,6 +8,7 @@ import { DepartmentComponent } from './department/department.component';
 import { ApprovalSequenceComponent } from './approval-sequence/approval-sequence.component';
 import { PaymentTermsComponent } from './payment-terms/payment-terms.component';
 import { ItemClassificationComponent } from './item-classification/item-classification.component';
+import { EndUserListComponent } from './end-user-list/end-user-list.component';
 
 export const AdminRoutes: Routes = [
   {
@@ -73,7 +74,13 @@ export const AdminRoutes: Routes = [
         path: 'item-classification',
         component: ItemClassificationComponent,
         canActivate: [roleGuard],
-        data: { roles: ['admin', 'superadmin'], breadcrumb: 'item-classification' } 
+        data: { roles: ['admin', 'superadmin'], breadcrumb: 'item-cl  assification' } 
+      },
+                    {
+        path: 'end-user-list',
+        component: EndUserListComponent,
+        canActivate: [roleGuard],
+        data: { roles: ['admin', 'superadmin'], breadcrumb: 'end-user-list' } 
       },
     ],
   },
