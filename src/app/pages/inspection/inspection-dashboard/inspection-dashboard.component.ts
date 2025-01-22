@@ -4,11 +4,12 @@ import { isPlatformBrowser } from '@angular/common';
 import { ChangeDetectorRef, inject, PLATFORM_ID } from '@angular/core';
 import { CardModule } from 'primeng/card';
 import { ButtonModule } from 'primeng/button';
+import { ScrollPanelModule } from 'primeng/scrollpanel';
 
 @Component({
   selector: 'app-inspection-dashboard',
   standalone: true,
-  imports: [ChartModule, CardModule, ButtonModule],
+  imports: [ChartModule, CardModule, ButtonModule, ScrollPanelModule],
   templateUrl: './inspection-dashboard.component.html',
   styleUrls: ['./inspection-dashboard.component.scss']
 })
@@ -81,5 +82,7 @@ export class InspectionDashboardComponent implements OnInit {
         }
       }
     };
+
+    
   }
 }
