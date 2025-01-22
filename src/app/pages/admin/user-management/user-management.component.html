@@ -2,11 +2,10 @@
   <mat-card-content>
     <mat-card-title>User Management</mat-card-title>
     <mat-card-subtitle class="text-sm text-gray-500">
-      View and manage users in this section.
+      View and manage users, account codes, sub accounts, and positions in this section.
     </mat-card-subtitle>
 
     <p-tabView>
-
       <!-- TAB 1: USER MANAGEMENT -->
       <p-tabPanel header="User Management">
         <mat-card-title>User Management</mat-card-title>
@@ -116,9 +115,6 @@
             <tr>
               <td colspan="4">
                 <div class="flex flex-col w-full items-center justify-center py-8">
-                  <div class="overflow-hidden h-52 w-52 mb-4">
-                    <!-- Optional illustration -->
-                  </div>
                   <span>No users found.</span>
                 </div>
               </td>
@@ -146,12 +142,11 @@
           <form [formGroup]="userForm" class="w-full">
             <!-- Full Name -->
             <div class="flex items-center gap-4 mb-4">
-              <label for="fullname" class="font-semibold w-24">Full Name</label>
+              <label class="font-semibold w-24">Full Name</label>
               <div class="flex-auto flex-col flex">
                 <input
                   type="text"
                   pInputText
-                  id="fullname"
                   formControlName="fullname"
                   placeholder="Enter full name"
                   class="w-full"
@@ -169,12 +164,11 @@
 
             <!-- Username -->
             <div class="flex items-center gap-4 mb-4">
-              <label for="username" class="font-semibold w-24">Username</label>
+              <label class="font-semibold w-24">Username</label>
               <div class="flex-auto flex-col flex">
                 <input
                   type="text"
                   pInputText
-                  id="username"
                   formControlName="username"
                   placeholder="Enter username"
                   class="w-full"
@@ -191,12 +185,11 @@
 
             <!-- Password -->
             <div class="flex items-center gap-4 mb-4">
-              <label for="password" class="font-semibold w-24">Password</label>
+              <label class="font-semibold w-24">Password</label>
               <div class="flex-auto flex-col flex">
                 <input
                   type="password"
                   pInputText
-                  id="password"
                   formControlName="password"
                   placeholder="Enter password"
                   class="w-full"
@@ -219,10 +212,9 @@
 
             <!-- Role -->
             <div class="flex items-center gap-4 mb-4">
-              <label for="role" class="font-semibold w-24">Role</label>
+              <label class="font-semibold w-24">Role</label>
               <div class="flex-auto flex-col flex">
                 <p-dropdown
-                  id="role"
                   [options]="roles"
                   formControlName="role"
                   optionLabel="label"
@@ -240,19 +232,19 @@
               </div>
             </div>
 
-            <!-- Position (Only if role == 'end-user') -->
+            <!-- Position Dropdown only if role == 'end-user' -->
             <div class="flex items-center gap-4 mb-4" *ngIf="userForm.get('role')?.value === 'end-user'">
-              <label for="position" class="font-semibold w-24">Position</label>
+              <label class="font-semibold w-24">Position</label>
               <div class="flex-auto flex-col flex">
-                <input
-                  type="text"
-                  pInputText
-                  id="position"
+                <p-dropdown
                   formControlName="position"
-                  placeholder="Enter position"
-                  class="w-full"
-                  required
-                />
+                  [options]="positionDropdownOptions" 
+                  optionLabel="name"
+                  optionValue="name"  
+                  placeholder="Select Position"
+                  [style]="{ width: '100%' }"
+                  appendTo="body"
+                ></p-dropdown>
                 <small
                   class="self-end text-red-500 mt-1"
                   *ngIf="userSubmitted && userForm.get('position')?.errors?.['required']"
@@ -376,6 +368,7 @@
             </tr>
           </ng-template>
 
+          <!-- Empty message -->
           <ng-template pTemplate="emptymessage">
             <tr>
               <td colspan="3">
@@ -402,9 +395,7 @@
           <span class="text-gray-600 block">
             {{ isCodeEditMode ? 'Editing' : 'Adding new' }} account code.
           </span>
-          <small class="text-gray-500 block mb-4">
-            (Please fill out all forms)
-          </small>
+          <small class="text-gray-500 block mb-4">(Please fill out all forms)</small>
 
           <form [formGroup]="codeForm" class="w-full">
             <!-- Code -->
@@ -602,9 +593,7 @@
           <span class="text-gray-600 block">
             {{ isSubEditMode ? 'Editing' : 'Adding new' }} sub account.
           </span>
-          <small class="text-gray-500 block mb-4">
-            (Please fill out all fields)
-          </small>
+          <small class="text-gray-500 block mb-4">(Please fill out all fields)</small>
 
           <form [formGroup]="subForm" class="w-full">
             <!-- Main Account Code -->
@@ -723,9 +712,169 @@
           </ng-template>
         </p-dialog>
       </p-tabPanel>
+
+      <!-- TAB 4: POSITION MANAGEMENT -->
+      <p-tabPanel header="Position Management">
+        <mat-card-title>Position Management</mat-card-title>
+        <mat-card-subtitle class="text-sm text-gray-500">
+          View and manage positions in this section.
+        </mat-card-subtitle>
+
+        <!-- Header: Add Position + Search -->
+        <div class="flex justify-between items-center mt-4">
+          <p-button
+            pTooltip="Add Position"
+            (click)="openNewPositionDialog()"
+            [outlined]="true"
+            size="small"
+            label="Add Position"
+            icon="pi pi-plus"
+          ></p-button>
+
+          <div class="relative w-[300px]">
+            <i
+              class="pi pi-search absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500"
+            ></i>
+            <input
+              pInputText
+              type="text"
+              #positionSearchInput
+              (input)="positionTable.filterGlobal(positionSearchInput.value, 'contains')"
+              placeholder="Search Position"
+              style="text-indent: 1.5rem;"
+              class="w-full border border-gray-300 rounded-md py-2 pl-10 pr-3 text-sm
+                     focus:outline-none focus:ring-2 focus:ring-blue-500 placeholder:ml-6"
+            />
+          </div>
+        </div>
+
+        <!-- Positions Table -->
+        <p-table
+          #positionTable
+          [value]="positions"
+          [rows]="10"
+          [paginator]="true"
+          [globalFilterFields]="['name']"
+          [rowsPerPageOptions]="[5, 10, 20]"
+          [loading]="positionLoading"
+          [showCurrentPageReport]="false"
+          [responsive]="true"
+          [rowHover]="true"
+          [scrollable]="true"
+          scrollHeight="600px"
+          styleClass="p-datatable-sm mt-4"
+          dataKey="id"
+        >
+          <ng-template pTemplate="header">
+            <tr>
+              <th pSortableColumn="name">
+                Position Name
+                <p-sortIcon field="name"></p-sortIcon>
+              </th>
+              <th class="w-[100px]">Actions</th>
+            </tr>
+          </ng-template>
+
+          <ng-template pTemplate="body" let-pos>
+            <tr>
+              <td>{{ pos.name }}</td>
+              <td>
+                <div class="flex gap-2">
+                  <button
+                    pButton
+                    icon="pi pi-pencil"
+                    class="p-button-rounded p-button-primary p-button-sm"
+                    [outlined]="true"
+                    (click)="editPosition(pos)"
+                  ></button>
+                  <button
+                    pButton
+                    icon="pi pi-trash"
+                    class="p-button-rounded p-button-danger p-button-sm"
+                    [outlined]="true"
+                    (click)="deletePosition(pos)"
+                  ></button>
+                </div>
+              </td>
+            </tr>
+          </ng-template>
+
+          <!-- Empty message -->
+          <ng-template pTemplate="emptymessage">
+            <tr>
+              <td colspan="2">
+                <div class="flex flex-col w-full items-center justify-center py-8">
+                  <span>No positions found.</span>
+                </div>
+              </td>
+            </tr>
+          </ng-template>
+        </p-table>
+
+        <!-- Position Dialog -->
+        <p-dialog
+          [(visible)]="positionDialog"
+          [modal]="true"
+          [style]="{ width: '90vw', maxWidth: '450px' }"
+          [header]="isPositionEditMode ? 'Edit Position' : 'Add New Position'"
+          styleClass="p-fluid"
+          [dismissableMask]="true"
+          [draggable]="false"
+          [resizable]="false"
+          [position]="'center'"
+        >
+          <span class="text-gray-600 block">
+            {{ isPositionEditMode ? 'Editing' : 'Adding new' }} position.
+          </span>
+          <small class="text-gray-500 block mb-4">(Please fill out all forms)</small>
+
+          <form [formGroup]="positionForm" class="w-full">
+            <!-- Position Name -->
+            <div class="flex items-center gap-4 mb-4">
+              <label class="font-semibold w-24">Name</label>
+              <div class="flex-auto flex-col flex">
+                <input
+                  type="text"
+                  pInputText
+                  formControlName="name"
+                  placeholder="Enter position name"
+                  class="w-full"
+                  required
+                />
+                <small
+                  class="self-end text-red-500 mt-1"
+                  *ngIf="positionSubmitted && positionForm.get('name')?.errors?.['required']"
+                >
+                  Position name is required.
+                </small>
+              </div>
+            </div>
+          </form>
+
+          <ng-template pTemplate="footer">
+            <div class="flex justify-end gap-2">
+              <button
+                pButton
+                label="Cancel"
+                icon="pi pi-times"
+                class="p-button-text"
+                (click)="hidePositionDialog()"
+                size="small"
+              ></button>
+              <button
+                pButton
+                label="Save"
+                icon="pi pi-check"
+                (click)="savePosition()"
+                size="small"
+              ></button>
+            </div>
+          </ng-template>
+        </p-dialog>
+      </p-tabPanel>
     </p-tabView>
 
-    <!-- ConfirmDialogs & Toast (shared) -->
+    <!-- Shared Confirm Dialog & Toast -->
     <p-confirmDialog
       [style]="{ width: '90vw', maxWidth: '450px' }"
       rejectButtonStyleClass="p-button-text"

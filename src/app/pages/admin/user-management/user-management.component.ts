@@ -11,10 +11,20 @@ import { DropdownModule } from 'primeng/dropdown';
 import { ToastModule } from 'primeng/toast';
 import { BadgeModule } from 'primeng/badge';
 import { TabViewModule } from 'primeng/tabview';
-
-import { UserService, User, AccountCode, SubAccount } from 'src/app/services/user.service';
-import { MaterialModule } from 'src/app/material.module';
 import { ConfirmDialog } from 'primeng/confirmdialog';
+
+import { UserService, User, AccountCode, SubAccount, Position } from 'src/app/services/user.service';
+import { MaterialModule } from 'src/app/material.module';
+
+/** 
+ * Simple local helper to generate a random 32-char hex string.
+ * We use this if a Position from the service lacks an id.
+ */
+function generateLocalId(): string {
+  return Array.from({ length: 32 }, () =>
+    Math.floor(Math.random() * 16).toString(16)
+  ).join('');
+}
 
 interface RoleOption {
   label: string;
@@ -44,47 +54,57 @@ interface RoleOption {
   providers: [ConfirmationService, MessageService]
 })
 export class UserManagementComponent implements OnInit {
-  // ------------------------------------
+  // ------------------------------------------------------
   // 1) USER MANAGEMENT
-  // ------------------------------------
+  // ------------------------------------------------------
   users: User[] = [];
-  userLoading: boolean = true;
-  userDialog: boolean = false;
+  userLoading = true;
+  userDialog = false;
   userForm!: FormGroup;
-  userSubmitted: boolean = false;
-  isUserEditMode: boolean = false;
+  userSubmitted = false;
+  isUserEditMode = false;
   selectedUserId: string | null = null;
 
-  // ------------------------------------
+  // ------------------------------------------------------
   // 2) ACCOUNT CODE MANAGEMENT
-  // ------------------------------------
+  // ------------------------------------------------------
   accountCodes: AccountCode[] = [];
-  codeLoading: boolean = true;
-  codeDialog: boolean = false;
+  codeLoading = true;
+  codeDialog = false;
   codeForm!: FormGroup;
-  codeSubmitted: boolean = false;
-  isCodeEditMode: boolean = false;
+  codeSubmitted = false;
+  isCodeEditMode = false;
   selectedCodeId: string | null = null;
 
-  // ------------------------------------
+  // ------------------------------------------------------
   // 3) SUB ACCOUNT MANAGEMENT
-  // ------------------------------------
+  // ------------------------------------------------------
   subAccounts: SubAccount[] = [];
-  subLoading: boolean = true;
-  subDialog: boolean = false;
+  subLoading = true;
+  subDialog = false;
   subForm!: FormGroup;
-  subSubmitted: boolean = false;
-  isSubEditMode: boolean = false;
+  subSubmitted = false;
+  isSubEditMode = false;
   selectedSubId: string | null = null;
 
-  // ------------------------------------
-  // COMMON
-  // ------------------------------------
+  // ------------------------------------------------------
+  // 4) POSITION MANAGEMENT
+  // ------------------------------------------------------
+  positions: Position[] = [];
+  positionLoading = true;
+  positionDialog = false;
+  positionForm!: FormGroup;
+  positionSubmitted = false;
+  isPositionEditMode = false;
+  selectedPositionId: string | null = null;
+
+  // Role & Position dropdown data
   roles: RoleOption[] = [];
+  positionDropdownOptions: { name: string; value: string }[] = [];
 
   constructor(
     private userService: UserService,
-    private formBuilder: FormBuilder,
+    private fb: FormBuilder,
     private confirmationService: ConfirmationService,
     private messageService: MessageService
   ) {}
@@ -94,50 +114,47 @@ export class UserManagementComponent implements OnInit {
     this.loadUsers();
     this.loadAccountCodes();
     this.loadSubAccounts();
+    this.loadPositions();  // For the Position Management tab & user form
 
     // Initialize forms
     this.initializeUserForm();
     this.initializeCodeForm();
     this.initializeSubForm();
+    this.initializePositionForm();
 
-    // Initialize roles for user management
+    // Initialize role dropdown
     this.initializeRoles();
   }
 
-  // ==========================================================================
-  // USER MANAGEMENT
-  // ==========================================================================
+  // =============================================
+  // USERS
+  // =============================================
   loadUsers() {
     this.userLoading = true;
     this.userService.getAllUsers().subscribe({
-      next: (res) => {
-        this.users = res;
+      next: (userList) => {
+        this.users = userList;
         this.userLoading = false;
       },
       error: (err) => {
         console.error('Error loading users:', err);
         this.userLoading = false;
-        this.messageService.add({
-          severity: 'error',
-          summary: 'Error',
-          detail: 'Failed to load users'
-        });
+        this.messageService.add({ severity: 'error', summary: 'Error', detail: 'Failed to load users' });
       }
     });
   }
 
   initializeUserForm() {
-    // "position" is included, but only required if role == 'end-user'
-    this.userForm = this.formBuilder.group({
+    this.userForm = this.fb.group({
       fullname: ['', Validators.required],
       username: ['', Validators.required],
       password: ['', [Validators.required, Validators.minLength(6)]],
       role: ['', Validators.required],
       profile: ['default-profile-pic-url'],
-      position: ['']
+      position: ['']  // required only if role='end-user'
     });
 
-    // Dynamically require position if role == 'end-user'
+    // If role == 'end-user', require 'position'
     this.userForm.get('role')?.valueChanges.subscribe((selectedRole) => {
       const positionControl = this.userForm.get('position');
       if (selectedRole === 'end-user') {
@@ -166,7 +183,6 @@ export class UserManagementComponent implements OnInit {
     this.selectedUserId = null;
     this.userDialog = true;
 
-    // Re-init user form to clear old data
     this.initializeUserForm();
   }
 
@@ -176,10 +192,7 @@ export class UserManagementComponent implements OnInit {
     this.userSubmitted = false;
     this.userDialog = true;
 
-    // Re-init form (so dynamic validation re-applies)
     this.initializeUserForm();
-
-    // Patch existing data
     this.userForm.patchValue({
       fullname: u.fullname,
       username: u.username,
@@ -188,10 +201,11 @@ export class UserManagementComponent implements OnInit {
       position: u.position || ''
     });
 
-    // Password is optional in edit => only minLength validation
-    this.userForm.get('password')?.clearValidators();
-    this.userForm.get('password')?.addValidators(Validators.minLength(6));
-    this.userForm.get('password')?.updateValueAndValidity();
+    // Password optional in edit => only minLength if typed
+    const passwordCtrl = this.userForm.get('password');
+    passwordCtrl?.clearValidators();
+    passwordCtrl?.addValidators(Validators.minLength(6));
+    passwordCtrl?.updateValueAndValidity();
   }
 
   deleteUser(u: User) {
@@ -204,19 +218,11 @@ export class UserManagementComponent implements OnInit {
           this.userService.deleteUser(u.id).subscribe({
             next: () => {
               this.loadUsers();
-              this.messageService.add({
-                severity: 'success',
-                summary: 'Success',
-                detail: 'User deleted successfully'
-              });
+              this.messageService.add({ severity: 'success', summary: 'Success', detail: 'User deleted successfully' });
             },
             error: (err) => {
               console.error('Error deleting user:', err);
-              this.messageService.add({
-                severity: 'error',
-                summary: 'Error',
-                detail: err.message
-              });
+              this.messageService.add({ severity: 'error', summary: 'Error', detail: err.message });
             }
           });
         }
@@ -232,57 +238,38 @@ export class UserManagementComponent implements OnInit {
 
   saveUser() {
     this.userSubmitted = true;
-
     if (this.userForm.valid) {
-      const userData = this.userForm.value;
-
+      const data = this.userForm.value;
       if (this.isUserEditMode && this.selectedUserId) {
         // Update
-        this.userService.updateUser(this.selectedUserId, userData).subscribe({
+        this.userService.updateUser(this.selectedUserId, data).subscribe({
           next: () => {
             this.loadUsers();
             this.hideUserDialog();
-            this.messageService.add({
-              severity: 'success',
-              summary: 'Success',
-              detail: 'User updated successfully'
-            });
+            this.messageService.add({ severity: 'success', summary: 'Success', detail: 'User updated successfully' });
           },
           error: (err) => {
             console.error('Error updating user:', err);
-            this.messageService.add({
-              severity: 'error',
-              summary: 'Error',
-              detail: err.message
-            });
+            this.messageService.add({ severity: 'error', summary: 'Error', detail: err.message });
           }
         });
       } else {
-        // Create new user
-        this.userService.addUser(userData).subscribe({
+        // Create
+        this.userService.addUser(data).subscribe({
           next: () => {
             this.loadUsers();
             this.hideUserDialog();
-            this.messageService.add({
-              severity: 'success',
-              summary: 'Success',
-              detail: 'User created successfully'
-            });
+            this.messageService.add({ severity: 'success', summary: 'Success', detail: 'User created successfully' });
           },
           error: (err) => {
             console.error('Error creating user:', err);
-            this.messageService.add({
-              severity: 'error',
-              summary: 'Error',
-              detail: err.message
-            });
+            this.messageService.add({ severity: 'error', summary: 'Error', detail: err.message });
           }
         });
       }
     }
   }
 
-  // Decide severity color for role badge
   getRoleSeverity(role: string): 'success' | 'info' | 'warn' | 'danger' | 'secondary' {
     switch (role.toLowerCase()) {
       case 'superadmin':
@@ -302,9 +289,9 @@ export class UserManagementComponent implements OnInit {
     }
   }
 
-  // ==========================================================================
+  // =============================================
   // ACCOUNT CODE MANAGEMENT
-  // ==========================================================================
+  // =============================================
   loadAccountCodes() {
     this.codeLoading = true;
     this.userService.getAllAccountCodes().subscribe({
@@ -325,7 +312,7 @@ export class UserManagementComponent implements OnInit {
   }
 
   initializeCodeForm() {
-    this.codeForm = this.formBuilder.group({
+    this.codeForm = this.fb.group({
       code: ['', Validators.required],
       description: ['', Validators.required]
     });
@@ -334,15 +321,18 @@ export class UserManagementComponent implements OnInit {
   openNewAccountCodeDialog() {
     this.isCodeEditMode = false;
     this.codeSubmitted = false;
-    this.codeDialog = true;
     this.selectedCodeId = null;
+    this.codeDialog = true;
     this.initializeCodeForm();
   }
 
   editAccountCode(ac: AccountCode) {
     this.isCodeEditMode = true;
     this.selectedCodeId = ac.id ?? null;
+    this.codeSubmitted = false;
     this.codeDialog = true;
+
+    this.initializeCodeForm();
     this.codeForm.patchValue({
       code: ac.code,
       description: ac.description
@@ -435,9 +425,9 @@ export class UserManagementComponent implements OnInit {
     }
   }
 
-  // ==========================================================================
+  // =============================================
   // SUB ACCOUNT MANAGEMENT
-  // ==========================================================================
+  // =============================================
   loadSubAccounts() {
     this.subLoading = true;
     this.userService.getAllSubAccounts().subscribe({
@@ -458,7 +448,7 @@ export class UserManagementComponent implements OnInit {
   }
 
   initializeSubForm() {
-    this.subForm = this.formBuilder.group({
+    this.subForm = this.fb.group({
       mainAccountCode: ['', Validators.required],
       subClassification: ['', Validators.required],
       subLevel: ['', Validators.required],
@@ -469,15 +459,18 @@ export class UserManagementComponent implements OnInit {
   openNewSubAccountDialog() {
     this.isSubEditMode = false;
     this.subSubmitted = false;
-    this.subDialog = true;
     this.selectedSubId = null;
+    this.subDialog = true;
     this.initializeSubForm();
   }
 
   editSubAccount(sa: SubAccount) {
     this.isSubEditMode = true;
     this.selectedSubId = sa.id ?? null;
+    this.subSubmitted = false;
     this.subDialog = true;
+
+    this.initializeSubForm();
     this.subForm.patchValue({
       mainAccountCode: sa.mainAccountCode,
       subClassification: sa.subClassification,
@@ -561,6 +554,154 @@ export class UserManagementComponent implements OnInit {
           },
           error: (err) => {
             console.error('Error creating sub account:', err);
+            this.messageService.add({
+              severity: 'error',
+              summary: 'Error',
+              detail: err.message
+            });
+          }
+        });
+      }
+    }
+  }
+
+  // =============================================
+  // POSITION MANAGEMENT
+  // =============================================
+  loadPositions() {
+    this.positionLoading = true;
+    this.userService.getAllPositions().subscribe({
+      next: (posList) => {
+        // If the service might return items missing 'id', fix them here:
+        this.positions = posList.map((p) => ({
+          id: p.id ?? generateLocalId(), // fallback if p.id is undefined
+          name: p.name
+        }));
+        this.positionLoading = false;
+
+        // Build the dropdown for end-user positions
+        this.positionDropdownOptions = this.positions.map((p) => ({
+          name: p.name,
+          value: p.name // store name in userForm
+        }));
+      },
+      error: (err) => {
+        console.error('Error loading positions:', err);
+        this.positionLoading = false;
+        this.messageService.add({
+          severity: 'error',
+          summary: 'Error',
+          detail: 'Failed to load positions'
+        });
+      }
+    });
+  }
+
+  initializePositionForm() {
+    this.positionForm = this.fb.group({
+      name: ['', Validators.required]
+    });
+  }
+
+  openNewPositionDialog() {
+    this.isPositionEditMode = false;
+    this.positionSubmitted = false;
+    this.selectedPositionId = null;
+    this.positionDialog = true;
+    this.initializePositionForm();
+  }
+
+  editPosition(pos: Position) {
+    this.isPositionEditMode = true;
+    this.selectedPositionId = pos.id || null;
+    this.positionSubmitted = false;
+    this.positionDialog = true;
+
+    this.initializePositionForm();
+    this.positionForm.patchValue({
+      name: pos.name
+    });
+  }
+
+  deletePosition(pos: Position) {
+    this.confirmationService.confirm({
+      message: `Are you sure you want to delete position "${pos.name}"?`,
+      header: 'Confirm Delete',
+      icon: 'pi pi-exclamation-triangle',
+      accept: () => {
+        if (pos.id) {
+          this.userService.deletePosition(pos.id).subscribe({
+            next: () => {
+              this.loadPositions();
+              this.messageService.add({
+                severity: 'success',
+                summary: 'Success',
+                detail: 'Position deleted successfully'
+              });
+            },
+            error: (err) => {
+              console.error('Error deleting position:', err);
+              this.positionLoading = false;
+              this.messageService.add({
+                severity: 'error',
+                summary: 'Error',
+                detail: err.message
+              });
+            }
+          });
+        }
+      }
+    });
+  }
+
+  hidePositionDialog() {
+    this.positionDialog = false;
+    this.positionSubmitted = false;
+    this.positionForm.reset();
+  }
+
+  savePosition() {
+    this.positionSubmitted = true;
+    if (this.positionForm.valid) {
+      const positionData = this.positionForm.value; // { name: ... }
+
+      if (this.isPositionEditMode && this.selectedPositionId) {
+        // Update
+        this.userService.updatePosition(this.selectedPositionId, positionData).subscribe({
+          next: () => {
+            this.loadPositions();
+            this.hidePositionDialog();
+            this.messageService.add({
+              severity: 'success',
+              summary: 'Success',
+              detail: 'Position updated successfully'
+            });
+          },
+          error: (err) => {
+            console.error('Error updating position:', err);
+            this.positionLoading = false;
+            this.messageService.add({
+              severity: 'error',
+              summary: 'Error',
+              detail: err.message
+            });
+          }
+        });
+      } else {
+        // Create
+        this.userService.addPosition(positionData).subscribe({
+          next: () => {
+            this.loadPositions();
+            this.hidePositionDialog();
+            this.messageService.add({
+              severity: 'success',
+              summary: 'Success',
+              detail: 'Position created successfully'
+            });
+          },
+          error: (err) => {
+            console.error('Error creating position:', err);
+            this.positionLoading = false;
             this.messageService.add({
               severity: 'error',
               summary: 'Error',

@@ -9,6 +9,12 @@ import { z } from 'zod';
 // Zod Schemas
 // ==============================
 
+// Position schema (if you need to store positions in this service)
+export const positionSchema = z.object({
+  id: z.string().length(32, "ID must be exactly 32 characters").optional(),
+  name: z.string().min(1, "Position name is required"),
+});
+
 // 1) We add a .refine() so that if role is "end-user", position must not be empty.
 export const userSchema = z
   .object({
@@ -19,7 +25,7 @@ export const userSchema = z
     role: z.enum(['superadmin', 'accounting', 'supply', 'bac', 'inspection', 'end-user']),
     profile: z.string().min(1, "Profile is required"),
 
-    // NEW FIELD: position is optional unless role = end-user
+    // position is optional unless role = 'end-user'
     position: z.string().optional(),
 
     // Additional arrays for assigned codes and sub-accounts
@@ -36,7 +42,7 @@ export const userSchema = z
     },
     {
       message: 'Position is required for users with the "end-user" role.',
-      path: ['position'] // path to highlight
+      path: ['position']
     }
   );
 
@@ -57,6 +63,7 @@ export const subAccountSchema = z.object({
 // ==============================
 // Types
 // ==============================
+export type Position = z.infer<typeof positionSchema>;
 export type User = z.infer<typeof userSchema>;
 export type AccountCode = z.infer<typeof accountCodeSchema>;
 export type SubAccount = z.infer<typeof subAccountSchema>;
@@ -65,9 +72,9 @@ export type SubAccount = z.infer<typeof subAccountSchema>;
   providedIn: 'root'
 })
 export class UserService {
-  // ------------------------------
-  // Users
-  // ------------------------------
+  // ------------------------------------------------------------------
+  // 1) Users
+  // ------------------------------------------------------------------
   private users: User[] = [
     {
       id: this.generateId(),
@@ -131,15 +138,34 @@ export class UserService {
       password: 'test123',
       role: 'end-user',
       profile: 'profile-pic-url-6',
-      position: 'Manager', // EXAMPLE: if role is end-user, let's provide a position
+      position: 'Manager', // example
       assignedAccountCodes: [],
       assignedSubAccounts: []
     }
   ];
 
-  // ------------------------------
-  // Account Codes
-  // ------------------------------
+  // ------------------------------------------------------------------
+  // 2) Positions
+  // ------------------------------------------------------------------
+  // Example positions array, so you can CRUD them in your UI
+  private positions: Position[] = [
+    {
+      id: this.generateId(),
+      name: 'Manager'
+    },
+    {
+      id: this.generateId(),
+      name: 'Clerk'
+    },
+    {
+      id: this.generateId(),
+      name: 'Supervisor'
+    }
+  ];
+
+  // ------------------------------------------------------------------
+  // 3) Account Codes
+  // ------------------------------------------------------------------
   private accountCodes: AccountCode[] = [
     {
       id: this.generateId(),
@@ -158,9 +184,9 @@ export class UserService {
     }
   ];
 
-  // ------------------------------
-  // Sub Accounts
-  // ------------------------------
+  // ------------------------------------------------------------------
+  // 4) Sub Accounts
+  // ------------------------------------------------------------------
   private subAccounts: SubAccount[] = [
     {
       id: this.generateId(),
@@ -185,26 +211,31 @@ export class UserService {
     }
   ];
 
-  // ------------------------------
+  // ------------------------------------------------------------------
   // Storage Keys
-  // ------------------------------
+  // ------------------------------------------------------------------
   private readonly USERS_STORAGE_KEY = 'users_data';
   private readonly ACCOUNT_CODES_STORAGE_KEY = 'account_codes_data';
   private readonly SUB_ACCOUNTS_STORAGE_KEY = 'sub_accounts_data';
 
-  // ------------------------------
+  // Add a new storage key for positions:
+  private readonly POSITIONS_STORAGE_KEY = 'positions_data';
+
+  // ------------------------------------------------------------------
   // Current Logged-in User
-  // ------------------------------
+  // ------------------------------------------------------------------
   private user?: User;
 
   constructor(private router: Router) {
+    // Load data from local storage
     this.loadUsers();
     this.loadAccountCodes();
     this.loadSubAccounts();
+    this.loadPositions(); // we also load positions
   }
 
   // =========================================
-  // Helper method to generate a random 32-character ID
+  // Helper: generate random 32-char ID
   // =========================================
   private generateId(): string {
     return Array.from({ length: 32 }, () =>
@@ -213,14 +244,13 @@ export class UserService {
   }
 
   // ==============================
-  // USERS
+  // Users
   // ==============================
   private loadUsers() {
     const storedUsers = localStorage.getItem(this.USERS_STORAGE_KEY);
     if (storedUsers) {
       this.users = JSON.parse(storedUsers);
     } else {
-      // If no stored users, save the initial dummy data
       this.saveUsers();
     }
   }
@@ -235,7 +265,7 @@ export class UserService {
 
   addUser(userData: Omit<User, 'id'>): Observable<User> {
     try {
-      // Username uniqueness
+      // Check uniqueness
       if (this.users.some(u => u.username === userData.username)) {
         return throwError(() => new Error('Username already exists'));
       }
@@ -248,7 +278,7 @@ export class UserService {
         assignedSubAccounts: []
       };
 
-      userSchema.parse(newUser); // Validate with Zod
+      userSchema.parse(newUser);
       this.users.push(newUser);
       this.saveUsers();
 
@@ -265,7 +295,7 @@ export class UserService {
         return throwError(() => new Error('User not found'));
       }
 
-      // Check username uniqueness if it's updated
+      // Check username uniqueness if updated
       if (
         userData.username &&
         userData.username !== this.users[userIndex].username &&
@@ -279,21 +309,20 @@ export class UserService {
         ...existing,
         ...userData,
         id: userId,
-        // Retain assigned codes if not in partial
         assignedAccountCodes: userData.assignedAccountCodes ?? existing.assignedAccountCodes,
         assignedSubAccounts: userData.assignedSubAccounts ?? existing.assignedSubAccounts
       };
 
-      // If password is empty, keep old one
+      // If password is empty, keep old
       if (!userData.password || userData.password.trim() === '') {
         updatedUser.password = existing.password;
       }
 
-      userSchema.parse(updatedUser); // Validate
+      userSchema.parse(updatedUser);
       this.users[userIndex] = updatedUser;
       this.saveUsers();
 
-      // If the updated user is the one currently logged in, update localStorage
+      // If currently logged in user is updated, refresh local storage
       if (this.user?.id === userId) {
         this.user = updatedUser;
         localStorage.setItem('user', JSON.stringify(this.user));
@@ -311,6 +340,7 @@ export class UserService {
       return throwError(() => new Error('User not found'));
     }
 
+    // Prevent deleting logged-in user
     if (this.user?.id === userId) {
       return throwError(() => new Error('Cannot delete currently logged-in user'));
     }
@@ -329,7 +359,7 @@ export class UserService {
   }
 
   async login(username: string, password: string) {
-    // Simulate async call
+    // Simulate an async call
     await new Promise(resolve => setTimeout(resolve, 1000));
 
     const foundUser = this.users.find(u => u.username === username);
@@ -351,7 +381,79 @@ export class UserService {
   }
 
   // ==============================
-  // ACCOUNT CODES
+  // Positions
+  // ==============================
+  private loadPositions() {
+    const stored = localStorage.getItem(this.POSITIONS_STORAGE_KEY);
+    if (stored) {
+      this.positions = JSON.parse(stored);
+    } else {
+      this.savePositions();
+    }
+  }
+
+  private savePositions() {
+    localStorage.setItem(this.POSITIONS_STORAGE_KEY, JSON.stringify(this.positions));
+  }
+
+  getAllPositions(): Observable<Position[]> {
+    return of(this.positions);
+  }
+
+  addPosition(data: Omit<Position, 'id'>): Observable<Position> {
+    try {
+      // If name already exists, you could throw an error, or allow duplicates
+      const newPosition: Position = {
+        ...data,
+        id: this.generateId()
+      };
+
+      positionSchema.parse(newPosition);
+      this.positions.push(newPosition);
+      this.savePositions();
+
+      return of(newPosition);
+    } catch (error) {
+      return throwError(() => error);
+    }
+  }
+
+  updatePosition(positionId: string, data: Partial<Position>): Observable<Position> {
+    try {
+      const posIndex = this.positions.findIndex(p => p.id === positionId);
+      if (posIndex === -1) {
+        return throwError(() => new Error('Position not found'));
+      }
+
+      const updated: Position = {
+        ...this.positions[posIndex],
+        ...data,
+        id: positionId
+      };
+
+      positionSchema.parse(updated);
+      this.positions[posIndex] = updated;
+      this.savePositions();
+
+      return of(updated);
+    } catch (error) {
+      return throwError(() => error);
+    }
+  }
+
+  deletePosition(positionId: string): Observable<boolean> {
+    const posIndex = this.positions.findIndex(p => p.id === positionId);
+    if (posIndex === -1) {
+      return throwError(() => new Error('Position not found'));
+    }
+
+    this.positions.splice(posIndex, 1);
+    this.savePositions();
+    return of(true);
+  }
+
+  // ==============================
+  // Account Codes
   // ==============================
   private loadAccountCodes() {
     const storedCodes = localStorage.getItem(this.ACCOUNT_CODES_STORAGE_KEY);
@@ -443,7 +545,7 @@ export class UserService {
   }
 
   // ==============================
-  // SUB ACCOUNTS
+  // Sub Accounts
   // ==============================
   private loadSubAccounts() {
     const storedSubAccounts = localStorage.getItem(this.SUB_ACCOUNTS_STORAGE_KEY);
