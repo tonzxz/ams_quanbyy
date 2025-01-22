@@ -15,15 +15,18 @@ import { DatePickerModule } from 'primeng/datepicker';
 import { InputNumberModule } from 'primeng/inputnumber';
 import { ConfirmationService, MessageService } from 'primeng/api';
 import { ToastModule } from 'primeng/toast';
-import { FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
+import { FormControl, FormGroup, FormsModule, ReactiveFormsModule, Validators } from '@angular/forms';
 import { TextareaModule } from 'primeng/textarea';
 import { ConfirmPopupModule } from 'primeng/confirmpopup';
 import { Router } from '@angular/router';
-import { PurchaseOrderService } from 'src/app/services/purchase-order.service';
+import { LottieAnimationComponent } from '../../ui-components/lottie-animation/lottie-animation.component';
+import { InputIconModule } from 'primeng/inputicon';
+import { IconFieldModule } from 'primeng/iconfield';
 @Component({
   selector: 'app-receipt-approval',
   standalone: true,
   imports: [MaterialModule,CommonModule, StepperModule, TableModule, ButtonModule, ButtonGroupModule, 
+    LottieAnimationComponent,InputTextModule, InputIconModule,IconFieldModule, FormsModule,
     FileUploadModule,DatePickerModule,InputNumberModule, ToastModule, ReactiveFormsModule, TextareaModule,
     FluidModule, TooltipModule, DialogModule, InputTextModule,ConfirmPopupModule],
   providers:[MessageService, ConfirmationService],
@@ -38,13 +41,11 @@ export class ReceiptApprovalComponent implements OnInit {
   receipts:DeliveryReceipt[]=[];
   filteredReceipts:DeliveryReceipt[]=[];
 
+  searchValue:string='';
+
   showReceiptModal:boolean = false;
 
   form = new FormGroup({
-    delivery_date: new FormControl('', [Validators.required]),
-    receipt_number:  new FormControl('',[ Validators.required]),
-    supplier_name:  new FormControl('',[Validators.required]),
-    total_amount:  new FormControl<number|null>( null,[Validators.required, Validators.min(0.001)]),
     notes:  new FormControl(''),
     files:  new FormControl<any>(null,[ Validators.required]), // You can later manage file upload logic in the component
   });
@@ -53,7 +54,6 @@ export class ReceiptApprovalComponent implements OnInit {
     private router:Router,
     private confirmationService:ConfirmationService,
     private messageService:MessageService,
-    private purchaseOrderService:PurchaseOrderService,
     private deliveryService:DeliveryReceiptService){}
 
   ngOnInit(): void {
@@ -72,19 +72,14 @@ export class ReceiptApprovalComponent implements OnInit {
 
   selectedDeliveryReceipt?:DeliveryReceipt;
 
-  openEditReceiptModal(dr: DeliveryReceipt){
+  openUploadReportsModal(dr: DeliveryReceipt){
     this.form.reset();
     this.files = [];
     if (this.fileUpload) {
       this.fileUpload.clear(); 
     }
-    const date = dr.delivery_date.toString().split('T')[0].split('-');
     this.form.patchValue({
       files:dr.receipts,
-      receipt_number: dr.receipt_number,
-      supplier_name: dr.supplier_name!,
-      delivery_date: `${date[1]}/${date[2]}/${date[0]}`,
-      total_amount: Number(dr.total_amount!),
       notes:dr.notes ?? '',
     })
     this.selectedDeliveryReceipt = dr;
@@ -107,28 +102,15 @@ export class ReceiptApprovalComponent implements OnInit {
     });
   }
 
-  async editReceipt(){
+  async uploadReports(){
     const dr = this.form.value;
-    await this.deliveryService.editReceipt({
-      id: this.selectedDeliveryReceipt!.id,
-      receipts:[
-        'assets/images/products/sample-receipt.png'
-      ],
-      receipt_number: dr.receipt_number!.toUpperCase(),
-      supplier_name: dr.supplier_name!,
-      delivery_date: new Date(dr.delivery_date!),
-      total_amount: dr.total_amount!,
-      notes:dr.notes ?? '',
-      status:'unverified',
-      stocked:false
-    })
     this.form.reset();
     this.files = [];
     if (this.fileUpload) {
       this.fileUpload.clear(); 
     }
     this.showReceiptModal = false;
-    this.messageService.add({ severity: 'success', summary: 'Success', detail: `Successfully edited receipt no. ${dr.receipt_number?.toUpperCase()}` });
+    this.messageService.add({ severity: 'success', summary: 'Success', detail: `Successfully uploaded inspection reports to Receipt No. ${this.selectedDeliveryReceipt?.receipt_number?.toUpperCase()}` });
     await this.fetchItems();
     this.activeStep = 1;
   }
@@ -156,6 +138,58 @@ export class ReceiptApprovalComponent implements OnInit {
         this.filterByStatus('verified');
         break;
     }
+  }
+
+  async confirmToVerification(event: Event,id:string){
+    this.confirmationService.confirm({
+      target: event.target as EventTarget,
+      message: 'Are you sure you want to submit this receipt to verified receipts?',
+      icon: 'pi pi-exclamation-triangle',
+      rejectButtonProps: {
+          label: 'Cancel',
+          severity: 'secondary',
+          outlined: true
+      },
+      acceptButtonProps: {
+          label: 'Confirm'
+      },
+      accept: async () => {
+          await this.deliveryService.moveToVerified(id)
+          this.messageService.add({ severity: 'success', summary: 'Success', detail: `Successfully submitted receipt to verified receipts.` });
+          await this.fetchItems();
+          this.filterByStatus('verified');
+          this.activeStep = 2;
+      },
+      reject: () => {
+          
+      }
+    });
+  }
+
+  async confirmToReject(event: Event,id:string){
+    this.confirmationService.confirm({
+      target: event.target as EventTarget,
+      message: 'Are you sure you want to reject this receipt?',
+      icon: 'pi pi-exclamation-triangle',
+      rejectButtonProps: {
+          label: 'Cancel',
+          severity: 'secondary',
+          outlined: true
+      },
+      acceptButtonProps: {
+          label: 'Confirm'
+      },
+      accept: async () => {
+          await this.deliveryService.moveToRejected(id)
+          this.messageService.add({ severity: 'success', summary: 'Success', detail: `Successfully rejected receipt.` });
+          await this.fetchItems();
+          this.filterByStatus('processing');
+          this.activeStep = 1;
+      },
+      reject: () => {
+          
+      }
+    });
   }
 
   async fetchItems(){

@@ -9,10 +9,43 @@ export const navItems: NavItem[] = [
     iconName: 'solar:widget-add-line-duotone',
     route: '/dashboard',
   },
+
+  // End User Section
+  {
+    navCap: 'End User',
+    divider: true,
+    requiredRoles: ['end-user'], // Only visible to end-user role
+  },
+  {
+    displayName: 'Create Plan',
+    iconName: 'solar:documents-broken',
+    route: '/enduser/create-plan',
+    requiredRoles: ['end-user'], // Only visible to end-user role
+  },
+  {
+    displayName: 'View Plan',
+    iconName: 'solar:documents-broken',
+    route: '/enduser/view-plan',
+    requiredRoles: ['end-user'], // Only visible to end-user role
+  },
+  {
+    displayName: 'Approved Budget',
+    iconName: 'solar:documents-broken',
+    route: '/enduser/approved-budget',
+    requiredRoles: ['end-user'], // Only visible to end-user role
+  },
+  {
+    displayName: 'Plan Tracking',
+    iconName: 'solar:documents-broken',
+    route: '/enduser/plan-tracking',
+    requiredRoles: ['end-user'], // Only visible to end-user role
+  },
+
+  // Inspection Section
   {
     navCap: 'Inspection',
     divider: true,
-    requiredRoles:['inspection','superadmin']
+    requiredRoles: ['inspection', 'superadmin'], // Only visible to inspection and superadmin roles
   },
   {
     displayName: 'Dashboard',
@@ -30,85 +63,112 @@ export const navItems: NavItem[] = [
     displayName: 'Receipt Approval',
     iconName: 'solar:documents-broken',
     route: '/inspection/receipt-approval',
-    requiredRoles: ['inspection','superadmin']
+    requiredRoles: ['inspection', 'superadmin'], // Only visible to inspection and superadmin roles
   },
+
+  // Supply Unit Section
   {
     navCap: 'Supply Unit',
     divider: true,
-    requiredRoles:['supply','superadmin']
+    requiredRoles: ['supply', 'superadmin'], // Only visible to supply and superadmin roles
   },
   {
     displayName: 'Delivery Receipts',
     iconName: 'solar:documents-broken',
     route: '/shared/delivery-receipts',
-    requiredRoles: ['supply','superadmin']
+    requiredRoles: ['supply', 'superadmin'], // Only visible to supply and superadmin roles
   },
   {
-    displayName: 'Stocking',
+    displayName: 'Supply Stocking',
     iconName: 'solar:inbox-archive-outline',
     route: '/supply-management/stocking',
-    requiredRoles: ['supply','superadmin']
+    requiredRoles: ['supply', 'superadmin'], // Only visible to supply and superadmin roles
+  },
+  {
+    displayName: 'Delivered Items',
+    iconName: 'fluent:check-24-regular',
+    route: '/shared/delivered-items',
+    requiredRoles: ['supply', 'superadmin'], // Only visible to supply and superadmin roles
   },
   {
     displayName: 'Disbursement Vouchers',
     iconName: 'solar:ticket-sale-broken',
     route: '/shared/disbursement-vouchers',
-    requiredRoles: ['supply','superadmin']
+    requiredRoles: ['supply', 'superadmin'], // Only visible to supply and superadmin roles
   },
-  
 
-  
+    {
+    navCap: 'Accounting',
+    divider: true,
+    requiredRoles: ['admin', 'superadmin'], // Only visible to admin and superadmin roles
+  },
+  {
+    displayName: 'Budget',
+    iconName: 'solar:widget-add-line-duotone',
+    route: '/accounting/budget',
+    requiredRoles: ['admin', 'superadmin'], // Only visible to admin and superadmin roles
+  },
+
+  // Admin Section
   {
     navCap: 'Admin',
     divider: true,
-    requiredRoles:['admin','superadmin']
+    requiredRoles: ['admin', 'superadmin'], // Only visible to admin and superadmin roles
   },
   {
     displayName: 'User Management',
     iconName: 'solar:widget-add-line-duotone',
-    route: '/admin/user-management', 
-    requiredRoles: ['admin', 'superadmin'], 
+    route: '/admin/user-management',
+    requiredRoles: ['admin', 'superadmin'], // Only visible to admin and superadmin roles
   },
   {
     displayName: 'Department',
     iconName: 'solar:widget-add-line-duotone',
-    route: '/admin/department', 
-    requiredRoles: ['admin', 'superadmin'], 
+    route: '/admin/department',
+    requiredRoles: ['admin', 'superadmin'], // Only visible to admin and superadmin roles
   },
   {
     displayName: 'Supplier List',
     iconName: 'solar:widget-add-line-duotone',
-    route: '/admin/supplier-list', 
-    requiredRoles: ['admin', 'superadmin'], 
+    route: '/admin/supplier-list',
+    requiredRoles: ['admin', 'superadmin'], // Only visible to admin and superadmin roles
   },
   {
     displayName: 'Product Type',
     iconName: 'solar:widget-add-line-duotone',
-    route: '/admin/product-type', 
-    requiredRoles: ['admin', 'superadmin'], 
-  }, {
+    route: '/admin/product-type',
+    requiredRoles: ['admin', 'superadmin'], // Only visible to admin and superadmin roles
+  },
+  {
     displayName: 'Approval Sequence',
     iconName: 'solar:widget-add-line-duotone',
-    route: '/admin/approval-sequence', 
-    requiredRoles: ['admin', 'superadmin'], 
+    route: '/admin/approval-sequence',
+    requiredRoles: ['admin', 'superadmin'], // Only visible to admin and superadmin roles
+  },
+  {
+    displayName: 'Payment Terms',
+    iconName: 'solar:widget-add-line-duotone',
+    route: '/admin/payment-terms',
+    requiredRoles: ['admin', 'superadmin'], // Only visible to admin and superadmin roles
   },
 
-  
+  // Views Section
   {
     navCap: 'Views',
     divider: true,
-    requiredRoles:['supply', 'admin','superadmin']
+    requiredRoles: ['supply', 'admin', 'superadmin'], // Only visible to supply, admin, and superadmin roles
   },
-
   {
     displayName: 'Inventory',
     iconName: 'solar:box-broken',
     route: '/shared/inventory',
-    requiredRoles: ['supply','superadmin'],
+    requiredRoles: ['supply', 'superadmin'], // Only visible to supply and superadmin roles
   },
+
+  // UI Components Section
   {
     navCap: 'Ui Components',
-    divider: true
+    divider: true,
   },
   {
     displayName: 'Badge',
@@ -145,9 +205,11 @@ export const navItems: NavItem[] = [
     iconName: 'solar:tablet-line-duotone',
     route: '/ui-components/tables',
   },
+
+  // Auth Section
   {
     navCap: 'Auth',
-    divider: true
+    divider: true,
   },
   {
     displayName: 'Login',
@@ -159,9 +221,11 @@ export const navItems: NavItem[] = [
     iconName: 'solar:user-plus-rounded-line-duotone',
     route: '/authentication/register',
   },
+
+  // Extra Section
   {
     navCap: 'Extra',
-    divider: true
+    divider: true,
   },
   {
     displayName: 'Icons',

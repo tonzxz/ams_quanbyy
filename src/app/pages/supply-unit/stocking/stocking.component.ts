@@ -156,7 +156,7 @@ export class StockingComponent {
       if (!this.stockForm.valid) return;
       const stockData = this.stockForm.value;
       await this.stockService.addStock({
-        dr_id: this.selectedDeliveryReceipt?.id!,
+        dr_id: this.selectedDeliveryReceipt?.receipt_number!,
         dateAdded: new Date(),
         name: stockData.name!,
         ticker: stockData.ticker!.toUpperCase(),
@@ -216,7 +216,7 @@ export class StockingComponent {
     });
     }
   
-    confirmSubmit(event: Event, id:string) {
+    confirmSubmit(event: Event, dr:DeliveryReceipt) {
       this.confirmationService.confirm({
           target: event.target as EventTarget,
           message: 'Are you sure you want to finalize stocks for this receipt?',
@@ -230,8 +230,8 @@ export class StockingComponent {
               label: 'Confirm'
           },
           accept: async () => {
-              await this.deliveryReceiptService.markAsStocked(id);
-              this.messageService.add({ severity: 'success', summary: 'Success', detail: `Receipt No. ${id.toUpperCase()} successfully stocked!` });
+              await this.deliveryReceiptService.markAsStocked(dr.id!);
+              this.messageService.add({ severity: 'success', summary: 'Success', detail: `Receipt No. ${dr.receipt_number.toUpperCase()} successfully stocked!` });
               this.fetchItems();
           },
           reject: () => {

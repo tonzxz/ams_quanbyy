@@ -1,0 +1,92 @@
+import { Injectable } from '@angular/core';
+import {  DeliveryReceiptItems } from './delivery-receipt.service';
+import { z } from 'zod';
+
+
+// Define the schema for a single disbursement voucher item
+export const disbursementVoucherItemSchema = z.object({
+  itemDescription: z.string().min(1),  // Item description (e.g., "Apple Inc.")
+  quantity: z.number().min(1),  // Quantity of the item (e.g., 50)
+  unitPrice: z.number().min(0),  // Unit price (e.g., 145.30)
+  totalPrice: z.number().min(0),  // Total price (quantity * unitPrice)
+});
+
+// Define the disbursement voucher schema
+export const disbursementVoucherSchema = z.object({
+  voucherNo: z.string().min(1),  // Unique voucher number (e.g., "DV-2025-123456")
+  date: z.date(),  // Date the voucher was created
+  deliveryReceiptNo: z.string().min(1),  // Delivery receipt number (e.g., "REC0012351")
+  supplierName: z.string().min(1),  // Name of the supplier (e.g., "Emily White")
+  paymentMethod: z.string().min(1),  // Payment method (e.g., "Bank Transfer")
+  totalAmountDue: z.number().min(0),  // Total amount due (e.g., 20652.50)
+  notes: z.string().optional(),  // Optional notes (e.g., "Verified and completed.")
+  status: z.enum(['pending', 'processing', 'recorded']),  // Status of the voucher
+});
+
+export type DisbursementVoucher = z.infer<typeof disbursementVoucherSchema> & {
+  itemizedDetails: z.infer<typeof disbursementVoucherItemSchema>[];
+};
+
+@Injectable({
+  providedIn: 'root'
+})
+export class DisbursementVoucherService {
+
+  disbursementVouchers:DisbursementVoucher[] = [ ];
+
+  constructor() { }
+
+  /**
+   * Generate a disbursement voucher based on the delivery receipt and items.
+   * @param receipt The delivery receipt object
+   * @param items List of items associated with the receipt
+   * @returns The disbursement voucher
+   */
+  async generateDisbursementVouchers(receiptsWithItems: DeliveryReceiptItems[]):Promise<DisbursementVoucher[]> {
+    const local_disbursementVoucher = localStorage.getItem('disbursementVouchers');
+    if (local_disbursementVoucher) {
+      this.disbursementVouchers = JSON.parse(local_disbursementVoucher) as DisbursementVoucher[];
+    }
+      for(let receipt of receiptsWithItems){
+        // Check if items belong to the given receipt ID
+        if(!receipt.deliveryReceipt.stocked) continue;
+        const itemsForReceipt = receipt.items;
+
+          // Calculate the total amount based on items
+        const itemizedDetails = itemsForReceipt.map(item => ({
+          itemDescription: item.name,
+          quantity: item.quantity,
+          unitPrice: item.price,
+          totalPrice: item.quantity * item.price
+        }));
+    
+        const totalAmountDue = itemizedDetails.reduce((total, item) => total + item.totalPrice, 0);
+
+        // Automatically generate a unique voucher number based on the current timestamp
+        const voucherNo = `DV-${new Date().getFullYear()}-${Math.floor(Math.random() * 1000000)}`;
+        const exists = this.disbursementVouchers.find(voucher=>voucher.deliveryReceiptNo == receipt.deliveryReceipt.receipt_number)
+        if(!exists){
+          this.disbursementVouchers.push( {
+            voucherNo: voucherNo, // Auto-generated voucher number
+            date: new Date(),
+            deliveryReceiptNo: receipt.deliveryReceipt.receipt_number,
+            supplierName: receipt.deliveryReceipt.supplier_name,
+            paymentMethod: 'Bank Transfer',  // Example payment method, can be dynamic
+            totalAmountDue: totalAmountDue,
+            itemizedDetails: itemizedDetails,
+            notes: receipt.deliveryReceipt.notes,
+            status: 'pending',
+          }
+        );
+        }
+      }
+
+      return this.disbursementVouchers;
+  }
+
+ async sendToAccounting(voucherNo:string){
+    const dvIndex = this.disbursementVouchers.findIndex(v => v.voucherNo == voucherNo);
+    this.disbursementVouchers[dvIndex].status = 'processing';
+    localStorage.setItem('disbursementVouchers', JSON.stringify(this.disbursementVouchers));
+  }
+}

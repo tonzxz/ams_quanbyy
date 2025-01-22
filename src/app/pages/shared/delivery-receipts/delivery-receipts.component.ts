@@ -15,16 +15,20 @@ import { DatePickerModule } from 'primeng/datepicker';
 import { InputNumberModule } from 'primeng/inputnumber';
 import { ConfirmationService, MessageService } from 'primeng/api';
 import { ToastModule } from 'primeng/toast';
-import { FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
+import { FormControl, FormGroup, FormsModule, ReactiveFormsModule, Validators } from '@angular/forms';
 import { TextareaModule } from 'primeng/textarea';
 import { ConfirmPopupModule } from 'primeng/confirmpopup';
 import { Router } from '@angular/router';
 import { PurchaseOrderService } from 'src/app/services/purchase-order.service';
+import { LottieAnimationComponent } from '../../ui-components/lottie-animation/lottie-animation.component';
+import {  IconFieldModule } from 'primeng/iconfield';
+import { InputIconModule } from 'primeng/inputicon';
 @Component({
   selector: 'app-delivery-receipts',
   standalone: true,
   imports: [MaterialModule,CommonModule, StepperModule, TableModule, ButtonModule, ButtonGroupModule, 
-    FileUploadModule,DatePickerModule,InputNumberModule, ToastModule, ReactiveFormsModule, TextareaModule,
+    InputTextModule, InputIconModule,IconFieldModule, FormsModule,
+    FileUploadModule,DatePickerModule,InputNumberModule, ToastModule, ReactiveFormsModule, TextareaModule,LottieAnimationComponent,
     FluidModule, TooltipModule, DialogModule, InputTextModule,ConfirmPopupModule],
   providers:[MessageService, ConfirmationService],
   templateUrl: './delivery-receipts.component.html',
@@ -37,6 +41,8 @@ export class DeliveryReceiptsComponent implements OnInit {
   activeStep:number = 1;
   receipts:DeliveryReceipt[]=[];
   filteredReceipts:DeliveryReceipt[]=[];
+
+  searchValue:string='';
 
   showReceiptModal:boolean = false;
 
@@ -237,10 +243,10 @@ export class DeliveryReceiptsComponent implements OnInit {
       reject: () => {
           
       }
-  });
+    });
   }
 
-  async proceedToStocking(dr:DeliveryReceipt){
+  async proceedToStocking(){
     this.router.navigate(['/supply-management/stocking'])
   }
   

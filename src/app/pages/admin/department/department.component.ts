@@ -1,406 +1,331 @@
 import { Component, OnInit } from '@angular/core';
-import { DepartmentsService, Department, Building, Office } from 'src/app/services/departments.service';
 import { FormBuilder, FormGroup, Validators, FormsModule, ReactiveFormsModule } from '@angular/forms';
-import { MessageService } from 'primeng/api';
+import { CommonModule } from '@angular/common';
+import { MaterialModule } from 'src/app/material.module';
 import { TableModule } from 'primeng/table';
 import { ButtonModule } from 'primeng/button';
 import { InputTextModule } from 'primeng/inputtext';
 import { DialogModule } from 'primeng/dialog';
-import { CommonModule } from '@angular/common';
-import { MaterialModule } from 'src/app/material.module';
 import { ConfirmDialogModule } from 'primeng/confirmdialog';
-import { ConfirmationService } from 'primeng/api';
+import { TabViewModule } from 'primeng/tabview';
+import { DropdownModule } from 'primeng/dropdown';
+import { ToastModule } from 'primeng/toast';
+import { MessageService, ConfirmationService } from 'primeng/api';
+import { DepartmentService, Department, Building, Office } from 'src/app/services/departments.service';
 
 @Component({
   selector: 'app-department',
   standalone: true,
   imports: [
+    CommonModule,
+    FormsModule,
+    ReactiveFormsModule,
     MaterialModule,
     TableModule,
     ButtonModule,
     InputTextModule,
     DialogModule,
-    FormsModule,
-    ReactiveFormsModule,
-    CommonModule,
-    ConfirmDialogModule
+    ConfirmDialogModule,
+    TabViewModule,
+    DropdownModule,
+    ToastModule,
   ],
   providers: [MessageService, ConfirmationService],
   templateUrl: './department.component.html',
-  styleUrls: ['./department.component.scss']
+  styleUrls: ['./department.component.scss'],
 })
-
 export class DepartmentComponent implements OnInit {
-  // Department Management
   departments: Department[] = [];
+  buildings: Building[] = [];
+  offices: Office[] = [];
+  filteredBuildings: Building[] = [];
+
   departmentForm!: FormGroup;
-  departmentDialog = false;
-  isEditMode = false;
-  currentDepartmentId: string | null = null;
-  submitted = false;
-  loading = false;
-
-  // Building Management
-  buildingDialog = false;
   buildingForm!: FormGroup;
-  selectedDepartment: Department | null = null;
-  currentBuilding: Building | null = null;
-  buildingSubmitted = false;
-
-  // Office Management
-  officeDialog = false;
   officeForm!: FormGroup;
-  selectedBuilding: Building | null = null;
-  currentOffice: Office | null = null;
+
+  departmentDialog = false;
+  buildingDialog = false;
+  officeDialog = false;
+
+  departmentSubmitted = false;
+  buildingSubmitted = false;
   officeSubmitted = false;
 
-  showBuildingForm: boolean = false;
-  showOfficeForm: boolean = false;
+  isEditingDepartment = false;
+  isEditingBuilding = false;
+  isEditingOffice = false;
+
+  loading = false;
+
+  deleteDialogVisible: boolean = false;
+deleteItemId: string | null = null;
+deleteItemType: 'department' | 'building' | 'office' | null = null;
+
+  
+  currentDepartmentId: string | null = null;
+  currentBuildingId: string | null = null;
+  currentOfficeId: string | null = null;
 
   constructor(
-    private departmentsService: DepartmentsService,
+    private departmentService: DepartmentService,
     private formBuilder: FormBuilder,
     private messageService: MessageService,
     private confirmationService: ConfirmationService
   ) {}
 
   ngOnInit(): void {
-    this.loadDepartments();
+    this.loadAll();
     this.initializeForms();
   }
 
-  // Form Initialization
-  initializeForms(): void {
-    this.departmentForm = this.formBuilder.group({
-      name: ['', Validators.required],
-      code: ['', [Validators.required, Validators.minLength(2)]],
-      head: ['', Validators.required],
-      contactEmail: ['', [Validators.required, Validators.email]],
-      contactPhone: ['', [Validators.required, Validators.pattern(/^\d{10,}$/)]],
-      description: [''],
-      budget: [0, [Validators.required, Validators.min(0)]]
-    });
-
-    this.buildingForm = this.formBuilder.group({
-      name: ['', Validators.required],
-      address: ['', Validators.required],
-      numberOfFloors: [1, [Validators.required, Validators.min(1)]],
-      notes: ['']
-    });
-
-    this.officeForm = this.formBuilder.group({
-      name: ['', Validators.required],
-      roomNumber: ['', Validators.required],
-      capacity: [1, [Validators.required, Validators.min(1)]],
-      floor: [0, [Validators.required, Validators.min(0)]],
-      extension: [''],
-      notes: ['']
-    });
-  }
-
-  // Department Management Methods
-  async loadDepartments(): Promise<void> {
+  async loadAll(): Promise<void> {
     this.loading = true;
     try {
-      this.departments = await this.departmentsService.getAllDepartments();
+      this.departments = await this.departmentService.getAllDepartments() || [];
+      this.buildings = await this.departmentService.getAllBuildings() || [];
+      this.offices = await this.departmentService.getAllOffices() || [];
     } finally {
       this.loading = false;
     }
   }
 
-  openNewDepartmentDialog(): void {
-    this.departmentForm.reset({budget: 0});
-    this.isEditMode = false;
+  initializeForms(): void {
+  this.departmentForm = this.formBuilder.group({
+    name: ['', Validators.required],
+    code: ['', [Validators.required, Validators.minLength(2)]],
+    head: ['', Validators.required],
+    budget: [0, [Validators.required, Validators.min(0)]],
+    contactEmail: ['', [Validators.required, Validators.email]],
+    contactPhone: ['', [Validators.required, Validators.pattern(/^\d{10,}$/)]],
+    description: [''],
+  });
+
+  this.buildingForm = this.formBuilder.group({
+    name: ['', Validators.required],
+    address: ['', Validators.required],
+    numberOfFloors: [1, [Validators.required, Validators.min(1)]],
+    notes: [''],
+  });
+
+  this.officeForm = this.formBuilder.group({
+    name: ['', Validators.required],
+    roomNumber: ['', Validators.required],
+    capacity: [1, [Validators.required, Validators.min(1)]],
+    floor: [0, [Validators.required, Validators.min(0)]],
+    extension: [''],
+    departmentId: ['', Validators.required],
+    buildingId: ['', Validators.required],
+    notes: [''],
+  });
+
+  this.officeForm.get('departmentId')?.valueChanges.subscribe((departmentId) => {
+    this.filteredBuildings = this.buildings; // Show all buildings
+  });
+}
+
+
+  openNewDepartment(): void {
+    this.departmentForm.reset({ budget: 0 });
+    this.isEditingDepartment = false;
     this.currentDepartmentId = null;
-    this.submitted = false;
+    this.departmentSubmitted = false;
     this.departmentDialog = true;
   }
 
   editDepartment(department: Department): void {
-    this.isEditMode = true;
-    this.currentDepartmentId = department.id || null;
-    this.departmentForm.patchValue({
-      name: department.name,
-      code: department.code,
-      head: department.head,
-      contactEmail: department.contactEmail,
-      contactPhone: department.contactPhone,
-      description: department.description,
-      budget: department.budget
-    });
+    this.isEditingDepartment = true;
+    this.currentDepartmentId = department.id ?? null;
+    this.departmentForm.patchValue(department);
     this.departmentDialog = true;
   }
 
   async saveDepartment(): Promise<void> {
-  this.submitted = true;
+    this.departmentSubmitted = true;
+    if (this.departmentForm.invalid) return;
 
-  if (this.departmentForm.invalid) {
-    return;
-  }
+    const departmentData = {
+      ...this.departmentForm.value,
+      dateEstablished: new Date(),
+    };
 
-  const departmentData = {
-    ...this.departmentForm.value,
-    buildings: [],
-    dateEstablished: new Date()
-  };
-
-  try {
-    if (this.isEditMode && this.currentDepartmentId) {
-      await this.departmentsService.updateDepartment({
-        ...departmentData,
-        id: this.currentDepartmentId,
-      });
-      this.messageService.add({
-        severity: 'success',
-        summary: 'Success',
-        detail: 'Department updated successfully!'
-      });
-    } else {
-      await this.departmentsService.addDepartment(departmentData);
-      this.messageService.add({
-        severity: 'success',
-        summary: 'Success',
-        detail: 'Department added successfully!'
-      });
-    }
-    this.departmentDialog = false;
-    await this.loadDepartments();
-    this.departmentForm.reset();
-  } catch (error) {
-    this.messageService.add({
-      severity: 'error',
-      summary: 'Error',
-      detail: 'An error occurred while saving the department.'
-    });
-  }
-}
-
-  deleteDepartment(department: Department): void {
-    this.confirmationService.confirm({
-      message: 'Are you sure you want to delete this department?',
-      accept: async () => {
-        if (department.id) {
-          await this.departmentsService.deleteDepartment(department.id);
-          this.messageService.add({
-            severity: 'success',
-            summary: 'Success',
-            detail: 'Department deleted successfully'
-          });
-          this.loadDepartments();
-        }
+    try {
+      if (this.isEditingDepartment && this.currentDepartmentId) {
+        await this.departmentService.editDepartment({
+          ...departmentData,
+          id: this.currentDepartmentId,
+        });
+        this.messageService.add({ severity: 'success', summary: 'Success', detail: 'Department updated successfully' });
+      } else {
+        await this.departmentService.addDepartment(departmentData);
+        this.messageService.add({ severity: 'success', summary: 'Success', detail: 'Department added successfully' });
       }
-    });
+      this.departmentDialog = false;
+      this.loadAll();
+    } catch (error) {
+      this.messageService.add({ severity: 'error', summary: 'Error', detail: 'Failed to save department' });
+    }
   }
 
-  // Building Management Methods
-  manageBuildings(department: Department): void {
-    this.selectedDepartment = department;
-    this.currentBuilding = null;
+  openNewBuilding(): void {
+    this.buildingForm.reset({ numberOfFloors: 1 });
+    this.isEditingBuilding = false;
+    this.currentBuildingId = null;
+    this.buildingSubmitted = false;
     this.buildingDialog = true;
   }
 
-openNewBuildingDialog(): void {
-  this.buildingForm.reset({numberOfFloors: 1});
-  this.currentBuilding = {} as Building;
-  this.buildingSubmitted = false;
-  this.showBuildingForm = true; // Add this
-}
-
   editBuilding(building: Building): void {
-    this.currentBuilding = building;
-    this.buildingForm.patchValue({
-      name: building.name,
-      address: building.address,
-      numberOfFloors: building.numberOfFloors,
-      notes: building.notes
-    });
+    this.isEditingBuilding = true;
+    this.currentBuildingId = building.id ?? null;
+    this.buildingForm.patchValue(building);
+    this.buildingDialog = true;
   }
 
- async saveBuilding(): Promise<void> {
-  this.buildingSubmitted = true;
-  if (this.buildingForm.invalid || !this.selectedDepartment?.id) return;
+  async saveBuilding(): Promise<void> {
+    this.buildingSubmitted = true;
+    if (this.buildingForm.invalid) return;
 
-  try {
-    if (this.currentBuilding?.id) {
-      await this.departmentsService.updateBuilding(
-        this.selectedDepartment.id,
-        {
-          ...this.buildingForm.value,
-          id: this.currentBuilding.id,
-          offices: this.currentBuilding.offices || []
-        }
-      );
-      this.messageService.add({
-        severity: 'success',
-        summary: 'Success',
-        detail: 'Building updated successfully!'
-      });
-    } else {
-      await this.departmentsService.addBuildingToDepartment(
-        this.selectedDepartment.id,
-        this.buildingForm.value
-      );
-      this.messageService.add({
-        severity: 'success',
-        summary: 'Success',
-        detail: 'Building added successfully!'
-      });
-    }
-    await this.loadDepartments();
-    this.buildingForm.reset();
-    this.currentBuilding = null;
-    this.showBuildingForm = false;  // This will return to table view
-  } catch (error) {
-    this.messageService.add({
-      severity: 'error',
-      summary: 'Error',
-      detail: 'An error occurred while saving the building.'
-    });
-  }
-}
+    const buildingData = {
+      ...this.buildingForm.value,
+      dateConstructed: new Date(),
+    };
 
-  async deleteBuilding(departmentId: string | undefined, buildingId: string | undefined): Promise<void> {
-  if (!departmentId || !buildingId) return;
-
-  this.confirmationService.confirm({
-    message: 'Are you sure you want to delete this building?',
-    accept: async () => {
-      try {
-        await this.departmentsService.deleteBuilding(departmentId, buildingId);
-        this.messageService.add({
-          severity: 'success',
-          summary: 'Success',
-          detail: 'Building deleted successfully'
+    try {
+      if (this.isEditingBuilding && this.currentBuildingId) {
+        await this.departmentService.editBuilding({
+          ...buildingData,
+          id: this.currentBuildingId,
         });
-        await this.loadDepartments();
-      } catch (error) {
-        this.messageService.add({
-          severity: 'error',
-          summary: 'Error',
-          detail: 'An error occurred while deleting the building.'
-        });
+        this.messageService.add({ severity: 'success', summary: 'Success', detail: 'Building updated successfully' });
+      } else {
+        await this.departmentService.addBuilding(buildingData);
+        this.messageService.add({ severity: 'success', summary: 'Success', detail: 'Building added successfully' });
       }
+      this.buildingDialog = false;
+      this.loadAll();
+    } catch (error) {
+      this.messageService.add({ severity: 'error', summary: 'Error', detail: 'Failed to save building' });
     }
-  });
-}
+  }
 
-  // Office Management Methods
-  manageOffices(building: Building): void {
-    this.selectedBuilding = building;
-    this.currentOffice = null;
+  openNewOffice(): void {
+    this.officeForm.reset({ capacity: 1, floor: 0 });
+    this.isEditingOffice = false;
+    this.currentOfficeId = null;
+    this.officeSubmitted = false;
     this.officeDialog = true;
   }
 
- openNewOfficeDialog(): void {
-  this.officeForm.reset({
-    capacity: 1,
-    floor: 0
-  });
-  this.currentOffice = {} as Office;
-  this.officeSubmitted = false;
-  this.showOfficeForm = true; // Add this
+ editOffice(office: Office): void {
+  this.isEditingOffice = true;
+  this.currentOfficeId = office.id ?? null;
+  this.officeForm.patchValue(office);
+
+  // No filtering based on departmentId, as buildings are independent of departments
+  this.filteredBuildings = this.buildings;
+  
+  this.officeDialog = true;
 }
 
-  editOffice(office: Office): void {
-    this.currentOffice = office;
-    this.officeForm.patchValue({
-      name: office.name,
-      roomNumber: office.roomNumber,
-      capacity: office.capacity,
-      floor: office.floor,
-      extension: office.extension,
-      notes: office.notes
-    });
-  }
 
   async saveOffice(): Promise<void> {
-  this.officeSubmitted = true;
-  if (this.officeForm.invalid || !this.selectedDepartment?.id || !this.selectedBuilding?.id) return;
+    this.officeSubmitted = true;
+    if (this.officeForm.invalid) return;
 
-  try {
-    if (this.currentOffice?.id) {
-      await this.departmentsService.updateOffice(
-        this.selectedDepartment.id,
-        this.selectedBuilding.id,
-        {
+    try {
+      if (this.isEditingOffice && this.currentOfficeId) {
+        await this.departmentService.editOffice({
           ...this.officeForm.value,
-          id: this.currentOffice.id
-        }
-      );
-      this.messageService.add({
-        severity: 'success',
-        summary: 'Success',
-        detail: 'Office updated successfully!'
-      });
-    } else {
-      await this.departmentsService.addOfficeToBuilding(
-        this.selectedDepartment.id,
-        this.selectedBuilding.id,
-        this.officeForm.value
-      );
-      this.messageService.add({
-        severity: 'success',
-        summary: 'Success',
-        detail: 'Office added successfully!'
-      });
-    }
-    await this.loadDepartments();
-    this.officeForm.reset();
-    this.currentOffice = null;
-    this.showOfficeForm = false;  // This will return to table view
-  } catch (error) {
-    this.messageService.add({
-      severity: 'error',
-      summary: 'Error',
-      detail: 'An error occurred while saving the office.'
-    });
-  }
-}
-
- async deleteOffice(departmentId: string | undefined, buildingId: string | undefined, officeId: string | undefined): Promise<void> {
-  if (!departmentId || !buildingId || !officeId) return;
-
-  this.confirmationService.confirm({
-    message: 'Are you sure you want to delete this office?',
-    accept: async () => {
-      try {
-        await this.departmentsService.deleteOffice(departmentId, buildingId, officeId);
-        this.messageService.add({
-          severity: 'success',
-          summary: 'Success',
-          detail: 'Office deleted successfully'
+          id: this.currentOfficeId,
         });
-        await this.loadDepartments();
-      } catch (error) {
-        this.messageService.add({
-          severity: 'error',
-          summary: 'Error',
-          detail: 'An error occurred while deleting the office.'
-        });
+        this.messageService.add({ severity: 'success', summary: 'Success', detail: 'Office updated successfully' });
+      } else {
+        await this.departmentService.addOffice(this.officeForm.value);
+        this.messageService.add({ severity: 'success', summary: 'Success', detail: 'Office added successfully' });
       }
+      this.officeDialog = false;
+      this.loadAll();
+    } catch (error) {
+      this.messageService.add({ severity: 'error', summary: 'Error', detail: 'Failed to save office' });
     }
+  }
+
+  // confirmDelete(type: 'department' | 'building' | 'office', id: string): void {
+  //   this.confirmationService.confirm({
+  //     message: `Are you sure you want to delete this ${type}?`,
+  //     accept: () => this.delete(type, id),
+  //   });
+  // }
+
+  confirmDelete(type: 'department' | 'building' | 'office', id: string): void {
+  this.confirmationService.confirm({
+    message: `Are you sure you want to delete this ${type}?`,
+    header: 'Confirm Deletion',
+    icon: 'pi pi-exclamation-triangle',
+    acceptLabel: 'Delete',
+    rejectLabel: 'Cancel',
+    acceptButtonStyleClass: 'p-button-danger',
+    rejectButtonStyleClass: 'p-button-text',
+    accept: () => this.delete(type, id),
   });
 }
 
-  // Utility Methods
-  hideDialog(): void {
-    this.departmentDialog = false;
-    this.buildingDialog = false;
-    this.officeDialog = false;
-    this.submitted = false;
-    this.buildingSubmitted = false;
-    this.officeSubmitted = false;
-    this.departmentForm.reset();
-    this.buildingForm.reset();
-    this.officeForm.reset();
+
+  private async delete(type: 'department' | 'building' | 'office', id: string): Promise<void> {
+    try {
+      switch (type) {
+        case 'department':
+          await this.departmentService.deleteDepartment(id);
+          break;
+        case 'building':
+          await this.departmentService.deleteBuilding(id);
+          break;
+        case 'office':
+          await this.departmentService.deleteOffice(id);
+          break;
+      }
+      this.messageService.add({ severity: 'success', summary: 'Success', detail: `${type} deleted successfully` });
+      this.loadAll();
+    } catch (error) {
+      this.messageService.add({ severity: 'error', summary: 'Error', detail: `Failed to delete ${type}` });
+    }
   }
 
-  getBuildingCount(department: Department): number {
-    return department.buildings?.length || 0;
+  getDepartmentName(departmentId: string): string {
+    const department = this.departments.find(d => d.id === departmentId);
+    return department?.name || 'N/A';
   }
 
-  getOfficeCount(department: Department): number {
-    return department.buildings?.reduce((total, building) => 
-      total + (building.offices?.length || 0), 0) || 0;
+  getBuildingName(buildingId: string): string {
+    const building = this.buildings.find(b => b.id === buildingId);
+    return building?.name || 'N/A';
   }
+
+  showDeleteDialog(type: 'department' | 'building' | 'office', id: string): void {
+  this.deleteDialogVisible = true;
+  this.deleteItemType = type;
+  this.deleteItemId = id;
+}
+
+
+
+deleteType: 'department' | 'building' | 'office' | null = null;
+deleteId: string | null = null;
+
+openDeleteDialog(type: 'department' | 'building' | 'office', id: string): void {
+  this.deleteDialogVisible = true;
+  this.deleteType = type;
+  this.deleteId = id;
+}
+
+confirmDeleteAction(): void {
+  if (this.deleteType && this.deleteId) {
+    this.delete(this.deleteType, this.deleteId);
+  }
+  this.deleteDialogVisible = false;
+  this.deleteType = null;
+  this.deleteId = null;
+}
+
 }
