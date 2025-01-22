@@ -152,6 +152,20 @@ export const navItems: NavItem[] = [
     requiredRoles: ['admin', 'superadmin'], // Only visible to admin and superadmin roles
   },
 
+
+    {
+    displayName: 'Inventory',
+    iconName: 'solar:widget-add-line-duotone',
+    route: '/admin/inventory',
+    requiredRoles: ['admin', 'superadmin'], // Only visible to admin and superadmin roles
+  },
+
+   {
+    displayName: 'Item Classification',
+    iconName: 'solar:widget-add-line-duotone',
+    route: '/admin/item-classification',
+    requiredRoles: ['admin', 'superadmin'], // Only visible to admin and superadmin roles
+  },
   // Views Section
   {
     navCap: 'Views',

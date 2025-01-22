@@ -1,1 +1,430 @@
-<p>inventory works!</p>
+<mat-card class="cardWithShadow">
+  <mat-card-content>
+    <p-tabView>
+      
+      <!-- TAB 1: INVENTORY SETUP -->
+      <p-tabPanel header="Inventory Setup">
+        <mat-card-title>Inventory Management</mat-card-title>
+        <mat-card-subtitle class="text-sm text-gray-500">
+          View and manage inventories in this section.
+        </mat-card-subtitle>
+
+        <!-- Header: Add Inventory + Search -->
+        <div class="flex justify-between items-center mt-4">
+          <p-button
+            label="Add Inventory"
+            icon="pi pi-plus"
+            size="small"
+            [outlined]="true"
+            (click)="openNewInventoryDialog()"
+          ></p-button>
+
+          <!-- Search Box -->
+          <div class="relative w-[300px]">
+            <i
+              class="pi pi-search absolute left-3 top-1/2 -translate-y-1/2 text-gray-500"
+            ></i>
+            <input
+              pInputText
+              #inventorySearchInput
+              (input)="inventoryTable.filterGlobal(inventorySearchInput.value, 'contains')"
+              type="text"
+              placeholder="Search Item"
+              style="text-indent: 1.5rem;"
+              class="w-full border border-gray-300 rounded-md py-2 pl-10 pr-3 text-sm
+                     focus:outline-none focus:ring-2 focus:ring-blue-500"
+            />
+          </div>
+        </div>
+
+        <!-- p-table for Inventory Items -->
+        <p-table
+          #inventoryTable
+          [value]="inventories"
+          [rows]="10"
+          [paginator]="true"
+          [globalFilterFields]="['itemName','locationId']"
+          [rowsPerPageOptions]="[5, 10, 20]"
+          [loading]="inventoryLoading"
+          [showCurrentPageReport]="false"
+          [responsive]="true"
+          [rowHover]="true"
+          styleClass="p-datatable-sm mt-4"
+          dataKey="id"
+        >
+          <ng-template pTemplate="header">
+            <tr>
+              <th pSortableColumn="itemName">
+                Item Name
+                <p-sortIcon field="itemName"></p-sortIcon>
+              </th>
+              <th pSortableColumn="locationId">
+                Location
+                <p-sortIcon field="locationId"></p-sortIcon>
+              </th>
+              <th pSortableColumn="quantity">
+                Quantity
+                <p-sortIcon field="quantity"></p-sortIcon>
+              </th>
+              <th class="w-[100px]">Actions</th>
+            </tr>
+          </ng-template>
+
+          <ng-template pTemplate="body" let-inv>
+            <tr>
+              <!-- Use a helper method getClassificationLabel() to display a friendly label for itemName -->
+              <td>{{ getClassificationLabel(inv.itemName) }}</td>
+              <!-- Use getLocationLabel() to show the location's name -->
+              <td>{{ getLocationLabel(inv.locationId) }}</td>
+              <td>{{ inv.quantity }}</td>
+              <td>
+                <div class="flex gap-2">
+                  <button
+                    pButton
+                    icon="pi pi-pencil"
+                    class="p-button-rounded p-button-primary p-button-sm"
+                    [outlined]="true"
+                    (click)="editInventory(inv)"
+                  ></button>
+                  <button
+                    pButton
+                    icon="pi pi-trash"
+                    class="p-button-rounded p-button-danger p-button-sm"
+                    [outlined]="true"
+                    (click)="deleteInventory(inv)"
+                  ></button>
+                </div>
+              </td>
+            </tr>
+          </ng-template>
+
+          <ng-template pTemplate="emptymessage">
+            <tr>
+              <td colspan="4">
+                <div class="flex flex-col w-full items-center justify-center py-8">
+                  <span>No inventory found.</span>
+                </div>
+              </td>
+            </tr>
+          </ng-template>
+        </p-table>
+
+        <!-- Inventory Dialog -->
+        <p-dialog
+          [(visible)]="inventoryDialog"
+          [modal]="true"
+          [style]="{ width: '90vw', maxWidth: '450px' }"
+          [header]="isInventoryEditMode ? 'Edit Inventory Item' : 'Add New Inventory Item'"
+          styleClass="p-fluid"
+          [dismissableMask]="true"
+          [draggable]="false"
+          [resizable]="false"
+          [position]="'center'"
+        >
+          <span class="text-gray-600 block">
+            {{ isInventoryEditMode ? 'Editing' : 'Adding new' }} inventory item.
+          </span>
+          <small class="text-gray-500 block mb-4">(Please fill out all fields)</small>
+
+          <form [formGroup]="inventoryForm" class="w-full">
+            <!-- ITEM NAME (classification) -->
+            <div class="flex items-center gap-4 mb-4">
+              <label class="font-semibold w-24">Item Name</label>
+              <div class="flex-auto flex-col flex">
+                <p-dropdown
+                  formControlName="itemName"
+                  [options]="classificationDropdown"
+                  optionLabel="label"
+                  optionValue="value"
+                  placeholder="Select Item Classification"
+                  class="w-full"
+                ></p-dropdown>
+                <!-- Validation error -->
+                <small
+                  class="text-red-500 mt-1"
+                  *ngIf="submitted && inventoryForm.get('itemName')?.hasError('required')"
+                >
+                  Item name is required.
+                </small>
+              </div>
+            </div>
+
+            <!-- LOCATION (inventory location) -->
+            <div class="flex items-center gap-4 mb-4">
+              <label class="font-semibold w-24">Location</label>
+              <div class="flex-auto flex-col flex">
+                <p-dropdown
+                  formControlName="locationId"
+                  [options]="locationDropdown"
+                  optionLabel="label"
+                  optionValue="value"
+                  placeholder="Select a Location"
+                  class="w-full"
+                ></p-dropdown>
+                <!-- Validation error -->
+                <small
+                  class="text-red-500 mt-1"
+                  *ngIf="submitted && inventoryForm.get('locationId')?.hasError('required')"
+                >
+                  Location is required.
+                </small>
+              </div>
+            </div>
+
+            <!-- QUANTITY -->
+            <div class="flex items-center gap-4 mb-4">
+              <label class="font-semibold w-24">Quantity</label>
+              <div class="flex-auto flex-col flex">
+                <input
+                  type="number"
+                  pInputText
+                  formControlName="quantity"
+                  placeholder="0"
+                  class="w-full"
+                />
+                <!-- Validation error -->
+                <small
+                  class="text-red-500 mt-1"
+                  *ngIf="submitted && inventoryForm.get('quantity')?.hasError('required')"
+                >
+                  Quantity is required.
+                </small>
+              </div>
+            </div>
+          </form>
+
+          <ng-template pTemplate="footer">
+            <div class="flex justify-end gap-2">
+              <button
+                pButton
+                label="Cancel"
+                icon="pi pi-times"
+                class="p-button-text"
+                (click)="hideInventoryDialog()"
+                size="small"
+              ></button>
+              <button
+                pButton
+                label="Save"
+                icon="pi pi-check"
+                size="small"
+                (click)="saveInventory()"
+                [disabled]="inventoryForm.invalid && submitted"
+              ></button>
+            </div>
+          </ng-template>
+        </p-dialog>
+      </p-tabPanel>
+
+      <!-- TAB 2: INVENTORY LOCATION -->
+      <p-tabPanel header="Inventory Location">
+        <mat-card-title>Inventory Location Management</mat-card-title>
+        <mat-card-subtitle class="text-sm text-gray-500">
+          View and manage inventory locations in this section.
+        </mat-card-subtitle>
+
+        <!-- Header: Add Location + Search -->
+        <div class="flex justify-between items-center mt-4">
+          <p-button
+            label="Add Location"
+            icon="pi pi-plus"
+            size="small"
+            [outlined]="true"
+            (click)="openNewLocationDialog()"
+          ></p-button>
+
+          <div class="relative w-[300px]">
+            <i
+              class="pi pi-search absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500"
+            ></i>
+            <input
+              pInputText
+              #locationSearchInput
+              (input)="locationTable.filterGlobal(locationSearchInput.value, 'contains')"
+              type="text"
+              placeholder="Search"
+              style="text-indent: 1.5rem;"
+              class="w-full border border-gray-300 rounded-md py-2 pl-10 pr-3 text-sm
+                     focus:outline-none focus:ring-2 focus:ring-blue-500"
+            />
+          </div>
+        </div>
+
+        <!-- p-table for Inventory Locations -->
+        <p-table
+          #locationTable
+          [value]="locations"
+          [rows]="10"
+          [paginator]="true"
+          [globalFilterFields]="['name','officeId']"
+          [rowsPerPageOptions]="[5, 10, 20]"
+          [loading]="locationLoading"
+          styleClass="p-datatable-sm mt-4"
+          dataKey="id"
+        >
+          <ng-template pTemplate="header">
+            <tr>
+              <th pSortableColumn="name">
+                Name
+                <p-sortIcon field="name"></p-sortIcon>
+              </th>
+              <th pSortableColumn="officeId">
+                Office
+                <p-sortIcon field="officeId"></p-sortIcon>
+              </th>
+              <th pSortableColumn="capacity">
+                Capacity
+                <p-sortIcon field="capacity"></p-sortIcon>
+              </th>
+              <th class="w-[100px]">Actions</th>
+            </tr>
+          </ng-template>
+
+          <ng-template pTemplate="body" let-loc>
+            <tr>
+              <td>{{ loc.name }}</td>
+              <td>{{ getOfficeLabel(loc.officeId) }}</td>
+              <td>{{ loc.capacity }}</td>
+              <td>
+                <div class="flex gap-2">
+                  <button
+                    pButton
+                    icon="pi pi-pencil"
+                    class="p-button-rounded p-button-primary p-button-sm"
+                    [outlined]="true"
+                    (click)="editLocation(loc)"
+                  ></button>
+                  <button
+                    pButton
+                    icon="pi pi-trash"
+                    class="p-button-rounded p-button-danger p-button-sm"
+                    [outlined]="true"
+                    (click)="deleteLocation(loc)"
+                  ></button>
+                </div>
+              </td>
+            </tr>
+          </ng-template>
+
+          <ng-template pTemplate="emptymessage">
+            <tr>
+              <td colspan="4">
+                <div class="flex flex-col w-full items-center justify-center py-8">
+                  <span>No locations found.</span>
+                </div>
+              </td>
+            </tr>
+          </ng-template>
+        </p-table>
+
+        <!-- Location Dialog -->
+        <p-dialog
+          [(visible)]="locationDialog"
+          [modal]="true"
+          [style]="{ width: '90vw', maxWidth: '450px' }"
+          [header]="isLocationEditMode ? 'Edit Location' : 'Add New Location'"
+          styleClass="p-fluid"
+          [dismissableMask]="true"
+          [draggable]="false"
+          [resizable]="false"
+          [position]="'center'"
+        >
+          <span class="text-gray-600 block">
+            {{ isLocationEditMode ? 'Editing' : 'Adding new' }} inventory location.
+          </span>
+          <small class="text-gray-500 block mb-4">(Please fill out all fields)</small>
+
+          <form [formGroup]="locationForm" class="w-full">
+            <div class="flex items-center gap-4 mb-4">
+              <label class="font-semibold w-24">Name</label>
+              <div class="flex-auto flex-col flex">
+                <input
+                  pInputText
+                  formControlName="name"
+                  placeholder="Location name"
+                  class="w-full"
+                />
+                <!-- Validation error -->
+                <small
+                  class="text-red-500 mt-1"
+                  *ngIf="submitted && locationForm.get('name')?.hasError('required')"
+                >
+                  Name is required.
+                </small>
+              </div>
+            </div>
+
+            <div class="flex items-center gap-4 mb-4">
+              <label class="font-semibold w-24">Office</label>
+              <div class="flex-auto flex-col flex">
+                <p-dropdown
+                  formControlName="officeId"
+                  [options]="officeDropdown"
+                  optionLabel="label"
+                  optionValue="value"
+                  placeholder="Select Office"
+                  class="w-full"
+                ></p-dropdown>
+                <!-- Validation error -->
+                <small
+                  class="text-red-500 mt-1"
+                  *ngIf="submitted && locationForm.get('officeId')?.hasError('required')"
+                >
+                  Office is required.
+                </small>
+              </div>
+            </div>
+
+            <div class="flex items-center gap-4 mb-4">
+              <label class="font-semibold w-24">Capacity</label>
+              <div class="flex-auto flex-col flex">
+                <input
+                  type="number"
+                  pInputText
+                  formControlName="capacity"
+                  placeholder="0"
+                  class="w-full"
+                />
+                <!-- Validation error -->
+                <small
+                  class="text-red-500 mt-1"
+                  *ngIf="submitted && locationForm.get('capacity')?.hasError('required')"
+                >
+                  Capacity is required.
+                </small>
+              </div>
+            </div>
+          </form>
+
+          <ng-template pTemplate="footer">
+            <div class="flex justify-end gap-2">
+              <button
+                pButton
+                label="Cancel"
+                icon="pi pi-times"
+                class="p-button-text"
+                (click)="hideLocationDialog()"
+                size="small"
+              ></button>
+              <button
+                pButton
+                label="Save"
+                icon="pi pi-check"
+                size="small"
+                (click)="saveLocation()"
+                [disabled]="locationForm.invalid && submitted"
+              ></button>
+            </div>
+          </ng-template>
+        </p-dialog>
+      </p-tabPanel>
+    </p-tabView>
+
+    <!-- ConfirmDialog & Toast for success/error feedback -->
+    <p-confirmDialog
+      [style]="{ width: '90vw', maxWidth: '450px' }"
+      rejectButtonStyleClass="p-button-text"
+    ></p-confirmDialog>
+    <p-toast position="bottom-right"></p-toast>
+  </mat-card-content>
+</mat-card>

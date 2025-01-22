@@ -7,6 +7,7 @@ import { ProductTypeComponent } from './product-type/product-type.component';
 import { DepartmentComponent } from './department/department.component';
 import { ApprovalSequenceComponent } from './approval-sequence/approval-sequence.component';
 import { PaymentTermsComponent } from './payment-terms/payment-terms.component';
+import { ItemClassificationComponent } from './item-classification/item-classification.component';
 
 export const AdminRoutes: Routes = [
   {
@@ -59,6 +60,20 @@ export const AdminRoutes: Routes = [
         component: PaymentTermsComponent,
         canActivate: [roleGuard],
         data: { roles: ['admin', 'superadmin'], breadcrumb: 'Payment Terms' } 
+      },
+         
+          {
+        path: 'inventory',
+        component: InventoryComponent,
+        canActivate: [roleGuard],
+        data: { roles: ['admin', 'superadmin'], breadcrumb: 'inventory' } 
+      },
+          
+             {
+        path: 'item-classification',
+        component: ItemClassificationComponent,
+        canActivate: [roleGuard],
+        data: { roles: ['admin', 'superadmin'], breadcrumb: 'item-classification' } 
       },
     ],
   },
