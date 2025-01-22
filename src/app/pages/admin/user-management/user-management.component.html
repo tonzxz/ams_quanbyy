@@ -1,12 +1,10 @@
-
-    <mat-card class="cardWithShadow">
-        
-
-
+<mat-card class="cardWithShadow">
   <mat-card-content>
-     <mat-card-title>User Management</mat-card-title>
-    <mat-card-subtitle class="text-sm text-gray-500">View and manage users in this section.</mat-card-subtitle>
-    
+    <mat-card-title>User Management</mat-card-title>
+    <mat-card-subtitle class="text-sm text-gray-500">
+      View and manage users in this section.
+    </mat-card-subtitle>
+
     <p-tabView>
 
       <!-- TAB 1: USER MANAGEMENT -->
@@ -29,7 +27,9 @@
 
           <!-- Search Box -->
           <div class="relative w-[300px]">
-            <i class="pi pi-search absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500"></i>
+            <i
+              class="pi pi-search absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500"
+            ></i>
             <input
               pInputText
               type="text"
@@ -37,7 +37,8 @@
               (input)="userTable.filterGlobal(userSearchInput.value, 'contains')"
               placeholder="Search Name"
               style="text-indent: 1.5rem;"
-              class="w-full border border-gray-300 rounded-md py-2 pl-10 pr-3 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 placeholder:ml-6"
+              class="w-full border border-gray-300 rounded-md py-2 pl-10 pr-3 text-sm
+                     focus:outline-none focus:ring-2 focus:ring-blue-500 placeholder:ml-6"
             />
           </div>
         </div>
@@ -82,7 +83,7 @@
               <td>{{ user.fullname }}</td>
               <td>{{ user.username }}</td>
               <td>
-                <!-- Use badges for roles -->
+                <!-- Badge for Roles -->
                 <p-badge
                   [value]="user.role"
                   [severity]="getRoleSeverity(user.role)"
@@ -140,9 +141,7 @@
           <span class="text-gray-600 block">
             {{ isUserEditMode ? 'Editing' : 'Adding new' }} user.
           </span>
-          <small class="text-gray-500 block mb-4">
-            (Please fill out all fields)
-          </small>
+          <small class="text-gray-500 block mb-4">(Please fill out all fields)</small>
 
           <form [formGroup]="userForm" class="w-full">
             <!-- Full Name -->
@@ -161,10 +160,7 @@
                 />
                 <small
                   class="self-end text-red-500 mt-1"
-                  *ngIf="
-                    userSubmitted &&
-                    userForm.get('fullname')?.errors?.['required']
-                  "
+                  *ngIf="userSubmitted && userForm.get('fullname')?.errors?.['required']"
                 >
                   Full name is required.
                 </small>
@@ -186,10 +182,7 @@
                 />
                 <small
                   class="self-end text-red-500 mt-1"
-                  *ngIf="
-                    userSubmitted &&
-                    userForm.get('username')?.errors?.['required']
-                  "
+                  *ngIf="userSubmitted && userForm.get('username')?.errors?.['required']"
                 >
                   Username is required.
                 </small>
@@ -211,19 +204,13 @@
                 />
                 <small
                   class="self-end text-red-500 mt-1"
-                  *ngIf="
-                    userSubmitted &&
-                    userForm.get('password')?.errors?.['required']
-                  "
+                  *ngIf="userSubmitted && userForm.get('password')?.errors?.['required']"
                 >
                   Password is required (when creating a user).
                 </small>
                 <small
                   class="self-end text-red-500 mt-1"
-                  *ngIf="
-                    userSubmitted &&
-                    userForm.get('password')?.errors?.['minlength']
-                  "
+                  *ngIf="userSubmitted && userForm.get('password')?.errors?.['minlength']"
                 >
                   Password must be at least 6 characters.
                 </small>
@@ -249,6 +236,28 @@
                   *ngIf="userSubmitted && userForm.get('role')?.errors?.['required']"
                 >
                   Role is required.
+                </small>
+              </div>
+            </div>
+
+            <!-- Position (Only if role == 'end-user') -->
+            <div class="flex items-center gap-4 mb-4" *ngIf="userForm.get('role')?.value === 'end-user'">
+              <label for="position" class="font-semibold w-24">Position</label>
+              <div class="flex-auto flex-col flex">
+                <input
+                  type="text"
+                  pInputText
+                  id="position"
+                  formControlName="position"
+                  placeholder="Enter position"
+                  class="w-full"
+                  required
+                />
+                <small
+                  class="self-end text-red-500 mt-1"
+                  *ngIf="userSubmitted && userForm.get('position')?.errors?.['required']"
+                >
+                  Position is required for end-user.
                 </small>
               </div>
             </div>
@@ -295,7 +304,9 @@
           ></p-button>
 
           <div class="relative w-[300px]">
-            <i class="pi pi-search absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500"></i>
+            <i
+              class="pi pi-search absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500"
+            ></i>
             <input
               pInputText
               type="text"
@@ -303,7 +314,8 @@
               (input)="codeTable.filterGlobal(codeSearchInput.value, 'contains')"
               placeholder="Search"
               style="text-indent: 1.5rem;"
-              class="w-full border border-gray-300 rounded-md py-2 pl-10 pr-3 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 placeholder:ml-6"
+              class="w-full border border-gray-300 rounded-md py-2 pl-10 pr-3 text-sm
+                     focus:outline-none focus:ring-2 focus:ring-blue-500 placeholder:ml-6"
             />
           </div>
         </div>
@@ -364,7 +376,6 @@
             </tr>
           </ng-template>
 
-          <!-- Empty message -->
           <ng-template pTemplate="emptymessage">
             <tr>
               <td colspan="3">
@@ -483,7 +494,9 @@
           ></p-button>
 
           <div class="relative w-[300px]">
-            <i class="pi pi-search absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500"></i>
+            <i
+              class="pi pi-search absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500"
+            ></i>
             <input
               pInputText
               type="text"
@@ -491,7 +504,8 @@
               (input)="subTable.filterGlobal(subSearchInput.value, 'contains')"
               placeholder="Search"
               style="text-indent: 1.5rem;"
-              class="w-full border border-gray-300 rounded-md py-2 pl-10 pr-3 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 placeholder:ml-6"
+              class="w-full border border-gray-300 rounded-md py-2 pl-10 pr-3 text-sm
+                     focus:outline-none focus:ring-2 focus:ring-blue-500 placeholder:ml-6"
             />
           </div>
         </div>
@@ -562,7 +576,6 @@
             </tr>
           </ng-template>
 
-          <!-- Empty message -->
           <ng-template pTemplate="emptymessage">
             <tr>
               <td colspan="5">
@@ -720,4 +733,3 @@
     <p-toast position="bottom-right"></p-toast>
   </mat-card-content>
 </mat-card>
-

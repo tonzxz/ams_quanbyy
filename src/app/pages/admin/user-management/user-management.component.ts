@@ -2,7 +2,7 @@ import { Component, OnInit } from '@angular/core';
 import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angular/forms';
 import { CommonModule } from '@angular/common';
 import { MatCardModule } from '@angular/material/card';
-import { ConfirmationService,  MessageService } from 'primeng/api';
+import { ConfirmationService, MessageService } from 'primeng/api';
 import { TableModule } from 'primeng/table';
 import { ButtonModule } from 'primeng/button';
 import { InputTextModule } from 'primeng/inputtext';
@@ -90,12 +90,12 @@ export class UserManagementComponent implements OnInit {
   ) {}
 
   ngOnInit(): void {
-    // Init all data
+    // Load data for each tab
     this.loadUsers();
     this.loadAccountCodes();
     this.loadSubAccounts();
 
-    // Setup forms
+    // Initialize forms
     this.initializeUserForm();
     this.initializeCodeForm();
     this.initializeSubForm();
@@ -110,25 +110,42 @@ export class UserManagementComponent implements OnInit {
   loadUsers() {
     this.userLoading = true;
     this.userService.getAllUsers().subscribe({
-      next: (users) => {
-        this.users = users;
+      next: (res) => {
+        this.users = res;
         this.userLoading = false;
       },
-      error: (error) => {
-        console.error('Error loading users:', error);
+      error: (err) => {
+        console.error('Error loading users:', err);
         this.userLoading = false;
-        this.messageService.add({ severity: 'error', summary: 'Error', detail: 'Failed to load users' });
+        this.messageService.add({
+          severity: 'error',
+          summary: 'Error',
+          detail: 'Failed to load users'
+        });
       }
     });
   }
 
   initializeUserForm() {
+    // "position" is included, but only required if role == 'end-user'
     this.userForm = this.formBuilder.group({
       fullname: ['', Validators.required],
       username: ['', Validators.required],
       password: ['', [Validators.required, Validators.minLength(6)]],
       role: ['', Validators.required],
-      profile: ['default-profile-pic-url']
+      profile: ['default-profile-pic-url'],
+      position: ['']
+    });
+
+    // Dynamically require position if role == 'end-user'
+    this.userForm.get('role')?.valueChanges.subscribe((selectedRole) => {
+      const positionControl = this.userForm.get('position');
+      if (selectedRole === 'end-user') {
+        positionControl?.setValidators([Validators.required]);
+      } else {
+        positionControl?.clearValidators();
+      }
+      positionControl?.updateValueAndValidity();
     });
   }
 
@@ -146,26 +163,35 @@ export class UserManagementComponent implements OnInit {
   openNewUserDialog() {
     this.isUserEditMode = false;
     this.userSubmitted = false;
-    this.userDialog = true;
     this.selectedUserId = null;
+    this.userDialog = true;
+
+    // Re-init user form to clear old data
     this.initializeUserForm();
   }
 
   editUser(u: User) {
     this.isUserEditMode = true;
     this.selectedUserId = u.id!;
+    this.userSubmitted = false;
+    this.userDialog = true;
+
+    // Re-init form (so dynamic validation re-applies)
+    this.initializeUserForm();
+
+    // Patch existing data
     this.userForm.patchValue({
       fullname: u.fullname,
       username: u.username,
       role: u.role,
-      profile: u.profile
+      profile: u.profile,
+      position: u.position || ''
     });
-    // Password optional in edit mode
+
+    // Password is optional in edit => only minLength validation
     this.userForm.get('password')?.clearValidators();
     this.userForm.get('password')?.addValidators(Validators.minLength(6));
     this.userForm.get('password')?.updateValueAndValidity();
-
-    this.userDialog = true;
   }
 
   deleteUser(u: User) {
@@ -178,11 +204,19 @@ export class UserManagementComponent implements OnInit {
           this.userService.deleteUser(u.id).subscribe({
             next: () => {
               this.loadUsers();
-              this.messageService.add({ severity: 'success', summary: 'Success', detail: 'User deleted successfully' });
+              this.messageService.add({
+                severity: 'success',
+                summary: 'Success',
+                detail: 'User deleted successfully'
+              });
             },
-            error: (error) => {
-              console.error('Error deleting user:', error);
-              this.messageService.add({ severity: 'error', summary: 'Error', detail: error.message });
+            error: (err) => {
+              console.error('Error deleting user:', err);
+              this.messageService.add({
+                severity: 'error',
+                summary: 'Error',
+                detail: err.message
+              });
             }
           });
         }
@@ -198,39 +232,57 @@ export class UserManagementComponent implements OnInit {
 
   saveUser() {
     this.userSubmitted = true;
+
     if (this.userForm.valid) {
-      const data = this.userForm.value;
+      const userData = this.userForm.value;
+
       if (this.isUserEditMode && this.selectedUserId) {
-        // Update user
-        this.userService.updateUser(this.selectedUserId, data).subscribe({
+        // Update
+        this.userService.updateUser(this.selectedUserId, userData).subscribe({
           next: () => {
             this.loadUsers();
             this.hideUserDialog();
-            this.messageService.add({ severity: 'success', summary: 'Success', detail: 'User updated successfully' });
+            this.messageService.add({
+              severity: 'success',
+              summary: 'Success',
+              detail: 'User updated successfully'
+            });
           },
-          error: (error) => {
-            console.error('Error updating user:', error);
-            this.messageService.add({ severity: 'error', summary: 'Error', detail: error.message });
+          error: (err) => {
+            console.error('Error updating user:', err);
+            this.messageService.add({
+              severity: 'error',
+              summary: 'Error',
+              detail: err.message
+            });
           }
         });
       } else {
-        // Add user
-        this.userService.addUser(data).subscribe({
+        // Create new user
+        this.userService.addUser(userData).subscribe({
           next: () => {
             this.loadUsers();
             this.hideUserDialog();
-            this.messageService.add({ severity: 'success', summary: 'Success', detail: 'User created successfully' });
+            this.messageService.add({
+              severity: 'success',
+              summary: 'Success',
+              detail: 'User created successfully'
+            });
           },
-          error: (error) => {
-            console.error('Error creating user:', error);
-            this.messageService.add({ severity: 'error', summary: 'Error', detail: error.message });
+          error: (err) => {
+            console.error('Error creating user:', err);
+            this.messageService.add({
+              severity: 'error',
+              summary: 'Error',
+              detail: err.message
+            });
           }
         });
       }
     }
   }
 
-  // For showing different badge colors based on role
+  // Decide severity color for role badge
   getRoleSeverity(role: string): 'success' | 'info' | 'warn' | 'danger' | 'secondary' {
     switch (role.toLowerCase()) {
       case 'superadmin':
@@ -263,7 +315,11 @@ export class UserManagementComponent implements OnInit {
       error: (err) => {
         console.error('Error loading account codes:', err);
         this.codeLoading = false;
-        this.messageService.add({ severity: 'error', summary: 'Error', detail: 'Failed to load account codes' });
+        this.messageService.add({
+          severity: 'error',
+          summary: 'Error',
+          detail: 'Failed to load account codes'
+        });
       }
     });
   }
@@ -303,11 +359,19 @@ export class UserManagementComponent implements OnInit {
           this.userService.deleteAccountCode(ac.id).subscribe({
             next: () => {
               this.loadAccountCodes();
-              this.messageService.add({ severity: 'success', summary: 'Success', detail: 'Account Code deleted successfully' });
+              this.messageService.add({
+                severity: 'success',
+                summary: 'Success',
+                detail: 'Account Code deleted successfully'
+              });
             },
             error: (err) => {
               console.error('Error deleting account code:', err);
-              this.messageService.add({ severity: 'error', summary: 'Error', detail: err.message });
+              this.messageService.add({
+                severity: 'error',
+                summary: 'Error',
+                detail: err.message
+              });
             }
           });
         }
@@ -331,11 +395,19 @@ export class UserManagementComponent implements OnInit {
           next: () => {
             this.loadAccountCodes();
             this.hideCodeDialog();
-            this.messageService.add({ severity: 'success', summary: 'Success', detail: 'Account Code updated successfully' });
+            this.messageService.add({
+              severity: 'success',
+              summary: 'Success',
+              detail: 'Account Code updated successfully'
+            });
           },
           error: (err) => {
             console.error('Error updating account code:', err);
-            this.messageService.add({ severity: 'error', summary: 'Error', detail: err.message });
+            this.messageService.add({
+              severity: 'error',
+              summary: 'Error',
+              detail: err.message
+            });
           }
         });
       } else {
@@ -344,11 +416,19 @@ export class UserManagementComponent implements OnInit {
           next: () => {
             this.loadAccountCodes();
             this.hideCodeDialog();
-            this.messageService.add({ severity: 'success', summary: 'Success', detail: 'Account Code created successfully' });
+            this.messageService.add({
+              severity: 'success',
+              summary: 'Success',
+              detail: 'Account Code created successfully'
+            });
           },
           error: (err) => {
             console.error('Error creating account code:', err);
-            this.messageService.add({ severity: 'error', summary: 'Error', detail: err.message });
+            this.messageService.add({
+              severity: 'error',
+              summary: 'Error',
+              detail: err.message
+            });
           }
         });
       }
@@ -368,7 +448,11 @@ export class UserManagementComponent implements OnInit {
       error: (err) => {
         console.error('Error loading sub accounts:', err);
         this.subLoading = false;
-        this.messageService.add({ severity: 'error', summary: 'Error', detail: 'Failed to load sub-accounts' });
+        this.messageService.add({
+          severity: 'error',
+          summary: 'Error',
+          detail: 'Failed to load sub-accounts'
+        });
       }
     });
   }
@@ -412,11 +496,19 @@ export class UserManagementComponent implements OnInit {
           this.userService.deleteSubAccount(sa.id).subscribe({
             next: () => {
               this.loadSubAccounts();
-              this.messageService.add({ severity: 'success', summary: 'Success', detail: 'Sub Account deleted successfully' });
+              this.messageService.add({
+                severity: 'success',
+                summary: 'Success',
+                detail: 'Sub Account deleted successfully'
+              });
             },
             error: (err) => {
               console.error('Error deleting sub account:', err);
-              this.messageService.add({ severity: 'error', summary: 'Error', detail: err.message });
+              this.messageService.add({
+                severity: 'error',
+                summary: 'Error',
+                detail: err.message
+              });
             }
           });
         }
@@ -440,11 +532,19 @@ export class UserManagementComponent implements OnInit {
           next: () => {
             this.loadSubAccounts();
             this.hideSubDialog();
-            this.messageService.add({ severity: 'success', summary: 'Success', detail: 'Sub Account updated successfully' });
+            this.messageService.add({
+              severity: 'success',
+              summary: 'Success',
+              detail: 'Sub Account updated successfully'
+            });
           },
           error: (err) => {
             console.error('Error updating sub account:', err);
-            this.messageService.add({ severity: 'error', summary: 'Error', detail: err.message });
+            this.messageService.add({
+              severity: 'error',
+              summary: 'Error',
+              detail: err.message
+            });
           }
         });
       } else {
@@ -453,11 +553,19 @@ export class UserManagementComponent implements OnInit {
           next: () => {
             this.loadSubAccounts();
             this.hideSubDialog();
-            this.messageService.add({ severity: 'success', summary: 'Success', detail: 'Sub Account created successfully' });
+            this.messageService.add({
+              severity: 'success',
+              summary: 'Success',
+              detail: 'Sub Account created successfully'
+            });
           },
           error: (err) => {
             console.error('Error creating sub account:', err);
-            this.messageService.add({ severity: 'error', summary: 'Error', detail: err.message });
+            this.messageService.add({
+              severity: 'error',
+              summary: 'Error',
+              detail: err.message
+            });
           }
         });
       }
