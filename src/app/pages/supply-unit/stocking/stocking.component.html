@@ -43,6 +43,7 @@
                 <tr>
                     <th pFrozen="left">Name</th>
                     <th>Ticker</th>
+                    <th>Storage</th>
                     <th>Price</th>
                     <th>Quantity</th>
                     <th>Date Added</th>
@@ -105,6 +106,7 @@
                         <i class="pi pi-box mr-2"></i>
                         {{ item.name }}</td>
                     <td>{{ item.ticker }}</td>
+                    <td>{{ item.storage_name }}</td>
                     <td>{{ item.price | currency:'PHP' }}</td>
                     <td>{{ item.quantity | number }}</td>
                     <td>{{ item.dateAdded | date: 'yyyy-MM-dd' }}</td>
@@ -229,7 +231,7 @@
         </div>
 
         <div class="flex items-center gap-4 mb-2">
-            <label for="storage" class="font-semibold w-32">Storage</label>
+            <label for="storage" class="font-semibold w-24">Storage</label>
             <p-select [options]="inventories" formControlName="storage" optionLabel="name" [filter]="true"
               filterBy="name" [showClear]="true" placeholder="Select storage location" class="flex-auto">
               <ng-template #selectedItem let-selectedOption>

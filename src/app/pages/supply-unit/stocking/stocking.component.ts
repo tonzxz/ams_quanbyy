@@ -131,9 +131,10 @@ export class StockingComponent {
     }
   
     selectedStock?:Stock;
-    openEditStockModal(dr:DeliveryReceipt,stock:Stock){
+    async openEditStockModal(dr:DeliveryReceipt,stock:Stock){
       this.selectedDeliveryReceipt = dr;
       this.selectedStock = stock;
+      this.inventories = await this.inventoryService.getLocationsOnDepartment(this.selectedDeliveryReceipt.department_id);
       this.stockForm.setValue({
         name: this.selectedStock.name,
         ticker: this.selectedStock.ticker,
@@ -170,6 +171,7 @@ export class StockingComponent {
         dateAdded: new Date(),
         name: stockData.name!,
         storage_id: stockData.storage?.id,
+        storage_name: stockData.storage?.name,
         ticker: stockData.ticker!.toUpperCase(),
         price: Number(stockData.price!),
         quantity: Number(stockData.quantity!),
@@ -191,6 +193,7 @@ export class StockingComponent {
         dateAdded: this.selectedStock!.dateAdded,
         name: stockData.name!,
         storage_id: stockData.storage?.id,
+        storage_name: stockData.storage?.name,
         ticker: stockData.ticker!.toUpperCase(),
         price: Number(stockData.price!),
         quantity: Number(stockData.quantity!),
