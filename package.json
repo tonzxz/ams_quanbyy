@@ -27,6 +27,7 @@
     "@radix-ui/colors": "^3.0.0",
     "angular-tabler-icons": "^2.7.0",
     "apexcharts": "^3.52.0",
+    "chart.js": "^4.4.7",
     "clsx": "^2.1.1",
     "iconify": "^1.4.0",
     "lottie-web": "^5.12.2",

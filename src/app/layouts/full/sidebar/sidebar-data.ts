@@ -15,9 +15,15 @@ export const navItems: NavItem[] = [
     requiredRoles:['inspection','superadmin']
   },
   {
+    displayName: 'Dashboard',
+    iconName: 'solar:widget-add-line-duotone',
+    route: '/inspection/inspection-dashboard',
+    requiredRoles: ['inspection','superadmin']
+  },
+  {
     displayName: 'Purchase Requests',
     iconName: 'solar:documents-broken',
-    route: '/inspection/purchase-request/purchase-request',
+    route: '/inspection/purchase-request',
     requiredRoles: ['inspection','superadmin']
   },
   {

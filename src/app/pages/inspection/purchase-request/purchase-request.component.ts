@@ -13,6 +13,7 @@ import { InputTextModule } from 'primeng/inputtext';
 import { DialogModule } from 'primeng/dialog';
 import { ImageModule } from 'primeng/image';
 import { ButtonGroupModule } from 'primeng/buttongroup';
+import { FormsModule } from '@angular/forms';
 
 interface PurchaseRequest {
   code: string;
@@ -27,7 +28,7 @@ interface PurchaseRequest {
 @Component({
   selector: 'app-purchase-request',
   standalone: true,
-  imports: [TabsModule, RouterModule, CommonModule, CardModule, TabViewModule, TooltipModule, IconFieldModule, InputIconModule, InputTextModule, DialogModule, ImageModule, ButtonGroupModule, TableModule, ButtonModule],
+  imports: [TabsModule, RouterModule, CommonModule, CardModule, TabViewModule, TooltipModule, IconFieldModule, InputIconModule, InputTextModule, DialogModule, ImageModule, ButtonGroupModule, TableModule, ButtonModule, FormsModule],
   templateUrl: './purchase-request.component.html',
   styleUrl: './purchase-request.component.scss'
 })
