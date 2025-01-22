@@ -1,0 +1,244 @@
+<mat-card class="cardWithShadow">
+  <mat-card-content>
+    <mat-card-title>Requisition</mat-card-title>
+    <mat-card-subtitle class="text-sm text-gray-500">
+      Manage requisitions here.
+    </mat-card-subtitle>
+
+    <!-- Header: Add + Search -->
+    <div class="flex justify-between items-center mt-4">
+      <p-button
+        pTooltip="Add Requisition"
+        (click)="openNewDialog()"
+        [outlined]="true"
+        size="small"
+        label="Add Requisition"
+        icon="pi pi-plus"
+      ></p-button>
+
+      <!-- Search Box -->
+      <div class="relative w-[300px]">
+        <i
+          class="pi pi-search absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500"
+        ></i>
+        <input
+          pInputText
+          type="text"
+          #searchInput
+          (input)="requisitionTable.filterGlobal(searchInput.value, 'contains')"
+          placeholder="Search Requisition"
+          style="text-indent: 1.5rem;"
+          class="w-full border border-gray-300 rounded-md py-2 pl-10 pr-3 text-sm
+                 focus:outline-none focus:ring-2 focus:ring-blue-500 placeholder:ml-6"
+        />
+      </div>
+    </div>
+
+    <!-- p-table -->
+    <p-table
+      #requisitionTable
+      [value]="requisitions"
+      [rows]="10"
+      [paginator]="true"
+      [globalFilterFields]="['title','description','status']"
+      [rowsPerPageOptions]="[5, 10, 20]"
+      [loading]="loading"
+      [showCurrentPageReport]="false"
+      [responsive]="true"
+      [rowHover]="true"
+      [scrollable]="true"
+      scrollHeight="600px"
+      styleClass="p-datatable-sm mt-4"
+      dataKey="id"
+    >
+      <ng-template pTemplate="header">
+        <tr>
+          <th pSortableColumn="title">
+            Title
+            <p-sortIcon field="title"></p-sortIcon>
+          </th>
+          <th pSortableColumn="description">
+            Description
+            <p-sortIcon field="description"></p-sortIcon>
+          </th>
+          <th pSortableColumn="status">
+            Status
+            <p-sortIcon field="status"></p-sortIcon>
+          </th>
+          <th pSortableColumn="classifiedItemId">
+            Classified Item
+            <p-sortIcon field="classifiedItemId"></p-sortIcon>
+          </th>
+          <th class="w-[100px]">Actions</th>
+        </tr>
+      </ng-template>
+
+      <ng-template pTemplate="body" let-item>
+        <tr>
+          <td>{{ item.title }}</td>
+          <td>{{ item.description }}</td>
+          <td>{{ item.status }}</td>
+          <td>{{ getClassifiedItemName(item.classifiedItemId) }}</td>
+          <td>
+            <div class="flex gap-2">
+              <button
+                pButton
+                icon="pi pi-pencil"
+                class="p-button-rounded p-button-primary p-button-sm"
+                [outlined]="true"
+                (click)="editRequisition(item)"
+              ></button>
+              <button
+                pButton
+                icon="pi pi-trash"
+                class="p-button-rounded p-button-danger p-button-sm"
+                [outlined]="true"
+                (click)="deleteRequisition(item)"
+              ></button>
+            </div>
+          </td>
+        </tr>
+      </ng-template>
+
+      <ng-template pTemplate="emptymessage">
+        <tr>
+          <td colspan="5">
+            <div class="flex flex-col w-full items-center justify-center py-8">
+              <span>No requisitions found.</span>
+            </div>
+          </td>
+        </tr>
+      </ng-template>
+    </p-table>
+
+    <!-- Dialog for add/edit -->
+    <p-dialog
+      [(visible)]="dialogVisible"
+      [modal]="true"
+      [style]="{ width: '90vw', maxWidth: '450px' }"
+      [header]="isEditMode ? 'Edit Requisition' : 'Add Requisition'"
+      styleClass="p-fluid"
+      [dismissableMask]="true"
+      [draggable]="false"
+      [resizable]="false"
+      [position]="'center'"
+    >
+      <span class="text-gray-600 block">
+        {{ isEditMode ? 'Editing' : 'Adding new' }} requisition.
+      </span>
+      <small class="text-gray-500 block mb-4">(Please fill out all fields)</small>
+
+      <form [formGroup]="requisitionForm" class="w-full">
+        <!-- Title -->
+        <div class="flex items-center gap-4 mb-4">
+          <label for="title" class="font-semibold w-24">Title</label>
+          <div class="flex-auto flex-col flex">
+            <input
+              type="text"
+              pInputText
+              id="title"
+              formControlName="title"
+              placeholder="Enter title"
+              class="w-full"
+              required
+              autofocus
+            />
+            <small
+              class="self-end text-red-500 mt-1"
+              *ngIf="submitted && requisitionForm.get('title')?.errors?.['required']"
+            >
+              Title is required.
+            </small>
+          </div>
+        </div>
+
+        <!-- Description -->
+        <div class="flex items-center gap-4 mb-4">
+          <label for="description" class="font-semibold w-24">Description</label>
+          <div class="flex-auto flex-col flex">
+            <textarea
+              pInputTextarea
+              id="description"
+              formControlName="description"
+              placeholder="Optional"
+              rows="3"
+              class="w-full"
+            ></textarea>
+          </div>
+        </div>
+
+        <!-- Status -->
+        <div class="flex items-center gap-4 mb-4">
+          <label for="status" class="font-semibold w-24">Status</label>
+          <div class="flex-auto flex-col flex">
+            <p-dropdown
+              id="status"
+              formControlName="status"
+              [options]="statusOptions"
+              placeholder="Select status"
+              class="w-full"
+                                            [appendTo]="'body'"     
+
+            ></p-dropdown>
+            <small
+              class="self-end text-red-500 mt-1"
+              *ngIf="submitted && requisitionForm.get('status')?.errors?.['required']"
+            >
+              Status is required.
+            </small>
+          </div>
+        </div>
+
+        <!-- Classified Item -->
+        <div class="flex items-center gap-4 mb-4">
+          <label for="classifiedItemId" class="font-semibold w-24">Classified Item</label>
+          <div class="flex-auto flex-col flex">
+            <p-dropdown
+              id="classifiedItemId"
+              formControlName="classifiedItemId"
+              [options]="classifiedItems"
+              optionLabel="category"
+              placeholder="Select classified item"
+              class="w-full"
+                                            [appendTo]="'body'"     
+
+            ></p-dropdown>
+            <small
+              class="self-end text-red-500 mt-1"
+              *ngIf="submitted && requisitionForm.get('classifiedItemId')?.errors?.['required']"
+            >
+              Classified item is required.
+            </small>
+          </div>
+        </div>
+      </form>
+
+      <ng-template pTemplate="footer">
+        <div class="flex justify-end gap-2">
+          <button
+            pButton
+            label="Cancel"
+            icon="pi pi-times"
+            class="p-button-text"
+            (click)="hideDialog()"
+            size="small"
+          ></button>
+          <button
+            pButton
+            label="Save"
+            icon="pi pi-check"
+            (click)="saveRequisition()"
+            size="small"
+          ></button>
+        </div>
+      </ng-template>
+    </p-dialog>
+
+    <!-- ConfirmDialog and Toast for feedback -->
+    <p-confirmDialog
+      [style]="{ width: '90vw', maxWidth: '450px' }"
+      rejectButtonStyleClass="p-button-text"
+    ></p-confirmDialog>
+    <p-toast position="bottom-right"></p-toast>
+  </mat-card-content>
+</mat-card>

@@ -45,6 +45,19 @@ export const navItems: NavItem[] = [
     route: '/enduser/plan-tracking',
     requiredRoles: ['end-user'], // Only visible to end-user role
   },
+   {
+    displayName: 'Puchase Requests',
+    iconName: 'solar:documents-broken',
+    route: '/enduser/purchase-requests',
+    requiredRoles: ['end-user'], // Only visible to end-user role
+  },
+
+  {
+    displayName: 'Requisition',
+    iconName: 'solar:documents-broken',
+    route: '/enduser/requisition',
+    requiredRoles: ['end-user'], // Only visible to end-user role
+  },
 
   // Inspection Section
   {
