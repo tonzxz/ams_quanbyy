@@ -1,6 +1,9 @@
 import { Injectable } from '@angular/core';
 import {  DeliveryReceiptItems } from './delivery-receipt.service';
 import { z } from 'zod';
+import { firstValueFrom } from 'rxjs';
+import { UserService } from './user.service';
+import { NotificationService } from './notifications.service';
 
 
 // Define the schema for a single disbursement voucher item
@@ -34,7 +37,9 @@ export class DisbursementVoucherService {
 
   disbursementVouchers:DisbursementVoucher[] = [ ];
 
-  constructor() { }
+  constructor(
+    private userService:UserService, private notifService:NotificationService
+  ) { }
 
   /**
    * Generate a disbursement voucher based on the delivery receipt and items.
@@ -88,17 +93,47 @@ export class DisbursementVoucherService {
     const dvIndex = this.disbursementVouchers.findIndex(v => v.voucherNo == voucherNo);
     this.disbursementVouchers[dvIndex].status = 'processing';
     localStorage.setItem('disbursementVouchers', JSON.stringify(this.disbursementVouchers));
+    const users = await firstValueFrom(this.userService.getAllUsers());
+    for(let user of users){
+      if(user.role == 'superadmin' || user.role == 'accounting' || user.role == 'supply'){
+        this.notifService.addNotification(
+        `Voucher No. ${this.disbursementVouchers[dvIndex].voucherNo} has been moved to accounting for review.`,
+        'info',
+        user.id
+        )
+      }
+    }
   }
 
   async verifyVoucher(voucherNo:string){
     const dvIndex = this.disbursementVouchers.findIndex(v => v.voucherNo == voucherNo);
     this.disbursementVouchers[dvIndex].status = 'recorded';
     localStorage.setItem('disbursementVouchers', JSON.stringify(this.disbursementVouchers));
+    const users = await firstValueFrom(this.userService.getAllUsers());
+    for(let user of users){
+      if(user.role == 'superadmin' || user.role == 'accounting' || user.role == 'supply'){
+        this.notifService.addNotification(
+        `Voucher No. ${this.disbursementVouchers[dvIndex].voucherNo} has been verified by accounting.`,
+        'info',
+        user.id
+        )
+      }
+    }
   }
 
   async rejectVoucher(voucherNo:string){
     const dvIndex = this.disbursementVouchers.findIndex(v => v.voucherNo == voucherNo);
     this.disbursementVouchers[dvIndex].status = 'pending';
     localStorage.setItem('disbursementVouchers', JSON.stringify(this.disbursementVouchers));
+    const users = await firstValueFrom(this.userService.getAllUsers());
+    for(let user of users){
+      if(user.role == 'superadmin' || user.role == 'accounting' || user.role == 'supply'){
+        this.notifService.addNotification(
+        `Voucher No. ${this.disbursementVouchers[dvIndex].voucherNo} has been rejected by accounting.`,
+        'info',
+        user.id
+        )
+      }
+    }
   }
 }
