@@ -7,7 +7,7 @@ export const groupSchema = z.object({
   id: z.string().length(32, "ID must be exactly 32 characters").optional(),
   name: z.string().min(1, "Group name is required"),
   description: z.string().max(500).optional(),
-  products: z.array(z.string()).optional(), // Array of product IDs
+  products: z.array(z.string()).optional(),
 });
 
 export type Group = z.infer<typeof groupSchema>;
@@ -44,23 +44,39 @@ export class GroupService {
   }
 
   private loadDummyData(): void {
-  const dummy: Group[] = [
-    {
-      id: this.generate32CharId(),
-      name: 'Office Supplies',
-      description: 'Paper, pens, and general stationery items.',
-      products: ['12345678901234567890123456789012', '23456789012345678901234567890123'],
-    },
-    {
-      id: this.generate32CharId(),
-      name: 'Electronics',
-      description: 'Laptops, Desktops, and related equipment.',
-      products: ['34567890123456789012345678901234'],
-    }
-  ];
-  this.groups = dummy;
-  this.saveToLocalStorage();
-}
+    const dummy: Group[] = [
+      {
+        id: '12345678901234567890123456789012',
+        name: 'Electronics',
+        description: 'Electronic devices and accessories',
+        products: [
+          '12345678901234567890123456789012',
+          '23456789012345678901234567890123',
+          '56789012345678901234567890123456'
+        ]
+      },
+      {
+        id: '23456789012345678901234567890123',
+        name: 'Furniture',
+        description: 'Office furniture and equipment',
+        products: [
+          '34567890123456789012345678901234',
+          '67890123456789012345678901234567'
+        ]
+      },
+      {
+        id: '34567890123456789012345678901234',
+        name: 'Accessories',
+        description: 'Computer and desk accessories',
+        products: [
+          '45678901234567890123456789012345',
+          '78901234567890123456789012345678'
+        ]
+      }
+    ];
+    this.groups = dummy;
+    this.saveToLocalStorage();
+  }
 
   async getAllGroups(): Promise<Group[]> {
     return this.groups;
@@ -89,5 +105,9 @@ export class GroupService {
   async deleteGroup(id: string): Promise<void> {
     this.groups = this.groups.filter(g => g.id !== id);
     this.saveToLocalStorage();
+  }
+
+  async getGroupById(id: string): Promise<Group | undefined> {
+    return this.groups.find(group => group.id === id);
   }
 }

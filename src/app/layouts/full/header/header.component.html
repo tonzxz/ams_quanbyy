@@ -42,12 +42,13 @@
     mat-fab
     extended
     color="inherit"
+    (click)="markNotificationsAsRead()"
     [matMenuTriggerFor]="notification"
     aria-label="Notifications"
     class="d-flex justify-content-center profile-btn-dd"
   >
-    @if(notifications.length>0){
-      <p-overlaybadge  badgeSize="small" [value]="notifications.length" severity="danger">
+    @if(getUnreadCount()>0){
+      <p-overlaybadge  badgeSize="small" [value]="getUnreadCount()" severity="danger">
         <i class="pi pi-bell"></i>
       </p-overlaybadge>
     }@else{
@@ -65,7 +66,7 @@
           <div class="flex items-center gap-4">
             <i class="pi pi-inbox text-2xl ml-2"></i>
             <p-divider layout="vertical"  />
-            <p class="text-center text-sm pb-2">No notifications yet.</p>
+            <p class="text-left text-sm pb-2">No notifications yet.</p>
           </div>
         </div>
       }@else{
@@ -74,16 +75,16 @@
             <div class=" rounded-lg mx-2 my-2 px-4 py-2 cursor-pointer hover:bg-gray-50 border-b-2 border-gray-100">
               <div class="flex items-center gap-4">
                 @if(notification.type == 'success'){
-                  <i class="pi pi-check text-2xl ml-2 text-green-500"></i>
+                  <i class="pi pi-check-circle text-2xl ml-2 text-green-500"></i>
                 }@else if(notification.type == 'error'){
-                  <i class="pi pi-times text-2xl ml-2 text-red-500"></i>
+                  <i class="pi pi-times-circle text-2xl ml-2 text-red-500"></i>
                 }@else if(notification.type == 'warning'){
                   <i class="pi pi-exclamation-triangle text-2xl ml-2 text-orange-500"></i> 
                 }@else if(notification.type == 'info'){
-                  <i class="pi pi-info-circle text-2xl ml-2"></i> 
+                  <i class="pi pi-arrow-circle-right text-2xl ml-2"></i> 
                 }
                 <p-divider layout="vertical"  />
-                <p class="text-center text-sm">{{notification.message}}</p>
+                <p class="text-left text-sm">{{notification.message}}</p>
               </div>
             </div>
           }
@@ -157,3 +158,4 @@
 
 
 <p-confirmdialog />
+<p-toast />

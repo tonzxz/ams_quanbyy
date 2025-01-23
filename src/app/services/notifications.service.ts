@@ -9,6 +9,7 @@ export interface AppNotification {
   message: string;
   type: 'info' | 'success' | 'warning' | 'error';
   timestamp: Date;
+  read?: boolean;
   toUserId?: string; // If set, only that user sees it
 }
 
@@ -76,6 +77,12 @@ export class NotificationService {
   removeNotification(id: string) {
     const updated = this.notificationsSubject.value.filter(n => n.id !== id);
     this.notificationsSubject.next(updated);
+  }
+  markAsRead(id: string) {
+    const notifIndex = this.notificationsSubject.value.findIndex(n => n.id == id);
+    const notifs = this.notificationsSubject.value;
+    notifs[notifIndex].read = true;
+    this.notificationsSubject.next(notifs);
   }
 
   /** Clear all notifications. */
