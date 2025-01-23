@@ -1,8 +1,10 @@
+// src/app/services/requisition.service.ts
+
 import { Injectable } from '@angular/core';
 import { z } from 'zod';
-import { ItemClassificationService } from './item-classification.service';
+import { GroupService } from './group.service';
 
-/** 
+/**
  * Zod schema for a Requisition.
  */
 export const requisitionSchema = z.object({
@@ -10,7 +12,9 @@ export const requisitionSchema = z.object({
   title: z.string().min(1, "Title is required"),
   description: z.string().max(500).optional(),
   status: z.enum(['Pending', 'Approved', 'Rejected']),
-  classifiedItemId: z.string().length(32, "Classified Item ID is required")
+  classifiedItemId: z.string().length(32, "Classified Item ID is required"),
+  group: z.string().min(1, "Group is required"), // Added group field
+  products: z.array(z.string()).optional(), // Added products field
 });
 
 // TypeScript type for usage in your code
@@ -23,7 +27,7 @@ export class RequisitionService {
   private readonly STORAGE_KEY = 'requisitions';
   private requisitions: Requisition[] = [];
 
-  constructor(private itemClassificationService: ItemClassificationService) {
+  constructor(private groupService: GroupService) {
     this.loadFromLocalStorage();
     // If empty, optionally load some dummy data for testing
     if (!this.requisitions.length) {
@@ -59,14 +63,18 @@ export class RequisitionService {
         title: 'Office Supplies Request',
         description: 'Request for stationery items.',
         status: 'Pending',
-        classifiedItemId: 'dummyClassifiedItemId1'
+        classifiedItemId: 'dummyClassifiedItemId1',
+        group: '12345678901234567890123456789012', // Example group ID
+        products: ['12345678901234567890123456789012', '23456789012345678901234567890123'], // Example product IDs
       },
       {
         id: this.generate32CharId(),
         title: 'Electronics Request',
         description: 'Request for new laptops.',
         status: 'Approved',
-        classifiedItemId: 'dummyClassifiedItemId2'
+        classifiedItemId: 'dummyClassifiedItemId2',
+        group: '23456789012345678901234567890123', // Example group ID
+        products: ['34567890123456789012345678901234'], // Example product IDs
       }
     ];
     this.requisitions = dummy;
@@ -76,15 +84,23 @@ export class RequisitionService {
   // ================================
   // CRUD Methods
   // ================================
+
+  /**
+   * Fetch all requisitions.
+   */
   async getAllRequisitions(): Promise<Requisition[]> {
     return this.requisitions;
   }
 
+  /**
+   * Add a new requisition.
+   * @param data - The requisition data (without ID).
+   */
   async addRequisition(data: Omit<Requisition, 'id'>): Promise<void> {
     // Validate with Zod
     const newRequisition: Requisition = {
       ...data,
-      id: this.generate32CharId()
+      id: this.generate32CharId(),
     };
     requisitionSchema.parse(newRequisition);
 
@@ -92,6 +108,10 @@ export class RequisitionService {
     this.saveToLocalStorage();
   }
 
+  /**
+   * Update an existing requisition.
+   * @param requisition - The requisition to update.
+   */
   async updateRequisition(requisition: Requisition): Promise<void> {
     // Validate
     requisitionSchema.parse(requisition);
@@ -103,11 +123,19 @@ export class RequisitionService {
     this.saveToLocalStorage();
   }
 
+  /**
+   * Delete a requisition by ID.
+   * @param id - The ID of the requisition to delete.
+   */
   async deleteRequisition(id: string): Promise<void> {
     this.requisitions = this.requisitions.filter(r => r.id !== id);
     this.saveToLocalStorage();
   }
 
+  /**
+   * Fetch a requisition by ID.
+   * @param id - The ID of the requisition to fetch.
+   */
   async getRequisitionById(id: string): Promise<Requisition | undefined> {
     return this.requisitions.find(r => r.id === id);
   }

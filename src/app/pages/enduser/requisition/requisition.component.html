@@ -1,244 +1,258 @@
-<mat-card class="cardWithShadow">
-  <mat-card-content>
-    <mat-card-title>Requisition</mat-card-title>
-    <mat-card-subtitle class="text-sm text-gray-500">
-      Manage requisitions here.
-    </mat-card-subtitle>
-
-    <!-- Header: Add + Search -->
-    <div class="flex justify-between items-center mt-4">
-      <p-button
-        pTooltip="Add Requisition"
-        (click)="openNewDialog()"
-        [outlined]="true"
-        size="small"
-        label="Add Requisition"
-        icon="pi pi-plus"
-      ></p-button>
-
+<mat-card class="bg-white rounded-lg shadow">
+  <mat-card-content class="p-6">
+    <!-- Header -->
+    <div class="flex justify-between items-center mb-6">
+      <div>
+        <h1 class="text-xl font-semibold text-gray-900">Requisitions</h1>
+        <p class="text-sm text-gray-500">Manage and track your requisitions</p>
+      </div>
+      
       <!-- Search Box -->
       <div class="relative w-[300px]">
-        <i
-          class="pi pi-search absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500"
-        ></i>
+        <i class="pi pi-search absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"></i>
         <input
           pInputText
           type="text"
-          #searchInput
-          (input)="requisitionTable.filterGlobal(searchInput.value, 'contains')"
-          placeholder="Search Requisition"
-          style="text-indent: 1.5rem;"
-          class="w-full border border-gray-300 rounded-md py-2 pl-10 pr-3 text-sm
-                 focus:outline-none focus:ring-2 focus:ring-blue-500 placeholder:ml-6"
+          [(ngModel)]="searchQuery"
+          placeholder="Search requisitions..."
+          class="w-full border border-gray-300 rounded-lg py-2 pl-10 pr-4 text-sm
+                 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
         />
       </div>
     </div>
 
-    <!-- p-table -->
-    <p-table
-      #requisitionTable
-      [value]="requisitions"
-      [rows]="10"
-      [paginator]="true"
-      [globalFilterFields]="['title','description','status']"
-      [rowsPerPageOptions]="[5, 10, 20]"
-      [loading]="loading"
-      [showCurrentPageReport]="false"
-      [responsive]="true"
-      [rowHover]="true"
-      [scrollable]="true"
-      scrollHeight="600px"
-      styleClass="p-datatable-sm mt-4"
-      dataKey="id"
-    >
-      <ng-template pTemplate="header">
-        <tr>
-          <th pSortableColumn="title">
-            Title
-            <p-sortIcon field="title"></p-sortIcon>
-          </th>
-          <th pSortableColumn="description">
-            Description
-            <p-sortIcon field="description"></p-sortIcon>
-          </th>
-          <th pSortableColumn="status">
-            Status
-            <p-sortIcon field="status"></p-sortIcon>
-          </th>
-          <th pSortableColumn="classifiedItemId">
-            Classified Item
-            <p-sortIcon field="classifiedItemId"></p-sortIcon>
-          </th>
-          <th class="w-[100px]">Actions</th>
-        </tr>
-      </ng-template>
-
-      <ng-template pTemplate="body" let-item>
-        <tr>
-          <td>{{ item.title }}</td>
-          <td>{{ item.description }}</td>
-          <td>{{ item.status }}</td>
-          <td>{{ getClassifiedItemName(item.classifiedItemId) }}</td>
-          <td>
-            <div class="flex gap-2">
-              <button
-                pButton
-                icon="pi pi-pencil"
-                class="p-button-rounded p-button-primary p-button-sm"
-                [outlined]="true"
-                (click)="editRequisition(item)"
-              ></button>
-              <button
-                pButton
-                icon="pi pi-trash"
-                class="p-button-rounded p-button-danger p-button-sm"
-                [outlined]="true"
-                (click)="deleteRequisition(item)"
-              ></button>
+    <!-- Tabs -->
+    <p-tabView>
+      <!-- Add Requisition Tab -->
+      <p-tabPanel header="Add Requisition">
+        <form [formGroup]="requisitionForm" class="space-y-6">
+          <!-- Basic Information -->
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-1">Title</label>
+              <input
+                type="text"
+                pInputText
+                formControlName="title"
+                placeholder="Enter requisition title"
+                class="w-full"
+              />
+              <small class="text-red-500" *ngIf="submitted && requisitionForm.get('title')?.errors?.['required']">
+                Title is required
+              </small>
             </div>
-          </td>
-        </tr>
-      </ng-template>
-
-      <ng-template pTemplate="emptymessage">
-        <tr>
-          <td colspan="5">
-            <div class="flex flex-col w-full items-center justify-center py-8">
-              <span>No requisitions found.</span>
+            
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-1">Description</label>
+              <textarea
+                pInputTextarea
+                formControlName="description"
+                rows="1"
+                placeholder="Enter description (optional)"
+                class="w-full"
+              ></textarea>
             </div>
-          </td>
-        </tr>
-      </ng-template>
-    </p-table>
+          </div>
 
-    <!-- Dialog for add/edit -->
-    <p-dialog
-      [(visible)]="dialogVisible"
-      [modal]="true"
-      [style]="{ width: '90vw', maxWidth: '450px' }"
-      [header]="isEditMode ? 'Edit Requisition' : 'Add Requisition'"
-      styleClass="p-fluid"
-      [dismissableMask]="true"
-      [draggable]="false"
-      [resizable]="false"
-      [position]="'center'"
-    >
-      <span class="text-gray-600 block">
-        {{ isEditMode ? 'Editing' : 'Adding new' }} requisition.
-      </span>
-      <small class="text-gray-500 block mb-4">(Please fill out all fields)</small>
-
-      <form [formGroup]="requisitionForm" class="w-full">
-        <!-- Title -->
-        <div class="flex items-center gap-4 mb-4">
-          <label for="title" class="font-semibold w-24">Title</label>
-          <div class="flex-auto flex-col flex">
-            <input
-              type="text"
-              pInputText
-              id="title"
-              formControlName="title"
-              placeholder="Enter title"
-              class="w-full"
-              required
-              autofocus
-            />
-            <small
-              class="self-end text-red-500 mt-1"
-              *ngIf="submitted && requisitionForm.get('title')?.errors?.['required']"
-            >
-              Title is required.
+          <!-- Groups Selection -->
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-3">Select Groups</label>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <div
+                *ngFor="let group of groups"
+                class="relative bg-white rounded-lg border overflow-hidden transition-all duration-200 hover:shadow-md"
+                [class.border-blue-500]="group.id && selectedGroups.includes(group.id)"
+                [class.border-gray-200]="!group.id || !selectedGroups.includes(group.id)"
+                (click)="group.id && toggleGroupSelection(group)"
+              >
+                <div class="p-4">
+                  <div class="flex items-start justify-between">
+                    <div class="flex-1">
+                      <h3 class="text-lg font-semibold text-gray-900">{{group.name}}</h3>
+                      <p class="text-sm text-gray-600 mt-1">{{group.description}}</p>
+                    </div>
+                    <div class="ml-4">
+                      <i 
+                        class="pi text-xl"
+                        [class.pi-check-circle]="group.id && selectedGroups.includes(group.id)"
+                        [class.pi-circle]="!group.id || !selectedGroups.includes(group.id)"
+                        [class.text-blue-500]="group.id && selectedGroups.includes(group.id)"
+                        [class.text-gray-400]="!group.id || !selectedGroups.includes(group.id)"
+                      ></i>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <small class="text-red-500 mt-2 block" *ngIf="submitted && selectedGroups.length === 0">
+              Please select at least one group
             </small>
           </div>
-        </div>
 
-        <!-- Description -->
-        <div class="flex items-center gap-4 mb-4">
-          <label for="description" class="font-semibold w-24">Description</label>
-          <div class="flex-auto flex-col flex">
-            <textarea
-              pInputTextarea
-              id="description"
-              formControlName="description"
-              placeholder="Optional"
-              rows="3"
-              class="w-full"
-            ></textarea>
+          <!-- Products Selection -->
+          <div *ngIf="selectedGroups.length > 0">
+            <label class="block text-sm font-medium text-gray-700 mb-3">Available Products</label>
+            <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
+              <div
+                *ngFor="let product of availableProducts"
+                class="bg-white rounded-lg border border-gray-200 overflow-hidden hover:shadow-md transition-all duration-200"
+              >
+                <!-- Product Image -->
+                <div class="h-48 bg-gradient-to-br from-purple-500 via-pink-500 to-red-500"></div>
+                
+                <div class="p-4">
+                  <!-- Product Info -->
+                  <div class="mb-4">
+                    <h3 class="text-lg font-semibold text-gray-900">{{product.name}}</h3>
+                    <p class="text-sm text-gray-600 mt-1">{{product.description}}</p>
+                  </div>
+
+                  <!-- Product Form -->
+                  <div *ngIf="isProductSelected(product)">
+                    <div class="space-y-3">
+                      <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Specifications</label>
+                        <textarea
+                          pInputTextarea
+                          [(ngModel)]="getSelectedProduct(product)!.specifications"
+                          [ngModelOptions]="{standalone: true}"
+                          rows="2"
+                          placeholder="Enter required specifications"
+                          class="w-full text-sm"
+                        ></textarea>
+                      </div>
+                      <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Quantity</label>
+                        <div class="flex gap-2">
+                          <input
+                            type="number"
+                            pInputText
+                            [(ngModel)]="getSelectedProduct(product)!.quantity"
+                            [ngModelOptions]="{standalone: true}"
+                            class="w-24 text-sm"
+                            min="1"
+                          />
+                          <p-button
+                            icon="pi pi-trash"
+                            (onClick)="removeProduct(product)"
+                            severity="danger"
+                            [outlined]="true"
+                            size="small"
+                          ></p-button>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  <!-- Add Button -->
+                  <div *ngIf="!isProductSelected(product)" class="flex justify-end mt-4">
+                    <p-button
+                      label="Add"
+                      icon="pi pi-plus"
+                      (onClick)="addProduct(product)"
+                      [outlined]="true"
+                      size="small"
+                    ></p-button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Submit Button -->
+          <div class="flex justify-end pt-6">
+            <p-button
+              label="Submit Requisition"
+              icon="pi pi-check"
+              (onClick)="saveRequisition()"
+              [loading]="loading"
+            ></p-button>
+          </div>
+        </form>
+      </p-tabPanel>
+
+      <!-- Pending Requisitions Tab -->
+      <p-tabPanel header="Pending Requisitions">
+        <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
+          <div
+            *ngFor="let req of pendingRequisitions"
+            class="bg-white rounded-lg border border-gray-200 overflow-hidden hover:shadow-md transition-all duration-200"
+          >
+            <div class="p-4">
+              <div class="flex items-start justify-between mb-4">
+                <div>
+                  <h3 class="text-lg font-semibold text-gray-900">{{req.title}}</h3>
+                  <p class="text-sm text-gray-600 mt-1">{{req.description}}</p>
+                </div>
+                <span class="px-3 py-1 rounded-full text-sm font-medium bg-yellow-100 text-yellow-800">
+                  {{req.status}}
+                </span>
+              </div>
+              
+              <div class="space-y-4">
+                <div>
+                  <h4 class="text-sm font-medium text-gray-700">Selected Products</h4>
+                  <ul class="mt-2 space-y-2">
+                    <li *ngFor="let productId of req.products" class="text-sm text-gray-600">
+                      {{getProductName(productId)}} ({{req.productQuantities?.[productId] || 1}})
+                    </li>
+                  </ul>
+                </div>
+
+                <div class="flex justify-end gap-2">
+                  <p-button
+                    icon="pi pi-pencil"
+                    (onClick)="editRequisition(req)"
+                    [outlined]="true"
+                    size="small"
+                  ></p-button>
+                  <p-button
+                    icon="pi pi-trash"
+                    (onClick)="deleteRequisition(req)"
+                    severity="danger"
+                    [outlined]="true"
+                    size="small"
+                  ></p-button>
+                </div>
+              </div>
+            </div>
           </div>
         </div>
+      </p-tabPanel>
 
-        <!-- Status -->
-        <div class="flex items-center gap-4 mb-4">
-          <label for="status" class="font-semibold w-24">Status</label>
-          <div class="flex-auto flex-col flex">
-            <p-dropdown
-              id="status"
-              formControlName="status"
-              [options]="statusOptions"
-              placeholder="Select status"
-              class="w-full"
-                                            [appendTo]="'body'"     
-
-            ></p-dropdown>
-            <small
-              class="self-end text-red-500 mt-1"
-              *ngIf="submitted && requisitionForm.get('status')?.errors?.['required']"
-            >
-              Status is required.
-            </small>
+      <!-- Approved Requisitions Tab -->
+      <p-tabPanel header="Approved Requisitions">
+        <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
+          <div
+            *ngFor="let req of approvedRequisitions"
+            class="bg-white rounded-lg border border-gray-200 overflow-hidden hover:shadow-md transition-all duration-200"
+          >
+            <div class="p-4">
+              <div class="flex items-start justify-between mb-4">
+                <div>
+                  <h3 class="text-lg font-semibold text-gray-900">{{req.title}}</h3>
+                  <p class="text-sm text-gray-600 mt-1">{{req.description}}</p>
+                </div>
+                <span class="px-3 py-1 rounded-full text-sm font-medium bg-green-100 text-green-800">
+                  {{req.status}}
+                </span>
+              </div>
+              
+              <div>
+                <h4 class="text-sm font-medium text-gray-700">Approved Products</h4>
+                <ul class="mt-2 space-y-2">
+                  <li *ngFor="let productId of req.products" class="text-sm text-gray-600">
+                    {{getProductName(productId)}} ({{req.productQuantities?.[productId] || 1}})
+                  </li>
+                </ul>
+              </div>
+            </div>
           </div>
         </div>
+      </p-tabPanel>
+    </p-tabView>
 
-        <!-- Classified Item -->
-        <div class="flex items-center gap-4 mb-4">
-          <label for="classifiedItemId" class="font-semibold w-24">Classified Item</label>
-          <div class="flex-auto flex-col flex">
-            <p-dropdown
-              id="classifiedItemId"
-              formControlName="classifiedItemId"
-              [options]="classifiedItems"
-              optionLabel="category"
-              placeholder="Select classified item"
-              class="w-full"
-                                            [appendTo]="'body'"     
-
-            ></p-dropdown>
-            <small
-              class="self-end text-red-500 mt-1"
-              *ngIf="submitted && requisitionForm.get('classifiedItemId')?.errors?.['required']"
-            >
-              Classified item is required.
-            </small>
-          </div>
-        </div>
-      </form>
-
-      <ng-template pTemplate="footer">
-        <div class="flex justify-end gap-2">
-          <button
-            pButton
-            label="Cancel"
-            icon="pi pi-times"
-            class="p-button-text"
-            (click)="hideDialog()"
-            size="small"
-          ></button>
-          <button
-            pButton
-            label="Save"
-            icon="pi pi-check"
-            (click)="saveRequisition()"
-            size="small"
-          ></button>
-        </div>
-      </ng-template>
-    </p-dialog>
-
-    <!-- ConfirmDialog and Toast for feedback -->
-    <p-confirmDialog
-      [style]="{ width: '90vw', maxWidth: '450px' }"
-      rejectButtonStyleClass="p-button-text"
-    ></p-confirmDialog>
+    <p-confirmDialog [style]="{ width: '450px' }"></p-confirmDialog>
     <p-toast position="bottom-right"></p-toast>
   </mat-card-content>
 </mat-card>
