@@ -196,6 +196,12 @@ export const navItems: NavItem[] = [
     route: '/bac/validate-approved-request',
     requiredRoles: ['bac', 'superadmin'],
   },
+  {
+    displayName: 'Prepare Purchase Orders',
+    iconName: 'solar:document-add-line-duotone',
+    route: '/bac/prepare-purchase-orders',
+    requiredRoles: ['bac', 'superadmin'],
+  },
 ];
 
   // UI Components Section (No specific roles required)
