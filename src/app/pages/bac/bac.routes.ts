@@ -4,7 +4,7 @@ import { ValidateApprovedRequestComponent } from './validate-approved-request/va
 
 export const bacRoutes: Routes = [
   {
-    path: '',
+    path: 'validate-approved-request',
     component: ValidateApprovedRequestComponent, // Single page for BAC functionality
     data: { breadcrumb: 'Validate Approved Request', roles: ['bac', 'superadmin'] }, // Only 'bac' and 'superadmin' can access
     canActivate: [roleGuard], // Protect the route with roleGuard

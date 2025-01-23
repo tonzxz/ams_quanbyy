@@ -184,6 +184,20 @@ export const navItems: NavItem[] = [
     requiredRoles: ['supply', 'superadmin'],
   },
 
+  // BAC Section
+  {
+    navCap: 'BAC',
+    divider: true,
+    requiredRoles: ['bac', 'superadmin'],
+  },
+  {
+    displayName: 'Validate Approved Request',
+    iconName: 'solar:checklist-minimalistic-line-duotone',
+    route: '/bac/validate-approved-request',
+    requiredRoles: ['bac', 'superadmin'],
+  },
+];
+
   // UI Components Section (No specific roles required)
   // {
   //   navCap: 'Ui Components',
@@ -256,4 +270,3 @@ export const navItems: NavItem[] = [
   //   iconName: 'solar:planet-3-line-duotone',
   //   route: '/extra/sample-page',
   // },
-];
