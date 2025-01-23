@@ -169,6 +169,6 @@ export class VoucherReviewComponent {
     async fetchItems(){
       const receiptWithItems = await this.deliveryReceiptService.getAllDRItems();
       this.disbursementVouchers = await this.disbursementVoucherService.generateDisbursementVouchers(receiptWithItems);
-      this.filterByStatus('pending');
+      this.filterByStatus('processing');
     }
 }
