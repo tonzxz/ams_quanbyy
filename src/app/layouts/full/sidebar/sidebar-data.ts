@@ -51,11 +51,16 @@ export const navItems: NavItem[] = [
     route: '/enduser/purchase-requests',
     requiredRoles: ['end-user'], // Only visible to end-user role
   },
-
   {
     displayName: 'Requisition',
     iconName: 'solar:documents-broken',
     route: '/enduser/requisition',
+    requiredRoles: ['end-user'], // Only visible to end-user role
+  },
+  {
+    displayName: 'Receiving',
+    iconName: 'solar:documents-broken',
+    route: '/enduser/receiving',
     requiredRoles: ['end-user'], // Only visible to end-user role
   },
 
@@ -125,6 +130,12 @@ export const navItems: NavItem[] = [
     iconName: 'solar:widget-add-line-duotone',
     route: '/accounting/budget',
     requiredRoles: ['admin', 'superadmin'], // Only visible to admin and superadmin roles
+  },
+  {
+    displayName: 'Voucher Review',
+    iconName: 'solar:ticket-sale-broken',
+    route: '/accounting/voucher-review',
+    requiredRoles: ['admin', 'superadmin', 'accounting'], 
   },
 
   // Admin Section

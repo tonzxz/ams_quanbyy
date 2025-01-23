@@ -37,13 +37,69 @@
 
   
   <span class="flex-1-auto"></span>
+<!-- Notifications -->
+  <button
+    mat-fab
+    extended
+    color="inherit"
+    [matMenuTriggerFor]="notification"
+    aria-label="Notifications"
+    class="d-flex justify-content-center profile-btn-dd"
+  >
+    @if(notifications.length>0){
+      <p-overlaybadge  badgeSize="small" [value]="notifications.length" severity="danger">
+        <i class="pi pi-bell"></i>
+      </p-overlaybadge>
+    }@else{
+      <i class="pi pi-bell"></i>
+    }
+  </button>
+
+  <mat-menu #notification="matMenu" class="topbar-dd cardWithShadow">
+    <mat-card>
+      <div class="px-6 py-2 flex items-end text-lg">
+        Notifications
+      </div>
+      @if(notifications.length <=0){
+        <div class=" rounded-lg mx-2 my-2 px-4 py-2">
+          <div class="flex items-center gap-4">
+            <i class="pi pi-inbox text-2xl ml-2"></i>
+            <p-divider layout="vertical"  />
+            <p class="text-left text-sm pb-2">No notifications yet.</p>
+          </div>
+        </div>
+      }@else{
+        <p-scrollpanel [style]="{ width: '100%', height: '200px' }" >
+          @for(notification of notifications; track notification.id){
+            <div class=" rounded-lg mx-2 my-2 px-4 py-2 cursor-pointer hover:bg-gray-50 border-b-2 border-gray-100">
+              <div class="flex items-center gap-4">
+                @if(notification.type == 'success'){
+                  <i class="pi pi-check-circle text-2xl ml-2 text-green-500"></i>
+                }@else if(notification.type == 'error'){
+                  <i class="pi pi-times-circle text-2xl ml-2 text-red-500"></i>
+                }@else if(notification.type == 'warning'){
+                  <i class="pi pi-exclamation-triangle text-2xl ml-2 text-orange-500"></i> 
+                }@else if(notification.type == 'info'){
+                  <i class="pi pi-arrow-circle-right text-2xl ml-2"></i> 
+                }
+                <p-divider layout="vertical"  />
+                <p class="text-left text-sm">{{notification.message}}</p>
+              </div>
+            </div>
+          }
+        
+        </p-scrollpanel>
+      }
+     
+    </mat-card>
+  </mat-menu>
 
   <!-- Name -->
   <small class="font-light"> {{greeting}}</small>
   <div class="py-10">
     <p-divider layout="vertical"  />
   </div>
-  <small class="font-light hover:text-purple-700 hover:cursor-pointer" [matMenuTriggerFor]="profilemenu">{{user?.fullname}}</small>
+  <small class="font-light hover:text-purple-700 hover:cursor-pointer" >{{user?.fullname}}</small>
   <!-- --------------------------------------------------------------- -->
   <!-- profile Dropdown -->
   <!-- --------------------------------------------------------------- -->
