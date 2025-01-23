@@ -2,7 +2,7 @@
     <mat-card-content>
       <mat-card-title>Disbursement Vouchers</mat-card-title>
       <mat-card-subtitle class="mat-body-1 mb-10 !flex justify-between items-center">
-        <span> Track disbursement vouchers in this section. </span>
+        <span> Review disbursement vouchers in this section. </span>
         <p-iconfield fluid class="w-full max-w-72">
           <p-inputicon styleClass="pi pi-search" />
           <input
@@ -24,21 +24,13 @@
             <p-step-list>
               <p-step pTooltip="Click to show unverified receipts" [value]="1" class="flex flex-row flex-auto gap-2">
                 <ng-template #content let-activateCallback="activateCallback" let-value="value">
-                  <button class="bg-transparent border-0 flex items-center gap-2 px-2" (click)="activateCallback(); filterByStatus('pending')">
-                    <i [ngClass]="{'text-primary': value == activeStep}" class="pi pi-inbox mr-1"></i>
-                    <span [ngClass]="{'text-primary': value == activeStep}">Pending</span>
-                  </button>
-                </ng-template>
-              </p-step>
-              <p-step pTooltip="Click to show processing receipts" [value]="2" class="flex flex-row flex-auto gap-2">
-                <ng-template #content let-activateCallback="activateCallback" let-value="value">
                   <button class="bg-transparent border-0 flex items-center gap-2 px-2" (click)="activateCallback(); filterByStatus('processing')">
-                    <i [ngClass]="{'text-primary': value == activeStep}" class="pi pi-spin pi-spinner-dotted mr-1"></i>
-                    <span [ngClass]="{'text-primary': value == activeStep}">Processing</span>
+                    <i [ngClass]="{'text-primary': value == activeStep}" class="pi pi-inbox mr-1"></i>
+                    <span [ngClass]="{'text-primary': value == activeStep}">For Review</span>
                   </button>
                 </ng-template>
               </p-step>
-              <p-step pTooltip="Click to show verified receipts" [value]="3" class="flex flex-row flex-auto gap-2">
+              <p-step pTooltip="Click to show verified receipts" [value]="2" class="flex flex-row flex-auto gap-2">
                 <ng-template #content let-activateCallback="activateCallback" let-value="value">
                   <button class="bg-transparent border-0 flex items-center gap-2 px-2" (click)="activateCallback(); filterByStatus('recorded')">
                     <i [ngClass]="{'text-primary': value == activeStep}" class="pi pi-verified mr-1"></i>
@@ -78,7 +70,7 @@
             <td>{{ voucher.supplierName }}</td>
             <td>{{ voucher.totalAmountDue | currency: 'PHP' }}</td>
             <td>
-              @if(voucher.status != 'processing'){
+
                  @if(voucher.status == 'recorded'){
                     <i  class="pi pi-verified text-2xl text-green-500"></i>
                  }@else{>
@@ -93,22 +85,26 @@
                           (click)="printVoucher(voucher)"
                         ></p-button>
                         <p-button
-                          severity="secondary"
-                          pTooltip="Click to send to accounting"
+                          severity="danger"
+                          pTooltip="Click to reject this voucher"
                           [outlined]="true"
                           size="small"
-                          icon="pi pi-arrow-right"
+                          icon="pi pi-times"
                           rounded
-                          (click)="confirmToAccounting($event,voucher.voucherNo)"
+                          (click)="confirmToReject($event,voucher.voucherNo)"
+                        ></p-button>
+                        <p-button
+                          severity="success"
+                          pTooltip="Click to verify this voucher"
+                          [outlined]="true"
+                          size="small"
+                          icon="pi pi-check"
+                          rounded
+                          (click)="confirmToVerify($event,voucher.voucherNo)"
                         ></p-button>
                       </div>
                  }
-              }@else {
-                <div class="flex items-center justify-center gap-2 whitespace-nowrap">
-                    <i class="pi  pi-spin pi-spinner-dotted mr-1"></i>
-                    <span>Processing under accounting ...</span>
-                  </div>
-              }
+              
             </td>
           </tr>
         </ng-template>

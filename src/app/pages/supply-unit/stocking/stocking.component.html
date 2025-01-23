@@ -44,6 +44,7 @@
                     <th pFrozen="left">Name</th>
                     <th>Ticker</th>
                     <th>Storage</th>
+                    <th>Type</th>
                     <th>Price</th>
                     <th>Quantity</th>
                     <th>Date Added</th>
@@ -56,7 +57,7 @@
 
             <ng-template #groupheader let-po>
                 <tr class="hover:cursor-pointer" pRowGroupHeader>
-                    <td [attr.colspan]="!po.deliveryReceipt.stocked?7:6">
+                    <td [attr.colspan]="!po.deliveryReceipt.stocked?9:8">
                         <div class="flex items-center justify-between">
                             <div class="flex items-center gap-5">
                                 <img [alt]="po.deliveryReceipt.supplier_name" src="assets/images/products/dash-prd-4.jpg"
@@ -87,7 +88,7 @@
 
             <ng-template #groupfooter let-po>
                 <tr class="hover:cursor-pointer">
-                    <td [attr.colspan]="!po.deliveryReceipt.stocked?7:6" class="text-left pr-12 ">
+                    <td [attr.colspan]="!po.deliveryReceipt.stocked?9:8" class="text-left pr-12 ">
                         <div class="flex items-center">
                             <div class="flex gap-2"><span class="font-semibold">Total Price: </span> <span>
                                     {{calculateItemPriceTotal(po.deliveryReceipt.id) | currency:'PHP' }}</span></div>
@@ -107,6 +108,7 @@
                         {{ item.name }}</td>
                     <td>{{ item.ticker }}</td>
                     <td>{{ item.storage_name }}</td>
+                    <td>{{ item.product_name }}</td>
                     <td>{{ item.price | currency:'PHP' }}</td>
                     <td>{{ item.quantity | number }}</td>
                     <td>{{ item.dateAdded | date: 'yyyy-MM-dd' }}</td>
@@ -231,9 +233,26 @@
         </div>
 
         <div class="flex items-center gap-4 mb-2">
-            <label for="storage" class="font-semibold w-24">Storage</label>
+            <label for="storage" class="font-semibold w-24">Item Storage</label>
             <p-select [options]="inventories" formControlName="storage" optionLabel="name" [filter]="true"
               filterBy="name" [showClear]="true" placeholder="Select storage location" class="flex-auto">
+              <ng-template #selectedItem let-selectedOption>
+                <div class="flex items-center gap-2">
+                  <div>{{ selectedOption.name }}</div>
+                </div>
+              </ng-template>
+              <ng-template let-inventory #item>
+                <div class="flex items-center gap-2">
+                  <div>{{ inventory.name }}</div>
+                </div>
+              </ng-template>
+            </p-select>
+          </div>
+        
+          <div class="flex items-center gap-4 mb-2">
+            <label for="type" class="font-semibold w-24">Item Type</label>
+            <p-select [options]="products" formControlName="type" optionLabel="name" [filter]="true"
+              filterBy="name" [showClear]="true" placeholder="Select item type" class="flex-auto">
               <ng-template #selectedItem let-selectedOption>
                 <div class="flex items-center gap-2">
                   <div>{{ selectedOption.name }}</div>
