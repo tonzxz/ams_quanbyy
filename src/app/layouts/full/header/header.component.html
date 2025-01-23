@@ -42,12 +42,13 @@
     mat-fab
     extended
     color="inherit"
+    (click)="markNotificationsAsRead()"
     [matMenuTriggerFor]="notification"
     aria-label="Notifications"
     class="d-flex justify-content-center profile-btn-dd"
   >
-    @if(notifications.length>0){
-      <p-overlaybadge  badgeSize="small" [value]="notifications.length" severity="danger">
+    @if(getUnreadCount()>0){
+      <p-overlaybadge  badgeSize="small" [value]="getUnreadCount()" severity="danger">
         <i class="pi pi-bell"></i>
       </p-overlaybadge>
     }@else{
@@ -157,3 +158,4 @@
 
 
 <p-confirmdialog />
+<p-toast />

@@ -13,7 +13,7 @@ import { NgScrollbarModule } from 'ngx-scrollbar';
 import { MatButtonModule } from '@angular/material/button';
 import { User, UserService } from 'src/app/services/user.service';
 import { BreadcrumbModule } from 'primeng/breadcrumb';
-import { ConfirmationService, MenuItem } from 'primeng/api';
+import { ConfirmationService, MenuItem, MessageService } from 'primeng/api';
 import { ConfirmDialogModule } from 'primeng/confirmdialog';
 import { DividerModule } from 'primeng/divider';
 import { BreadcrumbService } from 'src/app/services/breadcrump.service';
@@ -23,14 +23,15 @@ import { OverlayBadgeModule } from 'primeng/overlaybadge';
 import { filter } from 'rxjs';
 import { ScrollPanelModule } from 'primeng/scrollpanel';
 import { AppNotification, NotificationService } from 'src/app/services/notifications.service';
+import { ToastModule } from 'primeng/toast';
 @Component({
   selector: 'app-header',
   standalone: true,
   imports: [RouterModule, CommonModule, NgScrollbarModule, MaterialModule, MatButtonModule, BadgeModule,OverlayBadgeModule,
-    BreadcrumbModule,ConfirmDialogModule, DividerModule,PanelModule,ScrollPanelModule
+    BreadcrumbModule,ConfirmDialogModule, DividerModule,PanelModule,ScrollPanelModule, ToastModule
   ],
   templateUrl: './header.component.html',
-  providers:[ConfirmationService],
+  providers:[ConfirmationService,MessageService],
   encapsulation: ViewEncapsulation.None,
 })
 
@@ -51,6 +52,7 @@ export class HeaderComponent implements OnInit {
   constructor(private userService:UserService, 
     private router:Router,
     private activatedRoute:ActivatedRoute,
+    private messageService:MessageService,
     private notificationService:NotificationService,
     private breadcrumpService:BreadcrumbService,
     private confirmationService:ConfirmationService) {}
@@ -88,6 +90,12 @@ export class HeaderComponent implements OnInit {
       this.notifications = list ;
       this.notifications = this.notifications.filter(notif => notif.toUserId == this.user?.id)
       this.notifications = this.notifications.reverse();
+      // To fix
+      // if(this.notifications.length > 0 && this.notifications[0].toUserId == this.user?.id){
+      //   if(this.notifications.find(notif=>!notif.read)){
+      //     this.messageService.add({ severity: 'success', summary: 'Success', detail: `You have new notifications.` });
+      //   }
+      // }
     })
   }
 
@@ -115,6 +123,16 @@ export class HeaderComponent implements OnInit {
             
         },
     });
+}
+
+getUnreadCount():number{
+  return this.notifications.filter(notif=>!notif.read).length
+}
+
+markNotificationsAsRead(){ 
+  for(let notification of this.notifications){
+    this.notificationService.markAsRead(notification.id);
+  }
 }
 
   logout(){
