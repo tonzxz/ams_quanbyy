@@ -7,6 +7,7 @@ import { ApprovedBudgetComponent } from './approved-budget/approved-budget.compo
 import { PlanTrackingComponent } from './plan-tracking/plan-tracking.component';
 import { PurchaseRequestsComponent } from './purchase-requests/purchase-requests.component';
 import { RequisitionComponent } from './requisition/requisition.component';
+import { ReceivingComponent } from './receiving/receiving.component';
 
 export const enduserRoutes: Routes = [
   {
@@ -53,11 +54,16 @@ export const enduserRoutes: Routes = [
         data: { breadcrumb: 'Purchase Requests', roles: ['end-user'] },
         canActivate: [roleGuard],
       },
-
       {
         path: 'requisition',
         component: RequisitionComponent,
         data: { breadcrumb: 'Requisition', roles: ['end-user'] },
+        canActivate: [roleGuard],
+      },
+      {
+        path: 'receiving',
+        component: ReceivingComponent,
+        data: { breadcrumb: 'Receiving', roles: ['end-user'] },
         canActivate: [roleGuard],
       },
     ],
