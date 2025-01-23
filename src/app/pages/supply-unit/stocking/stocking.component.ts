@@ -26,6 +26,7 @@ import { OverlayBadgeModule } from 'primeng/overlaybadge'
 import { DeliveryReceipt, DeliveryReceiptItems, DeliveryReceiptService } from 'src/app/services/delivery-receipt.service';
 import { SelectModule } from 'primeng/select';
 import { InventoryLocation, InventoryService } from 'src/app/services/inventory.service';
+import { Product, ProductsService } from 'src/app/services/products.service';
 
 @Component({
   selector: 'app-stocking',
@@ -45,6 +46,7 @@ export class StockingComponent {
     allDRItems: DeliveryReceiptItems[] = [];  // List of purchase orders with items
     inventories: InventoryLocation[];
     allInventories:InventoryLocation[];
+    products:Product[];
     searchValue:string='';
     stockTab:number=1;
     showReceipt:boolean=false;
@@ -55,6 +57,7 @@ export class StockingComponent {
     constructor(
       private messageService: MessageService,
       private stockService:StocksService,
+      private productService:ProductsService,
       private confirmationService: ConfirmationService, 
       private inventoryService: InventoryService,
       private deliveryReceiptService: DeliveryReceiptService) {}
@@ -72,6 +75,7 @@ export class StockingComponent {
       this.allDRItems = await this.deliveryReceiptService.getAllDRItems();
       this.inventories = await this.inventoryService.getAllLocations();
       this.allInventories = await this.inventoryService.getAllLocations();
+      this.products = await this.productService.getAll();
       this.switchStockTab(1);
     }
   
@@ -140,6 +144,7 @@ export class StockingComponent {
         ticker: this.selectedStock.ticker,
         price: this.selectedStock.price,
         storage: this.allInventories.find(inv=>inv.id == this.selectedStock!.storage_id)??null,
+        type: this.products.find(product=>product.id == this.selectedStock!.product_id)??null,
         quantity: this.selectedStock.quantity,
         description: this.selectedStock.description || '' 
       })
@@ -158,6 +163,7 @@ export class StockingComponent {
       name: new FormControl('', Validators.required),
       ticker: new FormControl('', Validators.required),
       storage: new FormControl<InventoryLocation|null>(null, Validators.required),
+      type: new FormControl<Product|null>(null, Validators.required),
       price: new FormControl<number|null>(null, [Validators.required, Validators.min(0.001)]),
       quantity: new FormControl<number|null>(null, [Validators.required, Validators.min(1)]),
       description: new FormControl(''),
@@ -172,6 +178,8 @@ export class StockingComponent {
         name: stockData.name!,
         storage_id: stockData.storage?.id,
         storage_name: stockData.storage?.name,
+        product_id: stockData.type?.id,
+        product_name: stockData.type?.name,
         ticker: stockData.ticker!.toUpperCase(),
         price: Number(stockData.price!),
         quantity: Number(stockData.quantity!),
@@ -194,6 +202,8 @@ export class StockingComponent {
         name: stockData.name!,
         storage_id: stockData.storage?.id,
         storage_name: stockData.storage?.name,
+        product_id: stockData.type?.id,
+        product_name: stockData.type?.name,
         ticker: stockData.ticker!.toUpperCase(),
         price: Number(stockData.price!),
         quantity: Number(stockData.quantity!),

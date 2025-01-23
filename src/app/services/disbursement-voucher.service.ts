@@ -89,4 +89,16 @@ export class DisbursementVoucherService {
     this.disbursementVouchers[dvIndex].status = 'processing';
     localStorage.setItem('disbursementVouchers', JSON.stringify(this.disbursementVouchers));
   }
+
+  async verifyVoucher(voucherNo:string){
+    const dvIndex = this.disbursementVouchers.findIndex(v => v.voucherNo == voucherNo);
+    this.disbursementVouchers[dvIndex].status = 'recorded';
+    localStorage.setItem('disbursementVouchers', JSON.stringify(this.disbursementVouchers));
+  }
+
+  async rejectVoucher(voucherNo:string){
+    const dvIndex = this.disbursementVouchers.findIndex(v => v.voucherNo == voucherNo);
+    this.disbursementVouchers[dvIndex].status = 'pending';
+    localStorage.setItem('disbursementVouchers', JSON.stringify(this.disbursementVouchers));
+  }
 }

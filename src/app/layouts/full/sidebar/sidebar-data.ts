@@ -131,6 +131,12 @@ export const navItems: NavItem[] = [
     route: '/accounting/budget',
     requiredRoles: ['admin', 'superadmin'], // Only visible to admin and superadmin roles
   },
+  {
+    displayName: 'Voucher Review',
+    iconName: 'solar:ticket-sale-broken',
+    route: '/accounting/voucher-review',
+    requiredRoles: ['admin', 'superadmin', 'accounting'], 
+  },
 
   // Admin Section
   {
