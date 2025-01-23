@@ -1,22 +1,32 @@
 <p-card header="Purchase Requests">
     <div class="flex flex-row w-full justify-between items-center mt-2 mb-2">
         <div class="gap-3 flex flex-row w-full justify-between">
-            <p-iconfield>
-                <p-inputicon styleClass="pi pi-search"/>
-                <input type="text" pInputText placeholder="Search" />
+            <p-iconfield styleClass="small">
+                <p-inputicon styleClass="pi pi-search small"/>
+                <input [size]="'small'" type="text" pInputText placeholder="Search" [(ngModel)]="searchQuery" (input)="filterRequests()"/>
                 <!-- <p-inputicon styleClass="pi pi-spinner pi-spin" /> -->
             </p-iconfield>
             <div class="card flex justify-center">
-                <p-buttongroup >
-                    <p-button severity="secondary" label="Filter" icon="pi pi-filter" pTooltip="Filter Table by Department"></p-button>
-                    <p-button severity="secondary" label="Refresh" icon="pi pi-refresh" pTooltip="Refresh Table"/>
+                <p-buttongroup>
+                    <p-dropdown
+                        [options]="departments"
+                        [(ngModel)]="selectedDepartment"
+                        placeholder="Select Department"
+                        optionLabel="name"
+                        optionValue="value"
+                        [showClear]="true"
+                        styleClass="mr-2"
+                        (onChange)="filterRequests()">
+                    </p-dropdown>
+                    <p-button severity="secondary" icon="pi pi-refresh"  pTooltip="Refresh Table" (click)="resetFilters()"/>
+                    <p-button severity="secondary" icon="pi pi-file-pdf" pTooltip="Generate Report" (click)="generateReport(activeTabHeader)"></p-button>
                 </p-buttongroup>
             </div>
         </div>
     </div>
-    <p-tabView>
-        <p-tabPanel header="Pending">
-            <p-table class="mt-5" [paginator]="true" [rows]="8" [value]="purchaseRequests" [tableStyle]="{ 'min-width': '50rem' }" selectionMode="single" (onRowSelect)="onRowSelect($event)">
+    <p-tabView [(activeIndex)]="activeTabIndex" (onTabChange)="onTabChange($event)">
+        <p-tabPanel header="Pending Requests">
+            <p-table class="mt-5" [paginator]="true" [rows]="8" [value]="filteredRequests" [tableStyle]="{ 'min-width': '50rem' }" selectionMode="single" (onRowSelect)="onRowSelect($event)">
                 <ng-template pTemplate="header">
                     <tr>
                         <th>PR#</th>
@@ -44,16 +54,16 @@
                         <td>{{ request.quantity }}</td>
                         <td>{{ request.date }}</td>
                         <td class="">
-                            <button pButton pTooltip="Accept Purchase Request" showDelay="600" hideDelay="300" type="button" icon="pi pi-check" [rounded]="true" size="small" class="p-button-success mr-2"></button>
-                            <button pButton pTooltip="Reject Purchase Request" showDelay="600" hideDelay="300" type="button" icon="pi pi-times" [rounded]="true" size="small" class="p-button-danger"></button>
+                            <button pButton pTooltip="Accept Purchase Request" showDelay="600" hideDelay="300" type="button" [outlined]="true" icon="pi pi-check" [rounded]="true" size="small" class="p-button-success mr-2" (click)="confirmAcceptRequest(request)"></button>
+                            <button pButton pTooltip="Reject Purchase Request" showDelay="600" hideDelay="300" type="button" [outlined]="true" icon="pi pi-times" [rounded]="true" size="small" class="p-button-danger" (click)="confirmRejectRequest(request)"></button>
                         </td>
                     </tr>
                 </ng-template>    
             </p-table>
         </p-tabPanel>
 
-        <p-tabPanel header="Validated">
-            <p-table class="mt-5" [paginator]="true" [rows]="8" [value]="purchaseRequests" [tableStyle]="{ 'min-width': '50rem' }" selectionMode="single" (onRowSelect)="onRowSelect($event)">
+        <p-tabPanel header="Validated Requests">
+            <p-table class="mt-5" [paginator]="true" [rows]="8" [value]="filteredRequests" [tableStyle]="{ 'min-width': '50rem' }" selectionMode="single" (onRowSelect)="onRowSelect($event)">
                 <ng-template pTemplate="header">
                     <tr>
                         <th>PR#</th>
@@ -88,8 +98,8 @@
             </p-table>
         </p-tabPanel>
 
-        <p-tabPanel header="Rejected">
-            <p-table class="mt-5" [paginator]="true" [rows]="8" [value]="purchaseRequests" [tableStyle]="{ 'min-width': '50rem' }" selectionMode="single" (onRowSelect)="onRowSelect($event)">
+        <p-tabPanel header="Rejected Requests">
+            <p-table class="mt-5" [paginator]="true" [rows]="8" [value]="filteredRequests" [tableStyle]="{ 'min-width': '50rem' }" selectionMode="single" (onRowSelect)="onRowSelect($event)">
                 <ng-template pTemplate="header">
                     <tr>
                         <th>PR#</th>
@@ -127,7 +137,8 @@
     </p-tabView>
 </p-card>
 
-
+<p-confirmDialog></p-confirmDialog>
+<p-toast position="bottom-right"/>
 
 <p-dialog header="Purchase Request Details"   [(visible)]="displayModal" [modal]="true" [closable]="true" [style]="{ width: '25rem' }" (onHide)="hideModal()">
     <div class="flex justify-center mb-5"> 
@@ -172,7 +183,7 @@
         <span class="ml-7">Lorem ipsum dolor sit amet, consectetur adipiscing elit.</span>
     </div>
     <ng-template #footer>
-        <button pButton pTooltip="Accept Purchase Request" showDelay="600" hideDelay="300" label="Accept" type="button" icon="pi pi-check"  size="small" class="p-button-success mr-2"></button>
-        <button pButton pTooltip="Reject Purchase Request" showDelay="600" hideDelay="300" label="Reject" type="button" icon="pi pi-times"  size="small" class="p-button-danger"></button>
+        <button pButton pTooltip="Accept Purchase Request" showDelay="600" hideDelay="300" label="Accept" type="button" icon="pi pi-check"  size="small" class="p-button-success mr-2" (click)="confirmAcceptRequest(selectedRequest)"></button>
+        <button pButton pTooltip="Reject Purchase Request" showDelay="600" hideDelay="300" label="Reject" type="button" icon="pi pi-times"  size="small" class="p-button-danger" (click)="confirmRejectRequest(selectedRequest)"></button>
     </ng-template>
 </p-dialog>

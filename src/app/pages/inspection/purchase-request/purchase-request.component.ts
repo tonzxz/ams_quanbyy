@@ -1,19 +1,25 @@
 import { Component } from '@angular/core';
-import { RouterModule } from '@angular/router';
 import { CommonModule } from '@angular/common';
-import { TabsModule  } from 'primeng/tabs';
 import { CardModule } from 'primeng/card';
-import { TableModule, TableRowSelectEvent } from 'primeng/table';
 import { ButtonModule } from 'primeng/button';
-import { TabViewModule } from 'primeng/tabview';
+import { TableModule } from 'primeng/table';
+import { InputTextModule } from 'primeng/inputtext';
+import { FormsModule } from '@angular/forms';
+import { DropdownModule } from 'primeng/dropdown';
+import { MultiSelectModule } from 'primeng/multiselect';
+import { CheckboxModule } from 'primeng/checkbox';
+import { DialogModule } from 'primeng/dialog';
+import { ToastModule } from 'primeng/toast';
+import { ConfirmDialogModule } from 'primeng/confirmdialog';
 import { TooltipModule } from 'primeng/tooltip';
+import { TabViewModule } from 'primeng/tabview';
+import { ImageModule } from 'primeng/image';
 import { IconFieldModule } from 'primeng/iconfield';
 import { InputIconModule } from 'primeng/inputicon';
-import { InputTextModule } from 'primeng/inputtext';
-import { DialogModule } from 'primeng/dialog';
-import { ImageModule } from 'primeng/image';
 import { ButtonGroupModule } from 'primeng/buttongroup';
-import { FormsModule } from '@angular/forms';
+import { MessageService, ConfirmationService } from 'primeng/api';
+import jsPDF from 'jspdf';
+import 'jspdf-autotable';
 
 interface PurchaseRequest {
   code: string;
@@ -24,17 +30,48 @@ interface PurchaseRequest {
   date: string;
 }
 
+interface Department {
+  name: string;
+  value: string;
+}
 
 @Component({
   selector: 'app-purchase-request',
   standalone: true,
-  imports: [TabsModule, RouterModule, CommonModule, CardModule, TabViewModule, TooltipModule, IconFieldModule, InputIconModule, InputTextModule, DialogModule, ImageModule, ButtonGroupModule, TableModule, ButtonModule, FormsModule],
+  imports: [
+    CommonModule,
+    CardModule,
+    ButtonModule,
+    TableModule,
+    InputTextModule,
+    FormsModule,
+    DropdownModule,
+    MultiSelectModule,
+    CheckboxModule,
+    DialogModule,
+    ToastModule,
+    ConfirmDialogModule,
+    TooltipModule,
+    TabViewModule,
+    ImageModule,
+    IconFieldModule,
+    InputIconModule,
+    ButtonGroupModule
+  ],
   templateUrl: './purchase-request.component.html',
-  styleUrl: './purchase-request.component.scss'
+  styleUrls: ['./purchase-request.component.scss'],
+  providers: [MessageService, ConfirmationService]
 })
 export class PurchaseRequestComponent {
+  displayModal: boolean = false;
+  selectedRequest: any = null;
+  searchQuery: string = '';
+  selectedDepartment: string | null = null;
+  activeTabIndex: number = 0;
+  activeTabHeader: string = 'Pending Requests';
+  tabHeaders: string[] = ['Pending Requests', 'Validated Requests', 'Rejected Requests'];
 
-  purchaseRequests: PurchaseRequest[] = [
+  purchaseRequests: PurchaseRequest[] = [ 
     { code: 'PR001', name: 'John Doe', department: 'IT', item: 'Laptop', quantity: 1, date: '2023-01-01' },
     { code: 'PR002', name: 'Jane Smith', department: 'HR', item: 'Office Chair', quantity: 5, date: '2023-01-02' },
     { code: 'PR003', name: 'Alice Johnson', department: 'Finance', item: 'Calculator', quantity: 10, date: '2023-01-03' },
@@ -47,19 +84,121 @@ export class PurchaseRequestComponent {
     { code: 'PR010', name: 'Hank Irving', department: 'Sales', item: 'Whiteboard', quantity: 2, date: '2023-01-10' }
   ];
 
-  displayModal: boolean = false;
-  selectedRequest: PurchaseRequest | null = null;
-  
-  ngOnInit(): void {}
-  
-  onRowSelect(event: TableRowSelectEvent): void {
+  filteredRequests: PurchaseRequest[] = [...this.purchaseRequests];
+
+  departments: Department[] = [
+    { name: 'IT', value: 'IT' },
+    { name: 'HR', value: 'HR' },
+    { name: 'Finance', value: 'Finance' },
+    { name: 'Marketing', value: 'Marketing' },
+    { name: 'Sales', value: 'Sales' }
+  ];
+
+  constructor(private messageService: MessageService, private confirmationService: ConfirmationService) {}
+
+  onRowSelect(event: any) {
     this.selectedRequest = event.data;
     this.displayModal = true;
   }
-  
-  hideModal(): void {
+
+  hideModal() {
     this.displayModal = false;
     this.selectedRequest = null;
   }
-}
 
+  confirmAcceptRequest(request: any) {
+    this.confirmationService.confirm({
+      header: 'Are you sure?',
+      message: 'Are you sure you want to accept this purchase request?',
+      acceptButtonStyleClass: 'p-button-success',
+      rejectButtonStyleClass: 'p-button-secondary',
+      accept: () => {
+        this.acceptRequest(request);
+        this.messageService.add({severity:'success', summary: 'Confirmed', detail: 'Purchase request accepted'});
+      }
+    });
+  }
+
+  confirmRejectRequest(request: any) {
+    this.confirmationService.confirm({
+      header: 'Are you sure?',
+      message: 'Are you sure you want to reject this purchase request?',
+      acceptButtonStyleClass: 'p-button-danger',
+      rejectButtonStyleClass: 'p-button-secondary',
+      accept: () => {
+        this.rejectRequest(request);
+        this.messageService.add({severity:'error', summary: 'Confirmed', detail: 'Purchase request rejected'});
+      }
+    });
+  }
+
+  acceptRequest(request: any) {
+    // Logic to accept the purchase request
+    this.hideModal();
+  }
+
+  rejectRequest(request: any) {
+    // Logic to reject the purchase request
+    this.hideModal();
+  }
+
+  filterRequests() {
+    this.filteredRequests = this.purchaseRequests.filter(request =>
+      (this.searchQuery === '' || 
+        request.code.toLowerCase().includes(this.searchQuery.toLowerCase()) ||
+        request.name.toLowerCase().includes(this.searchQuery.toLowerCase()) ||
+        request.department.toLowerCase().includes(this.searchQuery.toLowerCase()) ||
+        request.item.toLowerCase().includes(this.searchQuery.toLowerCase()) ||
+        request.date.toLowerCase().includes(this.searchQuery.toLowerCase())) &&
+      (this.selectedDepartment === null || request.department === this.selectedDepartment)
+    );
+  }
+
+  resetFilters() {
+    this.searchQuery = '';
+    this.selectedDepartment = null;
+    this.filteredRequests = [...this.purchaseRequests];
+  }
+
+  onTabChange(event: any) {
+    console.log('Tab changed:', event);
+    this.activeTabIndex = event.index;
+    this.activeTabHeader = this.tabHeaders[this.activeTabIndex];
+    console.log('Active Tab Index:', this.activeTabIndex);
+    console.log('Active Tab Header:', this.activeTabHeader);
+  }
+  
+  generateReport(header: string) {
+    console.log('Generating report for:', header);
+    const doc = new jsPDF();
+  
+    // Add title with active tab header
+    doc.setFontSize(18);
+    doc.text(`${header} Report`, 10, 10);
+  
+    // Add filters information
+    doc.setFontSize(12);
+    doc.text(`Search Query: ${this.searchQuery || 'None'}`, 10, 20);
+    doc.text(`Selected Department: ${this.selectedDepartment || 'None'}`, 10, 30);
+  
+    // Add table
+    const headers = [['PR#', 'Requestor', 'Department', 'Item', 'Quantity', 'Date']];
+    const data = this.filteredRequests.map(request => [
+      request.code,
+      request.name,
+      request.department,
+      request.item,
+      request.quantity.toString(),
+      request.date
+    ]);
+  
+    (doc as any).autoTable({
+      head: headers,
+      body: data,
+      startY: 40
+    });
+  
+    // Save the PDF
+    doc.save(`${header.toLowerCase().replace(/ /g, '_')}_report.pdf`);
+  }
+}
