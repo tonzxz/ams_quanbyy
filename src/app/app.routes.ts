@@ -3,7 +3,6 @@ import { BlankComponent } from './layouts/blank/blank.component';
 import { FullComponent } from './layouts/full/full.component';
 import { authGuard } from './guards/auth.guard';
 import { dashboardGuard } from './guards/dashboard.guard';
-import { enduserRoutes } from './pages/enduser/enduser.routes';
 
 export const routes: Routes = [
   {
@@ -62,6 +61,12 @@ export const routes: Routes = [
         data: { breadcrumb: 'Admin' },
         loadChildren: () =>
           import('./pages/admin/admin.routes').then((m) => m.AdminRoutes),
+      },
+      {
+        path: 'bac',
+        data: { breadcrumb: 'BAC' },
+        loadChildren: () =>
+          import('./pages/bac/bac.routes').then((m) => m.bacRoutes),
       },
       {
         path: 'enduser',
