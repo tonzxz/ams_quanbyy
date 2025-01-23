@@ -1,6 +1,9 @@
 import { Injectable } from '@angular/core';
 import { z } from 'zod';
 import { Stock, StocksService } from './stocks.service';
+import { UserService } from './user.service';
+import { firstValueFrom } from 'rxjs';
+import { NotificationService } from './notifications.service';
 
 export const deliveryReceiptSchema = z.object({
   id: z.string().length(32, "ID must be exactly 32 characters").optional(),
@@ -132,7 +135,9 @@ export class DeliveryReceiptService {
   ];
   
 
-  constructor(private stockService:StocksService) { }
+  constructor(
+    private notifService:NotificationService,
+    private stockService:StocksService,private userService:UserService) { }
 
 
   async getAllDRItems():Promise<DeliveryReceiptItems[]>{
@@ -182,7 +187,19 @@ export class DeliveryReceiptService {
     if (receiptIndex !== -1) {
       this.receiptData[receiptIndex].status = 'processing';
       localStorage.setItem('deliveryReceipts', JSON.stringify(this.receiptData));
+      const users = await firstValueFrom(this.userService.getAllUsers());
+      for(let user of users){
+        if(user.role == 'superadmin' || user.role == 'inspection' || user.role == 'supply'){
+          this.notifService.addNotification(
+          `Receipt No. ${this.receiptData[receiptIndex].receipt_number} has been moved for inspection`,
+          'info',
+          user.id
+          )
+        }
+      }
     }
+
+   
   }
 
   async moveToVerified(id: string) {

@@ -87,6 +87,7 @@ export class HeaderComponent implements OnInit {
     this.notificationService.notifications$.subscribe(list=>{
       this.notifications = list ;
       this.notifications = this.notifications.filter(notif => notif.toUserId == this.user?.id)
+      this.notifications = this.notifications.reverse();
     })
   }
 
