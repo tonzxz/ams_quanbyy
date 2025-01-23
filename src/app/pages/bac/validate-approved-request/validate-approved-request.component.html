@@ -1,85 +1,162 @@
-<div class="flex p-4 space-x-4">
-    <!-- Purchase Request List -->
-    <div class="w-1/2">
-      <table class="min-w-full bg-white border border-gray-200">
-        <thead>
-          <tr class="bg-gray-100">
-            <th class="py-2 px-4 border-b">PR ID</th>
-            <th class="py-2 px-4 border-b">Department</th>
-            <th class="py-2 px-4 border-b">Amount</th>
-            <th class="py-2 px-4 border-b">Submission Date</th>
-            <th class="py-2 px-4 border-b">Status</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr
-            *ngFor="let request of purchaseRequests"
-            (click)="onRowSelect(request)"
-            class="cursor-pointer hover:bg-gray-50"
-            [ngClass]="{
-              'bg-blue-50': selectedRequest?.id === request.id
-            }"
-          >
-            <td class="py-2 px-4 border-b">{{ request.id }}</td>
-            <td class="py-2 px-4 border-b">{{ request.department }}</td>
-            <td class="py-2 px-4 border-b">{{ request.amount | currency }}</td>
-            <td class="py-2 px-4 border-b">{{ request.submissionDate }}</td>
-            <td class="py-2 px-4 border-b">
-              <span
-                [ngClass]="{
-                  'bg-green-100 text-green-800': request.status === 'Approved',
-                  'bg-red-100 text-red-800': request.status === 'Rejected',
-                  'bg-yellow-100 text-yellow-800': request.status === 'Pending'
-                }"
-                class="px-2 py-1 rounded-full text-sm"
-              >
-                {{ request.status }}
-              </span>
-            </td>
-          </tr>
-        </tbody>
-      </table>
-    </div>
-  
-    <!-- Purchase Request Details -->
-    <div class="w-1/2" *ngIf="selectedRequest">
-      <div class="bg-white border border-gray-200 rounded-lg shadow-sm p-6">
-        <h3 class="text-xl font-semibold mb-4">PR Details</h3>
-        <div class="space-y-4">
-          <p><strong>PR ID:</strong> {{ selectedRequest.id }}</p>
-          <p><strong>Department:</strong> {{ selectedRequest.department }}</p>
-          <p><strong>Amount:</strong> {{ selectedRequest.amount | currency }}</p>
-          <p><strong>Submission Date:</strong> {{ selectedRequest.submissionDate }}</p>
-          <p><strong>Budget Compliance:</strong> {{ selectedRequest.budgetCompliance }}</p>
-          <p><strong>Attachments:</strong></p>
-          <ul class="list-disc pl-6">
-            <li *ngFor="let attachment of selectedRequest.attachments">{{ attachment }}</li>
-          </ul>
-          <div class="mt-6 space-x-4">
-            <button
-              (click)="approveRequest()"
-              [disabled]="selectedRequest.status !== 'Pending'"
-              class="bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600 disabled:bg-green-300"
-            >
-              Approve
-            </button>
-            <button
-              (click)="rejectRequest()"
-              [disabled]="selectedRequest.status !== 'Pending'"
-              class="bg-red-500 text-white px-4 py-2 rounded hover:bg-red-600 disabled:bg-red-300"
-            >
-              Reject
-            </button>
-          </div>
-          <div class="mt-4" *ngIf="selectedRequest.status === 'Pending'">
-            <textarea
-              [(ngModel)]="feedback"
-              placeholder="Enter feedback for rejection..."
-              class="w-full p-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-              rows="3"
-            ></textarea>
-          </div>
+<!-- validate-approved-request.component.html -->
+<div class="card">
+    <p-toast></p-toast>
+    <p-confirmDialog></p-confirmDialog>
+
+    <!-- Purchase Request Table -->
+    <p-table 
+        #dt
+        [value]="purchaseRequests" 
+        [loading]="loading"
+        [paginator]="true" 
+        [rows]="10"
+        [rowHover]="true"
+        styleClass="p-datatable-gridlines"
+        responsiveLayout="scroll"
+        [filterDelay]="0"
+        [globalFilterFields]="['id', 'department', 'status']">
+        
+        <ng-template pTemplate="caption">
+            <div class="flex justify-content-between align-items-center">
+                <h5 class="m-0">Purchase Requests</h5>
+                <span class="p-input-icon-left">
+                    <i class="pi pi-search"></i>
+                    <input pInputText type="text" placeholder="Global Search" />
+                </span>
+            </div>
+        </ng-template>
+
+        <ng-template pTemplate="header">
+            <tr>
+                <th pSortableColumn="id">PR ID <p-sortIcon field="id"></p-sortIcon></th>
+                <th pSortableColumn="department">Department <p-sortIcon field="department"></p-sortIcon></th>
+                <th pSortableColumn="amount">Amount <p-sortIcon field="amount"></p-sortIcon></th>
+                <th pSortableColumn="submissionDate">Submission Date <p-sortIcon field="submissionDate"></p-sortIcon></th>
+                <th pSortableColumn="status">Status <p-sortIcon field="status"></p-sortIcon></th>
+                <th>Actions</th>
+            </tr>
+        </ng-template>
+
+        <ng-template pTemplate="body" let-request>
+            <tr (click)="onRowSelect(request)" class="cursor-pointer">
+                <td>{{request.id}}</td>
+                <td>{{request.department}}</td>
+                <td>{{request.amount | currency}}</td>
+                <td>{{request.submissionDate | date}}</td>
+                <td>
+                    <p-tag 
+                        [value]="request.status"
+                        [severity]="getStatusSeverity(request.status)">
+                    </p-tag>
+                </td>
+                <td>
+                    <button 
+                        pButton 
+                        icon="pi pi-eye" 
+                        class="p-button-rounded p-button-text"
+                        (click)="onRowSelect(request)">
+                    </button>
+                </td>
+            </tr>
+        </ng-template>
+    </p-table>
+
+    <!-- Details Dialog -->
+    <p-dialog 
+        [(visible)]="showDetailsDialog" 
+        [style]="{width: '70vw'}"
+        [modal]="true"
+        [draggable]="false"
+        [resizable]="false">
+        
+        <ng-template pTemplate="header">
+            <h3>PR Details #{{selectedRequest?.id}}</h3>
+        </ng-template>
+
+        <div class="grid" *ngIf="selectedRequest" @fadeInOut>
+            <div class="col-12 md:col-6">
+                <p-card>
+                    <h5>Basic Information</h5>
+                    <div class="field">
+                        <label class="font-bold">Department</label>
+                        <div>{{selectedRequest.department}}</div>
+                    </div>
+                    <div class="field">
+                        <label class="font-bold">Amount</label>
+                        <div>{{selectedRequest.amount | currency}}</div>
+                    </div>
+                    <div class="field">
+                        <label class="font-bold">Budget Compliance</label>
+                        <div>{{selectedRequest.budgetCompliance}}</div>
+                    </div>
+                </p-card>
+            </div>
+
+            <div class="col-12 md:col-6">
+                <p-card>
+                    <h5>Request Timeline</h5>
+                    <p-timeline [value]="selectedRequest.history">
+                        <ng-template pTemplate="content" let-event>
+                            <small class="p-text-secondary">{{event.date | date:'short'}}</small>
+                            <div class="font-bold">{{event.status}}</div>
+                            <div>{{event.user}}</div>
+                            <div *ngIf="event.comment">{{event.comment}}</div>
+                        </ng-template>
+                    </p-timeline>
+                </p-card>
+            </div>
+
+            <div class="col-12">
+                <p-card>
+                    <h5>Attachments</h5>
+                    <p-fileUpload 
+                        mode="basic" 
+                        [multiple]="true"
+                        accept="image/*,application/pdf"
+                        [maxFileSize]="1000000"
+                        (onUpload)="onUpload($event)"
+                        [auto]="true"
+                        chooseLabel="Upload New">
+                    </p-fileUpload>
+                    <ul class="list-none p-0 m-0 mt-3">
+                        <li *ngFor="let file of selectedRequest.attachments" class="flex align-items-center mb-2">
+                            <i class="pi pi-file mr-2"></i>
+                            <span>{{file}}</span>
+                        </li>
+                    </ul>
+                </p-card>
+            </div>
+
+            <div class="col-12" *ngIf="selectedRequest.status === 'Pending'">
+                <p-card>
+                    <div class="field">
+                        <label for="feedback">Feedback</label>
+                        <textarea 
+                            id="feedback"
+                            pInputTextarea 
+                            [(ngModel)]="feedback" 
+                            [rows]="3" 
+                            class="w-full"
+                            placeholder="Enter feedback for rejection...">
+                        </textarea>
+                    </div>
+                    <div class="flex justify-content-end gap-2">
+                        <button 
+                            pButton 
+                            label="Reject" 
+                            icon="pi pi-times"
+                            class="p-button-danger" 
+                            (click)="rejectRequest()">
+                        </button>
+                        <button 
+                            pButton 
+                            label="Approve" 
+                            icon="pi pi-check"
+                            (click)="approveRequest()">
+                        </button>
+                    </div>
+                </p-card>
+            </div>
         </div>
-      </div>
-    </div>
-  </div>
+    </p-dialog>
+</div>
