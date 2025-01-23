@@ -21,36 +21,7 @@ export const navItems: NavItem[] = [
     divider: true,
     requiredRoles: ['end-user'], // Only visible to end-user role
   },
-  {
-    displayName: 'Create Plan',
-    iconName: 'solar:documents-broken',
-    route: '/enduser/create-plan',
-    requiredRoles: ['end-user'], // Only visible to end-user role
-  },
-  {
-    displayName: 'View Plan',
-    iconName: 'solar:documents-broken',
-    route: '/enduser/view-plan',
-    requiredRoles: ['end-user'], // Only visible to end-user role
-  },
-  {
-    displayName: 'Approved Budget',
-    iconName: 'solar:documents-broken',
-    route: '/enduser/approved-budget',
-    requiredRoles: ['end-user'], // Only visible to end-user role
-  },
-  {
-    displayName: 'Plan Tracking',
-    iconName: 'solar:documents-broken',
-    route: '/enduser/plan-tracking',
-    requiredRoles: ['end-user'], // Only visible to end-user role
-  },
-   {
-    displayName: 'Puchase Requests',
-    iconName: 'solar:documents-broken',
-    route: '/enduser/purchase-requests',
-    requiredRoles: ['end-user'], // Only visible to end-user role
-  },
+  
   {
     displayName: 'Requisition',
     iconName: 'solar:documents-broken',
