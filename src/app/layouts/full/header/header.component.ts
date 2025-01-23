@@ -17,12 +17,17 @@ import { ConfirmationService, MenuItem } from 'primeng/api';
 import { ConfirmDialogModule } from 'primeng/confirmdialog';
 import { DividerModule } from 'primeng/divider';
 import { BreadcrumbService } from 'src/app/services/breadcrump.service';
+import { BadgeModule } from 'primeng/badge';
+import { PanelModule } from 'primeng/panel';
+import { OverlayBadgeModule } from 'primeng/overlaybadge';
 import { filter } from 'rxjs';
+import { ScrollPanelModule } from 'primeng/scrollpanel';
+import { AppNotification, NotificationService } from 'src/app/services/notifications.service';
 @Component({
   selector: 'app-header',
   standalone: true,
-  imports: [RouterModule, CommonModule, NgScrollbarModule, MaterialModule, MatButtonModule,
-    BreadcrumbModule,ConfirmDialogModule, DividerModule
+  imports: [RouterModule, CommonModule, NgScrollbarModule, MaterialModule, MatButtonModule, BadgeModule,OverlayBadgeModule,
+    BreadcrumbModule,ConfirmDialogModule, DividerModule,PanelModule,ScrollPanelModule
   ],
   templateUrl: './header.component.html',
   providers:[ConfirmationService],
@@ -41,10 +46,12 @@ export class HeaderComponent implements OnInit {
   intervalId: any;
   currentTime: Date = new Date();
   greeting: string;
+  notifications:AppNotification[]=[];
 
   constructor(private userService:UserService, 
     private router:Router,
     private activatedRoute:ActivatedRoute,
+    private notificationService:NotificationService,
     private breadcrumpService:BreadcrumbService,
     private confirmationService:ConfirmationService) {}
 
@@ -76,6 +83,10 @@ export class HeaderComponent implements OnInit {
           { icon: 'pi pi-home', route: '/dashboard' },
           ...this.breadcrumpService.createBreadcrumbs(this.activatedRoute.root)];
       });
+
+    this.notificationService.notifications$.subscribe(list=>{
+      this.notifications = list;
+    })
   }
 
   confirmLogout(event: Event) {
