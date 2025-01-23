@@ -192,7 +192,7 @@ export class DeliveryReceiptService {
       for(let user of users){
         if(user.role == 'superadmin' || user.role == 'inspection' || user.role == 'supply'){
           this.notifService.addNotification(
-          `Receipt No. ${this.receiptData[receiptIndex].receipt_number} has been moved for inspection`,
+          `Receipt No. ${this.receiptData[receiptIndex].receipt_number} has been moved for inspection.`,
           'info',
           user.id
           )
@@ -208,6 +208,16 @@ export class DeliveryReceiptService {
     if (receiptIndex !== -1) {
       this.receiptData[receiptIndex].status = 'verified';
       localStorage.setItem('deliveryReceipts', JSON.stringify(this.receiptData));
+      const users = await firstValueFrom(this.userService.getAllUsers());
+      for(let user of users){
+        if(user.role == 'superadmin' || user.role == 'inspection' || user.role == 'supply'){
+          this.notifService.addNotification(
+          `Receipt No. ${this.receiptData[receiptIndex].receipt_number} has been inspected and verified.`,
+          'success',
+          user.id
+          )
+        }
+      }
     }
   }
 
@@ -216,6 +226,16 @@ export class DeliveryReceiptService {
     if (receiptIndex !== -1) {
       this.receiptData[receiptIndex].status = 'unverified';
       localStorage.setItem('deliveryReceipts', JSON.stringify(this.receiptData));
+      const users = await firstValueFrom(this.userService.getAllUsers());
+      for(let user of users){
+        if(user.role == 'superadmin' || user.role == 'inspection' || user.role == 'supply'){
+          this.notifService.addNotification(
+          `Receipt No. ${this.receiptData[receiptIndex].receipt_number} has been rejected by the inspection team.`,
+          'error',
+          user.id
+          )
+        }
+      }
     }
   }
 
@@ -223,6 +243,16 @@ export class DeliveryReceiptService {
     const drIndex = this.receiptData.findIndex(dr => dr.id==id);
     this.receiptData[drIndex].stocked = true;
     localStorage.setItem('deliveryReceipts', JSON.stringify(this.receiptData));
+    const users = await firstValueFrom(this.userService.getAllUsers());
+    for(let user of users){
+      if(user.role == 'superadmin' || user.role == 'inspection' || user.role == 'supply'){
+        this.notifService.addNotification(
+        `Receipt No. ${this.receiptData[drIndex].receipt_number} has been stocked.`,
+        'info',
+        user.id
+        )
+      }
+    }
   }
 
   async deleteReceipt(id: string) {
