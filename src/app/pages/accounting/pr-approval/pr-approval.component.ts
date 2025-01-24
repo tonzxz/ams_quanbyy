@@ -35,6 +35,7 @@ export class PrApprovalComponent implements OnInit {
   @ViewChild('signatureCanvas', { static: false })
   signatureCanvas!: ElementRef<HTMLCanvasElement>;
   private canvasContext!: CanvasRenderingContext2D;
+  private isSigned = false; // Track if the signature exists
 
   constructor(
     private requisitionService: RequisitionService,
@@ -54,7 +55,7 @@ export class PrApprovalComponent implements OnInit {
       this.messageService.add({
         severity: 'error',
         summary: 'Error',
-        detail: 'Failed to load pending requests',
+        detail: 'Failed to load pending requests.',
       });
     } finally {
       this.loading = false;
@@ -87,11 +88,13 @@ export class PrApprovalComponent implements OnInit {
     const canvas = this.signatureCanvas.nativeElement;
     this.canvasContext = canvas.getContext('2d')!;
     this.canvasContext.clearRect(0, 0, canvas.width, canvas.height);
+    this.isSigned = false; // Reset signature flag
 
     let isDrawing = false;
 
     canvas.addEventListener('mousedown', () => {
       isDrawing = true;
+      this.isSigned = true; // Mark as signed
       this.canvasContext.beginPath();
     });
 
@@ -112,6 +115,7 @@ export class PrApprovalComponent implements OnInit {
   clearSignature() {
     const canvas = this.signatureCanvas.nativeElement;
     this.canvasContext.clearRect(0, 0, canvas.width, canvas.height);
+    this.isSigned = false; // Reset signature flag
   }
 
   async submitApproval() {
@@ -120,10 +124,7 @@ export class PrApprovalComponent implements OnInit {
         throw new Error('No request selected for approval.');
       }
 
-      const canvas = this.signatureCanvas.nativeElement;
-      const signatureDataUrl = canvas.toDataURL('image/png');
-
-      if (signatureDataUrl === canvas.toDataURL()) {
+      if (!this.isSigned) {
         this.messageService.add({
           severity: 'warn',
           summary: 'No Signature',
@@ -131,6 +132,9 @@ export class PrApprovalComponent implements OnInit {
         });
         return;
       }
+
+      const canvas = this.signatureCanvas.nativeElement;
+      const signatureDataUrl = canvas.toDataURL('image/png');
 
       this.loading = true;
 
@@ -171,7 +175,7 @@ export class PrApprovalComponent implements OnInit {
       this.messageService.add({
         severity: 'success',
         summary: 'Success',
-        detail: `Request has been ${status.toLowerCase()}`,
+        detail: `Request has been ${status.toLowerCase()}.`,
       });
 
       this.displayPpmpPreview = false;
@@ -182,7 +186,7 @@ export class PrApprovalComponent implements OnInit {
       this.messageService.add({
         severity: 'error',
         summary: 'Error',
-        detail: 'Failed to update request status',
+        detail: 'Failed to update request status.',
       });
     } finally {
       this.loading = false;
