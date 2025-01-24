@@ -1,8 +1,9 @@
 <mat-card class="cardWithShadow">
-    <mat-card-content>
-      <mat-card-title>Journal Entry Vouchers</mat-card-title>
-      <mat-card-subtitle class="mat-body-1 mb-10 !flex justify-between items-center">
-        <span> Review and manage journal entry vouchers in this section. </span>
+  <mat-card-content>
+    <mat-card-title>Journal Entry Vouchers</mat-card-title>
+    <mat-card-subtitle class="mat-body-1 mb-10 !flex justify-between items-center">
+      <span> Review and manage journal entry vouchers in this section. </span>
+      <div class="flex gap-3">
         <p-iconfield fluid class="w-full max-w-72">
           <p-inputicon styleClass="pi pi-search" />
           <input
@@ -16,81 +17,89 @@
             placeholder="Search"
           />
         </p-iconfield>
-      </mat-card-subtitle>
-  
-      <!-- Journal Entry Voucher Table -->
-      <p-table
-        #dt
-        [value]="journalEntries"
-        [paginator]="true"
-        [rows]="5"
-        [rowsPerPageOptions]="[5, 10, 20]"
-        [globalFilterFields]="['entryNo', 'description']"
-        [tableStyle]="{ 'min-width': '50rem' }"
-      >
-        <ng-template #header>
-          <tr>
-            <th>Entry Number</th>
-            <th>Description</th>
-            <th>Date</th>
-            <th>Debit Amount</th>
-            <th>Credit Amount</th>
-            <th style="width: 5rem"></th>
-          </tr>
-        </ng-template>
-  
-        <ng-template #body let-entry>
-          <tr>
-            <td>{{ entry.entryNo }}</td>
-            <td>{{ entry.description }}</td>
-            <td>{{ entry.date | date: 'mediumDate' }}</td>
-            <td>{{ entry.debitAmount | currency: 'PHP' }}</td>
-            <td>{{ entry.creditAmount | currency: 'PHP' }}</td>
-            <td>
-              <div class="flex gap-3">
-                <p-button
-                  severity="secondary"
-                  pTooltip="Click to view details"
-                  [outlined]="true"
-                  size="small"
-                  icon="pi pi-eye"
-                  rounded
-                  (click)="viewEntryDetails(entry)"
-                ></p-button>
+      </div>
+    </mat-card-subtitle>
+
+    <!-- Journal Entry Voucher Table -->
+    <p-table
+      #dt
+      [value]="journalEntries"
+      [paginator]="true"
+      [rows]="5"
+      [rowsPerPageOptions]="[5, 10, 20]"
+      [globalFilterFields]="['voucherNo', 'supplierName']"
+      [tableStyle]="{ 'min-width': '50rem' }"
+    >
+      <ng-template #header>
+        <tr>
+          <th>Voucher Number</th>
+          <th>Supplier Name</th>
+          <th>Date</th>
+          <th>Total Amount Due</th>
+          <th style="width: 5rem"></th>
+        </tr>
+      </ng-template>
+
+      <ng-template #body let-entry>
+        <tr>
+          <td>{{ entry.voucherNo }}</td>
+          <td>{{ entry.supplierName }}</td>
+          <td>{{ entry.date | date: 'mediumDate' }}</td>
+          <td>{{ entry.totalAmountDue | currency: 'PHP' }}</td>
+          <td>
+            <div class="flex gap-3">
+              <p-button
+                severity="secondary"
+                pTooltip="Click to view details"
+                [outlined]="true"
+                size="small"
+                icon="pi pi-eye"
+                rounded
+                (click)="viewEntryDetails(entry)"
+              ></p-button>
+              <p-button
+                severity="danger"
+                pTooltip="Export to PDF"
+                [outlined]="true"
+                size="small"
+                icon="pi pi-file-pdf"
+                rounded
+                (click)="exportPdf(entry)"
+              ></p-button>
+            </div>
+          </td>
+        </tr>
+      </ng-template>
+
+      <ng-template #emptymessage>
+        <tr>
+          <td colspan="5">
+            <div class="flex flex-col w-full items-center justify-center mb-8">
+              <div class="overflow-hidden h-52 w-52 mr-8">
+                <app-lottie-animation animation="box" class="w-60 h-60"></app-lottie-animation>
               </div>
-            </td>
-          </tr>
-        </ng-template>
-  
-        <ng-template #emptymessage>
-          <tr>
-            <td colspan="6">
-              <div class="flex flex-col w-full items-center justify-center mb-8">
-                <div class="overflow-hidden h-52 w-52 mr-8">
-                  <app-lottie-animation animation="box" class="w-60 h-60"></app-lottie-animation>
-                </div>
-                <span>No journal entries found.</span>
-              </div>
-            </td>
-          </tr>
-        </ng-template>
-      </p-table>
-    </mat-card-content>
-  </mat-card>
-  
-  <!-- View Entry Details Modal -->
-  <p-dialog [(visible)]="showEntryDetailsModal" [modal]="true" [style]="{ width: '30rem' }">
-    <ng-template #header>
-      <h3>Journal Entry Details</h3>
-    </ng-template>
-    <div *ngIf="selectedEntry">
-      <p><strong>Entry Number:</strong> {{ selectedEntry.entryNo }}</p>
-      <p><strong>Description:</strong> {{ selectedEntry.description }}</p>
-      <p><strong>Date:</strong> {{ selectedEntry.date | date: 'mediumDate' }}</p>
-      <p><strong>Debit Amount:</strong> {{ selectedEntry.debitAmount | currency: 'PHP' }}</p>
-      <p><strong>Credit Amount:</strong> {{ selectedEntry.creditAmount | currency: 'PHP' }}</p>
-    </div>
-  </p-dialog>
-  
-  <p-toast position="bottom-right" />
-  <p-confirmpopup />
+              <span>No journal entries found.</span>
+            </div>
+          </td>
+        </tr>
+      </ng-template>
+    </p-table>
+  </mat-card-content>
+</mat-card>
+
+<!-- View Entry Details Modal -->
+<p-dialog [(visible)]="showEntryDetailsModal" [modal]="true" [style]="{ width: '30rem' }">
+  <ng-template #header>
+    <h3>Journal Entry Details</h3>
+  </ng-template>
+  <div *ngIf="selectedEntry">
+    <p><strong>Voucher Number:</strong> {{ selectedEntry.voucherNo }}</p>
+    <p><strong>Supplier Name:</strong> {{ selectedEntry.supplierName }}</p>
+    <p><strong>Date:</strong> {{ selectedEntry.date | date: 'mediumDate' }}</p>
+    <p><strong>Total Amount Due:</strong> {{ selectedEntry.totalAmountDue | currency: 'PHP' }}</p>
+    <p><strong>Notes:</strong> {{ selectedEntry.notes }}</p>
+  </div>
+</p-dialog>
+
+<p-toast position="bottom-right" />
+<p-confirmpopup />
