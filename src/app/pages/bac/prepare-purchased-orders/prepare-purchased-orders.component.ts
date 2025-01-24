@@ -1,14 +1,27 @@
+// prepare-purchased-orders.component.ts
 import { Component } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 
+interface Item {
+  name: string;
+  quantity: number;
+  price: number;
+}
+
+interface ApprovalLog {
+  action: string;
+  timestamp: Date;
+  user: string;
+}
+
 interface PurchaseOrder {
   id: string;
   supplier: string;
-  items: { name: string; quantity: number; price: number }[];
+  items: Item[];
   totalCost: number;
   status: 'Draft' | 'Submitted' | 'Approved' | 'Rejected';
-  approvalLogs: { action: string; timestamp: Date; user: string }[];
+  approvalLogs: ApprovalLog[];
 }
 
 @Component({
@@ -21,7 +34,6 @@ interface PurchaseOrder {
 export class PreparePurchasedOrdersComponent {
   // Dummy data for suppliers
   suppliers: string[] = ['Supplier A', 'Supplier B', 'Supplier C'];
-
   // Current PO being created
   purchaseOrder: PurchaseOrder = {
     id: this.generateId(),
@@ -31,7 +43,6 @@ export class PreparePurchasedOrdersComponent {
     status: 'Draft',
     approvalLogs: [],
   };
-
   // New item being added to the PO
   newItem = { name: '', quantity: 1, price: 0 };
 
