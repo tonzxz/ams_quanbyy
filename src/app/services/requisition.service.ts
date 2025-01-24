@@ -1,5 +1,3 @@
-// src/app/services/requisition.service.ts
-
 import { Injectable } from '@angular/core';
 import { z } from 'zod';
 import { GroupService } from './group.service';
@@ -13,8 +11,17 @@ export const requisitionSchema = z.object({
   description: z.string().max(500).optional(),
   status: z.enum(['Pending', 'Approved', 'Rejected']),
   classifiedItemId: z.string().length(32, "Classified Item ID is required"),
-  group: z.string().min(1, "Group is required"), // Added group field
-  products: z.array(z.string()).optional(), // Added products field
+  group: z.string().min(1, "Group is required"),
+  products: z.array(
+    z.object({
+      id: z.string(),
+      name: z.string(),
+      quantity: z.number().min(1, "Quantity must be at least 1"),
+      specifications: z.string().optional(),
+      price: z.number().min(0, "Price cannot be negative"),
+    })
+  ),
+  signature: z.string().optional(), // Base64 image string for signature
 });
 
 // TypeScript type for usage in your code
@@ -29,7 +36,6 @@ export class RequisitionService {
 
   constructor(private groupService: GroupService) {
     this.loadFromLocalStorage();
-    // If empty, optionally load some dummy data for testing
     if (!this.requisitions.length) {
       this.loadDummyData();
     }
@@ -56,30 +62,40 @@ export class RequisitionService {
   }
 
   // Load some dummy data (optional)
+  
+
   private loadDummyData(): void {
-    const dummy: Requisition[] = [
-      {
-        id: this.generate32CharId(),
-        title: 'Office Supplies Request',
-        description: 'Request for stationery items.',
-        status: 'Pending',
-        classifiedItemId: 'dummyClassifiedItemId1',
-        group: '12345678901234567890123456789012', // Example group ID
-        products: ['12345678901234567890123456789012', '23456789012345678901234567890123'], // Example product IDs
-      },
-      {
-        id: this.generate32CharId(),
-        title: 'Electronics Request',
-        description: 'Request for new laptops.',
-        status: 'Approved',
-        classifiedItemId: 'dummyClassifiedItemId2',
-        group: '23456789012345678901234567890123', // Example group ID
-        products: ['34567890123456789012345678901234'], // Example product IDs
-      }
-    ];
-    this.requisitions = dummy;
-    this.saveToLocalStorage();
-  }
+  const dummy: Requisition[] = [
+    {
+      id: this.generate32CharId(),
+      title: 'Office Supplies Request',
+      description: 'Request for stationery items.',
+      status: 'Pending',
+      classifiedItemId: 'dummyClassifiedItemId1',
+      group: '12345678901234567890123456789012',
+      products: [
+        { id: '12345678901234567890123456789012', name: 'Pen', quantity: 10, price: 10, specifications: 'Blue ink' },
+        { id: '23456789012345678901234567890123', name: 'Notebook', quantity: 5, price: 50, specifications: 'A5 size' },
+      ],
+      signature: undefined, // Use undefined instead of null
+    },
+    {
+      id: this.generate32CharId(),
+      title: 'Electronics Request',
+      description: 'Request for new laptops.',
+      status: 'Approved',
+      classifiedItemId: 'dummyClassifiedItemId2',
+      group: '23456789012345678901234567890123',
+      products: [
+        { id: '34567890123456789012345678901234', name: 'Laptop', quantity: 2, price: 50000, specifications: '16GB RAM, 512GB SSD' },
+      ],
+      signature: undefined, // Use undefined instead of null
+    }
+  ];
+  this.requisitions = dummy;
+  this.saveToLocalStorage();
+}
+
 
   // ================================
   // CRUD Methods
@@ -93,11 +109,17 @@ export class RequisitionService {
   }
 
   /**
+   * Fetch all pending requisitions.
+   */
+  async getPendingRequisitions(): Promise<Requisition[]> {
+    return this.requisitions.filter((req) => req.status === 'Pending');
+  }
+
+  /**
    * Add a new requisition.
    * @param data - The requisition data (without ID).
    */
   async addRequisition(data: Omit<Requisition, 'id'>): Promise<void> {
-    // Validate with Zod
     const newRequisition: Requisition = {
       ...data,
       id: this.generate32CharId(),
@@ -113,9 +135,8 @@ export class RequisitionService {
    * @param requisition - The requisition to update.
    */
   async updateRequisition(requisition: Requisition): Promise<void> {
-    // Validate
     requisitionSchema.parse(requisition);
-    const index = this.requisitions.findIndex(r => r.id === requisition.id);
+    const index = this.requisitions.findIndex((r) => r.id === requisition.id);
     if (index === -1) {
       throw new Error('Requisition not found');
     }
@@ -124,11 +145,41 @@ export class RequisitionService {
   }
 
   /**
+   * Update the status of a requisition with a signature.
+   * @param id - The ID of the requisition.
+   * @param status - The new status ('Approved' or 'Rejected').
+   * @param signature - Base64 string of the signature (optional).
+   */
+  async updateRequisitionStatusWithSignature(id: string, status: 'Approved' | 'Rejected', signature: string): Promise<void> {
+    const requisition = this.requisitions.find((req) => req.id === id);
+    if (!requisition) {
+      throw new Error('Requisition not found');
+    }
+    requisition.status = status;
+    requisition.signature = signature;
+    this.saveToLocalStorage();
+  }
+
+  /**
+   * Update the status of a requisition.
+   * @param id - The ID of the requisition.
+   * @param status - The new status ('Approved' or 'Rejected').
+   */
+  async updateRequisitionStatus(id: string, status: 'Approved' | 'Rejected'): Promise<void> {
+    const requisition = this.requisitions.find((req) => req.id === id);
+    if (!requisition) {
+      throw new Error('Requisition not found');
+    }
+    requisition.status = status;
+    this.saveToLocalStorage();
+  }
+
+  /**
    * Delete a requisition by ID.
    * @param id - The ID of the requisition to delete.
    */
   async deleteRequisition(id: string): Promise<void> {
-    this.requisitions = this.requisitions.filter(r => r.id !== id);
+    this.requisitions = this.requisitions.filter((r) => r.id !== id);
     this.saveToLocalStorage();
   }
 
@@ -137,6 +188,6 @@ export class RequisitionService {
    * @param id - The ID of the requisition to fetch.
    */
   async getRequisitionById(id: string): Promise<Requisition | undefined> {
-    return this.requisitions.find(r => r.id === id);
+    return this.requisitions.find((r) => r.id === id);
   }
 }
