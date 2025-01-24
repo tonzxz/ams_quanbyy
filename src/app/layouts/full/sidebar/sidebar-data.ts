@@ -109,6 +109,24 @@ export const navItems: NavItem[] = [
     route: '/accounting/voucher-review',
     requiredRoles: ['admin', 'superadmin', 'accounting'],
   },
+  {
+    displayName: 'Journal Entry Voucher',
+    iconName: 'solar:ticket-sale-broken',
+    route: '/accounting/journal-entry-voucher',
+    requiredRoles: ['admin', 'superadmin', 'accounting'],
+  },
+  {
+    displayName: 'General Ledger',
+    iconName: 'solar:ticket-sale-broken',
+    route: '/accounting/general-ledger',
+    requiredRoles: ['admin', 'superadmin', 'accounting'],
+  },
+  {
+    displayName: 'General Journal',
+    iconName: 'solar:ticket-sale-broken',
+    route: '/accounting/general-journal',
+    requiredRoles: ['admin', 'superadmin', 'accounting'],
+  },
 
   // Admin Section
   {
