@@ -3,6 +3,10 @@ import { Routes } from '@angular/router';
 import { roleGuard } from 'src/app/guards/role.guard';
 import { BudgetComponent } from './budget/budget.component';
 import { VoucherReviewComponent } from './voucher-review/voucher-review.component';
+import { JournalEntryVoucherComponent } from './journal-entry-voucher/journal-entry-voucher.component';
+import { GeneralLedgerComponent } from './general-ledger/general-ledger.component';
+import { GeneralJournalComponent } from './general-journal/general-journal.component';
+import { PrApprovalComponent } from './pr-approval/pr-approval.component';
 
 export const AccountingRoutes: Routes = [
   {
@@ -24,6 +28,31 @@ export const AccountingRoutes: Routes = [
         component: VoucherReviewComponent,
         canActivate: [roleGuard],
         data: { roles: ['accounting', 'superadmin'], breadcrumb: 'Voucher Review' } 
+      },
+      {
+        path: 'journal-entry-voucher',
+        component: JournalEntryVoucherComponent,
+        canActivate: [roleGuard],
+        data: { roles: ['accounting', 'superadmin'], breadcrumb: 'Journal Entry Voucher' } 
+      },
+      {
+        path: 'general-ledger',
+        component: GeneralLedgerComponent,
+        canActivate: [roleGuard],
+        data: { roles: ['accounting', 'superadmin'], breadcrumb: 'General Ledger' } 
+      },
+      {
+        path: 'general-journal',
+        component: GeneralJournalComponent,
+        canActivate: [roleGuard],
+        data: { roles: ['accounting', 'superadmin'], breadcrumb: 'General Journal' } 
+      },
+
+      {
+        path: 'pr-approval',
+        component: PrApprovalComponent,
+        canActivate: [roleGuard],
+        data: { roles: ['accounting', 'superadmin'], breadcrumb: 'Purchase Request Approval' } 
       },
     
     ],

@@ -111,12 +111,36 @@ export const navItems: NavItem[] = [
     displayName: 'Budget',
     iconName: 'solar:widget-add-line-duotone',
     route: '/accounting/budget',
-    requiredRoles: ['admin', 'superadmin'],
+    requiredRoles: ['admin', 'superadmin','accounting'],
+  },
+   {
+    displayName: 'Purchase Request Approval',
+    iconName: 'solar:widget-add-line-duotone',
+    route: '/accounting/pr-approval',
+    requiredRoles: ['admin', 'superadmin' ,'accounting'],
   },
   {
     displayName: 'Voucher Review',
     iconName: 'solar:ticket-sale-broken',
     route: '/accounting/voucher-review',
+    requiredRoles: ['admin', 'superadmin', 'accounting'],
+  },
+  {
+    displayName: 'Journal Entry Voucher',
+    iconName: 'solar:ticket-sale-broken',
+    route: '/accounting/journal-entry-voucher',
+    requiredRoles: ['admin', 'superadmin', 'accounting'],
+  },
+  {
+    displayName: 'General Ledger',
+    iconName: 'solar:ticket-sale-broken',
+    route: '/accounting/general-ledger',
+    requiredRoles: ['admin', 'superadmin', 'accounting'],
+  },
+  {
+    displayName: 'General Journal',
+    iconName: 'solar:ticket-sale-broken',
+    route: '/accounting/general-journal',
     requiredRoles: ['admin', 'superadmin', 'accounting'],
   },
 

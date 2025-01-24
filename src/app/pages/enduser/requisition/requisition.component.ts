@@ -1,6 +1,8 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, Validators, ReactiveFormsModule, FormsModule } from '@angular/forms';
+import { DomSanitizer, SafeResourceUrl } from '@angular/platform-browser';
+import { jsPDF } from 'jspdf';
 import { MatCardModule } from '@angular/material/card';
 import { ButtonModule } from 'primeng/button';
 import { InputTextModule } from 'primeng/inputtext';
@@ -11,16 +13,20 @@ import { ConfirmDialogModule } from 'primeng/confirmdialog';
 import { ToastModule } from 'primeng/toast';
 import { TooltipModule } from 'primeng/tooltip';
 import { MessageService, ConfirmationService } from 'primeng/api';
+import { MultiSelectModule } from 'primeng/multiselect';
+import { TextareaModule } from 'primeng/textarea';
 
 import { RequisitionService } from 'src/app/services/requisition.service';
 import { GroupService, Group } from 'src/app/services/group.service';
 import { Product, ProductsService } from 'src/app/services/products.service';
+import { UserService, User } from 'src/app/services/user.service';
 
 interface SelectedProduct {
   id: string;
   name: string;
   description: string;
   quantity: number;
+  price: number; // Added price field
   specifications: string;
 }
 
@@ -37,6 +43,9 @@ interface ExtendedRequisition {
   productSpecifications?: Record<string, string>;
   dateCreated?: Date;
   lastModified?: Date;
+  ppmpAttachment?: string;
+  createdByUserId?: string;
+  createdByUserName?: string;
 }
 
 @Component({
@@ -56,28 +65,31 @@ interface ExtendedRequisition {
     CardModule,
     ConfirmDialogModule,
     ToastModule,
-    TooltipModule
+    TooltipModule,
+    TextareaModule,
+    MultiSelectModule,
   ],
-  providers: [ConfirmationService, MessageService]
+  providers: [ConfirmationService, MessageService],
 })
 export class RequisitionComponent implements OnInit {
-  // Form and data
   requisitionForm: FormGroup;
   groups: Group[] = [];
+  allProducts: Product[] = [];
   selectedGroups: string[] = [];
   availableProducts: Product[] = [];
   selectedProducts: SelectedProduct[] = [];
-  
-  // Filtered requisitions
   requisitions: ExtendedRequisition[] = [];
   pendingRequisitions: ExtendedRequisition[] = [];
   approvedRequisitions: ExtendedRequisition[] = [];
-
-  // UI state
   loading = false;
   submitted = false;
-  searchQuery = '';
   activeTabIndex = 0;
+  displayPdfDialog = false;
+  pdfDataUrl: SafeResourceUrl | null = null;
+  displayPpmpPreview = false;
+  selectedRequisitionPdf: SafeResourceUrl | null = null;
+  tempRequisitionData?: Partial<ExtendedRequisition>;
+  currentUser?: User;
 
   constructor(
     private formBuilder: FormBuilder,
@@ -85,15 +97,19 @@ export class RequisitionComponent implements OnInit {
     private groupService: GroupService,
     private productsService: ProductsService,
     private confirmationService: ConfirmationService,
-    private messageService: MessageService
+    private messageService: MessageService,
+    private userService: UserService,
+    public sanitizer: DomSanitizer
   ) {
     this.requisitionForm = this.initializeForm();
   }
 
   async ngOnInit() {
+    this.currentUser = this.userService.getUser();
     await Promise.all([
       this.loadGroups(),
-      this.loadRequisitions()
+      this.loadRequisitions(),
+      this.loadAllProducts(),
     ]);
   }
 
@@ -101,8 +117,16 @@ export class RequisitionComponent implements OnInit {
     return this.formBuilder.group({
       title: ['', [Validators.required, Validators.minLength(3)]],
       description: [''],
-      status: ['Pending']
+      status: ['Pending'],
     });
+  }
+
+  private async loadAllProducts(): Promise<void> {
+    try {
+      this.allProducts = await this.productsService.getAll();
+    } catch (error) {
+      this.handleError(error, 'Error loading products');
+    }
   }
 
   private async loadGroups(): Promise<void> {
@@ -129,26 +153,17 @@ export class RequisitionComponent implements OnInit {
   }
 
   private filterRequisitions(): void {
-    this.pendingRequisitions = this.requisitions.filter(req => req.status === 'Pending');
-    this.approvedRequisitions = this.requisitions.filter(req => req.status === 'Approved');
+    this.pendingRequisitions = this.requisitions.filter(
+      (req) => req.status === 'Pending'
+    );
+    this.approvedRequisitions = this.requisitions.filter(
+      (req) => req.status === 'Approved'
+    );
   }
 
-  async toggleGroupSelection(group: Group): Promise<void> {
-    if (!group.id) return;
-
-    const index = this.selectedGroups.indexOf(group.id);
-    
-    if (index === -1) {
-      this.selectedGroups.push(group.id);
-    } else {
-      this.selectedGroups.splice(index, 1);
-      // Remove products from unselected group
-      this.selectedProducts = this.selectedProducts.filter(product => 
-        !group.products?.includes(product.id)
-      );
-    }
-
-    await this.loadProductsForGroups();
+  onGroupsSelectionChange(newSelectedGroups: string[]): void {
+    this.selectedGroups = newSelectedGroups;
+    this.loadProductsForGroups();
   }
 
   async loadProductsForGroups(): Promise<void> {
@@ -157,15 +172,13 @@ export class RequisitionComponent implements OnInit {
         this.availableProducts = [];
         return;
       }
-
       this.loading = true;
       const productsSet = new Set<Product>();
 
       for (const groupId of this.selectedGroups) {
         const products = await this.productsService.getProductsByGroup(groupId);
-        products.forEach(product => productsSet.add(product));
+        products.forEach((p) => productsSet.add(p));
       }
-
       this.availableProducts = Array.from(productsSet);
     } catch (error) {
       this.handleError(error, 'Error loading products');
@@ -175,140 +188,292 @@ export class RequisitionComponent implements OnInit {
   }
 
   isProductSelected(product: Product): boolean {
-    return this.selectedProducts.some(sp => sp.id === product.id);
+    return this.selectedProducts.some((sp) => sp.id === product.id);
   }
 
   getSelectedProduct(product: Product): SelectedProduct | undefined {
-    return this.selectedProducts.find(sp => sp.id === product.id);
+    return this.selectedProducts.find((sp) => sp.id === product.id);
   }
 
   addProduct(product: Product): void {
-    if (!this.isProductSelected(product)) {
-      this.selectedProducts.push({
-        id: product.id!,
-        name: product.name,
-        description: product.description || '',
-        quantity: 1,
-        specifications: ''
-      });
-    }
+  if (!this.isProductSelected(product)) {
+    this.selectedProducts.push({
+      id: product.id!,
+      name: product.name,
+      description: product.description || '',
+      quantity: 1,
+      price: 0, // Default price
+      specifications: '',
+    });
   }
+}
+
 
   removeProduct(product: Product): void {
-    this.selectedProducts = this.selectedProducts.filter(sp => sp.id !== product.id);
-  }
-
-  updateProductSpecifications(product: SelectedProduct, specifications: string): void {
-    const index = this.selectedProducts.findIndex(p => p.id === product.id);
-    if (index !== -1) {
-      this.selectedProducts[index] = { ...product, specifications };
-    }
-  }
-
-  updateProductQuantity(product: SelectedProduct, quantity: number): void {
-    if (quantity < 1) return;
-    
-    const index = this.selectedProducts.findIndex(p => p.id === product.id);
-    if (index !== -1) {
-      this.selectedProducts[index] = { ...product, quantity };
-    }
+    this.selectedProducts = this.selectedProducts.filter(
+      (sp) => sp.id !== product.id
+    );
   }
 
   getProductName(productId: string): string {
-    const product = this.availableProducts.find(p => p.id === productId);
+    const product = this.allProducts.find((p) => p.id === productId);
     return product?.name || 'Unknown Product';
   }
 
+private generatePPMPPdf(reqData: Partial<ExtendedRequisition>): string {
+  const doc = new jsPDF({
+    orientation: 'portrait',
+    unit: 'pt',
+    format: 'a4',
+  });
+
+  const pageWidth = doc.internal.pageSize.getWidth();
+  const pageHeight = doc.internal.pageSize.getHeight();
+  const margin = 40;
+
+  // Header Section
+  doc.setFontSize(12);
+  doc.text('DDOST form No. 01', margin, 40);
+
+  doc.setFontSize(16);
+  doc.text('PROJECT PROCUREMENT MANAGEMENT PLAN', pageWidth / 2, 70, {
+    align: 'center',
+  });
+  doc.setFontSize(14);
+  const currentYear = new Date().getFullYear();
+  doc.text(`C.Y. ${currentYear}`, pageWidth / 2, 90, { align: 'center' });
+
+  // Program Information
+  doc.setFontSize(12);
+  doc.text('DAVAO DE ORO STATE COLLEGE', margin, 130);
+  doc.text(`Date Submitted: ${new Date().toLocaleDateString()}`, pageWidth - margin - 120, 130);
+  doc.text(`Program Control No: ${reqData.classifiedItemId}`, margin, 150);
+
+  // Table Header
+  const tableStartY = 180;
+  const rowHeight = 20;
+
+  // Dynamically allocate column widths
+  const colWidths = [
+    20, // ITEM
+    90, // PRODUCT
+    pageWidth - margin * 2 - 300, // DESCRIPTION (dynamic based on remaining space)
+    80, // UNIT COST
+    40, // QUANTITY
+    80, // TOTAL COST
+  ];
+
+  const headers = ['NO', 'PRODUCT', 'DESCRIPTION', 'UNIT COST', 'PCS', 'TOTAL COST'];
+  let xPos = margin;
+  let yPos = tableStartY;
+
+  doc.setFontSize(10);
+
+  // Draw headers
+  headers.forEach((header, i) => {
+    doc.rect(xPos, yPos, colWidths[i], rowHeight);
+    doc.text(header, xPos + 5, yPos + 14);
+    xPos += colWidths[i];
+  });
+
+  yPos += rowHeight;
+
+  // Table Rows
+  let itemNo = 1;
+  let grandTotal = 0;
+
+  reqData.products?.forEach((productId) => {
+    const product = this.allProducts.find((p) => p.id === productId);
+    const quantity = reqData.productQuantities?.[productId] || 1;
+    const unitPrice = this.getSelectedProduct(product!)?.price || 0;
+    const totalPrice = quantity * unitPrice;
+    grandTotal += totalPrice;
+
+    const descriptionText = this.getSelectedProduct(product!)?.specifications || 'N/A';
+
+    // Wrap the text for the Description column
+    const wrappedDescription = doc.splitTextToSize(descriptionText, colWidths[2] - 10);
+    const wrappedHeight = wrappedDescription.length * 12; // Calculate height based on wrapped lines
+    const effectiveRowHeight = Math.max(rowHeight, wrappedHeight);
+
+    // Handle page breaks
+    if (yPos + effectiveRowHeight > pageHeight - margin) {
+      doc.addPage();
+      yPos = margin;
+
+      // Redraw table headers on the new page
+      xPos = margin;
+      headers.forEach((header, i) => {
+        doc.rect(xPos, yPos, colWidths[i], rowHeight);
+        doc.text(header, xPos + 5, yPos + 14);
+        xPos += colWidths[i];
+      });
+
+      yPos += rowHeight;
+    }
+
+    // Reset xPos for each row
+    xPos = margin;
+
+    // Draw the row
+    [
+      itemNo.toString(),
+      product?.name || 'Unknown',
+      '', // Placeholder for Description text to handle wrapped content
+      `${unitPrice.toFixed(2)}`,
+      quantity.toString(),
+      `${totalPrice.toFixed(2)}`,
+    ].forEach((data, i) => {
+      const isDescription = i === 2;
+      const cellHeight = isDescription ? wrappedHeight : effectiveRowHeight;
+
+      // Draw the cell
+      doc.rect(xPos, yPos, colWidths[i], cellHeight);
+
+      // Add text inside the cell
+      if (isDescription) {
+        doc.text(wrappedDescription, xPos + 5, yPos + 12, { maxWidth: colWidths[i] - 10 });
+      } else {
+        doc.text(data, xPos + 5, yPos + 14);
+      }
+
+      xPos += colWidths[i];
+    });
+
+    itemNo++;
+    yPos += effectiveRowHeight;
+  });
+
+  // Grand Total
+  if (yPos + rowHeight > pageHeight - margin) {
+    doc.addPage();
+    yPos = margin;
+  }
+
+  doc.setFontSize(12);
+  doc.text(`Total: ${grandTotal.toFixed(2)}`, margin, yPos + 30);
+
+  // Footer Section
+  const user = this.userService.getUser();
+  doc.setFontSize(10);
+  doc.text(
+    `Generated by: ${user?.fullname || 'Unknown'} (${user?.role || 'Unknown'})`,
+    margin,
+    pageHeight - 30
+  );
+
+  // Return the PDF as a data URL
+  return doc.output('datauristring');
+}
+
+
+
+
+
+
+
+
   async saveRequisition(): Promise<void> {
     this.submitted = true;
-
-    if (this.requisitionForm.invalid || 
-        this.selectedGroups.length === 0 || 
-        this.selectedProducts.length === 0) {
+    
+    if (this.requisitionForm.invalid || !this.selectedGroups.length || !this.selectedProducts.length) {
       this.messageService.add({
         severity: 'error',
         summary: 'Validation Error',
-        detail: 'Please fill in all required fields and select at least one group and product'
+        detail: 'Please complete all required fields'
       });
       return;
     }
 
+    const requisitionData: Partial<ExtendedRequisition> = {
+      title: this.requisitionForm.get('title')?.value,
+      description: this.requisitionForm.get('description')?.value,
+      status: 'Pending',
+      group: this.selectedGroups[0],
+      selectedGroups: this.selectedGroups,
+      products: this.selectedProducts.map(p => p.id),
+      productQuantities: Object.fromEntries(
+        this.selectedProducts.map(p => [p.id, p.quantity])
+      ),
+      productSpecifications: Object.fromEntries(
+        this.selectedProducts.map(p => [p.id, p.specifications])
+      ),
+      dateCreated: new Date(),
+      classifiedItemId: this.generateClassifiedItemId(),
+      createdByUserId: this.currentUser?.id,
+      createdByUserName: this.currentUser?.fullname
+    };
+
+    const pdfBase64 = this.generatePPMPPdf(requisitionData);
+    requisitionData.ppmpAttachment = pdfBase64;
+    this.tempRequisitionData = requisitionData;
+    this.pdfDataUrl = this.sanitizer.bypassSecurityTrustResourceUrl(pdfBase64);
+    this.displayPdfDialog = true;
+  }
+
+  async finalizeRequisitionSave(): Promise<void> {
+    if (!this.tempRequisitionData) return;
+
     try {
       this.loading = true;
-      const formValue = this.requisitionForm.value;
-      
-      const requisitionData: Partial<ExtendedRequisition> = {
-        title: formValue.title,
-        description: formValue.description,
-        group: this.selectedGroups[0], // Primary group
-        selectedGroups: this.selectedGroups,
-        status: formValue.status,
-        products: this.selectedProducts.map(p => p.id),
-        productQuantities: this.selectedProducts.reduce((acc, curr) => {
-          acc[curr.id] = curr.quantity;
-          return acc;
-        }, {} as Record<string, number>),
-        productSpecifications: this.selectedProducts.reduce((acc, curr) => {
-          acc[curr.id] = curr.specifications;
-          return acc;
-        }, {} as Record<string, string>),
-        dateCreated: new Date(),
-        classifiedItemId: this.generateClassifiedItemId()
-      };
-
-      await this.requisitionService.addRequisition(requisitionData as Omit<ExtendedRequisition, 'id'>);
+      await this.requisitionService.addRequisition(
+        this.tempRequisitionData as Omit<ExtendedRequisition, 'id'>
+      );
       
       this.messageService.add({
         severity: 'success',
         summary: 'Success',
-        detail: 'Requisition created successfully'
+        detail: 'Requisition saved successfully'
       });
-
+      
       this.resetForm();
       await this.loadRequisitions();
-      this.activeTabIndex = 1; // Switch to Pending Requisitions tab
+      this.activeTabIndex = 1;
     } catch (error) {
       this.handleError(error, 'Error saving requisition');
     } finally {
       this.loading = false;
+      this.displayPdfDialog = false;
+      this.tempRequisitionData = undefined;
     }
+  }
+
+  cancelRequisitionSave(): void {
+    this.displayPdfDialog = false;
+    this.tempRequisitionData = undefined;
   }
 
   async editRequisition(req: ExtendedRequisition): Promise<void> {
-    this.activeTabIndex = 0; // Switch to Add Requisition tab
-    
-    try {
-      this.loading = true;
-      
-      // Set form values
-      this.requisitionForm.patchValue({
-        title: req.title,
-        description: req.description,
-        status: req.status
+  this.activeTabIndex = 0;
+  try {
+    this.loading = true;
+    this.requisitionForm.patchValue({
+      title: req.title,
+      description: req.description,
+      status: req.status,
+    });
+    this.selectedGroups = req.selectedGroups || [req.group];
+    await this.loadProductsForGroups();
+
+    if (req.products) {
+      this.selectedProducts = req.products.map((productId) => {
+        const product = this.availableProducts.find((p) => p.id === productId);
+        return {
+          id: productId,
+          name: product?.name || 'Unknown Product',
+          description: product?.description || '',
+          quantity: req.productQuantities?.[productId] || 1,
+          price: 0, // Default price
+          specifications: req.productSpecifications?.[productId] || '',
+        };
       });
-
-      // Set selected groups and products
-      this.selectedGroups = req.selectedGroups || [req.group];
-      await this.loadProductsForGroups();
-
-      if (req.products) {
-        this.selectedProducts = req.products.map(productId => {
-          const product = this.availableProducts.find(p => p.id === productId);
-          return {
-            id: productId,
-            name: product?.name || 'Unknown Product',
-            description: product?.description || '',
-            quantity: req.productQuantities?.[productId] || 1,
-            specifications: req.productSpecifications?.[productId] || ''
-          };
-        });
-      }
-    } catch (error) {
-      this.handleError(error, 'Error loading requisition details');
-    } finally {
-      this.loading = false;
     }
+  } catch (error) {
+    this.handleError(error, 'Error loading requisition details');
+  } finally {
+    this.loading = false;
   }
+}
 
   deleteRequisition(req: ExtendedRequisition): void {
     this.confirmationService.confirm({
@@ -325,7 +490,7 @@ export class RequisitionComponent implements OnInit {
             this.messageService.add({
               severity: 'success',
               summary: 'Success',
-              detail: 'Requisition deleted successfully'
+              detail: 'Requisition deleted successfully',
             });
           }
         } catch (error) {
@@ -333,8 +498,15 @@ export class RequisitionComponent implements OnInit {
         } finally {
           this.loading = false;
         }
-      }
+      },
     });
+  }
+
+  viewPPMP(requisition: ExtendedRequisition): void {
+    if (requisition.ppmpAttachment) {
+      this.selectedRequisitionPdf = this.sanitizer.bypassSecurityTrustResourceUrl(requisition.ppmpAttachment);
+      this.displayPpmpPreview = true;
+    }
   }
 
   resetForm(): void {
@@ -342,9 +514,7 @@ export class RequisitionComponent implements OnInit {
     this.selectedGroups = [];
     this.availableProducts = [];
     this.selectedProducts = [];
-    this.requisitionForm.reset({
-      status: 'Pending'
-    });
+    this.requisitionForm.reset({ status: 'Pending' });
   }
 
   private handleError(error: any, defaultMessage: string): void {
@@ -353,7 +523,7 @@ export class RequisitionComponent implements OnInit {
     this.messageService.add({
       severity: 'error',
       summary: 'Error',
-      detail: errorMessage
+      detail: errorMessage,
     });
   }
 
@@ -361,5 +531,20 @@ export class RequisitionComponent implements OnInit {
     return Array.from({ length: 32 }, () =>
       Math.floor(Math.random() * 16).toString(16)
     ).join('');
+  }
+
+  calculateProductTotalPrice(product: Product): number {
+    const selectedProduct = this.getSelectedProduct(product);
+    if (selectedProduct) {
+      return selectedProduct.quantity * selectedProduct.price;
+    }
+    return 0;
+  }
+
+   calculateGrandTotalPrice(): number {
+    return this.selectedProducts.reduce(
+      (total, product) => total + product.quantity * product.price,
+      0
+    );
   }
 }
