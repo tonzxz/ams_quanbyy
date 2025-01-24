@@ -6,6 +6,7 @@ import { VoucherReviewComponent } from './voucher-review/voucher-review.componen
 import { JournalEntryVoucherComponent } from './journal-entry-voucher/journal-entry-voucher.component';
 import { GeneralLedgerComponent } from './general-ledger/general-ledger.component';
 import { GeneralJournalComponent } from './general-journal/general-journal.component';
+import { PrApprovalComponent } from './pr-approval/pr-approval.component';
 
 export const AccountingRoutes: Routes = [
   {
@@ -45,6 +46,13 @@ export const AccountingRoutes: Routes = [
         component: GeneralJournalComponent,
         canActivate: [roleGuard],
         data: { roles: ['accounting', 'superadmin'], breadcrumb: 'General Journal' } 
+      },
+
+      {
+        path: 'pr-approval',
+        component: PrApprovalComponent,
+        canActivate: [roleGuard],
+        data: { roles: ['accounting', 'superadmin'], breadcrumb: 'Purchase Request Approval' } 
       },
     
     ],

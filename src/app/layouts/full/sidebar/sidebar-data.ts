@@ -101,7 +101,13 @@ export const navItems: NavItem[] = [
     displayName: 'Budget',
     iconName: 'solar:widget-add-line-duotone',
     route: '/accounting/budget',
-    requiredRoles: ['admin', 'superadmin'],
+    requiredRoles: ['admin', 'superadmin','accounting'],
+  },
+   {
+    displayName: 'Purchase Request Approval',
+    iconName: 'solar:widget-add-line-duotone',
+    route: '/accounting/pr-approval',
+    requiredRoles: ['admin', 'superadmin' ,'accounting'],
   },
   {
     displayName: 'Voucher Review',
