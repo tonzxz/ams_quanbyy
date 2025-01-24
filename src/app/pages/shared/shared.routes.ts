@@ -4,7 +4,8 @@ import { DisbursementVouchersComponent } from './disbursement-vouchers/disbursem
 import { DeliveryReceiptsComponent } from './delivery-receipts/delivery-receipts.component';
 import { DeliveredItemsComponent } from './delivered-items/delivered-items.component';
 import { ApprovalsComponent } from './approvals/approvals.component';
-
+import { RequestQuotationComponent } from './request-quotation/request-quotation.component';
+import { PurchaseReqComponent } from './purchase-req/purchase-req.component';
 
 export const SharedRoutes: Routes = [
   {
@@ -40,6 +41,16 @@ export const SharedRoutes: Routes = [
         component: ApprovalsComponent,
         data: {breadcrumb:'Approvals'}
       },
+      {
+        path: 'request-quotation',
+        component: RequestQuotationComponent,
+        data: {breadcrumb:'Request Quotation'}
+      },
+      {
+        path: 'purchase-req',
+        component: PurchaseReqComponent,
+        data: {breadcrumb:'Purchase Request'}
+      }
     ],
   },
 ];
