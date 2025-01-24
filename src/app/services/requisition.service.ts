@@ -11,7 +11,7 @@ export const requisitionSchema = z.object({
   description: z.string().max(500).optional(),
   status: z.enum(['Pending', 'Approved', 'Rejected']),
   classifiedItemId: z.string().length(32, "Classified Item ID is required"),
-  group: z.string().min(1, "Group is required"), // Added group field
+  group: z.string().min(1, "Group is required"),
   products: z.array(
     z.object({
       id: z.string(),
@@ -20,7 +20,8 @@ export const requisitionSchema = z.object({
       specifications: z.string().optional(),
       price: z.number().min(0, "Price cannot be negative"),
     })
-  ), // Added detailed product structure
+  ),
+  signature: z.string().optional(), // Base64 image string for signature
 });
 
 // TypeScript type for usage in your code
@@ -35,7 +36,6 @@ export class RequisitionService {
 
   constructor(private groupService: GroupService) {
     this.loadFromLocalStorage();
-    // If empty, optionally load some dummy data for testing
     if (!this.requisitions.length) {
       this.loadDummyData();
     }
@@ -62,35 +62,40 @@ export class RequisitionService {
   }
 
   // Load some dummy data (optional)
+  
+
   private loadDummyData(): void {
-    const dummy: Requisition[] = [
-      {
-        id: this.generate32CharId(),
-        title: 'Office Supplies Request',
-        description: 'Request for stationery items.',
-        status: 'Pending',
-        classifiedItemId: 'dummyClassifiedItemId1',
-        group: '12345678901234567890123456789012', // Example group ID
-        products: [
-          { id: '12345678901234567890123456789012', name: 'Pen', quantity: 10, price: 10, specifications: 'Blue ink' },
-          { id: '23456789012345678901234567890123', name: 'Notebook', quantity: 5, price: 50, specifications: 'A5 size' },
-        ],
-      },
-      {
-        id: this.generate32CharId(),
-        title: 'Electronics Request',
-        description: 'Request for new laptops.',
-        status: 'Approved',
-        classifiedItemId: 'dummyClassifiedItemId2',
-        group: '23456789012345678901234567890123', // Example group ID
-        products: [
-          { id: '34567890123456789012345678901234', name: 'Laptop', quantity: 2, price: 50000, specifications: '16GB RAM, 512GB SSD' },
-        ],
-      }
-    ];
-    this.requisitions = dummy;
-    this.saveToLocalStorage();
-  }
+  const dummy: Requisition[] = [
+    {
+      id: this.generate32CharId(),
+      title: 'Office Supplies Request',
+      description: 'Request for stationery items.',
+      status: 'Pending',
+      classifiedItemId: 'dummyClassifiedItemId1',
+      group: '12345678901234567890123456789012',
+      products: [
+        { id: '12345678901234567890123456789012', name: 'Pen', quantity: 10, price: 10, specifications: 'Blue ink' },
+        { id: '23456789012345678901234567890123', name: 'Notebook', quantity: 5, price: 50, specifications: 'A5 size' },
+      ],
+      signature: undefined, // Use undefined instead of null
+    },
+    {
+      id: this.generate32CharId(),
+      title: 'Electronics Request',
+      description: 'Request for new laptops.',
+      status: 'Approved',
+      classifiedItemId: 'dummyClassifiedItemId2',
+      group: '23456789012345678901234567890123',
+      products: [
+        { id: '34567890123456789012345678901234', name: 'Laptop', quantity: 2, price: 50000, specifications: '16GB RAM, 512GB SSD' },
+      ],
+      signature: undefined, // Use undefined instead of null
+    }
+  ];
+  this.requisitions = dummy;
+  this.saveToLocalStorage();
+}
+
 
   // ================================
   // CRUD Methods
@@ -115,7 +120,6 @@ export class RequisitionService {
    * @param data - The requisition data (without ID).
    */
   async addRequisition(data: Omit<Requisition, 'id'>): Promise<void> {
-    // Validate with Zod
     const newRequisition: Requisition = {
       ...data,
       id: this.generate32CharId(),
@@ -131,13 +135,28 @@ export class RequisitionService {
    * @param requisition - The requisition to update.
    */
   async updateRequisition(requisition: Requisition): Promise<void> {
-    // Validate
     requisitionSchema.parse(requisition);
     const index = this.requisitions.findIndex((r) => r.id === requisition.id);
     if (index === -1) {
       throw new Error('Requisition not found');
     }
     this.requisitions[index] = requisition;
+    this.saveToLocalStorage();
+  }
+
+  /**
+   * Update the status of a requisition with a signature.
+   * @param id - The ID of the requisition.
+   * @param status - The new status ('Approved' or 'Rejected').
+   * @param signature - Base64 string of the signature (optional).
+   */
+  async updateRequisitionStatusWithSignature(id: string, status: 'Approved' | 'Rejected', signature: string): Promise<void> {
+    const requisition = this.requisitions.find((req) => req.id === id);
+    if (!requisition) {
+      throw new Error('Requisition not found');
+    }
+    requisition.status = status;
+    requisition.signature = signature;
     this.saveToLocalStorage();
   }
 

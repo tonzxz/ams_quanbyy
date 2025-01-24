@@ -133,32 +133,23 @@ export class RequisitionComponent implements OnInit {
     }
   }
 
-  private async loadRequisitions(): Promise<void> {
-    try {
-      this.loading = true;
-      const requisitions = await this.requisitionService.getAllRequisitions();
-      this.requisitions = requisitions.map(req => ({
-        ...req,
-        selectedGroups: [req.group],
-        productQuantities: Object.fromEntries(req.products.map(p => [p.id, p.quantity])),
-        productSpecifications: Object.fromEntries(req.products.map(p => [p.id, p.specifications || ''])),
-      }));
-      this.filterRequisitions();
-    } catch (error) {
-      this.handleError(error, 'Error loading requisitions');
-    } finally {
-      this.loading = false;
-    }
+ async loadRequisitions(): Promise<void> {
+  try {
+    this.loading = true;
+    const allRequisitions = await this.requisitionService.getAllRequisitions();
+    this.requisitions = allRequisitions;
+    this.filterRequisitions();
+  } catch (error) {
+    this.handleError(error, 'Error loading requisitions');
+  } finally {
+    this.loading = false;
   }
+}
 
-  private filterRequisitions(): void {
-    this.pendingRequisitions = this.requisitions.filter(
-      (req) => req.status === 'Pending'
-    );
-    this.approvedRequisitions = this.requisitions.filter(
-      (req) => req.status === 'Approved'
-    );
-  }
+private filterRequisitions(): void {
+  this.pendingRequisitions = this.requisitions.filter(req => req.status === 'Pending');
+  this.approvedRequisitions = this.requisitions.filter(req => req.status === 'Approved');
+}
 
   onGroupsSelectionChange(newSelectedGroups: string[]): void {
     this.selectedGroups = newSelectedGroups;
