@@ -159,7 +159,7 @@ export class ReceivingComponent {
   confirmMarkAsReceived(order: any) {
     this.confirmationService.confirm({
       header: 'Are you sure?',
-      message: 'Are you sure you want to mark this order as received? <br> Your signature will automatically be added to the <br><strong> Reasearch and Acknowledgment Form</strong>.',
+      message: 'Are you sure you want to mark this order as received? <br> Your signature will automatically be added to the <br><strong> Receipt and Acknowledgment Form</strong>.',
       acceptButtonStyleClass: 'p-button-success',
       rejectButtonStyleClass: 'p-button-secondary',
       accept: () => {

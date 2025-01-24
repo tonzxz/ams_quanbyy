@@ -15,6 +15,16 @@ export const navItems: NavItem[] = [
     iconName: 'solar:widget-add-line-duotone',
     route: '/shared/approvals',
   },
+  {
+    displayName: 'Request Quotation',
+    iconName: 'solar:widget-add-line-duotone',
+    route: '/shared/request-quotation',
+  },
+  {
+    displayName: 'Purchase Request',
+    iconName: 'solar:widget-add-line-duotone',
+    route: '/shared/purchase-req',
+  },
 
   // End User Section
   {
