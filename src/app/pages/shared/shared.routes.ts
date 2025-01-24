@@ -6,6 +6,8 @@ import { DeliveredItemsComponent } from './delivered-items/delivered-items.compo
 import { ApprovalsComponent } from './approvals/approvals.component';
 import { RequestQuotationComponent } from './request-quotation/request-quotation.component';
 import { PurchaseReqComponent } from './purchase-req/purchase-req.component';
+import { DisbursementComponent } from './disbursement/disbursement.component';
+import { StockCardComponent } from './stock-card/stock-card.component';
 
 export const SharedRoutes: Routes = [
   {
@@ -50,6 +52,16 @@ export const SharedRoutes: Routes = [
         path: 'purchase-req',
         component: PurchaseReqComponent,
         data: {breadcrumb:'Purchase Request'}
+      },
+      {
+        path: 'disbursement',
+        component: DisbursementComponent,
+        data: {breadcrumb:'Disbursement Template'}
+      },
+      {
+        path: 'stock-card',
+        component: StockCardComponent,
+        data: {breadcrumb:'Stock Card Template'}
       }
     ],
   },
