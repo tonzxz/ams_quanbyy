@@ -26,6 +26,7 @@ interface SelectedProduct {
   name: string;
   description: string;
   quantity: number;
+  price: number; // Added price field
   specifications: string;
 }
 
@@ -195,16 +196,18 @@ export class RequisitionComponent implements OnInit {
   }
 
   addProduct(product: Product): void {
-    if (!this.isProductSelected(product)) {
-      this.selectedProducts.push({
-        id: product.id!,
-        name: product.name,
-        description: product.description || '',
-        quantity: 1,
-        specifications: '',
-      });
-    }
+  if (!this.isProductSelected(product)) {
+    this.selectedProducts.push({
+      id: product.id!,
+      name: product.name,
+      description: product.description || '',
+      quantity: 1,
+      price: 0, // Default price
+      specifications: '',
+    });
   }
+}
+
 
   removeProduct(product: Product): void {
     this.selectedProducts = this.selectedProducts.filter(
@@ -217,75 +220,158 @@ export class RequisitionComponent implements OnInit {
     return product?.name || 'Unknown Product';
   }
 
-   private generatePPMPPdf(reqData: Partial<ExtendedRequisition>): string {
-    const doc = new jsPDF();
-    
-    // Header
-    doc.setFontSize(12);
-    doc.text('LGU form No. 01', 20, 20);
-    
-    doc.setFontSize(16);
-    doc.text('PROJECT PROCUREMENT MANAGEMENT PLAN', doc.internal.pageSize.width/2, 35, { align: 'center' });
-    doc.setFontSize(14);
-    const currentYear = new Date().getFullYear();
-    doc.text(`C.Y. ${currentYear}`, doc.internal.pageSize.width/2, 45, { align: 'center' });
-    
-    // Program Info
-    doc.setFontSize(12);
-    doc.text('DAVAO DE ORO STATE COLLEGE', 20, 85);
-    doc.text(`Date Submitted: ${new Date().toLocaleDateString()}`, doc.internal.pageSize.width - 60, 70);
-    doc.text(`Program Control No: ${reqData.classifiedItemId}`, 20, 70);
+private generatePPMPPdf(reqData: Partial<ExtendedRequisition>): string {
+  const doc = new jsPDF({
+    orientation: 'portrait',
+    unit: 'pt',
+    format: 'a4',
+  });
 
-    // Create the table headers
-    let yPos = 100;
-    doc.setFontSize(10);
-    
-    // Draw table headers
-    const columns = ['ITEM NO.', 'DESCRIPTION', 'UNIT', 'UNIT COST', 'QTY.', 'TOTAL COST'];
-    const widths = [30, 150, 30, 40, 30, 40];
-    let xPos = 20;
-    
-    // Header row
-    columns.forEach((col, i) => {
-        doc.rect(xPos, yPos, widths[i], 10);
-        doc.text(col, xPos + 2, yPos + 7);
-        xPos += widths[i];
+  const pageWidth = doc.internal.pageSize.getWidth();
+  const pageHeight = doc.internal.pageSize.getHeight();
+  const margin = 40;
+
+  // Header Section
+  doc.setFontSize(12);
+  doc.text('DDOST form No. 01', margin, 40);
+
+  doc.setFontSize(16);
+  doc.text('PROJECT PROCUREMENT MANAGEMENT PLAN', pageWidth / 2, 70, {
+    align: 'center',
+  });
+  doc.setFontSize(14);
+  const currentYear = new Date().getFullYear();
+  doc.text(`C.Y. ${currentYear}`, pageWidth / 2, 90, { align: 'center' });
+
+  // Program Information
+  doc.setFontSize(12);
+  doc.text('DAVAO DE ORO STATE COLLEGE', margin, 130);
+  doc.text(`Date Submitted: ${new Date().toLocaleDateString()}`, pageWidth - margin - 120, 130);
+  doc.text(`Program Control No: ${reqData.classifiedItemId}`, margin, 150);
+
+  // Table Header
+  const tableStartY = 180;
+  const rowHeight = 20;
+
+  // Dynamically allocate column widths
+  const colWidths = [
+    20, // ITEM
+    90, // PRODUCT
+    pageWidth - margin * 2 - 300, // DESCRIPTION (dynamic based on remaining space)
+    80, // UNIT COST
+    40, // QUANTITY
+    80, // TOTAL COST
+  ];
+
+  const headers = ['NO', 'PRODUCT', 'DESCRIPTION', 'UNIT COST', 'PCS', 'TOTAL COST'];
+  let xPos = margin;
+  let yPos = tableStartY;
+
+  doc.setFontSize(10);
+
+  // Draw headers
+  headers.forEach((header, i) => {
+    doc.rect(xPos, yPos, colWidths[i], rowHeight);
+    doc.text(header, xPos + 5, yPos + 14);
+    xPos += colWidths[i];
+  });
+
+  yPos += rowHeight;
+
+  // Table Rows
+  let itemNo = 1;
+  let grandTotal = 0;
+
+  reqData.products?.forEach((productId) => {
+    const product = this.allProducts.find((p) => p.id === productId);
+    const quantity = reqData.productQuantities?.[productId] || 1;
+    const unitPrice = this.getSelectedProduct(product!)?.price || 0;
+    const totalPrice = quantity * unitPrice;
+    grandTotal += totalPrice;
+
+    const descriptionText = this.getSelectedProduct(product!)?.specifications || 'N/A';
+
+    // Wrap the text for the Description column
+    const wrappedDescription = doc.splitTextToSize(descriptionText, colWidths[2] - 10);
+    const wrappedHeight = wrappedDescription.length * 12; // Calculate height based on wrapped lines
+    const effectiveRowHeight = Math.max(rowHeight, wrappedHeight);
+
+    // Handle page breaks
+    if (yPos + effectiveRowHeight > pageHeight - margin) {
+      doc.addPage();
+      yPos = margin;
+
+      // Redraw table headers on the new page
+      xPos = margin;
+      headers.forEach((header, i) => {
+        doc.rect(xPos, yPos, colWidths[i], rowHeight);
+        doc.text(header, xPos + 5, yPos + 14);
+        xPos += colWidths[i];
+      });
+
+      yPos += rowHeight;
+    }
+
+    // Reset xPos for each row
+    xPos = margin;
+
+    // Draw the row
+    [
+      itemNo.toString(),
+      product?.name || 'Unknown',
+      '', // Placeholder for Description text to handle wrapped content
+      `${unitPrice.toFixed(2)}`,
+      quantity.toString(),
+      `${totalPrice.toFixed(2)}`,
+    ].forEach((data, i) => {
+      const isDescription = i === 2;
+      const cellHeight = isDescription ? wrappedHeight : effectiveRowHeight;
+
+      // Draw the cell
+      doc.rect(xPos, yPos, colWidths[i], cellHeight);
+
+      // Add text inside the cell
+      if (isDescription) {
+        doc.text(wrappedDescription, xPos + 5, yPos + 12, { maxWidth: colWidths[i] - 10 });
+      } else {
+        doc.text(data, xPos + 5, yPos + 14);
+      }
+
+      xPos += colWidths[i];
     });
-    yPos += 10;
 
-    // Items
-    let itemNo = 1;
-    reqData.products?.forEach((productId) => {
-        const product = this.allProducts.find(p => p.id === productId);
-        const qty = reqData.productQuantities?.[productId] || 1;
-        const specs = reqData.productSpecifications?.[productId] || '';
-        const unitCost = 0; // You might want to add this to your product interface
-        const totalCost = qty * unitCost;
-        
-        xPos = 20;
-        columns.forEach((_, i) => {
-            doc.rect(xPos, yPos, widths[i], 10);
-            xPos += widths[i];
-        });
+    itemNo++;
+    yPos += effectiveRowHeight;
+  });
 
-        // Item data
-        doc.text(itemNo.toString(), 22, yPos + 7);
-        doc.text(product?.name || 'Unknown', 52, yPos + 7);
-        doc.text('pcs', 82, yPos + 7); // Default unit
-        doc.text(unitCost.toString(), 112, yPos + 7);
-        doc.text(qty.toString(), 142, yPos + 7);
-        doc.text(totalCost.toString(), 172, yPos + 7);
-
-        yPos += 10;
-        itemNo++;
-    });
-
-    // Footer
-    const user = this.userService.getUser();
-    doc.text(`Generated by: ${user?.fullname || 'Unknown'} (${user?.role || 'Unknown'})`, 20, doc.internal.pageSize.height - 20);
-    
-    return doc.output('datauristring');
+  // Grand Total
+  if (yPos + rowHeight > pageHeight - margin) {
+    doc.addPage();
+    yPos = margin;
   }
+
+  doc.setFontSize(12);
+  doc.text(`Total: ${grandTotal.toFixed(2)}`, margin, yPos + 30);
+
+  // Footer Section
+  const user = this.userService.getUser();
+  doc.setFontSize(10);
+  doc.text(
+    `Generated by: ${user?.fullname || 'Unknown'} (${user?.role || 'Unknown'})`,
+    margin,
+    pageHeight - 30
+  );
+
+  // Return the PDF as a data URL
+  return doc.output('datauristring');
+}
+
+
+
+
+
+
+
 
   async saveRequisition(): Promise<void> {
     this.submitted = true;
@@ -358,35 +444,36 @@ export class RequisitionComponent implements OnInit {
   }
 
   async editRequisition(req: ExtendedRequisition): Promise<void> {
-    this.activeTabIndex = 0;
-    try {
-      this.loading = true;
-      this.requisitionForm.patchValue({
-        title: req.title,
-        description: req.description,
-        status: req.status,
-      });
-      this.selectedGroups = req.selectedGroups || [req.group];
-      await this.loadProductsForGroups();
+  this.activeTabIndex = 0;
+  try {
+    this.loading = true;
+    this.requisitionForm.patchValue({
+      title: req.title,
+      description: req.description,
+      status: req.status,
+    });
+    this.selectedGroups = req.selectedGroups || [req.group];
+    await this.loadProductsForGroups();
 
-      if (req.products) {
-        this.selectedProducts = req.products.map((productId) => {
-          const product = this.availableProducts.find((p) => p.id === productId);
-          return {
-            id: productId,
-            name: product?.name || 'Unknown Product',
-            description: product?.description || '',
-            quantity: req.productQuantities?.[productId] || 1,
-            specifications: req.productSpecifications?.[productId] || '',
-          };
-        });
-      }
-    } catch (error) {
-      this.handleError(error, 'Error loading requisition details');
-    } finally {
-      this.loading = false;
+    if (req.products) {
+      this.selectedProducts = req.products.map((productId) => {
+        const product = this.availableProducts.find((p) => p.id === productId);
+        return {
+          id: productId,
+          name: product?.name || 'Unknown Product',
+          description: product?.description || '',
+          quantity: req.productQuantities?.[productId] || 1,
+          price: 0, // Default price
+          specifications: req.productSpecifications?.[productId] || '',
+        };
+      });
     }
+  } catch (error) {
+    this.handleError(error, 'Error loading requisition details');
+  } finally {
+    this.loading = false;
   }
+}
 
   deleteRequisition(req: ExtendedRequisition): void {
     this.confirmationService.confirm({
@@ -444,5 +531,20 @@ export class RequisitionComponent implements OnInit {
     return Array.from({ length: 32 }, () =>
       Math.floor(Math.random() * 16).toString(16)
     ).join('');
+  }
+
+  calculateProductTotalPrice(product: Product): number {
+    const selectedProduct = this.getSelectedProduct(product);
+    if (selectedProduct) {
+      return selectedProduct.quantity * selectedProduct.price;
+    }
+    return 0;
+  }
+
+   calculateGrandTotalPrice(): number {
+    return this.selectedProducts.reduce(
+      (total, product) => total + product.quantity * product.price,
+      0
+    );
   }
 }

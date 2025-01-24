@@ -77,41 +77,68 @@
                 </div>
 
                 <!-- Product Form if already selected -->
-                <div *ngIf="isProductSelected(product)">
-                  <div class="space-y-3">
-                    <div>
-                      <label class="block text-sm font-medium text-gray-800 mb-1">Define Specifications</label>
-                      <textarea
-                        pInputTextarea
-                        [(ngModel)]="getSelectedProduct(product)!.specifications"
-                        [ngModelOptions]="{ standalone: true }"
-                        rows="4"
-                        placeholder="Enter required specifications"
-                        class="w-full text-sm border border-gray-300 rounded-md focus:border-blue-500 focus:ring-2 focus:ring-blue-200"
-                      ></textarea>
-                    </div>
-                    <div>
-                      <label class="block text-sm font-medium text-gray-800 mb-1">Quantity</label>
-                      <div class="flex gap-2">
-                        <input
-                          type="number"
-                          pInputText
-                          [(ngModel)]="getSelectedProduct(product)!.quantity"
-                          [ngModelOptions]="{ standalone: true }"
-                          class="w-24 text-sm border border-gray-300 rounded-md focus:border-blue-500 focus:ring-2 focus:ring-blue-200"
-                          min="1"
-                        />
-                        <p-button
-                          icon="pi pi-trash"
-                          (click)="removeProduct(product)"
-                          severity="danger"
-                          [outlined]="true"
-                          size="small"
-                        ></p-button>
-                      </div>
-                    </div>
-                  </div>
-                </div>
+               <div *ngIf="isProductSelected(product)" class="border border-gray-300 rounded-lg p-6 shadow-md">
+  <!-- Product Name -->
+  <h4 class="text-lg font-semibold text-gray-800 mb-4">{{ product.name }}</h4>
+
+  <!-- Specifications -->
+  <div class="mb-6">
+    <label class="block text-sm font-medium text-gray-800 mb-2">Define Specifications</label>
+    <textarea
+      pInputTextarea
+      [(ngModel)]="getSelectedProduct(product)!.specifications"
+      [ngModelOptions]="{ standalone: true }"
+      rows="3"
+      placeholder="Enter required specifications"
+      class="w-full text-sm border border-gray-300 rounded-md focus:border-blue-500 focus:ring focus:ring-blue-200"
+    ></textarea>
+  </div>
+
+  <!-- Quantity -->
+  <div class="mb-6">
+    <label class="block text-sm font-medium text-gray-800 mb-2">Quantity</label>
+    <input
+      type="number"
+      pInputText
+      [(ngModel)]="getSelectedProduct(product)!.quantity"
+      [ngModelOptions]="{ standalone: true }"
+      class="w-full text-sm border border-gray-300 rounded-md focus:border-blue-500 focus:ring focus:ring-blue-200"
+      min="1"
+    />
+  </div>
+
+  <!-- Price -->
+  <div class="mb-6">
+    <label class="block text-sm font-medium text-gray-800 mb-2">Price (₱)</label>
+    <input
+      type="number"
+      pInputText
+      [(ngModel)]="getSelectedProduct(product)!.price"
+      [ngModelOptions]="{ standalone: true }"
+      class="w-full text-sm border border-gray-300 rounded-md focus:border-blue-500 focus:ring focus:ring-blue-200"
+      min="0"
+    />
+  </div>
+
+  <!-- Total Price -->
+  <div class="text-lg font-semibold text-gray-900 mb-4">
+    Total Price: {{ calculateProductTotalPrice(product) | currency: 'PHP' }}
+  </div>
+
+  <!-- Cancel Button -->
+  <div class="flex justify-end mt-6">
+    <p-button
+      label="Cancel"
+      icon="pi pi-times"
+      (click)="removeProduct(product)"
+      severity="danger"
+      [outlined]="true"
+      size="small"
+      class="hover:shadow-md"
+    ></p-button>
+  </div>
+</div>
+
 
                 <!-- Add Button if not yet selected -->
                 <div *ngIf="!isProductSelected(product)" class="flex justify-end mt-4">
