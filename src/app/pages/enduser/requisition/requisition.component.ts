@@ -16,7 +16,7 @@ import { MessageService, ConfirmationService } from 'primeng/api';
 import { MultiSelectModule } from 'primeng/multiselect';
 import { TextareaModule } from 'primeng/textarea';
 
-import { RequisitionService } from 'src/app/services/requisition.service';
+import { RequisitionService, Requisition } from 'src/app/services/requisition.service';
 import { GroupService, Group } from 'src/app/services/group.service';
 import { Product, ProductsService } from 'src/app/services/products.service';
 import { UserService, User } from 'src/app/services/user.service';
@@ -24,21 +24,14 @@ import { UserService, User } from 'src/app/services/user.service';
 interface SelectedProduct {
   id: string;
   name: string;
-  description: string;
+  description?: string;
   quantity: number;
-  price: number; // Added price field
-  specifications: string;
+  price: number;
+  specifications?: string;
 }
 
-interface ExtendedRequisition {
-  id?: string;
-  title: string;
-  description?: string;
-  status: 'Pending' | 'Approved' | 'Rejected';
-  classifiedItemId: string;
-  group: string;
+interface ExtendedRequisition extends Requisition {
   selectedGroups?: string[];
-  products?: string[];
   productQuantities?: Record<string, number>;
   productSpecifications?: Record<string, string>;
   dateCreated?: Date;
@@ -143,7 +136,13 @@ export class RequisitionComponent implements OnInit {
   private async loadRequisitions(): Promise<void> {
     try {
       this.loading = true;
-      this.requisitions = await this.requisitionService.getAllRequisitions();
+      const requisitions = await this.requisitionService.getAllRequisitions();
+      this.requisitions = requisitions.map(req => ({
+        ...req,
+        selectedGroups: [req.group],
+        productQuantities: Object.fromEntries(req.products.map(p => [p.id, p.quantity])),
+        productSpecifications: Object.fromEntries(req.products.map(p => [p.id, p.specifications || ''])),
+      }));
       this.filterRequisitions();
     } catch (error) {
       this.handleError(error, 'Error loading requisitions');
@@ -196,18 +195,17 @@ export class RequisitionComponent implements OnInit {
   }
 
   addProduct(product: Product): void {
-  if (!this.isProductSelected(product)) {
-    this.selectedProducts.push({
-      id: product.id!,
-      name: product.name,
-      description: product.description || '',
-      quantity: 1,
-      price: 0, // Default price
-      specifications: '',
-    });
+    if (!this.isProductSelected(product)) {
+      this.selectedProducts.push({
+        id: product.id!,
+        name: product.name,
+        description: product.description || '',
+        quantity: 1,
+        price: 0,
+        specifications: '',
+      });
+    }
   }
-}
-
 
   removeProduct(product: Product): void {
     this.selectedProducts = this.selectedProducts.filter(
@@ -220,162 +218,154 @@ export class RequisitionComponent implements OnInit {
     return product?.name || 'Unknown Product';
   }
 
-private generatePPMPPdf(reqData: Partial<ExtendedRequisition>): string {
-  const doc = new jsPDF({
-    orientation: 'portrait',
-    unit: 'pt',
-    format: 'a4',
-  });
+  private generatePPMPPdf(reqData: Partial<ExtendedRequisition>): string {
+    const doc = new jsPDF({
+      orientation: 'portrait',
+      unit: 'pt',
+      format: 'a4',
+    });
 
-  const pageWidth = doc.internal.pageSize.getWidth();
-  const pageHeight = doc.internal.pageSize.getHeight();
-  const margin = 40;
+    const pageWidth = doc.internal.pageSize.getWidth();
+    const pageHeight = doc.internal.pageSize.getHeight();
+    const margin = 40;
 
-  // Header Section
-  doc.setFontSize(12);
-  doc.text('DDOST form No. 01', margin, 40);
+    // Header Section
+    doc.setFontSize(12);
+    doc.text('DDOST form No. 01', margin, 40);
 
-  doc.setFontSize(16);
-  doc.text('PROJECT PROCUREMENT MANAGEMENT PLAN', pageWidth / 2, 70, {
-    align: 'center',
-  });
-  doc.setFontSize(14);
-  const currentYear = new Date().getFullYear();
-  doc.text(`C.Y. ${currentYear}`, pageWidth / 2, 90, { align: 'center' });
+    doc.setFontSize(16);
+    doc.text('PROJECT PROCUREMENT MANAGEMENT PLAN', pageWidth / 2, 70, {
+      align: 'center',
+    });
+    doc.setFontSize(14);
+    const currentYear = new Date().getFullYear();
+    doc.text(`C.Y. ${currentYear}`, pageWidth / 2, 90, { align: 'center' });
 
-  // Program Information
-  doc.setFontSize(12);
-  doc.text('DAVAO DE ORO STATE COLLEGE', margin, 130);
-  doc.text(`Date Submitted: ${new Date().toLocaleDateString()}`, pageWidth - margin - 120, 130);
-  doc.text(`Program Control No: ${reqData.classifiedItemId}`, margin, 150);
+    // Program Information
+    doc.setFontSize(12);
+    doc.text('DAVAO DE ORO STATE COLLEGE', margin, 130);
+    doc.text(`Date Submitted: ${new Date().toLocaleDateString()}`, pageWidth - margin - 120, 130);
+    doc.text(`Program Control No: ${reqData.classifiedItemId}`, margin, 150);
 
-  // Table Header
-  const tableStartY = 180;
-  const rowHeight = 20;
+    // Table Header
+    const tableStartY = 180;
+    const rowHeight = 20;
 
-  // Dynamically allocate column widths
-  const colWidths = [
-    20, // ITEM
-    90, // PRODUCT
-    pageWidth - margin * 2 - 300, // DESCRIPTION (dynamic based on remaining space)
-    80, // UNIT COST
-    40, // QUANTITY
-    80, // TOTAL COST
-  ];
+    // Dynamically allocate column widths
+    const colWidths = [
+      20, // ITEM
+      90, // PRODUCT
+      pageWidth - margin * 2 - 300, // DESCRIPTION (dynamic based on remaining space)
+      80, // UNIT COST
+      40, // QUANTITY
+      80, // TOTAL COST
+    ];
 
-  const headers = ['NO', 'PRODUCT', 'DESCRIPTION', 'UNIT COST', 'PCS', 'TOTAL COST'];
-  let xPos = margin;
-  let yPos = tableStartY;
+    const headers = ['NO', 'PRODUCT', 'DESCRIPTION', 'UNIT COST', 'PCS', 'TOTAL COST'];
+    let xPos = margin;
+    let yPos = tableStartY;
 
-  doc.setFontSize(10);
+    doc.setFontSize(10);
 
-  // Draw headers
-  headers.forEach((header, i) => {
-    doc.rect(xPos, yPos, colWidths[i], rowHeight);
-    doc.text(header, xPos + 5, yPos + 14);
-    xPos += colWidths[i];
-  });
-
-  yPos += rowHeight;
-
-  // Table Rows
-  let itemNo = 1;
-  let grandTotal = 0;
-
-  reqData.products?.forEach((productId) => {
-    const product = this.allProducts.find((p) => p.id === productId);
-    const quantity = reqData.productQuantities?.[productId] || 1;
-    const unitPrice = this.getSelectedProduct(product!)?.price || 0;
-    const totalPrice = quantity * unitPrice;
-    grandTotal += totalPrice;
-
-    const descriptionText = this.getSelectedProduct(product!)?.specifications || 'N/A';
-
-    // Wrap the text for the Description column
-    const wrappedDescription = doc.splitTextToSize(descriptionText, colWidths[2] - 10);
-    const wrappedHeight = wrappedDescription.length * 12; // Calculate height based on wrapped lines
-    const effectiveRowHeight = Math.max(rowHeight, wrappedHeight);
-
-    // Handle page breaks
-    if (yPos + effectiveRowHeight > pageHeight - margin) {
-      doc.addPage();
-      yPos = margin;
-
-      // Redraw table headers on the new page
-      xPos = margin;
-      headers.forEach((header, i) => {
-        doc.rect(xPos, yPos, colWidths[i], rowHeight);
-        doc.text(header, xPos + 5, yPos + 14);
-        xPos += colWidths[i];
-      });
-
-      yPos += rowHeight;
-    }
-
-    // Reset xPos for each row
-    xPos = margin;
-
-    // Draw the row
-    [
-      itemNo.toString(),
-      product?.name || 'Unknown',
-      '', // Placeholder for Description text to handle wrapped content
-      `${unitPrice.toFixed(2)}`,
-      quantity.toString(),
-      `${totalPrice.toFixed(2)}`,
-    ].forEach((data, i) => {
-      const isDescription = i === 2;
-      const cellHeight = isDescription ? wrappedHeight : effectiveRowHeight;
-
-      // Draw the cell
-      doc.rect(xPos, yPos, colWidths[i], cellHeight);
-
-      // Add text inside the cell
-      if (isDescription) {
-        doc.text(wrappedDescription, xPos + 5, yPos + 12, { maxWidth: colWidths[i] - 10 });
-      } else {
-        doc.text(data, xPos + 5, yPos + 14);
-      }
-
+    // Draw headers
+    headers.forEach((header, i) => {
+      doc.rect(xPos, yPos, colWidths[i], rowHeight);
+      doc.text(header, xPos + 5, yPos + 14);
       xPos += colWidths[i];
     });
 
-    itemNo++;
-    yPos += effectiveRowHeight;
-  });
+    yPos += rowHeight;
 
-  // Grand Total
-  if (yPos + rowHeight > pageHeight - margin) {
-    doc.addPage();
-    yPos = margin;
+    // Table Rows
+    let itemNo = 1;
+    let grandTotal = 0;
+
+    reqData.products?.forEach((product) => {
+      const quantity = reqData.productQuantities?.[product.id] || 1;
+      const unitPrice = product.price || 0;
+      const totalPrice = quantity * unitPrice;
+      grandTotal += totalPrice;
+
+      const descriptionText = product.specifications || 'N/A';
+
+      // Wrap the text for the Description column
+      const wrappedDescription = doc.splitTextToSize(descriptionText, colWidths[2] - 10);
+      const wrappedHeight = wrappedDescription.length * 12; // Calculate height based on wrapped lines
+      const effectiveRowHeight = Math.max(rowHeight, wrappedHeight);
+
+      // Handle page breaks
+      if (yPos + effectiveRowHeight > pageHeight - margin) {
+        doc.addPage();
+        yPos = margin;
+
+        // Redraw table headers on the new page
+        xPos = margin;
+        headers.forEach((header, i) => {
+          doc.rect(xPos, yPos, colWidths[i], rowHeight);
+          doc.text(header, xPos + 5, yPos + 14);
+          xPos += colWidths[i];
+        });
+
+        yPos += rowHeight;
+      }
+
+      // Reset xPos for each row
+      xPos = margin;
+
+      // Draw the row
+      [
+        itemNo.toString(),
+        product.name || 'Unknown',
+        '', // Placeholder for Description text to handle wrapped content
+        `${unitPrice.toFixed(2)}`,
+        quantity.toString(),
+        `${totalPrice.toFixed(2)}`,
+      ].forEach((data, i) => {
+        const isDescription = i === 2;
+        const cellHeight = isDescription ? wrappedHeight : effectiveRowHeight;
+
+        // Draw the cell
+        doc.rect(xPos, yPos, colWidths[i], cellHeight);
+
+        // Add text inside the cell
+        if (isDescription) {
+          doc.text(wrappedDescription, xPos + 5, yPos + 12, { maxWidth: colWidths[i] - 10 });
+        } else {
+          doc.text(data, xPos + 5, yPos + 14);
+        }
+
+        xPos += colWidths[i];
+      });
+
+      itemNo++;
+      yPos += effectiveRowHeight;
+    });
+
+    // Grand Total
+    if (yPos + rowHeight > pageHeight - margin) {
+      doc.addPage();
+      yPos = margin;
+    }
+
+    doc.setFontSize(12);
+    doc.text(`Total: ${grandTotal.toFixed(2)}`, margin, yPos + 30);
+
+    // Footer Section
+    const user = this.userService.getUser();
+    doc.setFontSize(10);
+    doc.text(
+      `Generated by: ${user?.fullname || 'Unknown'} (${user?.role || 'Unknown'})`,
+      margin,
+      pageHeight - 30
+    );
+
+    // Return the PDF as a data URL
+    return doc.output('datauristring');
   }
-
-  doc.setFontSize(12);
-  doc.text(`Total: ${grandTotal.toFixed(2)}`, margin, yPos + 30);
-
-  // Footer Section
-  const user = this.userService.getUser();
-  doc.setFontSize(10);
-  doc.text(
-    `Generated by: ${user?.fullname || 'Unknown'} (${user?.role || 'Unknown'})`,
-    margin,
-    pageHeight - 30
-  );
-
-  // Return the PDF as a data URL
-  return doc.output('datauristring');
-}
-
-
-
-
-
-
-
 
   async saveRequisition(): Promise<void> {
     this.submitted = true;
-    
+
     if (this.requisitionForm.invalid || !this.selectedGroups.length || !this.selectedProducts.length) {
       this.messageService.add({
         severity: 'error',
@@ -391,12 +381,18 @@ private generatePPMPPdf(reqData: Partial<ExtendedRequisition>): string {
       status: 'Pending',
       group: this.selectedGroups[0],
       selectedGroups: this.selectedGroups,
-      products: this.selectedProducts.map(p => p.id),
+      products: this.selectedProducts.map(p => ({
+        id: p.id,
+        name: p.name,
+        quantity: p.quantity,
+        price: p.price,
+        specifications: p.specifications,
+      })),
       productQuantities: Object.fromEntries(
         this.selectedProducts.map(p => [p.id, p.quantity])
       ),
       productSpecifications: Object.fromEntries(
-        this.selectedProducts.map(p => [p.id, p.specifications])
+        this.selectedProducts.map(p => [p.id, p.specifications || ''])
       ),
       dateCreated: new Date(),
       classifiedItemId: this.generateClassifiedItemId(),
@@ -419,13 +415,13 @@ private generatePPMPPdf(reqData: Partial<ExtendedRequisition>): string {
       await this.requisitionService.addRequisition(
         this.tempRequisitionData as Omit<ExtendedRequisition, 'id'>
       );
-      
+
       this.messageService.add({
         severity: 'success',
         summary: 'Success',
         detail: 'Requisition saved successfully'
       });
-      
+
       this.resetForm();
       await this.loadRequisitions();
       this.activeTabIndex = 1;
@@ -444,36 +440,33 @@ private generatePPMPPdf(reqData: Partial<ExtendedRequisition>): string {
   }
 
   async editRequisition(req: ExtendedRequisition): Promise<void> {
-  this.activeTabIndex = 0;
-  try {
-    this.loading = true;
-    this.requisitionForm.patchValue({
-      title: req.title,
-      description: req.description,
-      status: req.status,
-    });
-    this.selectedGroups = req.selectedGroups || [req.group];
-    await this.loadProductsForGroups();
-
-    if (req.products) {
-      this.selectedProducts = req.products.map((productId) => {
-        const product = this.availableProducts.find((p) => p.id === productId);
-        return {
-          id: productId,
-          name: product?.name || 'Unknown Product',
-          description: product?.description || '',
-          quantity: req.productQuantities?.[productId] || 1,
-          price: 0, // Default price
-          specifications: req.productSpecifications?.[productId] || '',
-        };
+    this.activeTabIndex = 0;
+    try {
+      this.loading = true;
+      this.requisitionForm.patchValue({
+        title: req.title,
+        description: req.description,
+        status: req.status,
       });
+      this.selectedGroups = req.selectedGroups || [req.group];
+      await this.loadProductsForGroups();
+
+      if (req.products) {
+        this.selectedProducts = req.products.map((product) => ({
+          id: product.id,
+          name: product.name,
+          description: product.specifications || '',
+          quantity: product.quantity,
+          price: product.price,
+          specifications: product.specifications || '',
+        }));
+      }
+    } catch (error) {
+      this.handleError(error, 'Error loading requisition details');
+    } finally {
+      this.loading = false;
     }
-  } catch (error) {
-    this.handleError(error, 'Error loading requisition details');
-  } finally {
-    this.loading = false;
   }
-}
 
   deleteRequisition(req: ExtendedRequisition): void {
     this.confirmationService.confirm({
@@ -541,7 +534,7 @@ private generatePPMPPdf(reqData: Partial<ExtendedRequisition>): string {
     return 0;
   }
 
-   calculateGrandTotalPrice(): number {
+  calculateGrandTotalPrice(): number {
     return this.selectedProducts.reduce(
       (total, product) => total + product.quantity * product.price,
       0
