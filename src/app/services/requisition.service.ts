@@ -619,14 +619,26 @@ private loadDummyData(): void {
    * @param requisition - The requisition to update.
    */
   async updateRequisition(requisition: Requisition): Promise<void> {
+  try {
+    // Validate the requisition
     requisitionSchema.parse(requisition);
+
+    // Find the index of the requisition
     const index = this.requisitions.findIndex((r) => r.id === requisition.id);
     if (index === -1) {
       throw new Error('Requisition not found');
     }
+
+    // Update the requisition
     this.requisitions[index] = requisition;
+
+    // Save to local storage
     this.saveToLocalStorage();
+  } catch (error) {
+    console.error('Error updating requisition:', error);
+    throw error;
   }
+}
 
   /**
    * Update the status of a requisition.

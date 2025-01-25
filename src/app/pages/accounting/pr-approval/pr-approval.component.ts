@@ -13,6 +13,7 @@ import { TabViewModule } from 'primeng/tabview'; // Import TabViewModule
 import { DomSanitizer, SafeResourceUrl } from '@angular/platform-browser';
 import html2canvas from 'html2canvas';
 import jsPDF from 'jspdf';
+import { ApprovalSequenceService } from 'src/app/services/approval-sequence.service';
 
 @Component({
   selector: 'app-pr-approval',
@@ -31,37 +32,61 @@ import jsPDF from 'jspdf';
   ],
 })
 export class PrApprovalComponent implements OnInit {
-  purchaseRequests: any[] = []; // Array for pending requests
-  approvedRequests: any[] = []; // Array for approved requests
-  loading = true; // Loading state
-  displayPpmpPreview = false; // PPMP preview dialog visibility
-  displaySignatureDialog = false; // Signature dialog visibility
-  displayPrPreview = false; // Purchase request preview dialog visibility
-  selectedRequisitionPdf: SafeResourceUrl | null = null; // Selected PDF for preview
-  selectedRequest: any | null = null; // Selected request
-  generatedPrHtml: string = ''; // Generated HTML for PR preview
-  loggedInUser: any | null = null; // Logged-in user
-  departmentName: string = 'Department'; // Department name
-  officeName: string = 'Office'; // Office name
+  purchaseRequests: any[] = [];
+  approvedRequests: any[] = [];
+  loading = true;
+  displayPpmpPreview = false;
+  displaySignatureDialog = false;
+  displayPrPreview = false;
+  selectedRequisitionPdf: SafeResourceUrl | null = null;
+  selectedRequest: any | null = null;
+  generatedPrHtml: string = '';
+  loggedInUser: any | null = null;
+  departmentName: string = 'Department';
+  officeName: string = 'Office';
+  approvalSequences: any[] = [];
 
   @ViewChild('signatureCanvas', { static: false })
   signatureCanvas!: ElementRef<HTMLCanvasElement>;
   private canvasContext!: CanvasRenderingContext2D;
-  private isSigned = false; // Track if the signature exists
+  private isSigned = false;
 
   constructor(
     private requisitionService: RequisitionService,
     private userService: UserService,
     private departmentService: DepartmentService,
+    private approvalSequenceService: ApprovalSequenceService,
     private messageService: MessageService,
     private sanitizer: DomSanitizer
   ) {}
 
   async ngOnInit() {
-    this.loggedInUser = this.userService.getUser(); // Get the logged-in user
-    await this.loadPendingRequests(); // Load pending requests
-    await this.loadApprovedRequests(); // Load approved requests
-    await this.loadDepartmentAndOfficeNames(); // Load department and office names
+  this.loggedInUser = this.userService.getUser();
+  await this.loadApprovalSequences();
+  await this.loadRequisitions(); // Reload requisitions
+  await this.loadDepartmentAndOfficeNames();
+}
+
+
+  async loadRequisitions(): Promise<void> {
+  try {
+    this.loading = true;
+    const allRequisitions = await this.requisitionService.getAllRequisitions();
+    this.purchaseRequests = allRequisitions.filter(req => req.status === 'Pending');
+    this.approvedRequests = allRequisitions.filter(req => req.status === 'Approved');
+  } catch (error) {
+    this.handleError(error, 'Error loading requisitions');
+  } finally {
+    this.loading = false;
+  }
+}
+
+async loadApprovalSequences(): Promise<void> {
+    try {
+      this.approvalSequences = await this.approvalSequenceService.getAllSequences().toPromise() || [];
+    } catch (error) {
+      this.handleError(error, 'Error loading approval sequences');
+    }
   }
 
   // Load pending requisitions
@@ -119,21 +144,19 @@ export class PrApprovalComponent implements OnInit {
   }
 
   // View PPMP attachment
-  viewPPMP(request: any) {
-    if (request.ppmpAttachment) {
-      this.selectedRequisitionPdf = this.sanitizer.bypassSecurityTrustResourceUrl(
-        request.ppmpAttachment
-      );
-      this.selectedRequest = request;
-      this.displayPpmpPreview = true;
-    } else {
-      this.messageService.add({
-        severity: 'warn',
-        summary: 'No Document',
-        detail: 'PPMP document is not available for this request.',
-      });
-    }
+ viewPPMP(request: any) {
+  if (request.ppmpAttachment) {
+    this.selectedRequisitionPdf = this.sanitizer.bypassSecurityTrustResourceUrl(request.ppmpAttachment);
+    this.selectedRequest = request;
+    this.displayPpmpPreview = true;
+  } else {
+    this.messageService.add({
+      severity: 'warn',
+      summary: 'No Document',
+      detail: 'PPMP document is not available for this request.',
+    });
   }
+}
 
   // View Purchase Request attachment
   viewPurchaseRequest(request: any) {
@@ -197,98 +220,83 @@ export class PrApprovalComponent implements OnInit {
 
   // Submit approval
   async submitApproval() {
-    try {
-      if (!this.selectedRequest) {
-        throw new Error('No request selected for approval.');
-      }
-
-      if (!this.isSigned) {
-        this.messageService.add({
-          severity: 'warn',
-          summary: 'No Signature',
-          detail: 'Please provide your signature before approving.',
-        });
-        return;
-      }
-
-      const canvas = this.signatureCanvas.nativeElement;
-      const signatureDataUrl = canvas.toDataURL('image/png');
-
-      // Generate the PR HTML for preview
-      this.generatedPrHtml = this.generatePrHtml(this.selectedRequest, signatureDataUrl);
-
-      // Open PR Preview Dialog
-      this.displayPrPreview = true;
-      this.displaySignatureDialog = false; // Close signature dialog
-    } catch (error) {
-      console.error('Approval Error:', error);
-      this.messageService.add({
-        severity: 'error',
-        summary: 'Error',
-        detail: 'Failed to preview purchase request.',
-      });
+  try {
+    if (!this.selectedRequest) {
+      throw new Error('No request selected for approval.');
     }
-  }
 
-  // Confirm approval
+    if (!this.isSigned) {
+      this.messageService.add({
+        severity: 'warn',
+        summary: 'No Signature',
+        detail: 'Please provide your signature before approving.',
+      });
+      return;
+    }
+
+    const canvas = this.signatureCanvas.nativeElement;
+    const signatureDataUrl = canvas.toDataURL('image/png');
+
+    // Generate the PR HTML for preview
+    this.generatedPrHtml = this.generatePrHtml(this.selectedRequest, signatureDataUrl);
+
+    // Open PR Preview Dialog
+    this.displayPrPreview = true;
+    this.displaySignatureDialog = false; // Close signature dialog
+  } catch (error) {
+    this.handleError(error, 'Failed to preview purchase request.');
+  }
+}
+
   async confirmApproval() {
-    try {
-      if (!this.selectedRequest) {
-        throw new Error('No request selected for approval.');
-      }
-
-      if (!this.isSigned) {
-        this.messageService.add({
-          severity: 'warn',
-          summary: 'No Signature',
-          detail: 'Please provide your signature before approving.',
-        });
-        return;
-      }
-
-      const canvas = this.signatureCanvas.nativeElement;
-      const signatureDataUrl = canvas.toDataURL('image/png');
-
-      // Generate the Purchase Request PDF
-      const prPdfBase64 = this.generatePurchaseRequestPdf(this.selectedRequest, signatureDataUrl);
-
-      // Save the Purchase Request Attachment to local storage
-      this.selectedRequest.purchaseRequestAttachment = prPdfBase64;
-
-      // Simulate saving locally
-      localStorage.setItem(`purchaseRequest_${this.selectedRequest.id}`, prPdfBase64);
-
-      // Update the request as "Approved"
-      this.selectedRequest.status = 'Approved';
-
-      // Log the updated request
-      console.log('Updated request:', this.selectedRequest);
-
-      // Save the updated requisitions to local storage
-      await this.requisitionService.updateRequisitionStatus(this.selectedRequest.id, 'Approved');
-
-      this.messageService.add({
-        severity: 'success',
-        summary: 'Success',
-        detail: 'Purchase Request has been approved and saved locally.',
-      });
-
-      await this.loadPendingRequests(); // Reload pending requests
-      await this.loadApprovedRequests(); // Reload approved requests
-      this.displayPrPreview = false;
-      this.displaySignatureDialog = false;
-    } catch (error) {
-      console.error('Approval Error:', error);
-      this.messageService.add({
-        severity: 'error',
-        summary: 'Error',
-        detail: 'Failed to approve the Purchase Request.',
-      });
-    } finally {
-      this.selectedRequest = null;
-      this.loading = false;
+  try {
+    if (!this.selectedRequest) {
+      throw new Error('No request selected for approval.');
     }
+
+    const canvas = this.signatureCanvas.nativeElement;
+    const signatureDataUrl = canvas.toDataURL('image/png');
+
+    // Generate the Purchase Request PDF
+    const prPdfBase64 = this.generatePurchaseRequestPdf(this.selectedRequest, signatureDataUrl);
+
+    // Update the requisition with the new status and attachment
+    const updatedRequisition = {
+      ...this.selectedRequest,
+      status: 'Approved',
+      purchaseRequestAttachment: prPdfBase64,
+    };
+
+    // Save the updated requisition
+    await this.requisitionService.updateRequisition(updatedRequisition);
+
+    this.messageService.add({
+      severity: 'success',
+      summary: 'Success',
+      detail: 'Purchase Request has been approved and saved.',
+    });
+
+    await this.loadPendingRequests(); // Reload pending requests
+    await this.loadApprovedRequests(); // Reload approved requests
+    this.displayPrPreview = false;
+    this.displaySignatureDialog = false;
+  } catch (error) {
+    this.handleError(error, 'Failed to approve the Purchase Request.');
+  } finally {
+    this.selectedRequest = null;
+    this.loading = false;
   }
+}
+  
+  private handleError(error: any, defaultMessage: string): void {
+  console.error(error);
+  const errorMessage = error?.message || defaultMessage;
+  this.messageService.add({
+    severity: 'error',
+    summary: 'Error',
+    detail: errorMessage,
+  });
+}
 
   // Generate Purchase Request PDF
   private generatePurchaseRequestPdf(request: any, signature: string): string {
@@ -542,8 +550,20 @@ export class PrApprovalComponent implements OnInit {
   try {
     this.loading = true;
 
-    // Call the service method to update the status
-    await this.requisitionService.updateRequisitionStatus(requestId, status);
+    // Fetch the requisition by ID
+    const requisition = await this.requisitionService.getRequisitionById(requestId);
+    if (!requisition) {
+      throw new Error('Requisition not found.');
+    }
+
+    // Update the requisition status
+    const updatedRequisition = {
+      ...requisition,
+      status: status,
+    };
+
+    // Save the updated requisition
+    await this.requisitionService.updateRequisition(updatedRequisition);
 
     // Reload pending requests to reflect changes
     await this.loadPendingRequests();

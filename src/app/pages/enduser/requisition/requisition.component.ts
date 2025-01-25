@@ -359,49 +359,7 @@ private filterRequisitions(): void {
     return doc.output('datauristring');
   }
 
-  // async saveRequisition(): Promise<void> {
-  //   this.submitted = true;
-
-  //   if (this.requisitionForm.invalid || !this.selectedGroups.length || !this.selectedProducts.length) {
-  //     this.messageService.add({
-  //       severity: 'error',
-  //       summary: 'Validation Error',
-  //       detail: 'Please complete all required fields'
-  //     });
-  //     return;
-  //   }
-
-  //   const requisitionData: Partial<Requisition> = {
-  //     title: this.requisitionForm.get('title')?.value,
-  //     description: this.requisitionForm.get('description')?.value,
-  //     status: 'Pending',
-  //     group: this.selectedGroups[0],
-  //     selectedGroups: this.selectedGroups,
-  //     products: this.selectedProducts.map(p => ({
-  //       id: p.id,
-  //       name: p.name,
-  //       quantity: p.quantity,
-  //       price: p.price,
-  //       specifications: p.specifications,
-  //     })),
-  //     productQuantities: Object.fromEntries(
-  //       this.selectedProducts.map(p => [p.id, p.quantity])
-  //     ),
-  //     productSpecifications: Object.fromEntries(
-  //       this.selectedProducts.map(p => [p.id, p.specifications || ''])
-  //     ),
-  //     dateCreated: new Date(),
-  //     classifiedItemId: this.generateClassifiedItemId(),
-  //     createdByUserId: this.currentUser?.id,
-  //     createdByUserName: this.currentUser?.fullname
-  //   };
-
-  //   const pdfBase64 = this.generatePPMPPdf(requisitionData);
-  //   requisitionData.ppmpAttachment = pdfBase64;
-  //   this.tempRequisitionData = requisitionData;
-  //   this.pdfDataUrl = this.sanitizer.bypassSecurityTrustResourceUrl(pdfBase64);
-  //   this.displayPdfDialog = true;
-  // }
+  
 
  async saveRequisition(): Promise<void> {
   this.submitted = true;
