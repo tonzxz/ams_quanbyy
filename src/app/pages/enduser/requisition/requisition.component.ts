@@ -133,40 +133,62 @@ export class RequisitionComponent implements OnInit {
    }
  }
 
- async loadRequisitions(): Promise<void> {
-   try {
-     const requisitions = await this.requisitionService.getRequisitionsWithApprovalDetails();
+//  async loadRequisitions(): Promise<void> {
+//    try {
+//      const requisitions = await this.requisitionService.getRequisitionsWithApprovalDetails();
      
-     const allApprovalSequences = await firstValueFrom(this.approvalSequenceService.getAllSequences());
+//      const allApprovalSequences = await firstValueFrom(this.approvalSequenceService.getAllSequences());
 
-     this.requisitions = requisitions.map(req => {
-       const typeSequences = allApprovalSequences.filter(seq => 
-         seq.type === (req.currentApprovalLevel <= 4 ? 'procurement' : 'supply')
-       );
+//      this.requisitions = requisitions.map(req => {
+//        const typeSequences = allApprovalSequences.filter(seq => 
+//          seq.type === (req.currentApprovalLevel <= 4 ? 'procurement' : 'supply')
+//        );
 
-       const currentSequence = typeSequences.find(seq => 
-         seq.level === req.currentApprovalLevel
-       );
+//        const currentSequence = typeSequences.find(seq => 
+//          seq.level === req.currentApprovalLevel
+//        );
 
-       return {
-         ...req,
-         ppmpAttachment: req.ppmpAttachment || undefined,
-         purchaseRequestAttachment: req.purchaseRequestAttachment || undefined,
-         approvalSequenceDetails: currentSequence ? {
-           level: currentSequence.level,
-           departmentName: currentSequence.departmentName,
-           roleName: currentSequence.roleName,
-           userFullName: currentSequence.userFullName,
-           userId: currentSequence.userId
-         } : undefined
-       };
-     });
+//        return {
+//          ...req,
+//          ppmpAttachment: req.ppmpAttachment || undefined,
+//          purchaseRequestAttachment: req.purchaseRequestAttachment || undefined,
+//          approvalSequenceDetails: currentSequence ? {
+//            level: currentSequence.level,
+//            departmentName: currentSequence.departmentName,
+//            roleName: currentSequence.roleName,
+//            userFullName: currentSequence.userFullName,
+//            userId: currentSequence.userId
+//          } : undefined
+//        };
+//      });
 
-     this.filterRequisitions();
-   } catch (error) {
-     this.handleError(error, 'Error loading requisitions');
-   }
- }
+//      this.filterRequisitions();
+//    } catch (error) {
+//      this.handleError(error, 'Error loading requisitions');
+//    }
+  //  }
+  
+  async loadRequisitions(): Promise<void> {
+  try {
+    this.loading = true;
+    const allRequisitions = await this.requisitionService.getAllRequisitions();
+
+    // Debugging: Log all requisitions
+    console.log('All Requisitions:', allRequisitions);
+
+    // Filter requisitions based on their approval level and status
+    this.pendingRequisitions = allRequisitions.filter(req => req.currentApprovalLevel === 1 && req.status === 'Pending');
+    this.approvedRequisitions = allRequisitions.filter(req => req.currentApprovalLevel === 2 && req.status === 'Pending');
+
+    // Debugging: Log filtered requests
+    console.log('Pending Requisitions:', this.pendingRequisitions);
+    console.log('Approved Requisitions:', this.approvedRequisitions);
+  } catch (error) {
+    this.handleError(error, 'Error loading requisitions');
+  } finally {
+    this.loading = false;
+  }
+}
 
  private filterRequisitions(): void {
    this.pendingRequisitions = this.requisitions.filter(req => req.status === 'Pending');

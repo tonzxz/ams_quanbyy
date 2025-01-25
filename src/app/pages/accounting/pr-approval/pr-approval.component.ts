@@ -68,12 +68,27 @@ export class PrApprovalComponent implements OnInit {
 }
 
 
+//   async loadRequisitions(): Promise<void> {
+//   try {
+//     this.loading = true;
+//     const allRequisitions = await this.requisitionService.getAllRequisitions();
+//     this.purchaseRequests = allRequisitions.filter(req => req.status === 'Pending');
+//     this.approvedRequests = allRequisitions.filter(req => req.status === 'Approved');
+//   } catch (error) {
+//     this.handleError(error, 'Error loading requisitions');
+//   } finally {
+//     this.loading = false;
+//   }
+  // }
+  
   async loadRequisitions(): Promise<void> {
   try {
     this.loading = true;
     const allRequisitions = await this.requisitionService.getAllRequisitions();
-    this.purchaseRequests = allRequisitions.filter(req => req.status === 'Pending');
-    this.approvedRequests = allRequisitions.filter(req => req.status === 'Approved');
+
+    // Filter requisitions based on their approval level
+    this.purchaseRequests = allRequisitions.filter(req => req.currentApprovalLevel === 1 && req.status === 'Pending');
+    this.approvedRequests = allRequisitions.filter(req => req.currentApprovalLevel === 2 && req.status === 'Pending');
   } catch (error) {
     this.handleError(error, 'Error loading requisitions');
   } finally {
