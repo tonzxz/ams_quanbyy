@@ -99,6 +99,9 @@ export class UserManagementComponent implements OnInit {
   isPositionEditMode = false;
   selectedPositionId: string | null = null;
 
+  usersLoaded = false;
+officesLoaded = false;
+
   // Departments and Offices
   departments: Department[] = [];
   offices: Office[] = [];
@@ -139,42 +142,57 @@ export class UserManagementComponent implements OnInit {
   // =============================================
   // USERS
   // =============================================
-  loadUsers() {
-    this.userLoading = true;
-    this.userService.getAllUsers().subscribe({
-      next: (userList) => {
-        this.users = userList;
-        this.userLoading = false;
-      },
-      error: (err) => {
-        console.error('Error loading users:', err);
-        this.userLoading = false;
-        this.messageService.add({ severity: 'error', summary: 'Error', detail: 'Failed to load users' });
-      }
-    });
-  }
+  // loadUsers() {
+  //   this.userLoading = true;
+  //   this.userService.getAllUsers().subscribe({
+  //     next: (userList) => {
+  //       this.users = userList;
+  //       this.userLoading = false;
+  //     },
+  //     error: (err) => {
+  //       console.error('Error loading users:', err);
+  //       this.userLoading = false;
+  //       this.messageService.add({ severity: 'error', summary: 'Error', detail: 'Failed to load users' });
+  //     }
+  //   });
+  // }
 
-  async loadDepartmentsAndOffices() {
-  try {
-    const deps = await this.departmentService.getAllDepartments();
-    this.departments = deps;
-    this.departmentDropdownOptions = deps.map((d: Department) => ({
-      label: d.name,
-      value: d.id!
-    }));
+  loadUsers(): void {
+  this.userLoading = true;
+  this.userService.getAllUsers().subscribe({
+    next: (users) => {
+      console.log('Users loaded:', users); // Debug output
+      this.users = users.map(user => {
+        const office = this.offices.find(o => o.id === user.officeId);
+        return { ...user, officeName: office ? office.name : 'N/A' };
+      });
+      this.userLoading = false;
+    },
+    error: (error) => {
+      console.error('Failed to load users:', error);
+      this.userLoading = false;
+    }
+  });
+}
 
-    const offs = await this.departmentService.getAllOffices();
-    this.offices = offs;
-    this.officeDropdownOptions = offs.map((o: Office) => ({
-      label: o.name,
-      value: o.id!
-    }));
-  } catch (error) {
-    this.messageService.add({
-      severity: 'error',
-      summary: 'Error',
-      detail: 'Failed to load departments and offices'
-    });
+
+
+loadDepartmentsAndOffices(): void {
+  this.departmentService.getAllOffices().then((offices) => {
+    console.log('Offices loaded:', offices); // Debug output
+    this.offices = offices;
+
+    // Reload users and ensure offices are mapped correctly
+    this.loadUsers();
+  }).catch((error) => {
+    console.error('Failed to load offices:', error);
+  });
+}
+
+
+checkIfReadyToRender() {
+  if (this.usersLoaded && this.officesLoaded) {
+    this.userLoading = false;
   }
 }
 
@@ -183,8 +201,14 @@ export class UserManagementComponent implements OnInit {
 }
 
 getOfficeName(id: string): string {
-  return this.offices.find(o => o.id === id)?.name || 'N/A';
+  console.log('Searching for Office ID:', id);
+  const office = this.offices.find(o => o.id === id);
+  console.log('Found Office:', office);
+  return office ? office.name : 'N/A';
 }
+
+
+
   
   
   initializeUserForm() {

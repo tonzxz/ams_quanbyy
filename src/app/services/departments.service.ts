@@ -52,6 +52,7 @@ export class DepartmentService {
   private departments: Department[] = [];
   private buildings: Building[] = [];
   private offices: Office[] = [];
+  
 
   constructor() {
     this.loadFromLocalStorage();
@@ -81,81 +82,268 @@ export class DepartmentService {
       .join('');
   }
 
-  private loadDummyData(): void {
-    const dummyDepartments: Department[] = [
-      {
-        id: this.generate32DigitId(),
-        name: 'HR',
-        code: 'HR',
-        head: 'Alice Johnson',
-        budget: 100000,
-        dateEstablished: new Date('2020-01-15'),
-        contactEmail: 'hr@example.com',
-        contactPhone: '1234567890',
-        description: 'Handles recruitment and employee relations.'
-      },
-      {
-        id: this.generate32DigitId(),
-        name: 'IT',
-        code: 'IT',
-        head: 'Bob Smith',
-        budget: 250000,
-        dateEstablished: new Date('2018-06-10'),
-        contactEmail: 'it@example.com',
-        contactPhone: '0987654321',
-        description: 'Manages IT support and systems.'
-      }
-    ];
-
-    const dummyBuildings: Building[] = [
-      {
-        id: this.generate32DigitId(),
-        name: 'Main Office',
-        address: '123 Main St',
-        numberOfFloors: 5,
-        dateConstructed: new Date('2015-05-20'),
-        notes: 'Main building for corporate operations.'
-      },
-      {
-        id: this.generate32DigitId(),
-        name: 'Tech Center',
-        address: '456 Tech St',
-        numberOfFloors: 10,
-        dateConstructed: new Date('2017-11-10'),
-        notes: 'Building for technical teams and R&D.'
-      }
-    ];
-
-    const dummyOffices: Office[] = [
-      {
-        id: this.generate32DigitId(),
-        name: 'Recruitment Office',
-        roomNumber: '101',
-        capacity: 5,
-        floor: 1,
-        extension: '1101',
-        buildingId: dummyBuildings[0]?.id || '',
-        departmentId: dummyDepartments[0]?.id || '',
-        notes: 'Handles walk-in interviews.'
-      },
-      {
-        id: this.generate32DigitId(),
-        name: 'Support Room',
-        roomNumber: '302',
-        capacity: 10,
-        floor: 3,
-        extension: '2302',
-        buildingId: dummyBuildings[1]?.id || '',
-        departmentId: dummyDepartments[1]?.id || '',
-        notes: 'Support for technical issues.'
-      }
-    ];
-
-    this.departments = dummyDepartments;
-    this.buildings = dummyBuildings;
-    this.offices = dummyOffices;
-    this.saveToLocalStorage();
+  public getOffices(): Office[] {
+    return this.offices;
   }
+
+private loadDummyData(): void {
+  // Dummy Departments
+  const dummyDepartments: Department[] = [
+    {
+      id: '550e8400e29b41d4a716446655440000',
+      name: 'College of Engineering',
+      code: 'COE',
+      head: 'Dr. Maria Santos',
+      budget: 5000000,
+      dateEstablished: new Date('1995-08-20'),
+      contactEmail: 'coe@ddosc.edu.ph',
+      contactPhone: '088-123-4567',
+      description: 'Offers programs in Civil, Electrical, and Mechanical Engineering.'
+    },
+    {
+      id: '550e8400e29b41d4a716446655440001',
+      name: 'College of Business Administration',
+      code: 'CBA',
+      head: 'Dr. Juan Dela Cruz',
+      budget: 3000000,
+      dateEstablished: new Date('1990-05-15'),
+      contactEmail: 'cba@ddosc.edu.ph',
+      contactPhone: '088-234-5678',
+      description: 'Provides courses in Business Management, Accounting, and Marketing.'
+    },
+    {
+      id: '550e8400e29b41d4a716446655440002',
+      name: 'College of Education',
+      code: 'COED',
+      head: 'Dr. Ana Reyes',
+      budget: 4000000,
+      dateEstablished: new Date('1985-10-10'),
+      contactEmail: 'coed@ddosc.edu.ph',
+      contactPhone: '088-345-6789',
+      description: 'Trains future educators in Elementary and Secondary Education.'
+    },
+    {
+      id: '550e8400e29b41d4a716446655440003',
+      name: 'College of Information Technology',
+      code: 'CIT',
+      head: 'Dr. Michael Tan',
+      budget: 3500000,
+      dateEstablished: new Date('2000-03-12'),
+      contactEmail: 'cit@ddosc.edu.ph',
+      contactPhone: '088-456-7890',
+      description: 'Offers programs in Computer Science, IT, and Software Engineering.'
+    },
+    {
+      id: '550e8400e29b41d4a716446655440004',
+      name: 'College of Agriculture',
+      code: 'COA',
+      head: 'Dr. Pedro Gomez',
+      budget: 4500000,
+      dateEstablished: new Date('1975-06-18'),
+      contactEmail: 'coa@ddosc.edu.ph',
+      contactPhone: '088-567-8901',
+      description: 'Focuses on agricultural sciences and sustainable farming practices.'
+    },
+    {
+      id: '550e8400e29b41d4a716446655440005',
+      name: 'College of Nursing',
+      code: 'CON',
+      head: 'Dr. Sofia Ramirez',
+      budget: 6000000,
+      dateEstablished: new Date('2005-09-22'),
+      contactEmail: 'con@ddosc.edu.ph',
+      contactPhone: '088-678-9012',
+      description: 'Prepares students for careers in nursing and healthcare.'
+    },
+    {
+      id: '550e8400e29b41d4a716446655440006',
+      name: 'College of Arts and Sciences',
+      code: 'CAS',
+      head: 'Dr. Carlos Mendoza',
+      budget: 2500000,
+      dateEstablished: new Date('1980-04-05'),
+      contactEmail: 'cas@ddosc.edu.ph',
+      contactPhone: '088-789-0123',
+      description: 'Offers programs in Humanities, Social Sciences, and Natural Sciences.'
+    },
+    {
+      id: '550e8400e29b41d4a716446655440007',
+      name: 'College of Criminal Justice Education',
+      code: 'CCJE',
+      head: 'Dr. Roberto Lim',
+      budget: 3200000,
+      dateEstablished: new Date('1998-11-15'),
+      contactEmail: 'ccje@ddosc.edu.ph',
+      contactPhone: '088-890-1234',
+      description: 'Trains students for careers in law enforcement and criminal justice.'
+    }
+  ];
+
+  // Dummy Buildings
+  const dummyBuildings: Building[] = [
+    {
+      id: '550e8400e29b41d4a716446655440008',
+      name: 'Engineering Building',
+      address: 'DDOSC Main Campus, Nabunturan, Davao de Oro',
+      numberOfFloors: 4,
+      dateConstructed: new Date('1996-03-25'),
+      notes: 'Houses laboratories and classrooms for engineering students.'
+    },
+    {
+      id: '550e8400e29b41d4a716446655440009',
+      name: 'Business Administration Building',
+      address: 'DDOSC Main Campus, Nabunturan, Davao de Oro',
+      numberOfFloors: 3,
+      dateConstructed: new Date('1991-07-12'),
+      notes: 'Contains lecture halls and faculty offices for CBA.'
+    },
+    {
+      id: '550e8400e29b41d4a71644665544000A',
+      name: 'Education Building',
+      address: 'DDOSC Main Campus, Nabunturan, Davao de Oro',
+      numberOfFloors: 5,
+      dateConstructed: new Date('1986-09-18'),
+      notes: 'Features classrooms and a library for education students.'
+    },
+    {
+      id: '550e8400e29b41d4a71644665544000B',
+      name: 'IT Center',
+      address: 'DDOSC Main Campus, Nabunturan, Davao de Oro',
+      numberOfFloors: 6,
+      dateConstructed: new Date('2001-11-30'),
+      notes: 'State-of-the-art facility for IT and Computer Science programs.'
+    },
+    {
+      id: '550e8400e29b41d4a71644665544000C',
+      name: 'Agriculture Building',
+      address: 'DDOSC Main Campus, Nabunturan, Davao de Oro',
+      numberOfFloors: 2,
+      dateConstructed: new Date('1976-08-14'),
+      notes: 'Includes laboratories and greenhouses for agricultural studies.'
+    },
+    {
+      id: '550e8400e29b41d4a71644665544000D',
+      name: 'Nursing Building',
+      address: 'DDOSC Main Campus, Nabunturan, Davao de Oro',
+      numberOfFloors: 4,
+      dateConstructed: new Date('2006-12-10'),
+      notes: 'Equipped with simulation labs and lecture rooms for nursing students.'
+    },
+    {
+      id: '550e8400e29b41d4a71644665544000E',
+      name: 'Arts and Sciences Building',
+      address: 'DDOSC Main Campus, Nabunturan, Davao de Oro',
+      numberOfFloors: 3,
+      dateConstructed: new Date('1981-05-20'),
+      notes: 'Home to classrooms and laboratories for CAS programs.'
+    },
+    {
+      id: '550e8400e29b41d4a71644665544000F',
+      name: 'Criminal Justice Building',
+      address: 'DDOSC Main Campus, Nabunturan, Davao de Oro',
+      numberOfFloors: 3,
+      dateConstructed: new Date('1999-02-28'),
+      notes: 'Facility for CCJE students, including mock courtrooms and labs.'
+    }
+  ];
+
+  // Dummy Offices
+  const dummyOffices: Office[] = [
+    {
+      id: '550e8400e29b41d4a716446655440010',
+      name: 'Dean\'s Office - COE',
+      roomNumber: '101',
+      capacity: 10,
+      floor: 1,
+      extension: '1101',
+      buildingId: dummyBuildings[0].id!,
+      departmentId: dummyDepartments[0].id!,
+      notes: 'Office of the Dean of Engineering.'
+    },
+    {
+      id: '550e8400e29b41d4a716446655440011',
+      name: 'Registrar\'s Office - CBA',
+      roomNumber: '201',
+      capacity: 8,
+      floor: 2,
+      extension: '2201',
+      buildingId: dummyBuildings[1].id!,
+      departmentId: dummyDepartments[1].id!,
+      notes: 'Handles student records for CBA.'
+    },
+    {
+      id: '550e8400e29b41d4a716446655440012',
+      name: 'Faculty Room - COED',
+      roomNumber: '301',
+      capacity: 15,
+      floor: 3,
+      extension: '3301',
+      buildingId: dummyBuildings[2].id!,
+      departmentId: dummyDepartments[2].id!,
+      notes: 'Common room for COED faculty members.'
+    },
+    {
+      id: '550e8400e29b41d4a716446655440013',
+      name: 'IT Lab - CIT',
+      roomNumber: '401',
+      capacity: 20,
+      floor: 4,
+      extension: '4401',
+      buildingId: dummyBuildings[3].id!,
+      departmentId: dummyDepartments[3].id!,
+      notes: 'Computer laboratory for IT students.'
+    },
+    {
+      id: '550e8400e29b41d4a716446655440014',
+      name: 'Dean\'s Office - COA',
+      roomNumber: '102',
+      capacity: 12,
+      floor: 1,
+      extension: '1102',
+      buildingId: dummyBuildings[4].id!,
+      departmentId: dummyDepartments[4].id!,
+      notes: 'Office of the Dean of Agriculture.'
+    },
+    {
+      id: '550e8400e29b41d4a716446655440015',
+      name: 'Simulation Lab - CON',
+      roomNumber: '202',
+      capacity: 25,
+      floor: 2,
+      extension: '2202',
+      buildingId: dummyBuildings[5].id!,
+      departmentId: dummyDepartments[5].id!,
+      notes: 'Simulation lab for nursing students.'
+    },
+    {
+      id: '550e8400e29b41d4a716446655440016',
+      name: 'Research Office - CAS',
+      roomNumber: '302',
+      capacity: 10,
+      floor: 3,
+      extension: '3302',
+      buildingId: dummyBuildings[6].id!,
+      departmentId: dummyDepartments[6].id!,
+      notes: 'Office for research activities in Arts and Sciences.'
+    },
+    {
+      id: '550e8400e29b41d4a716446655440017',
+      name: 'Mock Courtroom - CCJE',
+      roomNumber: '402',
+      capacity: 30,
+      floor: 4,
+      extension: '4402',
+      buildingId: dummyBuildings[7].id!,
+      departmentId: dummyDepartments[7].id!,
+      notes: 'Mock courtroom for Criminal Justice students.'
+    }
+  ];
+
+  this.departments = dummyDepartments;
+  this.buildings = dummyBuildings;
+  this.offices = dummyOffices;
+  this.saveToLocalStorage();
+}
 
   // CRUD methods for departments
   async getAllDepartments(): Promise<Department[]> {
@@ -175,6 +363,7 @@ export class DepartmentService {
       this.saveToLocalStorage();
     }
   }
+  
 
   async deleteDepartment(id: string): Promise<void> {
     this.departments = this.departments.filter(d => d.id !== id);
