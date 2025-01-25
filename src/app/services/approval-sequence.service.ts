@@ -1,4 +1,3 @@
-// src/app/services/approval-sequence.service.ts
 import { Injectable } from '@angular/core';
 import { Observable, of, throwError } from 'rxjs';
 import { z } from 'zod';
@@ -17,7 +16,7 @@ export const approvalSequenceSchema = z.object({
   type: z.enum(['procurement', 'supply']),
   isActive: z.boolean(),
   createdAt: z.date().optional(),
-  updatedAt: z.date().optional()
+  updatedAt: z.date().optional(),
 });
 
 export type ApprovalSequence = z.infer<typeof approvalSequenceSchema>;
@@ -36,9 +35,9 @@ export class ApprovalSequenceService {
 
   private initializeDefaultSequences() {
     if (this.sequences.length === 0) {
-      // Procurement Flow Sequences
+      // Procurement Flow Sequences (Levels 1 to 4)
       const procurementSequences: Omit<ApprovalSequence, 'id' | 'createdAt' | 'updatedAt'>[] = [
-        // Budget Unit - Initial Review
+        // Level 1: Budget Unit - Initial Review
         {
           name: 'Budget Unit Review',
           level: 1,
@@ -49,9 +48,9 @@ export class ApprovalSequenceService {
           userId: '',
           userFullName: '',
           type: 'procurement',
-          isActive: true
+          isActive: true,
         },
-        // Inspection Team - Specification Check
+        // Level 2: Inspection Team - Specification Check
         {
           name: 'Technical Specification Review',
           level: 2,
@@ -62,9 +61,9 @@ export class ApprovalSequenceService {
           userId: '',
           userFullName: '',
           type: 'procurement',
-          isActive: true
+          isActive: true,
         },
-        // College President Approval
+        // Level 3: College President Approval
         {
           name: 'College President Approval',
           level: 3,
@@ -75,9 +74,9 @@ export class ApprovalSequenceService {
           userId: '',
           userFullName: '',
           type: 'procurement',
-          isActive: true
+          isActive: true,
         },
-        // BAC Final Review
+        // Level 4: BAC Final Review
         {
           name: 'BAC Final Review',
           level: 4,
@@ -88,16 +87,16 @@ export class ApprovalSequenceService {
           userId: '',
           userFullName: '',
           type: 'procurement',
-          isActive: true
-        }
+          isActive: true,
+        },
       ];
 
-      // Supply Management Flow Sequences
+      // Supply Management Flow Sequences (Levels 5 to 10)
       const supplySequences: Omit<ApprovalSequence, 'id' | 'createdAt' | 'updatedAt'>[] = [
-        // Initial Inspection
+        // Level 5: Initial Inspection
         {
           name: 'Delivery Inspection',
-          level: 1,
+          level: 5,
           departmentCode: 'INSPECTION',
           departmentName: 'Inspection Team',
           roleCode: 'inspection',
@@ -105,12 +104,12 @@ export class ApprovalSequenceService {
           userId: '',
           userFullName: '',
           type: 'supply',
-          isActive: true
+          isActive: true,
         },
-        // CAF for RIS
+        // Level 6: CAF for RIS
         {
           name: 'RIS Review',
-          level: 2,
+          level: 6,
           departmentCode: 'ACCOUNTING',
           departmentName: 'Accounting Unit',
           roleCode: 'accounting',
@@ -118,12 +117,12 @@ export class ApprovalSequenceService {
           userId: '',
           userFullName: '',
           type: 'supply',
-          isActive: true
+          isActive: true,
         },
-        // End User Receipt
+        // Level 7: End User Receipt
         {
           name: 'Receipt and Acknowledgement',
-          level: 3,
+          level: 7,
           departmentCode: 'END_USER',
           departmentName: 'End User Department',
           roleCode: 'end-user',
@@ -131,12 +130,12 @@ export class ApprovalSequenceService {
           userId: '',
           userFullName: '',
           type: 'supply',
-          isActive: true
+          isActive: true,
         },
-        // Accounting Final Verification
+        // Level 8: Accounting Final Verification
         {
           name: 'Final Document Verification',
-          level: 4,
+          level: 8,
           departmentCode: 'ACCOUNTING',
           departmentName: 'Accounting Unit',
           roleCode: 'accounting',
@@ -144,12 +143,12 @@ export class ApprovalSequenceService {
           userId: '',
           userFullName: '',
           type: 'supply',
-          isActive: true
+          isActive: true,
         },
-        // Property Inspection (Semi-expendable/PPA)
+        // Level 9: Property Inspection (Semi-expendable/PPA)
         {
           name: 'Property Inspection',
-          level: 5,
+          level: 9,
           departmentCode: 'INSPECTION',
           departmentName: 'Inspection Team',
           roleCode: 'inspection',
@@ -157,12 +156,12 @@ export class ApprovalSequenceService {
           userId: '',
           userFullName: '',
           type: 'supply',
-          isActive: true
+          isActive: true,
         },
-        // Supply Management - Disposal Approval
+        // Level 10: Supply Management - Disposal Approval
         {
           name: 'Disposal Review',
-          level: 6,
+          level: 10,
           departmentCode: 'SUPPLY',
           departmentName: 'Supply Management Unit',
           roleCode: 'supply',
@@ -170,8 +169,8 @@ export class ApprovalSequenceService {
           userId: '',
           userFullName: '',
           type: 'supply',
-          isActive: true
-        }
+          isActive: true,
+        },
       ];
 
       // Get users and assign to sequences
@@ -255,7 +254,7 @@ export class ApprovalSequenceService {
 
   // Helper method to generate a random 32-character ID
   private generateId(): string {
-    return Array.from({ length: 32 }, () => 
+    return Array.from({ length: 32 }, () =>
       Math.floor(Math.random() * 16).toString(16)
     ).join('');
   }
@@ -268,7 +267,7 @@ export class ApprovalSequenceService {
       this.sequences = parsedSequences.map((seq: any) => ({
         ...seq,
         createdAt: seq.createdAt ? new Date(seq.createdAt) : new Date(),
-        updatedAt: seq.updatedAt ? new Date(seq.updatedAt) : new Date()
+        updatedAt: seq.updatedAt ? new Date(seq.updatedAt) : new Date(),
       }));
     }
   }
@@ -295,7 +294,7 @@ export class ApprovalSequenceService {
         ...sequenceData,
         id: this.generateId(),
         createdAt: new Date(),
-        updatedAt: new Date()
+        updatedAt: new Date(),
       };
 
       approvalSequenceSchema.parse(newSequence);
@@ -320,7 +319,7 @@ export class ApprovalSequenceService {
         ...this.sequences[sequenceIndex],
         ...sequenceData,
         id: sequenceId,
-        updatedAt: new Date()
+        updatedAt: new Date(),
       };
 
       approvalSequenceSchema.parse(updatedSequence);
@@ -355,7 +354,7 @@ export class ApprovalSequenceService {
           subscriber.next(availableUsers);
           subscriber.complete();
         },
-        error: (error) => subscriber.error(error)
+        error: (error) => subscriber.error(error),
       });
     });
   }
@@ -366,4 +365,20 @@ export class ApprovalSequenceService {
     this.saveSequences();
     return of(true);
   }
+
+   updateSequences(sequences: ApprovalSequence[]): Observable<boolean> {
+    try {
+      sequences.forEach(seq => {
+        const index = this.sequences.findIndex(s => s.id === seq.id);
+        if (index !== -1) {
+          this.sequences[index] = seq;
+        }
+      });
+      this.saveSequences();
+      return of(true);
+    } catch (error) {
+      return throwError(() => error);
+    }
+  }
+
 }

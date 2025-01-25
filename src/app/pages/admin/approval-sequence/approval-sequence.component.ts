@@ -1,4 +1,3 @@
-// approval-sequence.component.ts
 import { Component, OnInit } from '@angular/core';
 import { FormBuilder, FormGroup, Validators, FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { MessageService, ConfirmationService } from 'primeng/api';
@@ -12,17 +11,16 @@ import { ConfirmDialogModule } from 'primeng/confirmdialog';
 import { DropdownModule } from 'primeng/dropdown';
 import { InputSwitchModule } from 'primeng/inputswitch';
 import { TabViewModule } from 'primeng/tabview';
+import { ToastModule } from 'primeng/toast';
 import { ApprovalSequenceService, ApprovalSequence } from 'src/app/services/approval-sequence.service';
 import { UserService, User } from 'src/app/services/user.service';
 import { finalize } from 'rxjs/operators';
-import { ToastModule } from 'primeng/toast';
 
 @Component({
   selector: 'app-approval-sequence',
   standalone: true,
   imports: [
     MaterialModule,
-    TableModule,
     ButtonModule,
     InputTextModule,
     DialogModule,
@@ -33,22 +31,21 @@ import { ToastModule } from 'primeng/toast';
     DropdownModule,
     InputSwitchModule,
     TabViewModule,
-    ToastModule
+    ToastModule,
+    TableModule,
   ],
   templateUrl: './approval-sequence.component.html',
   providers: [MessageService, ConfirmationService],
 })
 export class ApprovalSequenceComponent implements OnInit {
-  procurementApprovers: ApprovalSequence[] = [];
-  supplyApprovers: ApprovalSequence[] = [];
+  sequences: ApprovalSequence[] = []; // Combined list of procurement and supply sequences
   approverForm!: FormGroup;
   approverDialog = false;
   isEditMode = false;
   currentApproverId: string | null = null;
-  currentFlow: 'procurement' | 'supply' = 'procurement';
   submitted = false;
   loading = false;
-  availableUsers: User[] = [];
+  availableUsers: any[] = [];
 
   departments = [
     { name: 'Budget Unit', code: 'BUDGET' },
@@ -56,7 +53,7 @@ export class ApprovalSequenceComponent implements OnInit {
     { name: 'CSO', code: 'CSO' },
     { name: 'OCCP', code: 'OCCP' },
     { name: 'BAC', code: 'BAC' },
-    { name: 'Supply Management', code: 'SUPPLY' }
+    { name: 'Supply Management', code: 'SUPPLY' },
   ];
 
   roles = [
@@ -67,7 +64,12 @@ export class ApprovalSequenceComponent implements OnInit {
     { name: 'BAC Chairman', code: 'bac' },
     { name: 'Supply Officer', code: 'supply' },
     { name: 'Property Custodian', code: 'supply' },
-    { name: 'Supply Head', code: 'supply' }
+    { name: 'Supply Head', code: 'supply' },
+  ];
+
+  types = [
+    { label: 'Procurement', value: 'procurement' },
+    { label: 'Supply', value: 'supply' },
   ];
 
   constructor(
@@ -86,91 +88,82 @@ export class ApprovalSequenceComponent implements OnInit {
   initializeForm(): void {
     this.approverForm = this.formBuilder.group({
       name: ['', Validators.required],
-      level: ['', [Validators.required, Validators.min(1)]],
+      level: ['', [Validators.required, Validators.min(1), Validators.max(10)]],
       department: ['', Validators.required],
       role: ['', Validators.required],
       user: ['', Validators.required],
-      isActive: [true]
-    });
-
-    // Listen to role changes to update available users
-    this.approverForm.get('role')?.valueChanges.subscribe(role => {
-      if (role) {
-        this.loadAvailableUsers(role.code);
-      }
+      type: ['procurement', Validators.required], // Default to 'procurement'
+      isActive: [true],
     });
   }
 
   loadSequences(): void {
     this.loading = true;
-    this.approvalSequenceService.getSequencesByType('procurement').subscribe({
+    this.approvalSequenceService.getAllSequences().subscribe({
       next: (sequences) => {
-        this.procurementApprovers = sequences;
+        this.sequences = sequences;
         this.loading = false;
       },
       error: (error) => {
         this.messageService.add({
           severity: 'error',
           summary: 'Error',
-          detail: 'Failed to load procurement sequences'
+          detail: 'Failed to load sequences',
         });
         this.loading = false;
-      }
+      },
+    });
+  }
+
+  onRowReorder(event: any): void {
+    // Update the levels based on the new order
+    this.sequences.forEach((seq, index) => {
+      seq.level = index + 1;
     });
 
-    this.approvalSequenceService.getSequencesByType('supply').subscribe({
-      next: (sequences) => {
-        this.supplyApprovers = sequences;
+    // Save the updated sequences
+    this.approvalSequenceService.updateSequences(this.sequences).subscribe({
+      next: () => {
+        this.messageService.add({
+          severity: 'success',
+          summary: 'Success',
+          detail: 'Sequences reordered successfully!',
+        });
       },
       error: (error) => {
         this.messageService.add({
           severity: 'error',
           summary: 'Error',
-          detail: 'Failed to load supply sequences'
+          detail: 'Failed to reorder sequences',
         });
-      }
-    });
-  }
-
-  loadAvailableUsers(roleCode: string): void {
-    this.approvalSequenceService.getAvailableUsers(roleCode).subscribe({
-      next: (users) => {
-        this.availableUsers = users;
       },
-      error: (error) => {
-        this.messageService.add({
-          severity: 'error',
-          summary: 'Error',
-          detail: 'Failed to load available users'
-        });
-      }
     });
   }
 
-  openNewApproverDialog(flow: 'procurement' | 'supply'): void {
-    this.currentFlow = flow;
+  openNewApproverDialog(): void {
     this.approverForm.reset();
-    this.approverForm.patchValue({ isActive: true });
+    this.approverForm.patchValue({ isActive: true, level: this.getNextLevel(), type: 'procurement' });
     this.isEditMode = false;
     this.approverDialog = true;
   }
 
-  editApprover(approver: ApprovalSequence, flow: 'procurement' | 'supply'): void {
-    this.currentFlow = flow;
+  getNextLevel(): number {
+    return this.sequences.length > 0 ? this.sequences[this.sequences.length - 1].level + 1 : 1;
+  }
+
+  editApprover(approver: ApprovalSequence): void {
     this.approverForm.patchValue({
       name: approver.name,
       level: approver.level,
-      department: this.departments.find(d => d.code === approver.departmentCode),
-      role: this.roles.find(r => r.code === approver.roleCode),
-      user: this.availableUsers.find(u => u.id === approver.userId),
-      isActive: approver.isActive
+      department: this.departments.find((d) => d.code === approver.departmentCode),
+      role: this.roles.find((r) => r.code === approver.roleCode),
+      user: this.availableUsers.find((u) => u.id === approver.userId),
+      type: approver.type,
+      isActive: approver.isActive,
     });
     this.isEditMode = true;
     this.currentApproverId = approver.id || null;
     this.approverDialog = true;
-
-    // Load available users for the selected role
-    this.loadAvailableUsers(approver.roleCode);
   }
 
   saveApprover(): void {
@@ -181,6 +174,28 @@ export class ApprovalSequenceComponent implements OnInit {
     }
 
     const formValue = this.approverForm.value;
+    const type = formValue.type;
+    const level = formValue.level;
+
+    // Validate level based on type
+    if (type === 'procurement' && (level < 1 || level > 4)) {
+      this.messageService.add({
+        severity: 'error',
+        summary: 'Error',
+        detail: 'For procurement, level must be between 1 and 4.',
+      });
+      return;
+    }
+
+    if (type === 'supply' && (level < 5 || level > 10)) {
+      this.messageService.add({
+        severity: 'error',
+        summary: 'Error',
+        detail: 'For supply, level must be between 5 and 10.',
+      });
+      return;
+    }
+
     const sequenceData = {
       name: formValue.name,
       level: formValue.level,
@@ -190,19 +205,20 @@ export class ApprovalSequenceComponent implements OnInit {
       roleName: formValue.role.name,
       userId: formValue.user.id,
       userFullName: formValue.user.fullname,
-      type: this.currentFlow,
-      isActive: formValue.isActive
+      type: formValue.type, // Use the selected type
+      isActive: formValue.isActive,
     };
 
     if (this.isEditMode && this.currentApproverId) {
-      this.approvalSequenceService.updateSequence(this.currentApproverId, sequenceData)
-        .pipe(finalize(() => this.loading = false))
+      this.approvalSequenceService
+        .updateSequence(this.currentApproverId, sequenceData)
+        .pipe(finalize(() => (this.loading = false)))
         .subscribe({
           next: () => {
             this.messageService.add({
               severity: 'success',
               summary: 'Success',
-              detail: 'Approval sequence updated successfully!'
+              detail: 'Approval sequence updated successfully!',
             });
             this.loadSequences();
             this.hideDialog();
@@ -211,19 +227,20 @@ export class ApprovalSequenceComponent implements OnInit {
             this.messageService.add({
               severity: 'error',
               summary: 'Error',
-              detail: error.message || 'Failed to update sequence'
+              detail: error.message || 'Failed to update sequence',
             });
-          }
+          },
         });
     } else {
-      this.approvalSequenceService.addSequence(sequenceData)
-        .pipe(finalize(() => this.loading = false))
+      this.approvalSequenceService
+        .addSequence(sequenceData)
+        .pipe(finalize(() => (this.loading = false)))
         .subscribe({
           next: () => {
             this.messageService.add({
               severity: 'success',
               summary: 'Success',
-              detail: 'New approval sequence added successfully!'
+              detail: 'New approval sequence added successfully!',
             });
             this.loadSequences();
             this.hideDialog();
@@ -232,27 +249,27 @@ export class ApprovalSequenceComponent implements OnInit {
             this.messageService.add({
               severity: 'error',
               summary: 'Error',
-              detail: error.message || 'Failed to add sequence'
+              detail: error.message || 'Failed to add sequence',
             });
-          }
+          },
         });
     }
   }
 
-  deleteApprover(approver: ApprovalSequence, flow: 'procurement' | 'supply'): void {
-    this.currentFlow = flow;
+  deleteApprover(approver: ApprovalSequence): void {
     this.confirmationService.confirm({
       message: 'Are you sure you want to delete this approval sequence?',
       accept: () => {
         this.loading = true;
-        this.approvalSequenceService.deleteSequence(approver.id!)
-          .pipe(finalize(() => this.loading = false))
+        this.approvalSequenceService
+          .deleteSequence(approver.id!)
+          .pipe(finalize(() => (this.loading = false)))
           .subscribe({
             next: () => {
               this.messageService.add({
                 severity: 'success',
                 summary: 'Successful',
-                detail: 'Approval sequence deleted'
+                detail: 'Approval sequence deleted',
               });
               this.loadSequences();
             },
@@ -260,11 +277,11 @@ export class ApprovalSequenceComponent implements OnInit {
               this.messageService.add({
                 severity: 'error',
                 summary: 'Error',
-                detail: error.message || 'Failed to delete sequence'
+                detail: error.message || 'Failed to delete sequence',
               });
-            }
+            },
           });
-      }
+      },
     });
   }
 
