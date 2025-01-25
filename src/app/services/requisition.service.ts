@@ -328,6 +328,7 @@ import { z } from 'zod';
 import { GroupService } from './group.service';
 import { UserService } from './user.service';
 import { ApprovalSequence, ApprovalSequenceService } from './approval-sequence.service';
+import { firstValueFrom } from 'rxjs';
 
 /**
  * Zod schema for an Extended Requisition.
@@ -353,8 +354,8 @@ export const requisitionSchema = z.object({
   productSpecifications: z.record(z.string(), z.string()).optional(),
   ppmpAttachment: z.string().optional(),
   purchaseRequestAttachment: z.string().optional(),
-  dateCreated: z.date().optional(),
-  lastModified: z.date().optional(),
+  dateCreated: z.coerce.date().optional(), // Change this line
+ lastModified: z.coerce.date().optional(), // Change this line
   signature: z.string().optional(),
   createdByUserId: z.string().optional(),
   createdByUserName: z.string().optional(),
@@ -694,66 +695,66 @@ private loadDummyData(): void {
    * @param signature - The Base64 string of the approver's signature.
    * @param comments - Optional comments from the approver.
    */
-  async approveRequisition(
-    requisitionId: string,
-    status: 'Approved' | 'Rejected',
-    signature: string,
-    comments?: string
-  ): Promise<void> {
-    const requisition = this.requisitions.find((req) => req.id === requisitionId);
-    if (!requisition) {
-      throw new Error('Requisition not found');
-    }
+ async approveRequisition(
+ requisitionId: string,
+ status: 'Approved' | 'Rejected', 
+ signature: string,
+ comments?: string
+): Promise<void> {
+ const requisition = this.requisitions.find((req) => req.id === requisitionId);
+ if (!requisition) {
+   throw new Error('Requisition not found');
+ }
 
-    if (!requisition.approvalSequenceId || !requisition.currentApprovalLevel) {
-      throw new Error('Approval sequence not assigned');
-    }
+ if (!requisition.approvalSequenceId || !requisition.currentApprovalLevel) {
+   throw new Error('Approval sequence not assigned');
+ }
 
-    // Fetch the approval sequence
-    const sequences = await this.approvalSequenceService
-      .getSequencesByType('procurement') // Assuming procurement flow
-      .toPromise();
+ // Convert dates to Date objects
+ requisition.dateCreated = new Date(requisition.dateCreated!);
+ requisition.lastModified = new Date();
 
-    if (!sequences) {
-      throw new Error('Failed to fetch approval sequences');
-    }
+ // Fetch approval sequence
+ const sequences = await firstValueFrom(
+   this.approvalSequenceService.getSequencesByType('procurement')
+ );
 
-    const approvalSequence = sequences.find((seq) => seq.id === requisition.approvalSequenceId);
+ const approvalSequence = sequences.find((seq) => seq.id === requisition.approvalSequenceId);
+ if (!approvalSequence) {
+   throw new Error('Approval sequence not found');
+ }
 
-    if (!approvalSequence) {
-      throw new Error('Approval sequence not found');
-    }
+ // Update requisition status
+ requisition.status = status;
+ requisition.signature = signature;
 
-    // Update requisition status
-    requisition.status = status;
-    requisition.signature = signature;
+ // Handle approval history
+ requisition.approvalHistory = requisition.approvalHistory || [];
+ const newHistoryEntry = {
+   level: requisition.currentApprovalLevel,
+   status,
+   timestamp: new Date(),
+   comments
+ };
+ requisition.approvalHistory = [
+   ...requisition.approvalHistory.map(h => ({
+     ...h,
+     timestamp: new Date(h.timestamp)
+   })),
+   newHistoryEntry
+ ];
 
-    // Add to approval history
-    requisition.approvalHistory = requisition.approvalHistory || [];
-    requisition.approvalHistory.push({
-      level: requisition.currentApprovalLevel,
-      status,
-      timestamp: new Date(),
-      comments,
-    });
+ if (status === 'Approved') {
+   requisition.currentApprovalLevel += 1;
+   const maxLevel = approvalSequence.level;
+   requisition.approvalStatus = requisition.currentApprovalLevel > maxLevel ? 'Approved' : 'Pending';
+ } else {
+   requisition.approvalStatus = 'Rejected';
+ }
 
-    if (status === 'Approved') {
-      // Move to the next approval level
-      requisition.currentApprovalLevel += 1;
-
-      // Check if all levels are approved
-      const maxLevel = approvalSequence.level;
-      if (requisition.currentApprovalLevel > maxLevel) {
-        requisition.approvalStatus = 'Approved'; // Final approval
-      } else {
-        requisition.approvalStatus = 'Pending'; // Reset to 'Pending' for the next level
-      }
-    } else {
-      requisition.approvalStatus = 'Rejected'; // Reject the requisition
-    }
-
-    this.saveToLocalStorage();
-  }
+ await this.updateRequisition(requisition);
+ this.saveToLocalStorage();
+}
 
   /**
    * Fetch requisitions with their approval sequence details.

@@ -248,40 +248,58 @@ async loadApprovalSequences(): Promise<void> {
   }
 }
 
-  async confirmApproval() {
+async confirmApproval() {
   try {
-    if (!this.selectedRequest) {
-      throw new Error('No request selected for approval.');
-    }
-
+    if (!this.selectedRequest) throw new Error('No request selected');
+    
     const canvas = this.signatureCanvas.nativeElement;
     const signatureDataUrl = canvas.toDataURL('image/png');
-
-    // Generate the Purchase Request PDF
     const prPdfBase64 = this.generatePurchaseRequestPdf(this.selectedRequest, signatureDataUrl);
 
-    // Update the requisition with the new status and attachment
-    const updatedRequisition = {
-      ...this.selectedRequest,
-      status: 'Approved',
-      purchaseRequestAttachment: prPdfBase64,
-    };
+    // Update requisition
+    const requisition = await this.requisitionService.getRequisitionById(this.selectedRequest.id);
+    if (!requisition) throw new Error('Requisition not found');
 
-    // Save the updated requisition
-    await this.requisitionService.updateRequisition(updatedRequisition);
+    requisition.dateCreated = new Date(requisition.dateCreated!);
+    requisition.lastModified = new Date();
+    requisition.purchaseRequestAttachment = prPdfBase64;
+    
+    requisition.approvalHistory = [
+      ...(requisition.approvalHistory || []).map(h => ({
+        ...h,
+        timestamp: new Date(h.timestamp)
+      })),
+      {
+        level: requisition.currentApprovalLevel,
+        status: 'Approved',
+        timestamp: new Date(),
+        comments: ''
+      }
+    ];
+
+    requisition.currentApprovalLevel++;
+    
+    if (requisition.currentApprovalLevel > 4) {
+      requisition.approvalStatus = 'Approved';
+      requisition.status = 'Approved';
+    } else {
+      requisition.approvalStatus = 'Pending';
+    }
+
+    await this.requisitionService.updateRequisition(requisition);
+    await this.loadRequisitions();
 
     this.messageService.add({
       severity: 'success',
       summary: 'Success',
-      detail: 'Purchase Request has been approved and saved.',
+      detail: 'Purchase Request approved successfully'
     });
 
-    await this.loadPendingRequests(); // Reload pending requests
-    await this.loadApprovedRequests(); // Reload approved requests
     this.displayPrPreview = false;
     this.displaySignatureDialog = false;
+    
   } catch (error) {
-    this.handleError(error, 'Failed to approve the Purchase Request.');
+    this.handleError(error, 'Failed to approve Purchase Request');
   } finally {
     this.selectedRequest = null;
     this.loading = false;
@@ -584,5 +602,6 @@ async loadApprovalSequences(): Promise<void> {
   } finally {
     this.loading = false;
   }
-}
+  }
+  
 }
