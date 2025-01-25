@@ -8,7 +8,7 @@
     <!-- Header: Add + Search -->
     <div class="flex justify-between items-center mt-4">
       <p-button
-        label="Add End User"
+        label="Add Assignment"
         icon="pi pi-plus"
         size="small"
         [outlined]="true"
@@ -32,68 +32,53 @@
       </div>
     </div>
 
-    <!-- p-table listing EndUserRecord -->
-    <p-table
-      #dt
-      [value]="endUsers"
-      [rows]="10"
-      [paginator]="true"
-      [globalFilterFields]="['userId','officeId']"
-      [rowsPerPageOptions]="[5, 10, 20]"
-      [loading]="loading"
-      styleClass="p-datatable-sm mt-4"
-      dataKey="id"
-    >
-      <ng-template pTemplate="header">
-        <tr>
-          <th>User</th>
-          <th>Office</th>
-          <th class="w-[100px]">Actions</th>
-        </tr>
-      </ng-template>
+    <!-- p-table listing end users with assigned offices -->
+  <p-table
+  #dt
+  [value]="endUsers"
+  [rows]="10"
+  [paginator]="true"
+  [globalFilterFields]="['fullname', 'role']"
+  [rowsPerPageOptions]="[5, 10, 20]"
+  [loading]="loading"
+  styleClass="p-datatable-sm mt-4"
+  dataKey="id"
+>
+  <ng-template pTemplate="header">
+    <tr>
+      <th>User</th>
+      <th>Role</th>
+      <th>Position</th>
+      <th>Office</th>
+    </tr>
+  </ng-template>
 
-      <ng-template pTemplate="body" let-rec>
-        <tr>
-          <td>{{ getUserLabel(rec.userId) }}</td>
-          <td>{{ getOfficeLabel(rec.officeId) }}</td>
-          <td>
-            <div class="flex gap-2">
-              <button
-                pButton
-                icon="pi pi-pencil"
-                class="p-button-rounded p-button-primary p-button-sm"
-                [outlined]="true"
-                (click)="editRecord(rec)"
-              ></button>
-              <button
-                pButton
-                icon="pi pi-trash"
-                class="p-button-rounded p-button-danger p-button-sm"
-                [outlined]="true"
-                (click)="deleteRecord(rec)"
-              ></button>
-            </div>
-          </td>
-        </tr>
-      </ng-template>
+  <ng-template pTemplate="body" let-user>
+    <tr>
+      <td>{{ user.fullname }}</td>
+      <td>{{ user.role }}</td>
+      <td>{{ user.position }}</td>
+      <td>{{ user.officeName }}</td>
+    </tr>
+  </ng-template>
 
-      <ng-template pTemplate="emptymessage">
-        <tr>
-          <td colspan="3">
-            <div class="flex flex-col w-full items-center justify-center py-8">
-              <span>No end-user records found.</span>
-            </div>
-          </td>
-        </tr>
-      </ng-template>
-    </p-table>
+  <ng-template pTemplate="emptymessage">
+    <tr>
+      <td colspan="4">
+        <div class="flex flex-col w-full items-center justify-center py-8">
+          <span>No end users found.</span>
+        </div>
+      </td>
+    </tr>
+  </ng-template>
+</p-table>
 
     <!-- p-dialog modal for Add/Edit -->
     <p-dialog
       [(visible)]="dialogVisible"
       [modal]="true"
       [style]="{ width: '90vw', maxWidth: '450px' }"
-      [header]="isEditMode ? 'Edit End User' : 'Add End User'"
+      [header]="isEditMode ? 'Edit Assignment' : 'Add Assignment'"
       styleClass="p-fluid"
       [dismissableMask]="true"
       [draggable]="false"
@@ -101,7 +86,7 @@
       [position]="'center'"
     >
       <span class="text-gray-600 block">
-        {{ isEditMode ? 'Editing existing' : 'Creating new' }} end-user assignment.
+        {{ isEditMode ? 'Editing existing' : 'Creating new' }} assignment.
       </span>
       <small class="text-gray-500 block mb-4">(Please fill out all fields)</small>
 
@@ -117,8 +102,7 @@
               optionValue="value"
               placeholder="Select a User"
               class="w-full"
-                [appendTo]="'body'"     
-
+              [appendTo]="'body'"
             ></p-dropdown>
             <small class="text-red-500 mt-1"
               *ngIf="submitted && endUserForm.get('userId')?.hasError('required')"
@@ -139,8 +123,7 @@
               optionValue="value"
               placeholder="Select an Office"
               class="w-full"
-                              [appendTo]="'body'"     
-
+              [appendTo]="'body'"
             ></p-dropdown>
             <small class="text-red-500 mt-1"
               *ngIf="submitted && endUserForm.get('officeId')?.hasError('required')"

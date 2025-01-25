@@ -1,5 +1,3 @@
-// src/app/pages/admin/end-user-list/end-user-list.component.ts
-
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
@@ -10,13 +8,13 @@ import { ButtonModule } from 'primeng/button';
 import { InputTextModule } from 'primeng/inputtext';
 import { DialogModule } from 'primeng/dialog';
 import { DropdownModule } from 'primeng/dropdown';
-import { ConfirmDialogModule,  } from 'primeng/confirmdialog';
+import { ConfirmDialogModule } from 'primeng/confirmdialog';
 import { MessageService, ConfirmationService } from 'primeng/api';
+import { ToastModule } from 'primeng/toast';
 
 import { UserService, User } from 'src/app/services/user.service';
 import { DepartmentService, Office } from 'src/app/services/departments.service';
 import { EndUserListService, EndUserRecord } from 'src/app/services/end-user-list.service';
-import { ToastModule } from 'primeng/toast';
 
 @Component({
   selector: 'app-end-user-list',
@@ -38,7 +36,9 @@ import { ToastModule } from 'primeng/toast';
   providers: [ConfirmationService, MessageService]
 })
 export class EndUserListComponent implements OnInit {
-  endUsers: EndUserRecord[] = [];
+  allUsers: User[] = []; // All users from user.service.ts
+  endUsers: User[] = []; // Only end users with assigned offices
+  endUserRecords: EndUserRecord[] = []; // Links between users and offices
   loading = false;
   dialogVisible = false;
   endUserForm!: FormGroup;
@@ -46,10 +46,10 @@ export class EndUserListComponent implements OnInit {
   isEditMode = false;
   selectedRecordId: string | null = null;
 
-  // For user dropdown => all users from userService
+  // For dropdowns
   userDropdown: { label: string; value: string }[] = [];
-  // For office dropdown => from departmentService
   officeDropdown: { label: string; value: string }[] = [];
+  offices: any;
 
   constructor(
     private endUserListService: EndUserListService,
@@ -62,8 +62,7 @@ export class EndUserListComponent implements OnInit {
 
   async ngOnInit() {
     this.buildForm();
-    this.loadRecords();
-    this.loadDropdowns();
+    await this.loadData();
   }
 
   buildForm() {
@@ -73,29 +72,38 @@ export class EndUserListComponent implements OnInit {
     });
   }
 
-  loadRecords() {
+  async loadData() {
     this.loading = true;
-    this.endUsers = this.endUserListService.getAllRecords();
-    this.loading = false;
-  }
 
-  async loadDropdowns() {
-    // 1) userDropdown => show ALL users (no role filter)
+    // Load all users
     this.userService.getAllUsers().subscribe(users => {
-      this.userDropdown = users.map(u => ({
-        label: `${u.fullname} (${u.role})`,
-        value: u.id!
-      }));
-    });
+      this.allUsers = users;
 
-    // 2) officeDropdown => from DepartmentService
-    const offices = await this.departmentService.getAllOffices();
-    this.officeDropdown = offices.map(o => ({
-      label: `${o.name} (Room ${o.roomNumber})`,
-      value: o.id!
-    }));
+      // Load offices
+      this.departmentService.getAllOffices().then(offices => {
+        this.offices = offices;
+
+        // Filter end users and map office names
+        this.endUsers = this.allUsers
+          .filter(user => user.role === 'end-user')
+          .map(user => ({
+            ...user,
+            officeName: this.getOfficeName(user.officeId) // Map officeId to officeName
+          }));
+
+        this.loading = false;
+      }).catch(error => {
+        console.error('Error loading offices:', error);
+        this.loading = false;
+      });
+    });
   }
 
+  // Helper function to get office name by officeId
+  getOfficeName(officeId: string): string {
+    const office = this.offices.find((o: { id: string; }) => o.id === officeId);
+    return office ? office.name : 'Unknown Office';
+  }
   // =========================
   // CRUD
   // =========================
@@ -107,32 +115,37 @@ export class EndUserListComponent implements OnInit {
     this.dialogVisible = true;
   }
 
-  editRecord(rec: EndUserRecord) {
-    this.isEditMode = true;
-    this.submitted = false;
-    this.selectedRecordId = rec.id!;
-    this.endUserForm.patchValue({
-      userId: rec.userId,
-      officeId: rec.officeId
-    });
-    this.dialogVisible = true;
+  editAssignment(userId: string) {
+    const record = this.endUserRecords.find(rec => rec.userId === userId);
+    if (record) {
+      this.isEditMode = true;
+      this.selectedRecordId = record.id!;
+      this.endUserForm.patchValue({
+        userId: record.userId,
+        officeId: record.officeId
+      });
+      this.dialogVisible = true;
+    }
   }
 
-  deleteRecord(rec: EndUserRecord) {
-    this.confirmationService.confirm({
-      message: 'Are you sure you want to delete this assignment?',
-      header: 'Confirm',
-      icon: 'pi pi-exclamation-triangle',
-      accept: () => {
-        this.endUserListService.deleteRecord(rec.id!);
-        this.loadRecords();
-        this.messageService.add({ 
-          severity: 'success',
-          summary: 'Success',
-          detail: 'Record deleted'
-        });
-      }
-    });
+  deleteAssignment(userId: string) {
+    const record = this.endUserRecords.find(rec => rec.userId === userId);
+    if (record) {
+      this.confirmationService.confirm({
+        message: 'Are you sure you want to delete this assignment?',
+        header: 'Confirm',
+        icon: 'pi pi-exclamation-triangle',
+        accept: () => {
+          this.endUserListService.deleteRecord(record.id!);
+          this.loadData();
+          this.messageService.add({ 
+            severity: 'success',
+            summary: 'Success',
+            detail: 'Assignment deleted'
+          });
+        }
+      });
+    }
   }
 
   hideDialog() {
@@ -151,19 +164,19 @@ export class EndUserListComponent implements OnInit {
           this.messageService.add({
             severity: 'success',
             summary: 'Updated',
-            detail: 'End user assignment updated'
+            detail: 'Assignment updated'
           });
         } else {
           this.endUserListService.addRecord(formData);
           this.messageService.add({
             severity: 'success',
             summary: 'Created',
-            detail: 'End user assignment created'
+            detail: 'Assignment created'
           });
         }
         this.dialogVisible = false;
         this.endUserForm.reset();
-        this.loadRecords();
+        this.loadData();
       } catch (err: any) {
         this.messageService.add({
           severity: 'error',
@@ -178,12 +191,18 @@ export class EndUserListComponent implements OnInit {
   // Display Helpers
   // =========================
   getUserLabel(userId: string): string {
-    const found = this.userDropdown.find(u => u.value === userId);
-    return found ? found.label : 'Unknown User';
+    const user = this.allUsers.find(u => u.id === userId);
+    return user ? `${user.fullname} (${user.role})` : 'Unknown User';
   }
 
   getOfficeLabel(officeId: string): string {
-    const found = this.officeDropdown.find(o => o.value === officeId);
-    return found ? found.label : 'Unknown Office';
+    const office = this.officeDropdown.find(o => o.value === officeId);
+    return office ? office.label : 'Unknown Office';
+  }
+
+  // Get the office assigned to a user
+  getAssignedOffice(userId: string): string {
+    const record = this.endUserRecords.find(rec => rec.userId === userId);
+    return record ? this.getOfficeLabel(record.officeId) : 'Not Assigned';
   }
 }

@@ -1,7 +1,8 @@
 // src/app/services/end-user-list.service.ts
 import { Injectable } from '@angular/core';
-import { BehaviorSubject } from 'rxjs';
+import { BehaviorSubject, map } from 'rxjs';
 import { z } from 'zod';
+import { UserService } from './user.service'; // Import UserService
 
 // Zod schema for an End-User record referencing a user and an office
 export const endUserRecordSchema = z.object({
@@ -21,7 +22,11 @@ export class EndUserListService {
   private recordsSubject = new BehaviorSubject<EndUserRecord[]>([]);
   records$ = this.recordsSubject.asObservable();
 
-  constructor() {
+  constructor(private userService: UserService) { // Inject UserService
+    this.loadInitialData();
+  }
+
+  private loadInitialData(): void {
     const stored = localStorage.getItem(this.STORAGE_KEY);
     if (stored) {
       try {
@@ -72,6 +77,13 @@ export class EndUserListService {
   deleteRecord(recordId: string): void {
     const updated = this.recordsSubject.value.filter(r => r.id !== recordId);
     this.recordsSubject.next(updated);
+  }
+
+  // Fetch end users from UserService
+  getEndUsers() {
+    return this.userService.getAllUsers().pipe(
+      map((users: any[]) => users.filter(user => user.role === 'end-user'))
+    );
   }
 
   private generate32CharId(): string {
