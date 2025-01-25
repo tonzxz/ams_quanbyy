@@ -2,8 +2,10 @@
 
 import { Injectable } from '@angular/core';
 import { Router } from '@angular/router';
-import { Observable, of, throwError } from 'rxjs';
+import { Observable, map, of, throwError, mergeMap, from} from 'rxjs';
 import { z } from 'zod';
+import { DepartmentService } from './departments.service';
+
 
 // ==============================
 // Zod Schemas
@@ -17,34 +19,30 @@ export const positionSchema = z.object({
 
 // 1) We add a .refine() so that if role is "end-user", position must not be empty.
 export const userSchema = z
-  .object({
-    id: z.string().length(32, "ID must be exactly 32 characters").optional(),
-    fullname: z.string().min(1, "Full name is required"),
-    username: z.string().min(1, "Username is required"),
-    password: z.string().min(6, "Password must be at least 6 characters"),
-    role: z.enum(['superadmin', 'accounting', 'supply', 'bac', 'inspection', 'end-user']),
-    profile: z.string().min(1, "Profile is required"),
-
-    // position is optional unless role = 'end-user'
-    position: z.string().optional(),
-
-    // Additional arrays for assigned codes and sub-accounts
-    assignedAccountCodes: z.array(z.string()).optional(),
-    assignedSubAccounts: z.array(z.string()).optional()
-  })
-  .refine(
-    (data) => {
-      // If role is 'end-user', position must be non-empty
-      if (data.role === 'end-user') {
-        return data.position && data.position.trim().length > 0;
-      }
-      return true; // for other roles, it's not required
-    },
-    {
-      message: 'Position is required for users with the "end-user" role.',
-      path: ['position']
-    }
-  );
+ .object({
+   id: z.string().length(32, "ID must be exactly 32 characters").optional(),
+   fullname: z.string().min(1, "Full name is required"),
+   username: z.string().min(1, "Username is required"),
+   password: z.string().min(6, "Password must be at least 6 characters"),
+   role: z.enum(['superadmin', 'accounting', 'supply', 'bac', 'inspection', 'end-user']),
+   profile: z.string().min(1, "Profile is required"),
+   officeId: z.string().length(32, "Office ID must be exactly 32 characters"), // Keep only officeId
+   position: z.string().optional(),
+   assignedAccountCodes: z.array(z.string()).optional(),
+   assignedSubAccounts: z.array(z.string()).optional()
+ })
+ .refine(
+   (data) => {
+     if (data.role === 'end-user') {
+       return data.position && data.position.trim().length > 0;
+     }
+     return true;
+   },
+   {
+     message: 'Position is required for users with the "end-user" role.',
+     path: ['position']
+   }
+ );
 
 export const accountCodeSchema = z.object({
   id: z.string().length(32, "ID must be exactly 32 characters").optional(),
@@ -76,73 +74,79 @@ export class UserService {
   // 1) Users
   // ------------------------------------------------------------------
   private users: User[] = [
-    {
-      id: this.generateId(),
-      fullname: 'John Doe',
-      username: 'accounting',
-      password: 'test123',
-      role: 'accounting',
-      profile: 'profile-pic-url-1',
-      position: undefined,
-      assignedAccountCodes: [],
-      assignedSubAccounts: []
-    },
-    {
-      id: this.generateId(),
-      fullname: 'Jane Smith',
-      username: 'superadmin',
-      password: 'test123',
-      role: 'superadmin',
-      profile: 'profile-pic-url-2',
-      position: undefined,
-      assignedAccountCodes: [],
-      assignedSubAccounts: []
-    },
-    {
-      id: this.generateId(),
-      fullname: 'Alice Johnson',
-      username: 'supply',
-      password: 'test123',
-      role: 'supply',
-      profile: 'profile-pic-url-3',
-      position: undefined,
-      assignedAccountCodes: [],
-      assignedSubAccounts: []
-    },
-    {
-      id: this.generateId(),
-      fullname: 'Bob Brown',
-      username: 'bac',
-      password: 'test123',
-      role: 'bac',
-      profile: 'profile-pic-url-4',
-      position: undefined,
-      assignedAccountCodes: [],
-      assignedSubAccounts: []
-    },
-    {
-      id: this.generateId(),
-      fullname: 'Charlie White',
-      username: 'inspection',
-      password: 'test123',
-      role: 'inspection',
-      profile: 'profile-pic-url-5',
-      position: undefined,
-      assignedAccountCodes: [],
-      assignedSubAccounts: []
-    },
-    {
-      id: this.generateId(),
-      fullname: 'Diana Green',
-      username: 'enduser',
-      password: 'test123',
-      role: 'end-user',
-      profile: 'profile-pic-url-6',
-      position: 'Manager', // example
-      assignedAccountCodes: [],
-      assignedSubAccounts: []
-    }
-  ];
+  {
+    id: this.generateId(),
+    fullname: 'John Doe',
+    username: 'accounting',
+    password: 'test123',
+    role: 'accounting',
+    profile: 'profile-pic-url-1',
+    position: undefined,
+    officeId: 'a1b2c3d4e5f6a7b8c9d0e1f2a3b4c5d6',    // Recruitment Office
+    assignedAccountCodes: [],
+    assignedSubAccounts: []
+  },
+  {
+    id: this.generateId(),
+    fullname: 'Jane Smith',
+    username: 'superadmin',
+    password: 'test123',
+    role: 'superadmin',
+    profile: 'profile-pic-url-2',
+    position: undefined,
+    officeId: 'b2c3d4e5f6g7h8i9j0k1l2m3n4o5p6q7',    // Support Room
+    assignedAccountCodes: [],
+    assignedSubAccounts: []
+  },
+  {
+    id: this.generateId(),
+    fullname: 'Alice Johnson',
+    username: 'supply',
+    password: 'test123',
+    role: 'supply',
+    profile: 'profile-pic-url-3',
+    position: undefined,
+    officeId: 'a1b2c3d4e5f6a7b8c9d0e1f2a3b4c5d6',    // Recruitment Office
+    assignedAccountCodes: [],
+    assignedSubAccounts: []
+  },
+  {
+    id: this.generateId(),
+    fullname: 'Bob Brown',
+    username: 'bac',
+    password: 'test123',
+    role: 'bac',
+    profile: 'profile-pic-url-4',
+    position: undefined,
+    officeId: 'b2c3d4e5f6g7h8i9j0k1l2m3n4o5p6q7',    // Support Room
+    assignedAccountCodes: [],
+    assignedSubAccounts: []
+  },
+  {
+    id: this.generateId(),
+    fullname: 'Charlie White',
+    username: 'inspection',
+    password: 'test123',
+    role: 'inspection',
+    profile: 'profile-pic-url-5',
+    position: undefined,
+    officeId: 'a1b2c3d4e5f6a7b8c9d0e1f2a3b4c5d6',    // Recruitment Office
+    assignedAccountCodes: [],
+    assignedSubAccounts: []
+  },
+  {
+    id: this.generateId(),
+    fullname: 'Diana Green',
+    username: 'enduser',
+    password: 'test123',
+    role: 'end-user',
+    profile: 'profile-pic-url-6',
+    position: 'Manager',
+    officeId: 'b2c3d4e5f6g7h8i9j0k1l2m3n4o5p6q7',    // Support Room
+    assignedAccountCodes: [],
+    assignedSubAccounts: []
+  }
+];
 
   // ------------------------------------------------------------------
   // 2) Positions
@@ -225,6 +229,7 @@ export class UserService {
   // Current Logged-in User
   // ------------------------------------------------------------------
   private user?: User;
+  private departmentService: DepartmentService;
 
   constructor(private router: Router) {
     // Load data from local storage
@@ -232,6 +237,7 @@ export class UserService {
     this.loadAccountCodes();
     this.loadSubAccounts();
     this.loadPositions(); // we also load positions
+
   }
 
   // =========================================
@@ -259,9 +265,7 @@ export class UserService {
     localStorage.setItem(this.USERS_STORAGE_KEY, JSON.stringify(this.users));
   }
 
-  getAllUsers(): Observable<User[]> {
-    return of(this.users);
-  }
+ 
 
   addUser(userData: Omit<User, 'id'>): Observable<User> {
     try {
@@ -677,6 +681,8 @@ export class UserService {
     }
   }
 
+  
+
   assignSubAccountToUser(userId: string, subAccountId: string): Observable<User> {
     try {
       if (!this.user) {
@@ -711,7 +717,26 @@ export class UserService {
 
       return of(updatedUser);
     } catch (error) {
-      return throwError(() => error);
+      return throwError(() => error); 
     }
   }
+
+ private async getDepartmentAndOfficeNames() {
+  try {
+    const departments = await this.departmentService.getAllDepartments();
+    const offices = await this.departmentService.getAllOffices();
+    return { departments, offices };
+  } catch (error) {
+    console.error('Error loading department/office data:', error);
+    return { departments: [], offices: [] };
+  }
+}
+
+// Add new method to get user with department/office details
+
+  
+getAllUsers(): Observable<User[]> {
+  return of(this.users);
+}
+ 
 }

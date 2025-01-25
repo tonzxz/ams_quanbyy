@@ -48,7 +48,7 @@
           [value]="users"
           [rows]="10"
           [paginator]="true"
-          [globalFilterFields]="['fullname','username','role']"
+          [globalFilterFields]="['fullname','username','Department','Office','role']"
           [rowsPerPageOptions]="[5, 10, 20]"
           [loading]="userLoading"
           [showCurrentPageReport]="false"
@@ -69,6 +69,11 @@
                 Username
                 <p-sortIcon field="username"></p-sortIcon>
               </th>
+             
+                <th pSortableColumn="officeId">
+                Office
+                <p-sortIcon field="officeId"></p-sortIcon>
+                </th>
               <th pSortableColumn="role">
                 Role
                 <p-sortIcon field="role"></p-sortIcon>
@@ -81,6 +86,7 @@
             <tr>
               <td>{{ user.fullname }}</td>
               <td>{{ user.username }}</td>
+                <td>{{ getOfficeName(user.officeId) }}</td>
               <td>
                 <!-- Badge for Roles -->
                 <p-badge
@@ -232,6 +238,46 @@
               </div>
             </div>
 
+            <!-- Department -->
+<div class="flex items-center gap-4 mb-4">
+  <label class="font-semibold w-24">Department</label>
+  <div class="flex-auto flex-col flex">
+    <p-dropdown
+      formControlName="departmentId"
+      [options]="departmentDropdownOptions"
+      placeholder="Select Department"
+      [style]="{ width: '100%' }"
+      appendTo="body"
+    ></p-dropdown>
+    <small
+      class="self-end text-red-500 mt-1"
+      *ngIf="userSubmitted && userForm.get('departmentId')?.errors?.['required']"
+    >
+      Department is required.
+    </small>
+  </div>
+</div>
+
+<!-- Office -->
+<div class="flex items-center gap-4 mb-4">
+  <label class="font-semibold w-24">Office</label>
+  <div class="flex-auto flex-col flex">
+    <p-dropdown
+      formControlName="officeId"
+      [options]="officeDropdownOptions"
+      placeholder="Select Office"
+      [style]="{ width: '100%' }"
+      appendTo="body"
+    ></p-dropdown>
+    <small
+      class="self-end text-red-500 mt-1"
+      *ngIf="userSubmitted && userForm.get('officeId')?.errors?.['required']"
+    >
+      Office is required.
+    </small>
+  </div>
+</div>
+
             <!-- Position Dropdown only if role == 'end-user' -->
             <div class="flex items-center gap-4 mb-4" *ngIf="userForm.get('role')?.value === 'end-user'">
               <label class="font-semibold w-24">Position</label>
@@ -244,7 +290,7 @@
                   placeholder="Select Position"
                   [style]="{ width: '100%' }"
                   appendTo="body"
-                ></p-dropdown>
+                ></p-dropdown>  
                 <small
                   class="self-end text-red-500 mt-1"
                   *ngIf="userSubmitted && userForm.get('position')?.errors?.['required']"

@@ -8,6 +8,8 @@ import { ProgressSpinnerModule } from 'primeng/progressspinner';
 import { ToastModule } from 'primeng/toast';
 import { DialogModule } from 'primeng/dialog';
 import { DomSanitizer, SafeResourceUrl } from '@angular/platform-browser';
+import html2canvas from 'html2canvas';
+import jsPDF from 'jspdf';
 
 @Component({
   selector: 'app-pr-approval',
@@ -29,8 +31,10 @@ export class PrApprovalComponent implements OnInit {
   loading = true;
   displayPpmpPreview = false;
   displaySignatureDialog = false;
+  displayPrPreview = false;
   selectedRequisitionPdf: SafeResourceUrl | null = null;
   selectedRequest: any | null = null;
+  generatedPrHtml: string = ''; // Holds the generated HTML for PR
 
   @ViewChild('signatureCanvas', { static: false })
   signatureCanvas!: ElementRef<HTMLCanvasElement>;
@@ -138,23 +142,10 @@ export class PrApprovalComponent implements OnInit {
 
       this.loading = true;
 
-      // Send approval with signature
-      await this.requisitionService.updateRequisitionStatusWithSignature(
-        this.selectedRequest.id,
-        'Approved',
-        signatureDataUrl
-      );
-
-      this.messageService.add({
-        severity: 'success',
-        summary: 'Success',
-        detail: 'Request has been approved with signature.',
-      });
-
+      // Prepare PR preview HTML
+      this.generatedPrHtml = this.generatePrHtml(this.selectedRequest, signatureDataUrl);
       this.displaySignatureDialog = false;
-      this.selectedRequest = null;
-
-      await this.loadPendingRequests();
+      this.displayPrPreview = true; // Show PR Preview
     } catch (error) {
       this.messageService.add({
         severity: 'error',
@@ -164,6 +155,100 @@ export class PrApprovalComponent implements OnInit {
     } finally {
       this.loading = false;
     }
+  }
+
+  generatePrHtml(request: any, signature: string): string {
+    return `
+      <div class="p-10 bg-white shadow-md rounded-lg">
+        <h1 class="text-2xl font-bold mb-4 flex justify-center">Purchase Request</h1>
+        <div class="mb-4 text-xl">
+          <div class="flex flex-row justify-between">
+            <p><strong>PR No.:</strong> ${request.prNumber || 'N/A'}</p>
+            <p><strong>Date:</strong> ${new Date().toLocaleDateString()}</p>
+          </div>
+          <p><strong>Agency:</strong> ${request.agency || 'Your Agency'}</p>
+          <div class="flex flex-row gap-20">
+            <p><strong>Division:</strong> ${request.division || 'Division'}</p>
+            <p><strong>Section:</strong> ${request.section || 'Section'}</p>
+          </div>
+        </div>
+        <table class="w-full border-collapse border border-gray-300 text-xl">
+          <thead>
+            <tr class="bg-gray-200">
+              <th class="border border-gray-300 p-4">Qty</th>
+              <th class="border border-gray-300 p-4">Unit</th>
+              <th class="border border-gray-300 p-4">Item Description</th>
+              <th class="border border-gray-300 p-4">Stock No</th>
+              <th class="border border-gray-300 p-4">Estimated Unit Cost</th>
+              <th class="border border-gray-300 p-4">Estimated Total Cost</th>
+            </tr>
+          </thead>
+          <tbody>
+            ${request.products
+              .map(
+                (product: any) => `
+              <tr>
+                <td class="border border-gray-300 p-4">${product.quantity}</td>
+                <td class="border border-gray-300 p-4">Unit</td>
+                <td class="border border-gray-300 p-4">${product.name}</td>
+                <td class="border border-gray-300 p-4">-</td>
+                <td class="border border-gray-300 p-4">${product.price}</td>
+                <td class="border border-gray-300 p-4">${
+                  product.quantity * product.price
+                }</td>
+              </tr>
+            `
+              )
+              .join('')}
+          </tbody>
+        </table>
+        <div class="mt-4 text-xl">
+          <p><strong>Purpose:</strong> ${request.purpose || 'N/A'}</p>
+        </div>
+        <div class="mt-4 text-xl flex flex-row justify-between">
+          <p class="ml-20"><strong>Requested By:</strong><br> ${request.requestedBy || 'N/A'}</p>
+          <p class="mr-20"><strong>Approved By:</strong><br> ${request.approvedBy || 'N/A'}</p>
+        </div>
+        <div class="mt-4 text-xl flex flex-row justify-between">
+          <p class="ml-20"><strong>Signature:</strong><br> <img src="${signature}" alt="Signature" /></p>
+        </div>
+      </div>
+    `;
+  }
+
+  generatePrPdf() {
+    const content = document.createElement('div');
+    content.innerHTML = this.generatedPrHtml;
+
+    document.body.appendChild(content);
+
+    html2canvas(content).then((canvas) => {
+      const imgData = canvas.toDataURL('image/png');
+      const pdf = new jsPDF('p', 'mm', 'a4');
+      const imgWidth = 210;
+      const pageHeight = 295;
+      const imgHeight = (canvas.height * imgWidth) / canvas.width;
+      let heightLeft = imgHeight;
+      let position = 0;
+
+      pdf.addImage(imgData, 'PNG', 0, position, imgWidth, imgHeight);
+      heightLeft -= pageHeight;
+
+      while (heightLeft >= 0) {
+        position = heightLeft - imgHeight;
+        pdf.addPage();
+        pdf.addImage(imgData, 'PNG', 0, position, imgWidth, imgHeight);
+        heightLeft -= pageHeight;
+      }
+
+      pdf.save('purchase-request.pdf');
+      document.body.removeChild(content);
+      this.displayPrPreview = false;
+    });
+  }
+
+  closePrPreview() {
+    this.displayPrPreview = false;
   }
 
   async updateRequestStatus(requestId: string, status: 'Approved' | 'Rejected') {

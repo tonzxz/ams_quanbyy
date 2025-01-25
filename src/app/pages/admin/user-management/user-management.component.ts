@@ -15,6 +15,7 @@ import { ConfirmDialog } from 'primeng/confirmdialog';
 
 import { UserService, User, AccountCode, SubAccount, Position } from 'src/app/services/user.service';
 import { MaterialModule } from 'src/app/material.module';
+import { Department, DepartmentService, Office } from 'src/app/services/departments.service';
 
 /** 
  * Simple local helper to generate a random 32-char hex string.
@@ -98,6 +99,12 @@ export class UserManagementComponent implements OnInit {
   isPositionEditMode = false;
   selectedPositionId: string | null = null;
 
+  // Departments and Offices
+  departments: Department[] = [];
+  offices: Office[] = [];
+  departmentDropdownOptions: { label: string; value: string }[] = [];
+  officeDropdownOptions: { label: string; value: string }[] = [];
+
   // Role & Position dropdown data
   roles: RoleOption[] = [];
   positionDropdownOptions: { name: string; value: string }[] = [];
@@ -106,7 +113,9 @@ export class UserManagementComponent implements OnInit {
     private userService: UserService,
     private fb: FormBuilder,
     private confirmationService: ConfirmationService,
-    private messageService: MessageService
+    private messageService: MessageService,
+    private departmentService: DepartmentService, 
+
   ) {}
 
   ngOnInit(): void {
@@ -124,6 +133,7 @@ export class UserManagementComponent implements OnInit {
 
     // Initialize role dropdown
     this.initializeRoles();
+    this.loadDepartmentsAndOffices();
   }
 
   // =============================================
@@ -144,15 +154,49 @@ export class UserManagementComponent implements OnInit {
     });
   }
 
-  initializeUserForm() {
-    this.userForm = this.fb.group({
-      fullname: ['', Validators.required],
-      username: ['', Validators.required],
-      password: ['', [Validators.required, Validators.minLength(6)]],
-      role: ['', Validators.required],
-      profile: ['default-profile-pic-url'],
-      position: ['']  // required only if role='end-user'
+  async loadDepartmentsAndOffices() {
+  try {
+    const deps = await this.departmentService.getAllDepartments();
+    this.departments = deps;
+    this.departmentDropdownOptions = deps.map((d: Department) => ({
+      label: d.name,
+      value: d.id!
+    }));
+
+    const offs = await this.departmentService.getAllOffices();
+    this.offices = offs;
+    this.officeDropdownOptions = offs.map((o: Office) => ({
+      label: o.name,
+      value: o.id!
+    }));
+  } catch (error) {
+    this.messageService.add({
+      severity: 'error',
+      summary: 'Error',
+      detail: 'Failed to load departments and offices'
     });
+  }
+}
+
+  getDepartmentName(id: string): string {
+  return this.departments.find(d => d.id === id)?.name || 'N/A';
+}
+
+getOfficeName(id: string): string {
+  return this.offices.find(o => o.id === id)?.name || 'N/A';
+}
+  
+  
+  initializeUserForm() {
+ this.userForm = this.fb.group({
+   fullname: ['', Validators.required],
+   username: ['', Validators.required],
+   password: ['', [Validators.required, Validators.minLength(6)]],
+   role: ['', Validators.required],
+   profile: ['default-profile-pic-url'],
+   position: [''],
+   officeId: ['', Validators.required]
+ });
 
     // If role == 'end-user', require 'position'
     this.userForm.get('role')?.valueChanges.subscribe((selectedRole) => {
