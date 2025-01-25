@@ -1,82 +1,101 @@
 <mat-card class="cardWithShadow">
   <mat-card-content>
-    <p-tabView>
+    <mat-card-title>Requisitions</mat-card-title>
+    <mat-card-subtitle class="text-sm text-gray-500">
+      View requisitions assigned to you for approval.
+    </mat-card-subtitle>
 
-      <!-- TAB 1: REQUISITIONS -->
-      <p-tabPanel header="Requisitions">
-        <mat-card-title>Requisitions</mat-card-title>
-        <mat-card-subtitle class="text-sm text-gray-500">
-          View requisitions assigned to you for approval.
-        </mat-card-subtitle>
+    <!-- Filters and Actions -->
+    <div class="flex justify-between items-center mt-4">
+      <div class="flex gap-2">
+      
+        <div class="relative w-[300px]">
+          <i class="pi pi-search absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500"></i>
+          <input
+            pInputText
+            type="text"
+            #searchInput
+            (input)="dt.filterGlobal(searchInput.value, 'contains')"
+            placeholder="Search Requisitions"
+            style="text-indent: 1.5rem;"
+            class="w-full border border-gray-300 rounded-md py-2 pl-10 pr-3 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 placeholder:ml-6"
+          />
+        </div>
+      </div>
+    </div>
 
-        <p-table
-          [value]="requisitions"
-          [rows]="10"
-          [paginator]="true"
-          [rowsPerPageOptions]="[5, 10, 20]"
-          styleClass="p-datatable-sm mt-4"
-        >
-          <ng-template pTemplate="header">
-            <tr>
-              <th>Title</th>
-              <th>Description</th>
-              <th>Level</th>
-              <th>Status</th>
-              <th>Date Created</th>
-              <th>Department</th>
-              <th>Role</th>
-              <th>Will be signed by</th>
-              <th>Actions</th>
-            </tr>
-          </ng-template>
+    <!-- Requisitions Table -->
+    <p-table
+      #dt
+      [value]="requisitions"
+      [rows]="10"
+      [paginator]="true"
+      [rowsPerPageOptions]="[5, 10, 20]"
+      [loading]="loading"
+      [globalFilterFields]="['title', 'description', 'approvalStatus', 'departmentName']"
+      responsiveLayout="scroll"
+      styleClass="p-datatable-sm mt-4"
+    >
+      <ng-template pTemplate="header">
+        <tr>
+          <th pSortableColumn="title">Title <p-sortIcon field="title"></p-sortIcon></th>
+          <th pSortableColumn="description">Description <p-sortIcon field="description"></p-sortIcon></th>
+          <th pSortableColumn="approvalSequenceDetails.level">Level <p-sortIcon field="approvalSequenceDetails.level"></p-sortIcon></th>
+          <th pSortableColumn="approvalStatus">Status <p-sortIcon field="approvalStatus"></p-sortIcon></th>
+          <th pSortableColumn="dateCreated">Date Created <p-sortIcon field="dateCreated"></p-sortIcon></th>
+          <th pSortableColumn="approvalSequenceDetails.departmentName">Department <p-sortIcon field="approvalSequenceDetails.departmentName"></p-sortIcon></th>
+          <th>Actions</th>
+        </tr>
+      </ng-template>
 
-          <ng-template pTemplate="body" let-req>
-            <tr>
-              <td>{{ req.title }}</td>
-              <td>{{ req.description }}</td>
-                  <td>Level {{ req.approvalSequenceDetails?.level }}</td>
+      <ng-template pTemplate="body" let-req>
+        <tr>
+          <td>{{ req.title }}</td>
+          <td>{{ req.description }}</td>
+          <td>Level {{ req.approvalSequenceDetails?.level }}</td>
+          <td>
+            <span
+              [class]="req.approvalStatus === 'Pending' ? 'text-yellow-600' : req.approvalStatus === 'Approved' ? 'text-green-600' : 'text-red-600'"
+            >
+              {{ req.approvalStatus }}
+            </span>
+          </td>
+          <td>{{ req.dateCreated | date: 'short' }}</td>
+          <td>{{ req.approvalSequenceDetails?.departmentName || 'N/A' }}</td>
+        <td>
+  <div *ngIf="req.approvalStatus === 'Pending'" class="flex gap-2">
+  <button
+   pButton
+   icon="pi pi-check"
+   class="p-button-rounded p-button-success p-button-sm"
+   (click)="onApprove(req.id)"
+   pTooltip="Approve"></button>
+ <button 
+   pButton
+   icon="pi pi-times"
+   class="p-button-rounded p-button-danger p-button-sm"
+   (click)="onReject(req.id)"
+   [outlined]="false"
+   pTooltip="Reject"></button>
 
-              <td>{{ req.approvalStatus }}</td>
-              <td>{{ req.dateCreated | date: 'short' }}</td>
-              <td>{{ req.approvalSequenceDetails?.departmentName || 'N/A' }}</td>
-              <td>{{ req.approvalSequenceDetails?.roleName || 'N/A' }}</td>
-              <td>{{ req.approvalSequenceDetails?.userFullName || 'N/A' }}</td>
-              <td>
-                <div *ngIf="req.approvalStatus === 'Pending'" class="flex gap-2">
-                  <button
-                    pButton
-                    label="Approve"
-                    icon="pi pi-check"
-                    class="p-button-success p-button-sm"
-                    (click)="onApprove(req.id)"
-                  ></button>
-                  <button
-                    pButton
-                    label="Reject"
-                    icon="pi pi-times"
-                    class="p-button-danger p-button-sm"
-                    (click)="onReject(req.id)"
-                  ></button>
-                </div>
-                <div *ngIf="req.approvalStatus !== 'Pending'">
-                  <span class="text-gray-500">({{ req.approvalStatus | uppercase }})</span>
-                </div>
-              </td>
-            </tr>
-          </ng-template>
+  </div>
+  <div *ngIf="req.approvalStatus !== 'Pending'">
+    <span class="text-gray-500">({{ req.approvalStatus | uppercase }})</span>
+  </div>
+</td>
 
-          <ng-template pTemplate="emptymessage">
-            <tr>
-              <td colspan="8">
-                <div class="flex flex-col w-full items-center justify-center py-8">
-                  <span>No requisitions found.</span>
-                </div>
-              </td>
-            </tr>
-          </ng-template>
-        </p-table>
-      </p-tabPanel>
+        </tr>
+      </ng-template>
 
-    </p-tabView>
+      <ng-template pTemplate="emptymessage">
+        <tr>
+          <td colspan="8">
+            <div class="flex flex-col w-full items-center justify-center py-8">
+              <span>No requisitions found.</span>
+            </div>
+          </td>
+        </tr>
+      </ng-template>
+    </p-table>
   </mat-card-content>
 </mat-card>

@@ -7,6 +7,8 @@ import { ButtonModule } from 'primeng/button';
 
 import { RequisitionService, Requisition } from 'src/app/services/requisition.service';
 import { UserService } from '../../../services/user.service';
+import { TooltipModule } from 'primeng/tooltip';
+import { ButtonGroupModule } from 'primeng/buttongroup';
 
 @Component({
   selector: 'app-approvals',
@@ -16,13 +18,17 @@ import { UserService } from '../../../services/user.service';
     MatCardModule,
     TableModule,
     TabViewModule,
-    ButtonModule
+    ButtonModule,
+    TooltipModule,
+    ButtonGroupModule
+
   ],
   templateUrl: './approvals.component.html',
   styleUrls: ['./approvals.component.scss']
 })
 export class ApprovalsComponent implements OnInit {
   requisitions: (Requisition & { approvalSequenceDetails?: any })[] = [];
+loading: unknown;
 
   constructor(private requisitionService: RequisitionService, private userService: UserService) {}
 
