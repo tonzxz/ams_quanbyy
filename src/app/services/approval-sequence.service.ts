@@ -4,7 +4,7 @@ import { z } from 'zod';
 import { UserService, User } from './user.service';
 
 export const approvalSequenceSchema = z.object({
-  id: z.string().length(32, "ID must be exactly 32 characters").optional(),
+  id: z.string().length(32, "ID must be exactly 32 characters"),
   name: z.string().min(1, "Name is required"),
   level: z.number().min(1, "Level must be at least 1"),
   departmentCode: z.string().min(1, "Department code is required"),
@@ -22,7 +22,7 @@ export const approvalSequenceSchema = z.object({
 export type ApprovalSequence = z.infer<typeof approvalSequenceSchema>;
 
 @Injectable({
-  providedIn: 'root'
+  providedIn: 'root',
 })
 export class ApprovalSequenceService {
   private sequences: ApprovalSequence[] = [];
@@ -33,234 +33,8 @@ export class ApprovalSequenceService {
     this.initializeDefaultSequences();
   }
 
-  private initializeDefaultSequences() {
-    if (this.sequences.length === 0) {
-      // Procurement Flow Sequences (Levels 1 to 4)
-      const procurementSequences: Omit<ApprovalSequence, 'id' | 'createdAt' | 'updatedAt'>[] = [
-        // Level 1: Budget Unit - Initial Review
-        {
-          name: 'Budget Unit Review',
-          level: 1,
-          departmentCode: 'BUDGET',
-          departmentName: 'Budget Unit',
-          roleCode: 'accounting',
-          roleName: 'Budget Officer',
-          userId: '',
-          userFullName: '',
-          type: 'procurement',
-          isActive: true,
-        },
-        // Level 2: Inspection Team - Specification Check
-        {
-          name: 'Technical Specification Review',
-          level: 2,
-          departmentCode: 'INSPECTION',
-          departmentName: 'Inspection Team',
-          roleCode: 'inspection',
-          roleName: 'Inspection Officer',
-          userId: '',
-          userFullName: '',
-          type: 'procurement',
-          isActive: true,
-        },
-        // Level 3: College President Approval
-        {
-          name: 'College President Approval',
-          level: 3,
-          departmentCode: 'ADMIN',
-          departmentName: 'Administration',
-          roleCode: 'superadmin',
-          roleName: 'College President',
-          userId: '',
-          userFullName: '',
-          type: 'procurement',
-          isActive: true,
-        },
-        // Level 4: BAC Final Review
-        {
-          name: 'BAC Final Review',
-          level: 4,
-          departmentCode: 'BAC',
-          departmentName: 'Bids and Awards Committee',
-          roleCode: 'bac',
-          roleName: 'BAC Chairman',
-          userId: '',
-          userFullName: '',
-          type: 'procurement',
-          isActive: true,
-        },
-      ];
-
-      // Supply Management Flow Sequences (Levels 5 to 10)
-      const supplySequences: Omit<ApprovalSequence, 'id' | 'createdAt' | 'updatedAt'>[] = [
-        // Level 5: Initial Inspection
-        {
-          name: 'Delivery Inspection',
-          level: 5,
-          departmentCode: 'INSPECTION',
-          departmentName: 'Inspection Team',
-          roleCode: 'inspection',
-          roleName: 'Inspection Officer',
-          userId: '',
-          userFullName: '',
-          type: 'supply',
-          isActive: true,
-        },
-        // Level 6: CAF for RIS
-        {
-          name: 'RIS Review',
-          level: 6,
-          departmentCode: 'ACCOUNTING',
-          departmentName: 'Accounting Unit',
-          roleCode: 'accounting',
-          roleName: 'CAF Officer',
-          userId: '',
-          userFullName: '',
-          type: 'supply',
-          isActive: true,
-        },
-        // Level 7: End User Receipt
-        {
-          name: 'Receipt and Acknowledgement',
-          level: 7,
-          departmentCode: 'END_USER',
-          departmentName: 'End User Department',
-          roleCode: 'end-user',
-          roleName: 'End User',
-          userId: '',
-          userFullName: '',
-          type: 'supply',
-          isActive: true,
-        },
-        // Level 8: Accounting Final Verification
-        {
-          name: 'Final Document Verification',
-          level: 8,
-          departmentCode: 'ACCOUNTING',
-          departmentName: 'Accounting Unit',
-          roleCode: 'accounting',
-          roleName: 'Accounting Officer',
-          userId: '',
-          userFullName: '',
-          type: 'supply',
-          isActive: true,
-        },
-        // Level 9: Property Inspection (Semi-expendable/PPA)
-        {
-          name: 'Property Inspection',
-          level: 9,
-          departmentCode: 'INSPECTION',
-          departmentName: 'Inspection Team',
-          roleCode: 'inspection',
-          roleName: 'Property Inspector',
-          userId: '',
-          userFullName: '',
-          type: 'supply',
-          isActive: true,
-        },
-        // Level 10: Supply Management - Disposal Approval
-        {
-          name: 'Disposal Review',
-          level: 10,
-          departmentCode: 'SUPPLY',
-          departmentName: 'Supply Management Unit',
-          roleCode: 'supply',
-          roleName: 'Supply Officer',
-          userId: '',
-          userFullName: '',
-          type: 'supply',
-          isActive: true,
-        },
-      ];
-
-      // Get users and assign to sequences
-      this.userService.getAllUsers().subscribe(users => {
-        // Get users by role
-        const accountingUsers = users.filter(u => u.role === 'accounting');
-        const inspectionOfficer = users.find(u => u.role === 'inspection');
-        const collegePresident = users.find(u => u.role === 'superadmin');
-        const bacChairman = users.find(u => u.role === 'bac');
-        const endUserOfficer = users.find(u => u.role === 'end-user');
-        const supplyOfficer = users.find(u => u.role === 'supply');
-
-        // Assign users to procurement sequences
-        if (accountingUsers.length > 0) {
-          const budgetSequence = procurementSequences.find(seq => seq.departmentCode === 'BUDGET');
-          if (budgetSequence) {
-            budgetSequence.userId = accountingUsers[0].id!;
-            budgetSequence.userFullName = accountingUsers[0].fullname;
-          }
-        }
-
-        if (inspectionOfficer) {
-          const inspectionSeqs = [...procurementSequences, ...supplySequences]
-            .filter(seq => seq.roleCode === 'inspection');
-          inspectionSeqs.forEach(seq => {
-            seq.userId = inspectionOfficer.id!;
-            seq.userFullName = inspectionOfficer.fullname;
-          });
-        }
-
-        if (collegePresident) {
-          const presidentSeq = procurementSequences.find(seq => seq.departmentCode === 'ADMIN');
-          if (presidentSeq) {
-            presidentSeq.userId = collegePresident.id!;
-            presidentSeq.userFullName = collegePresident.fullname;
-          }
-        }
-
-        if (bacChairman) {
-          const bacSeq = procurementSequences.find(seq => seq.departmentCode === 'BAC');
-          if (bacSeq) {
-            bacSeq.userId = bacChairman.id!;
-            bacSeq.userFullName = bacChairman.fullname;
-          }
-        }
-
-        // Assign users to supply sequences
-        if (accountingUsers.length > 0) {
-          const accountingSeqs = supplySequences.filter(seq => seq.roleCode === 'accounting');
-          accountingSeqs.forEach(seq => {
-            seq.userId = accountingUsers[0].id!;
-            seq.userFullName = accountingUsers[0].fullname;
-          });
-        }
-
-        if (endUserOfficer) {
-          const endUserSeq = supplySequences.find(seq => seq.departmentCode === 'END_USER');
-          if (endUserSeq) {
-            endUserSeq.userId = endUserOfficer.id!;
-            endUserSeq.userFullName = endUserOfficer.fullname;
-          }
-        }
-
-        if (supplyOfficer) {
-          const supplySeq = supplySequences.find(seq => seq.departmentCode === 'SUPPLY');
-          if (supplySeq) {
-            supplySeq.userId = supplyOfficer.id!;
-            supplySeq.userFullName = supplyOfficer.fullname;
-          }
-        }
-
-        // Add all sequences with assigned users
-        [...procurementSequences, ...supplySequences].forEach(sequence => {
-          if (sequence.userId) {
-            this.addSequence(sequence).subscribe();
-          }
-        });
-      });
-    }
-  }
-
-  // Helper method to generate a random 32-character ID
-  private generateId(): string {
-    return Array.from({ length: 32 }, () =>
-      Math.floor(Math.random() * 16).toString(16)
-    ).join('');
-  }
-
   // Load sequences from localStorage
-  private loadSequences() {
+  private loadSequences(): void {
     const storedSequences = localStorage.getItem(this.SEQUENCES_STORAGE_KEY);
     if (storedSequences) {
       const parsedSequences = JSON.parse(storedSequences);
@@ -273,8 +47,160 @@ export class ApprovalSequenceService {
   }
 
   // Save sequences to localStorage
-  private saveSequences() {
+  private saveSequences(): void {
     localStorage.setItem(this.SEQUENCES_STORAGE_KEY, JSON.stringify(this.sequences));
+  }
+
+  // Generate a random 32-character ID
+  private generateId(): string {
+    return Array.from({ length: 32 }, () =>
+      Math.floor(Math.random() * 16).toString(16)
+    ).join('');
+  }
+
+  // Initialize default sequences if none exist
+  private initializeDefaultSequences(): void {
+    if (this.sequences.length === 0) {
+      const procurementSequences: Omit<ApprovalSequence, 'createdAt' | 'updatedAt'>[] = [
+        {
+          id: '111',
+          name: 'Budget Unit Review',
+          level: 1,
+          departmentCode: 'BUDGET',
+          departmentName: 'Budget Unit',
+          roleCode: 'accounting',
+          roleName: 'Budget Officer',
+          userId: '1',
+          userFullName: 'John Doe',
+          type: 'procurement',
+          isActive: true,
+        },
+        {
+          id: '222',
+          name: 'Technical Specification Review',
+          level: 2,
+          departmentCode: 'INSPECTION',
+          departmentName: 'Inspection Team',
+          roleCode: 'inspection',
+          roleName: 'Inspection Officer',
+          userId: '5',
+          userFullName: 'Charlie White',
+          type: 'procurement',
+          isActive: true,
+        },
+        {
+          id: '333',
+          name: 'College President Approval',
+          level: 3,
+          departmentCode: 'ADMIN',
+          departmentName: 'Administration',
+          roleCode: 'superadmin',
+          roleName: 'College President',
+          userId: '2',
+          userFullName: 'Jane Smith',
+          type: 'procurement',
+          isActive: true,
+        },
+        {
+          id: '444',
+          name: 'BAC Final Review',
+          level: 4,
+          departmentCode: 'BAC',
+          departmentName: 'Bids and Awards Committee',
+          roleCode: 'bac',
+          roleName: 'BAC Chairman',
+          userId: '4',
+          userFullName: 'Bob Brown',
+          type: 'procurement',
+          isActive: true,
+        },
+      ];
+
+      const supplySequences: Omit<ApprovalSequence, 'createdAt' | 'updatedAt'>[] = [
+        {
+          id: '555',
+          name: 'Delivery Inspection',
+          level: 5,
+          departmentCode: 'INSPECTION',
+          departmentName: 'Inspection Team',
+          roleCode: 'inspection',
+          roleName: 'Inspection Officer',
+          userId: '5',
+          userFullName: 'Charlie White',
+          type: 'supply',
+          isActive: true,
+        },
+        {
+          id: '666',
+          name: 'RIS Review',
+          level: 6,
+          departmentCode: 'ACCOUNTING',
+          departmentName: 'Accounting Unit',
+          roleCode: 'accounting',
+          roleName: 'CAF Officer',
+          userId: '1',
+          userFullName: 'John Doe',
+          type: 'supply',
+          isActive: true,
+        },
+        {
+          id: '777',
+          name: 'Receipt and Acknowledgement',
+          level: 7,
+          departmentCode: 'END_USER',
+          departmentName: 'End User Department',
+          roleCode: 'end-user',
+          roleName: 'End User',
+          userId: '6',
+          userFullName: 'Diana Green',
+          type: 'supply',
+          isActive: true,
+        },
+        {
+          id: '888',
+          name: 'Final Document Verification',
+          level: 8,
+          departmentCode: 'ACCOUNTING',
+          departmentName: 'Accounting Unit',
+          roleCode: 'accounting',
+          roleName: 'Accounting Officer',
+          userId: '1',
+          userFullName: 'John Doe',
+          type: 'supply',
+          isActive: true,
+        },
+        {
+          id: '999',
+          name: 'Property Inspection',
+          level: 9,
+          departmentCode: 'INSPECTION',
+          departmentName: 'Inspection Team',
+          roleCode: 'inspection',
+          roleName: 'Property Inspector',
+          userId: '5',
+          userFullName: 'Charlie White',
+          type: 'supply',
+          isActive: true,
+        },
+        {
+          id: '101010',
+          name: 'Disposal Review',
+          level: 10,
+          departmentCode: 'SUPPLY',
+          departmentName: 'Supply Management Unit',
+          roleCode: 'supply',
+          roleName: 'Supply Officer',
+          userId: '3',
+          userFullName: 'Alice Johnson',
+          type: 'supply',
+          isActive: true,
+        },
+      ];
+
+      [...procurementSequences, ...supplySequences].forEach((sequence) => {
+        this.addSequence(sequence).subscribe();
+      });
+    }
   }
 
   // Get all sequences
@@ -284,10 +210,16 @@ export class ApprovalSequenceService {
 
   // Get sequences by type (procurement or supply)
   getSequencesByType(type: 'procurement' | 'supply'): Observable<ApprovalSequence[]> {
-    return of(this.sequences.filter(seq => seq.type === type));
+    return of(this.sequences.filter((seq) => seq.type === type));
   }
 
-  // Create new sequence
+  // Get a sequence by ID
+  getSequenceById(sequenceId: string): Observable<ApprovalSequence | undefined> {
+    const sequence = this.sequences.find((seq) => seq.id === sequenceId);
+    return of(sequence);
+  }
+
+  // Create a new sequence
   addSequence(sequenceData: Omit<ApprovalSequence, 'id' | 'createdAt' | 'updatedAt'>): Observable<ApprovalSequence> {
     try {
       const newSequence: ApprovalSequence = {
@@ -307,10 +239,10 @@ export class ApprovalSequenceService {
     }
   }
 
-  // Update existing sequence
+  // Update an existing sequence
   updateSequence(sequenceId: string, sequenceData: Partial<ApprovalSequence>): Observable<ApprovalSequence> {
     try {
-      const sequenceIndex = this.sequences.findIndex(seq => seq.id === sequenceId);
+      const sequenceIndex = this.sequences.findIndex((seq) => seq.id === sequenceId);
       if (sequenceIndex === -1) {
         return throwError(() => new Error('Sequence not found'));
       }
@@ -332,9 +264,9 @@ export class ApprovalSequenceService {
     }
   }
 
-  // Delete sequence
+  // Delete a sequence
   deleteSequence(sequenceId: string): Observable<boolean> {
-    const sequenceIndex = this.sequences.findIndex(seq => seq.id === sequenceId);
+    const sequenceIndex = this.sequences.findIndex((seq) => seq.id === sequenceId);
     if (sequenceIndex === -1) {
       return throwError(() => new Error('Sequence not found'));
     }
@@ -347,10 +279,10 @@ export class ApprovalSequenceService {
 
   // Get available users for approver selection based on role
   getAvailableUsers(role: string): Observable<User[]> {
-    return new Observable(subscriber => {
+    return new Observable((subscriber) => {
       this.userService.getAllUsers().subscribe({
         next: (users) => {
-          const availableUsers = users.filter(user => user.role === role.toLowerCase());
+          const availableUsers = users.filter((user) => user.role === role.toLowerCase());
           subscriber.next(availableUsers);
           subscriber.complete();
         },
@@ -366,10 +298,11 @@ export class ApprovalSequenceService {
     return of(true);
   }
 
-   updateSequences(sequences: ApprovalSequence[]): Observable<boolean> {
+  // Update multiple sequences
+  updateSequences(sequences: ApprovalSequence[]): Observable<boolean> {
     try {
-      sequences.forEach(seq => {
-        const index = this.sequences.findIndex(s => s.id === seq.id);
+      sequences.forEach((seq) => {
+        const index = this.sequences.findIndex((s) => s.id === seq.id);
         if (index !== -1) {
           this.sequences[index] = seq;
         }
@@ -380,5 +313,4 @@ export class ApprovalSequenceService {
       return throwError(() => error);
     }
   }
-
 }
