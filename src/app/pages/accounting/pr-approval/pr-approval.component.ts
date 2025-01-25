@@ -2,6 +2,8 @@ import { Component, OnInit, ViewChild, ElementRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { MessageService } from 'primeng/api';
 import { RequisitionService } from 'src/app/services/requisition.service';
+import { UserService } from 'src/app/services/user.service';
+import { DepartmentService } from 'src/app/services/departments.service';
 import { ButtonModule } from 'primeng/button';
 import { CardModule } from 'primeng/card';
 import { ProgressSpinnerModule } from 'primeng/progressspinner';
@@ -35,6 +37,9 @@ export class PrApprovalComponent implements OnInit {
   selectedRequisitionPdf: SafeResourceUrl | null = null;
   selectedRequest: any | null = null;
   generatedPrHtml: string = ''; // Holds the generated HTML for PR
+  loggedInUser: any | null = null; // Logged-in user
+  departmentName: string = 'Department';
+  officeName: string = 'Office';
 
   @ViewChild('signatureCanvas', { static: false })
   signatureCanvas!: ElementRef<HTMLCanvasElement>;
@@ -43,12 +48,16 @@ export class PrApprovalComponent implements OnInit {
 
   constructor(
     private requisitionService: RequisitionService,
+    private userService: UserService,
+    private departmentService: DepartmentService,
     private messageService: MessageService,
     private sanitizer: DomSanitizer
   ) {}
 
   async ngOnInit() {
+    this.loggedInUser = this.userService.getUser();
     await this.loadPendingRequests();
+    await this.loadDepartmentAndOfficeNames();
   }
 
   async loadPendingRequests() {
@@ -63,6 +72,22 @@ export class PrApprovalComponent implements OnInit {
       });
     } finally {
       this.loading = false;
+    }
+  }
+
+  async loadDepartmentAndOfficeNames() {
+    try {
+      const departments = await this.departmentService.getAllDepartments();
+      const offices = await this.departmentService.getAllOffices();
+
+      if (departments.length > 0) {
+        this.departmentName = departments[0].name; // Set the first department
+      }
+      if (offices.length > 0) {
+        this.officeName = offices[0].name; // Set the first office
+      }
+    } catch (error) {
+      console.error('Error loading department and office data:', error);
     }
   }
 
@@ -143,7 +168,10 @@ export class PrApprovalComponent implements OnInit {
       this.loading = true;
 
       // Prepare PR preview HTML
-      this.generatedPrHtml = this.generatePrHtml(this.selectedRequest, signatureDataUrl);
+      this.generatedPrHtml = this.generatePrHtml(
+        this.selectedRequest,
+        signatureDataUrl
+      );
       this.displaySignatureDialog = false;
       this.displayPrPreview = true; // Show PR Preview
     } catch (error) {
@@ -158,63 +186,65 @@ export class PrApprovalComponent implements OnInit {
   }
 
   generatePrHtml(request: any, signature: string): string {
-    return `
-      <div class="p-10 bg-white shadow-md rounded-lg">
-        <h1 class="text-2xl font-bold mb-4 flex justify-center">Purchase Request</h1>
-        <div class="mb-4 text-xl">
-          <div class="flex flex-row justify-between">
-            <p><strong>PR No.:</strong> ${request.prNumber || 'N/A'}</p>
-            <p><strong>Date:</strong> ${new Date().toLocaleDateString()}</p>
-          </div>
-          <p><strong>Agency:</strong> ${request.agency || 'Your Agency'}</p>
-          <div class="flex flex-row gap-20">
-            <p><strong>Division:</strong> ${request.division || 'Division'}</p>
-            <p><strong>Section:</strong> ${request.section || 'Section'}</p>
-          </div>
+  return `
+    <div class="p-10 bg-white shadow-md rounded-lg">
+      <h1 class="text-2xl font-bold mb-4 flex justify-center">Purchase Request</h1>
+      <div class="mb-4 text-xl">
+        <div class="flex flex-row justify-between">
+          <p><strong>PR No.:</strong> ${this.generateUniqueId()}</p>
+          <p><strong>Date:</strong> ${new Date().toLocaleDateString()}</p>
         </div>
-        <table class="w-full border-collapse border border-gray-300 text-xl">
-          <thead>
-            <tr class="bg-gray-200">
-              <th class="border border-gray-300 p-4">Qty</th>
-              <th class="border border-gray-300 p-4">Unit</th>
-              <th class="border border-gray-300 p-4">Item Description</th>
-              <th class="border border-gray-300 p-4">Stock No</th>
-              <th class="border border-gray-300 p-4">Estimated Unit Cost</th>
-              <th class="border border-gray-300 p-4">Estimated Total Cost</th>
-            </tr>
-          </thead>
-          <tbody>
-            ${request.products
-              .map(
-                (product: any) => `
-              <tr>
-                <td class="border border-gray-300 p-4">${product.quantity}</td>
-                <td class="border border-gray-300 p-4">Unit</td>
-                <td class="border border-gray-300 p-4">${product.name}</td>
-                <td class="border border-gray-300 p-4">-</td>
-                <td class="border border-gray-300 p-4">${product.price}</td>
-                <td class="border border-gray-300 p-4">${
-                  product.quantity * product.price
-                }</td>
-              </tr>
-            `
-              )
-              .join('')}
-          </tbody>
-        </table>
-        <div class="mt-4 text-xl">
-          <p><strong>Purpose:</strong> ${request.purpose || 'N/A'}</p>
-        </div>
-        <div class="mt-4 text-xl flex flex-row justify-between">
-          <p class="ml-20"><strong>Requested By:</strong><br> ${request.requestedBy || 'N/A'}</p>
-          <p class="mr-20"><strong>Approved By:</strong><br> ${request.approvedBy || 'N/A'}</p>
-        </div>
-        <div class="mt-4 text-xl flex flex-row justify-between">
-          <p class="ml-20"><strong>Signature:</strong><br> <img src="${signature}" alt="Signature" /></p>
+        <p><strong>Agency:</strong> CAGAYAN DE ORO STATE COLLEGE</p>
+        <div class="flex flex-row gap-20">
+          <p><strong>Department:</strong> ${this.departmentName}</p>
+          <p><strong>Office:</strong> ${this.officeName}</p>
         </div>
       </div>
-    `;
-  }
+      <table class="w-full border-collapse border border-gray-300 text-xl">
+        <thead>
+          <tr class="bg-gray-200">
+            <th class="border border-gray-300 p-4">Qty</th>
+            <th class="border border-gray-300 p-4">Unit</th>
+            <th class="border border-gray-300 p-4">Item Description</th>
+            <th class="border border-gray-300 p-4">Stock No</th>
+            <th class="border border-gray-300 p-4">Estimated Unit Cost</th>
+            <th class="border border-gray-300 p-4">Estimated Total Cost</th>
+          </tr>
+        </thead>
+        <tbody>
+          ${request.products
+            .map(
+              (product: any) => `
+            <tr>
+              <td class="border border-gray-300 p-4">${product.quantity}</td>
+              <td class="border border-gray-300 p-4">Unit</td>
+              <td class="border border-gray-300 p-4">${product.name}</td>
+              <td class="border border-gray-300 p-4">-</td>
+              <td class="border border-gray-300 p-4">${product.price}</td>
+              <td class="border border-gray-300 p-4">${
+                product.quantity * product.price
+              }</td>
+            </tr>
+          `
+            )
+            .join('')}
+        </tbody>
+      </table>
+      <div class="mt-4 text-xl flex flex-row justify-between">
+        <p class="ml-20"><strong>Requested By:</strong><br> ${
+          request.createdByUserName || 'N/A'
+        }</p>
+        <p class="mr-20"><strong>Approved By:</strong><br> ${
+          this.loggedInUser?.fullname || 'N/A'
+        }</p>
+      </div>
+      <div class="mt-4 text-xl flex flex-row justify-between">
+        <p class="ml-20"><strong>Signature:</strong><br> <img src="${signature}" alt="Signature" /></p>
+      </div>
+    </div>
+  `;
+}
+
 
   generatePrPdf() {
     const content = document.createElement('div');
@@ -249,6 +279,12 @@ export class PrApprovalComponent implements OnInit {
 
   closePrPreview() {
     this.displayPrPreview = false;
+  }
+
+  generateUniqueId(): string {
+    return Array.from({ length: 32 }, () =>
+      Math.floor(Math.random() * 16).toString(16)
+    ).join('');
   }
 
   async updateRequestStatus(requestId: string, status: 'Approved' | 'Rejected') {

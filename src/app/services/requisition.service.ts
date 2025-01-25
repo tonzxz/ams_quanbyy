@@ -1,6 +1,7 @@
 import { Injectable } from '@angular/core';
 import { z } from 'zod';
 import { GroupService } from './group.service';
+import { UserService } from './user.service';
 
 /**
  * Zod schema for a Requisition.
@@ -22,7 +23,10 @@ export const requisitionSchema = z.object({
     })
   ),
   signature: z.string().optional(), // Base64 image string for signature
+  createdByUserId: z.string().optional(), // ID of the user who created the requisition
+  createdByUserName: z.string().optional(), // Name of the user who created the requisition
 });
+
 
 // TypeScript type for usage in your code
 export type Requisition = z.infer<typeof requisitionSchema>;
@@ -34,7 +38,9 @@ export class RequisitionService {
   private readonly STORAGE_KEY = 'requisitions';
   private requisitions: Requisition[] = [];
 
-  constructor(private groupService: GroupService) {
+  constructor(private groupService: GroupService,
+    private userService: UserService
+  ) {
     this.loadFromLocalStorage();
     if (!this.requisitions.length) {
       this.loadDummyData();
@@ -119,17 +125,31 @@ export class RequisitionService {
    * Add a new requisition.
    * @param data - The requisition data (without ID).
    */
+  // async addRequisition(data: Omit<Requisition, 'id'>): Promise<void> {
+  //   const newRequisition: Requisition = {
+  //     ...data,
+  //     id: this.generate32CharId(),
+  //   };
+  //   requisitionSchema.parse(newRequisition);
+
+  //   this.requisitions.push(newRequisition);
+  //   this.saveToLocalStorage();
+  // }
+
+
   async addRequisition(data: Omit<Requisition, 'id'>): Promise<void> {
+    const currentUser = this.userService.getUser(); // Get the current logged-in user
     const newRequisition: Requisition = {
       ...data,
       id: this.generate32CharId(),
+      createdByUserId: currentUser?.id || 'Unknown',
+      createdByUserName: currentUser?.fullname || 'Unknown',
     };
-    requisitionSchema.parse(newRequisition);
 
+    requisitionSchema.parse(newRequisition); // Validate the new requisition
     this.requisitions.push(newRequisition);
     this.saveToLocalStorage();
   }
-
   /**
    * Update an existing requisition.
    * @param requisition - The requisition to update.
