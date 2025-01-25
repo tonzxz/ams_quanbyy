@@ -35,7 +35,7 @@
           <th>Description</th>
           <th>Debit Total</th>
           <th>Credit Total</th>
-          <th style="width: 5rem"></th>
+          <th style="width: 5rem">Actions</th>
         </tr>
       </ng-template>
 
@@ -65,6 +65,15 @@
                 icon="pi pi-trash"
                 rounded
                 (click)="confirmDeleteEntry($event, entry.entryNo)"
+              ></p-button>
+              <p-button
+                severity="info"
+                pTooltip="Export to PDF"
+                [outlined]="true"
+                size="small"
+                icon="pi pi-file-pdf"
+                rounded
+                (click)="exportToPDF(entry)"
               ></p-button>
             </div>
           </td>
