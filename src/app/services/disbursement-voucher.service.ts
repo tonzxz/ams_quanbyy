@@ -136,4 +136,13 @@ export class DisbursementVoucherService {
       }
     }
   }
+
+  async getAll(): Promise<DisbursementVoucher[]> {
+    const local_disbursementVoucher = localStorage.getItem('disbursementVouchers');
+    if (local_disbursementVoucher) {
+      this.disbursementVouchers = JSON.parse(local_disbursementVoucher) as DisbursementVoucher[];
+    }
+    return this.disbursementVouchers;
+  }
+  
 }
