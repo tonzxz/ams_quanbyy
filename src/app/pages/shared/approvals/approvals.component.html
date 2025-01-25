@@ -20,6 +20,7 @@
             <tr>
               <th>Title</th>
               <th>Description</th>
+              <th>Level</th>
               <th>Status</th>
               <th>Date Created</th>
               <th>Department</th>
@@ -33,6 +34,8 @@
             <tr>
               <td>{{ req.title }}</td>
               <td>{{ req.description }}</td>
+                  <td>Level {{ req.approvalSequenceDetails?.level }}</td>
+
               <td>{{ req.approvalStatus }}</td>
               <td>{{ req.dateCreated | date: 'short' }}</td>
               <td>{{ req.approvalSequenceDetails?.departmentName || 'N/A' }}</td>

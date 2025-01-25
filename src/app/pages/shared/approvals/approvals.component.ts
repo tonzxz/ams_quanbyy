@@ -6,6 +6,7 @@ import { TabViewModule } from 'primeng/tabview';
 import { ButtonModule } from 'primeng/button';
 
 import { RequisitionService, Requisition } from 'src/app/services/requisition.service';
+import { UserService } from '../../../services/user.service';
 
 @Component({
   selector: 'app-approvals',
@@ -23,56 +24,89 @@ import { RequisitionService, Requisition } from 'src/app/services/requisition.se
 export class ApprovalsComponent implements OnInit {
   requisitions: (Requisition & { approvalSequenceDetails?: any })[] = [];
 
-  constructor(private requisitionService: RequisitionService) {}
+  constructor(private requisitionService: RequisitionService, private userService: UserService) {}
 
   ngOnInit() {
     this.loadRequisitions();
   }
 
-private async loadRequisitions() {
-  try {
-    // Fetch all requisitions with their approval details
-    this.requisitions = await this.requisitionService.getRequisitionsWithApprovalDetails();
 
-    // Fetch all approval sequences once to avoid redundant API calls
-    const allApprovalSequences = await this.requisitionService.getAllApprovalSequences();
+  // THIS IS WORKING 
+// private async loadRequisitions() {
+//   try {
+//     const allRequisitions = await this.requisitionService.getAllRequisitions();
+//     const allSequences = await this.requisitionService.getAllApprovalSequences();
 
-    for (const req of this.requisitions) {
-      if (req.approvalSequenceId) {
-        // Match the approvalSequenceId to the approval sequence in the list
-        const matchingSequence = allApprovalSequences.find(
-          (seq) => seq.id === req.approvalSequenceId
-        );
+//     this.requisitions = allRequisitions.map(req => {
+//       // Find sequences of matching type (procurement/supply)
+//       const typeSequences = allSequences.filter(seq => 
+//         seq.type === (req.currentApprovalLevel <= 4 ? 'procurement' : 'supply')
+//       );
 
-        if (matchingSequence) {
-          req.approvalSequenceDetails = {
-            userFullName: matchingSequence.userFullName || 'N/A',
-            userId: matchingSequence.userId || 'N/A',
-          };
-        } else {
-          console.warn(`No matching approval sequence for requisition ID: ${req.id}`);
-          req.approvalSequenceDetails = {
-            userFullName: 'N/A',
-            userId: 'N/A',
-          };
-        }
-      } else {
-        console.warn(
-          `Requisition ID: ${req.id} is missing approvalSequenceId`
-        );
-        req.approvalSequenceDetails = {
-          userFullName: 'N/A',
-          userId: 'N/A',
-        };
-      }
-    }
+//       // Get sequence for current level
+//       const currentSequence = typeSequences.find(seq => 
+//         seq.level === req.currentApprovalLevel
+//       );
 
-    console.log('Requisitions Loaded:', this.requisitions);
-  } catch (error) {
-    console.error('Failed to load requisitions:', error);
-  }
+//       return {
+//         ...req,
+//         approvalSequenceDetails: currentSequence ? {
+//           departmentName: currentSequence.departmentName,
+//           roleName: currentSequence.roleName,
+//           userFullName: currentSequence.userFullName
+//         } : {
+//           departmentName: 'N/A',
+//           roleName: 'N/A', 
+//           userFullName: 'N/A'
+//         }
+//       };
+//     });
+//   } catch (error) {
+//     console.error('Failed to load requisitions:', error);
+//   }
+// }
+
+  private async loadRequisitions() {
+ try {
+   const currentUser = this.userService.getUser(); // Get logged in user
+   const allRequisitions = await this.requisitionService.getAllRequisitions();
+   const allSequences = await this.requisitionService.getAllApprovalSequences();
+
+   // Filter requisitions where current user is the approver for current level
+   this.requisitions = allRequisitions.map(req => {
+     const typeSequences = allSequences.filter(seq => 
+       seq.type === (req.currentApprovalLevel <= 4 ? 'procurement' : 'supply')
+     );
+
+     const currentSequence = typeSequences.find(seq => 
+       seq.level === req.currentApprovalLevel
+     );
+
+     return {
+       ...req,
+       approvalSequenceDetails: currentSequence ? {
+         level: currentSequence.level,
+         departmentName: currentSequence.departmentName,
+         roleName: currentSequence.roleName,
+         userFullName: currentSequence.userFullName,
+         userId: currentSequence.userId
+       } : {
+         level: 'N/A',
+         departmentName: 'N/A',
+         roleName: 'N/A',
+         userFullName: 'N/A',
+         userId: 'N/A'
+       }
+     };
+   }).filter(req => 
+     // Only show requisitions where current user is the approver
+     req.approvalSequenceDetails?.userId === currentUser?.id
+   );
+
+ } catch (error) {
+   console.error('Failed to load requisitions:', error);
+ }
 }
-
 
 
   async onApprove(requisitionId: string) {
