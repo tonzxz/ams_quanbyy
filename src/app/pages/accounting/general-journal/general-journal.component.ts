@@ -14,8 +14,10 @@ import { FormsModule } from '@angular/forms';
 import { ReactiveFormsModule } from '@angular/forms';
 import { IconFieldModule } from 'primeng/iconfield';
 import { LottieAnimationComponent } from "../../ui-components/lottie-animation/lottie-animation.component";
-import { InputIconModule } from 'primeng/inputicon'; 
+import { InputIconModule } from 'primeng/inputicon';
 import { ToastModule } from 'primeng/toast';
+import { jsPDF } from 'jspdf';
+import 'jspdf-autotable';
 
 interface JournalEntry {
   entryNo: string;
@@ -50,7 +52,7 @@ interface Account {
     MaterialModule,
     IconFieldModule,
     LottieAnimationComponent
-],
+  ],
   providers: [MessageService, ConfirmationService],
   templateUrl: './general-journal.component.html',
   styleUrls: ['./general-journal.component.scss'],
@@ -185,4 +187,114 @@ export class GeneralJournalComponent implements OnInit {
       },
     });
   }
+
+  exportToPDF(entry: JournalEntry) {
+    const doc = new jsPDF();
+    
+    doc.setFontSize(10);
+    doc.text('Appendix 1', doc.internal.pageSize.width - 20, 10, { align: 'right' });
+    
+    doc.setFontSize(14);
+    doc.setFont('helvetica', 'bold');
+    const ledgerText = 'GENERAL LEDGER';
+    const ledgerWidth = doc.getTextWidth(ledgerText);
+    const ledgerCenterX = (doc.internal.pageSize.width - ledgerWidth) / 2;
+    doc.text(ledgerText, ledgerCenterX, 20);
+   
+    doc.setFontSize(10);
+    const monthText = 'Month: ___________________';
+    const monthWidth = doc.getTextWidth(monthText);
+    const monthCenterX = (doc.internal.pageSize.width - monthWidth) / 2;
+    doc.text(monthText, monthCenterX, 30);
+    
+    doc.text('Entity Name: _________________________', 10, 40);
+    doc.text('Fund Cluster: _________________________', 10, 50);
+    doc.text('Sheet No.: _________________________', doc.internal.pageSize.width - 100, 50); 
+   
+    const columns = ['Date', 'JEV No.', 'Particulars', 'UACS Objects Code', 'P', { content: 'Amount', colSpan: 2 }];
+    const subColumns = ['', '', '', '', '', 'Debit', 'Credit'];
+
+    const rows = entry.transactions.map(transaction => [
+        entry.date.toLocaleDateString(),
+        entry.entryNo,
+        entry.description,
+        transaction.account,
+        '', 
+        transaction.debit,
+        transaction.credit,
+    ]);
+
+    while (rows.length < 20) {
+        rows.push(['', '', '', '', '', '', '']); 
+    }
+   
+    rows.push([
+        '',
+        '',
+        '',
+        'Totals',
+        '',
+        entry.debitTotal.toFixed(2),
+        entry.creditTotal.toFixed(2),
+    ]);
+  
+    const tableOptions = {
+        startY: 60,
+        head: [columns, subColumns],
+        body: rows,
+        theme: 'plain',
+        styles: {
+            fontSize: 9,
+            font: 'helvetica',
+            lineColor: [0, 0, 0],
+            lineWidth: 0.1,
+        },
+        headStyles: {
+            fillColor: false,
+            textColor: [0, 0, 0],
+            lineColor: [0, 0, 0],
+            lineWidth: 0.1,
+            halign: 'center', 
+        },
+        bodyStyles: {
+            fillColor: false,
+            textColor: [0, 0, 0],
+            lineColor: [0, 0, 0],
+            lineWidth: 0.1,
+        },
+        columnStyles: {
+            5: { halign: 'center' }, 
+            6: { halign: 'center' }, 
+        },
+    };
+    
+    (doc as any).autoTable(tableOptions);
+    const finalY = (doc as any).lastAutoTable.finalY;
+   
+    doc.setFontSize(10);
+    const certifiedText = 'CERTIFIED CORRECT:';
+    const certifiedWidth = doc.getTextWidth(certifiedText);
+    const certifiedCenterX = (doc.internal.pageSize.width - certifiedWidth) / 2;
+    doc.text(certifiedText, certifiedCenterX, finalY + 5);
+   
+    const signatureY = doc.internal.pageSize.height - 25; 
+ 
+    const lineStartX = doc.internal.pageSize.width - 100;
+    const lineEndX = doc.internal.pageSize.width - 20;
+    const lineY = signatureY - 5;
+    doc.line(lineStartX, lineY, lineEndX, lineY); 
+    
+    const signatureText = '(Signature over Printed Name)';
+    const signatureWidth = doc.getTextWidth(signatureText);
+    const signatureCenterX = (lineStartX + lineEndX - signatureWidth) / 2;
+    doc.text(signatureText, signatureCenterX, signatureY);
+ 
+    const chiefAccountantText = 'Chief Accountant/Head of\nAccounting Division/Unit';
+    const chiefAccountantWidth = doc.getTextWidth(chiefAccountantText.split('\n')[0]); 
+    const chiefAccountantCenterX = (lineStartX + lineEndX - chiefAccountantWidth) / 2; 
+    doc.text(chiefAccountantText, chiefAccountantCenterX, signatureY + 5);
+    
+    doc.save(`${entry.entryNo}_general_ledger.pdf`);
+}
+
 }

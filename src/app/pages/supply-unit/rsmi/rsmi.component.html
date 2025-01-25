@@ -1,0 +1,110 @@
+<div class="p-fluid">
+    <!-- Table of Sample RSMI Reports -->
+    <p-card header="RSMI Reports" styleClass="p-shadow-3 mb-4">
+        <div class="flex flex-row items-center justify-between">
+            <p class="">Review Reports of Supplies and Materials Issued here.</p>
+            <div class="p-field" style="text-align: right; margin-top: 1rem">
+                <p-button
+                    label="Create RSMI"
+                    (onClick)="showDialog()"
+                    styleClass="p-button-success"
+                    [size]="'small'"
+                    [outlined]="true"
+                ></p-button>
+            </div>
+        </div>
+        <p-table [value]="sampleRSMIs">
+            <ng-template pTemplate="header">
+                <tr>
+                    <th>Entity Name</th>
+                    <th>Serial No.</th>
+                    <th>Fund Cluster</th>
+                    <th>Date</th>
+                </tr>
+            </ng-template>
+            <ng-template pTemplate="body" let-rsmi>
+                <tr>
+                    <td>{{ rsmi.entityName }}</td>
+                    <td>{{ rsmi.serialNo }}</td>
+                    <td>{{ rsmi.fundCluster }}</td>
+                    <td>{{ rsmi.date }}</td>
+                </tr>
+            </ng-template>
+        </p-table>
+        
+    </p-card>
+  
+    <!-- Dialog for RSMI Form -->
+    <p-dialog
+        header="Create RSMI"
+        [(visible)]="displayDialog"
+        [modal]="true"
+        [style]="{ width: '50vw' }"
+        [draggable]="false"
+        [resizable]="false"
+        >
+        <form [formGroup]="rsmiForm" class="p-4">
+            <!-- Entity Name -->
+            <div class="mb-4">
+            <label for="entityName" class="block text-sm font-medium text-gray-700">Entity Name</label>
+            <input
+                id="entityName"
+                type="text"
+                pInputText
+                formControlName="entityName"
+                placeholder="Enter Entity Name"
+                class="w-full mt-1 p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+            />
+            </div>
+
+            <!-- Serial No. -->
+            <div class="mb-4">
+            <label for="serialNo" class="block text-sm font-medium text-gray-700">Serial No.</label>
+            <input
+                id="serialNo"
+                type="text"
+                pInputText
+                formControlName="serialNo"
+                placeholder="Enter Serial No."
+                class="w-full mt-1 p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+            />
+            </div>
+
+            <!-- Fund Cluster -->
+            <div class="mb-4">
+            <label for="fundCluster" class="block text-sm font-medium text-gray-700">Fund Cluster</label>
+            <input
+                id="fundCluster"
+                type="text"
+                pInputText
+                formControlName="fundCluster"
+                placeholder="Enter Fund Cluster"
+                class="w-full mt-1 p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+            />
+            </div>
+
+            <!-- Date -->
+            <div class="mb-4">
+            <label for="date" class="block text-sm font-medium text-gray-700">Date</label>
+            <input
+                id="date"
+                type="date"
+                pInputText
+                formControlName="date"
+                placeholder="Select Date"
+                class="w-full mt-1 p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+            />
+            </div>
+
+            <!-- Export to PDF Button -->
+            <div class="flex justify-end mt-6">
+            <p-button
+                label="Export to PDF"
+                (onClick)="exportPdf()"
+                [disabled]="rsmiForm.invalid"
+                styleClass="p-button-warning"
+            ></p-button>
+            </div>
+        </form>
+    </p-dialog>
+</div>
