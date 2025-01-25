@@ -1,10 +1,38 @@
+
+/**
+ * Zod schema for a Requisition.
+ */
+// export const requisitionSchema = z.object({
+//   id: z.string().length(32, "ID must be exactly 32 characters").optional(),
+//   title: z.string().min(1, "Title is required"),
+//   description: z.string().max(500).optional(),
+//   status: z.enum(['Pending', 'Approved', 'Rejected']),
+//   classifiedItemId: z.string().length(32, "Classified Item ID is required"),
+//   group: z.string().min(1, "Group is required"),
+//   products: z.array(
+//     z.object({
+//       id: z.string(),
+//       name: z.string(),
+//       quantity: z.number().min(1, "Quantity must be at least 1"),
+//       specifications: z.string().optional(),
+//       price: z.number().min(0, "Price cannot be negative"),
+//     })
+//   ),
+//   signature: z.string().optional(), // Base64 image string for signature
+//   createdByUserId: z.string().optional(), // ID of the user who created the requisition
+//   createdByUserName: z.string().optional(), // Name of the user who created the requisition
+// });
+
+//src/app/services/requisition.service.ts
+
 import { Injectable } from '@angular/core';
 import { z } from 'zod';
 import { GroupService } from './group.service';
 import { UserService } from './user.service';
 
+
 /**
- * Zod schema for a Requisition.
+ * Zod schema for an Extended Requisition.
  */
 export const requisitionSchema = z.object({
   id: z.string().length(32, "ID must be exactly 32 characters").optional(),
@@ -22,10 +50,18 @@ export const requisitionSchema = z.object({
       price: z.number().min(0, "Price cannot be negative"),
     })
   ),
+  selectedGroups: z.array(z.string()).optional(), // Extended field
+  productQuantities: z.record(z.string(), z.number()).optional(), // Product quantities
+  productSpecifications: z.record(z.string(), z.string()).optional(), // Product specifications
+  ppmpAttachment: z.string().optional(), // PPMP PDF attachment (Base64 string)
+  purchaseRequestAttachment: z.string().optional(), // Purchase Request attachment (Base64 string)
+  dateCreated: z.date().optional(), // Date of requisition creation
+  lastModified: z.date().optional(), // Date of last modification
   signature: z.string().optional(), // Base64 image string for signature
   createdByUserId: z.string().optional(), // ID of the user who created the requisition
   createdByUserName: z.string().optional(), // Name of the user who created the requisition
 });
+
 
 
 // TypeScript type for usage in your code
@@ -38,27 +74,29 @@ export class RequisitionService {
   private readonly STORAGE_KEY = 'requisitions';
   private requisitions: Requisition[] = [];
 
-  constructor(private groupService: GroupService,
-    private userService: UserService
-  ) {
-    this.loadFromLocalStorage();
-    if (!this.requisitions.length) {
-      this.loadDummyData();
-    }
+constructor(private groupService: GroupService, private userService: UserService) {
+  this.loadFromLocalStorage();
+  if (!this.requisitions || this.requisitions.length === 0) {
+    this.loadDummyData();
   }
+}
+
 
   // Load from localStorage
-  private loadFromLocalStorage(): void {
-    const stored = localStorage.getItem(this.STORAGE_KEY);
-    if (stored) {
-      this.requisitions = JSON.parse(stored);
-    }
+private loadFromLocalStorage(): void {
+  const stored = localStorage.getItem(this.STORAGE_KEY);
+  if (stored) {
+    console.log('Loaded from localStorage:', JSON.parse(stored));
+    this.requisitions = JSON.parse(stored);
   }
+}
+
 
   // Save to localStorage
   private saveToLocalStorage(): void {
-    localStorage.setItem(this.STORAGE_KEY, JSON.stringify(this.requisitions));
-  }
+  console.log('Saving to localStorage:', this.requisitions);
+  localStorage.setItem(this.STORAGE_KEY, JSON.stringify(this.requisitions));
+}
 
   // Generate a random 32-character hex ID
   private generate32CharId(): string {
@@ -117,25 +155,16 @@ export class RequisitionService {
   /**
    * Fetch all pending requisitions.
    */
-  async getPendingRequisitions(): Promise<Requisition[]> {
-    return this.requisitions.filter((req) => req.status === 'Pending');
-  }
+ async getPendingRequisitions(): Promise<Requisition[]> {
+  console.log('Current requisitions:', this.requisitions);
+  return this.requisitions.filter((req) => req.status === 'Pending');
+}
 
   /**
    * Add a new requisition.
    * @param data - The requisition data (without ID).
    */
-  // async addRequisition(data: Omit<Requisition, 'id'>): Promise<void> {
-  //   const newRequisition: Requisition = {
-  //     ...data,
-  //     id: this.generate32CharId(),
-  //   };
-  //   requisitionSchema.parse(newRequisition);
-
-  //   this.requisitions.push(newRequisition);
-  //   this.saveToLocalStorage();
-  // }
-
+  
 
   async addRequisition(data: Omit<Requisition, 'id'>): Promise<void> {
     const currentUser = this.userService.getUser(); // Get the current logged-in user
@@ -185,14 +214,21 @@ export class RequisitionService {
    * @param id - The ID of the requisition.
    * @param status - The new status ('Approved' or 'Rejected').
    */
-  async updateRequisitionStatus(id: string, status: 'Approved' | 'Rejected'): Promise<void> {
-    const requisition = this.requisitions.find((req) => req.id === id);
-    if (!requisition) {
-      throw new Error('Requisition not found');
-    }
-    requisition.status = status;
-    this.saveToLocalStorage();
+async updateRequisitionStatus(id: string, status: 'Approved' | 'Rejected'): Promise<void> {
+  const requisitionIndex = this.requisitions.findIndex((req) => req.id === id);
+  if (requisitionIndex === -1) {
+    throw new Error('Requisition not found');
   }
+
+  this.requisitions[requisitionIndex].status = status;
+  console.log('Updated requisition:', this.requisitions[requisitionIndex]);
+
+  this.saveToLocalStorage();
+  console.log('Requisitions after saving:', this.requisitions);
+}
+
+
+
 
   /**
    * Delete a requisition by ID.
@@ -210,4 +246,34 @@ export class RequisitionService {
   async getRequisitionById(id: string): Promise<Requisition | undefined> {
     return this.requisitions.find((r) => r.id === id);
   }
+
+  /**
+ * Update requisition with a purchase request attachment and status.
+ * @param id - The requisition ID.
+ * @param purchaseRequestAttachment - The Base64 PDF string of the PR.
+ * @param status - The new status ('Approved' or 'Rejected').
+ * @param signature - The Base64 string of the approver's signature.
+ */
+async updateRequisitionWithAttachment(
+  id: string,
+  purchaseRequestAttachment: string,
+  status: 'Approved' | 'Rejected',
+  signature: string
+): Promise<void> {
+  console.log('Updating requisition with ID:', id); // Debugging
+  const requisition = this.requisitions.find((req) => req.id === id);
+  if (!requisition) {
+    console.error('Requisition not found for ID:', id); // Debugging
+    throw new Error('Requisition not found');
+  }
+  console.log('Requisition found:', requisition); // Debugging
+
+  requisition.purchaseRequestAttachment = purchaseRequestAttachment;
+  requisition.status = status;
+  requisition.signature = signature;
+  this.saveToLocalStorage();
+  console.log('Requisition updated:', requisition); // Debugging
+}
+
+
 }

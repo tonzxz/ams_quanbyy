@@ -16,6 +16,7 @@ import { FormsModule } from '@angular/forms';
 import { ConfirmPopupModule } from 'primeng/confirmpopup';
 import jsPDF from 'jspdf';
 import 'jspdf-autotable';
+import { DisbursementVoucherService, DisbursementVoucher } from 'src/app/services/disbursement-voucher.service';
 
 interface JournalEntry {
   voucherNo: string;
@@ -50,45 +51,24 @@ interface JournalEntry {
   styleUrl: './journal-entry-voucher.component.scss',
 })
 export class JournalEntryVoucherComponent {
-  journalEntries: JournalEntry[] = [];
+  journalEntries: DisbursementVoucher[] = [];
   searchValue: string = '';
   showEntryDetailsModal: boolean = false;
-  selectedEntry?: JournalEntry;
+  selectedEntry?: DisbursementVoucher;
 
-  constructor() {}
+  constructor(private disbursementVoucherService: DisbursementVoucherService) {}
 
   ngOnInit(): void {
     this.fetchJournalEntries();
   }
 
-  fetchJournalEntries() {
-    // Mock data for demonstration
-    this.journalEntries = [
-      {
-        voucherNo: 'DV-2024-001',
-        date: new Date(),
-        supplierName: 'Office Supplies Co.',
-        totalAmountDue: 5000,
-        notes: 'Office supplies purchase.',
-      },
-      {
-        voucherNo: 'DV-2024-002',
-        date: new Date(),
-        supplierName: 'Utility Services Inc.',
-        totalAmountDue: 10000,
-        notes: 'Utility bill payment.',
-      },
-      {
-        voucherNo: 'DV-2024-003',
-        date: new Date(),
-        supplierName: 'Tech Gadgets Ltd.',
-        totalAmountDue: 15000,
-        notes: 'Tech equipment purchase.',
-      },
-    ];
+  async fetchJournalEntries() {
+    // Fetch recorded vouchers from the service
+    const allVouchers = await this.disbursementVoucherService.getAll();
+    this.journalEntries = allVouchers.filter(voucher => voucher.status === 'recorded');
   }
 
-  viewEntryDetails(entry: JournalEntry) {
+  viewEntryDetails(entry: DisbursementVoucher) {
     this.selectedEntry = entry;
     this.showEntryDetailsModal = true;
   }
@@ -96,110 +76,123 @@ export class JournalEntryVoucherComponent {
   exportPdf(entry: JournalEntry) {
     const doc = new jsPDF();
   
-    // Set a formal font
+    // Set page margins (1 inch each)
+    const margin = 20; // 1 inch margin in points (1 inch = 72 points)
+    const pageWidth = doc.internal.pageSize.getWidth();
+    const pageHeight = doc.internal.pageSize.getHeight();
+  
+    // Set formal font
     doc.setFont('helvetica', 'normal');
   
-    // Add a header with company details (centered)
-    doc.setFontSize(14);
-    doc.setTextColor(40, 40, 40); 
-    const pageWidth = doc.internal.pageSize.getWidth();
-    doc.setFont('helvetica', 'bold'); 
-    doc.text('QUANBY SOLUTIONS INC', pageWidth / 2, 15, { align: 'center' }); 
+    // Header Section
+    doc.setFontSize(16);
+    doc.setTextColor(40, 40, 40);
+    doc.setFont('helvetica', 'bold');
+    doc.text('QUANBY SOLUTIONS INC', pageWidth / 2, margin - 5, { align: 'center' });
   
-    doc.setFont('helvetica', 'normal'); 
+    doc.setFont('helvetica', 'normal');
     doc.setFontSize(8);
-    doc.text('4th Flr. Dosc Bldg., Brgy. 37-Bitano, Legazpi City, Albay', pageWidth / 2, 20, { align: 'center' }); 
-    doc.text('VAT Reg. TIN: 625-263-719-00000', pageWidth / 2, 25, { align: 'center' }); 
+    doc.text('4th Flr. Dosc Bldg., Brgy. 37-Bitano, Legazpi City, Albay', pageWidth / 2, margin + 0, { align: 'center' });
+    doc.text('VAT Reg. TIN: 625-263-719-00000', pageWidth / 2, margin + 5, { align: 'center' });
   
-    // Add a horizontal line below the header
+    // Horizontal Line below Header
     doc.setDrawColor(200, 200, 200); // Light gray line
     doc.setLineWidth(0.5);
-    doc.line(10, 35, doc.internal.pageSize.getWidth() - 10, 35);
+    doc.line(margin, margin + 15, pageWidth - margin, margin + 15);
   
-    // Add the title (Journal Entry Voucher) in bold
+    // Title Section
     doc.setFontSize(18);
-    doc.setTextColor(0, 0, 0); // Black for the title
-    doc.setFont('helvetica', 'bold'); // Set font to bold
-    doc.text('Journal Entry Voucher', pageWidth / 2, 50, { align: 'center' });
+    doc.setTextColor(0, 0, 0); // Black for title
+    doc.setFont('helvetica', 'bold');
+    doc.text('Journal Entry Voucher', pageWidth / 2, margin + 25, { align: 'center' });
   
-    // Add voucher details
+    // Voucher Details Section
     doc.setFontSize(10);
-    doc.setFont('helvetica', 'bold'); // Set font to bold for labels
-    doc.text('Voucher Number:', 10, 60);
-    doc.setFont('helvetica', 'normal'); // Reset to normal font for values
-    doc.text(`${entry.voucherNo}`, 50, 60); // Adjust x position for alignment
+    const detailsStartY = margin + 35;
+    doc.setFont('helvetica', 'bold');
+    doc.text('Voucher Number:', margin, detailsStartY);
+    doc.setFont('helvetica', 'normal');
+    doc.text(`${entry.voucherNo}`, margin + 50, detailsStartY);
   
-    doc.setFont('helvetica', 'bold'); // Set font to bold for labels
-    doc.text('Date:', 10, 67);
-    doc.setFont('helvetica', 'normal'); // Reset to normal font for values
-    doc.text(`${new Date(entry.date).toLocaleDateString()}`, 50, 67); // Adjust x position for alignment
+    doc.setFont('helvetica', 'bold');
+    doc.text('Date:', margin, detailsStartY + 7);
+    doc.setFont('helvetica', 'normal');
+    doc.text(`${new Date(entry.date).toLocaleDateString()}`, margin + 50, detailsStartY + 7);
   
-    // Add description
-    doc.setFont('helvetica', 'bold'); // Set font to bold for labels
-    doc.text('Description:', 10, 77);
-    doc.setFont('helvetica', 'normal'); // Reset to normal font for values
-    doc.text(entry.notes || 'No description provided.', 50, 77); // Adjust x position for alignment
-  
-    // Add account details table
+    // Account Details Table
     const accountDetails = [
-      { code: '101', name: 'Cash in Bank', debit: entry.totalAmountDue.toFixed(2), credit: '' },
-      { code: '201', name: 'Accounts Payable', debit: '', credit: entry.totalAmountDue.toFixed(2) },
+      {
+        code: '101',
+        name: 'Cash in Bank',
+        description: entry.notes || 'No description provided.',
+        debit: entry.totalAmountDue.toFixed(2),
+        credit: '',
+      },
+      {
+        code: '201',
+        name: 'Accounts Payable',
+        description: entry.notes || 'No description provided.',
+        debit: '',
+        credit: entry.totalAmountDue.toFixed(2),
+      },
     ];
   
+    // Table Configuration
+    const tableStartY = detailsStartY + 15; // Position table below voucher details
+  
     (doc as any).autoTable({
-      startY: 90, // Start table below the description
-      head: [['Account Code', 'Account Name', 'Debit (Dr)', 'Credit (Cr)']],
-      body: accountDetails.map((row) => [row.code, row.name, row.debit, row.credit]),
-      styles: { 
-        fontSize: 10, // Reduce font size for the table
-        fillColor: null, // Remove background color
-        lineColor: [0, 0, 0], // Set border color to black
-        lineWidth: 0.1, // Set border width
+      startY: tableStartY,
+      head: [['Account Code', 'Account Name', 'Description', 'Debit (Dr)', 'Credit (Cr)']],
+      body: accountDetails.map(row => [row.code, row.name, row.description, row.debit, row.credit]),
+      styles: {
+        fontSize: 10,
+        fillColor: null,
+        lineColor: [0, 0, 0],
+        lineWidth: 0.1,
       },
       headStyles: {
-        fillColor: null, // Remove header background color
-        textColor: [0, 0, 0], // Set header text color to black
-        lineColor: [0, 0, 0], // Set header border color to black
-        lineWidth: 0.1, // Set header border width
+        fillColor: null,
+        textColor: [0, 0, 0],
+        lineColor: [0, 0, 0],
+        lineWidth: 0.1,
       },
       bodyStyles: {
-        fillColor: null, // Remove body background color
-        textColor: [0, 0, 0], // Set body text color to black
-        lineColor: [0, 0, 0], // Set body border color to black
-        lineWidth: 0.1, // Set body border width
+        fillColor: null,
+        textColor: [0, 0, 0],
+        lineColor: [0, 0, 0],
+        lineWidth: 0.1,
       },
-      columnStyles: {
-        0: { cellWidth: 30 }, // Adjust column widths as needed
-        1: { cellWidth: 60 },
-        2: { cellWidth: 40 },
-        3: { cellWidth: 40 },
-      },
+      margin: { top: 10, left: margin, right: margin }, // Ensure equal left and right margins
+      tableWidth: 'auto', // Automatically adjust table width to fit within margins
+      pageBreak: 'auto', // Automatically add page breaks if content overflows
     });
   
-    // Add prepared by, checked by, and approved by sections
-    const finalY = (doc as any).autoTable.previous.finalY + 15; // Start after the table
+    // Add Prepared By, Checked By, Approved By Section
+    const finalY = (doc as any).autoTable.previous.finalY + 10;
+    const sectionHeight = 16; // Space between each row in the section
+  
     doc.setFontSize(9);
-    doc.text('Prepared By:', 10, finalY);
-    doc.text('Name: _______________________', 10, finalY + 8);
-    doc.text('Date: _______________________', 10, finalY + 16);
+    doc.text('Prepared By:', margin, finalY);
+    doc.text('Name: _____________', margin, finalY + 8); // Shorter line
+    doc.text('Date:  ______________', margin, finalY + 16); // Shorter line
   
-    doc.text('Checked By:', 10, finalY + 30); // Reduced gap
-    doc.text('Name: _______________________', 10, finalY + 38);
-    doc.text('Date: _______________________', 10, finalY + 46);
+    doc.text('Checked By:', pageWidth / 3, finalY);
+    doc.text('Name: _____________', pageWidth / 3, finalY + 8); // Shorter line
+    doc.text('Date:  ______________', pageWidth / 3, finalY + 16); // Shorter line
   
-    doc.text('Approved By:', 10, finalY + 60); // Reduced gap
-    doc.text('Name: _______________________', 10, finalY + 68);
-    doc.text('Date: _______________________', 10, finalY + 76);
+    doc.text('Approved By:', (pageWidth * 2) / 3, finalY);
+    doc.text('Name: _____________', (pageWidth * 2) / 3, finalY + 8); // Shorter line
+    doc.text('Date:  ______________', (pageWidth * 2) / 3, finalY + 16); // Shorter line
   
-    // Add a footer with a horizontal line and page number
-    const footerY = doc.internal.pageSize.getHeight() - 20;
-    doc.setDrawColor(200, 200, 200); // Light gray line
+    // Footer Section
+    const footerY = pageHeight - margin;
+    doc.setDrawColor(200, 200, 200);
     doc.setLineWidth(0.5);
-    doc.line(10, footerY, doc.internal.pageSize.getWidth() - 10, footerY);
+    doc.line(margin, footerY - 10, pageWidth - margin, footerY - 10);
   
     doc.setFontSize(8);
-    doc.setTextColor(100, 100, 100); // Gray for the footer
-    doc.text('Page 1 of 1', pageWidth / 2, footerY + 10, { align: 'center' });
+    doc.setTextColor(100, 100, 100);
+    doc.text('Page 1 of 1', pageWidth / 2, footerY, { align: 'center' });
   
     // Save the PDF
     doc.save(`Journal_Entry_Voucher_${entry.voucherNo}.pdf`);

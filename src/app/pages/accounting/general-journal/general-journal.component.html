@@ -97,68 +97,125 @@
 </mat-card>
 
 <!-- Add/Edit Journal Entry Modal -->
-<p-dialog [(visible)]="showAddEntryModal" [modal]="true" [style]="{ width: '50rem' }">
+<p-dialog
+  [(visible)]="showAddEntryModal"
+  [modal]="true"
+  [style]="{ width: '50rem', 'max-height': '90vh', overflow: 'auto' }"
+>
   <ng-template #header>
-    <h3>{{ isEditing ? 'Edit' : 'Add' }} Journal Entry</h3>
+    <h3 class="text-lg font-semibold text-gray-700">
+      {{ isEditing ? 'Edit Journal Entry' : 'Add Journal Entry' }}
+    </h3>
   </ng-template>
-  <form [formGroup]="journalEntryForm" (ngSubmit)="saveEntry()">
+  <form [formGroup]="journalEntryForm" (ngSubmit)="saveEntry()" class="space-y-4">
+    <!-- Date Field -->
     <div class="form-group">
-      <label for="date">Date</label>
-      <p-calendar formControlName="date" [showIcon]="true"></p-calendar>
+      <label for="date" class="block text-sm font-medium text-gray-700">Date</label>
+      <p-calendar
+        formControlName="date"
+        [showIcon]="true"
+        class="w-full"
+      ></p-calendar>
+      <small
+        *ngIf="journalEntryForm.get('date')?.invalid && journalEntryForm.get('date')?.touched"
+        class="text-red-500"
+      >
+        Date is required.
+      </small>
     </div>
+
+    <!-- Description Field -->
     <div class="form-group">
-      <label for="description">Description</label>
+      <label for="description" class="block text-sm font-medium text-gray-700">Description</label>
       <input
         type="text"
         pInputText
         formControlName="description"
         placeholder="Enter description"
+        class="w-full"
       />
+      <small
+        *ngIf="journalEntryForm.get('description')?.invalid && journalEntryForm.get('description')?.touched"
+        class="text-red-500"
+      >
+        Description is required.
+      </small>
     </div>
 
-    <div formArrayName="transactions" *ngFor="let transaction of transactions.controls; let i = index">
-      <div [formGroupName]="i" class="transaction-row">
+    <!-- Transactions Section -->
+    <div>
+      <h4 class="text-md font-medium text-gray-600 mb-2">Transactions</h4>
+      <div
+        *ngFor="let transaction of transactions.controls; let i = index"
+        class="grid grid-cols-12 gap-3 items-center mb-3"
+        [formGroupName]="i"
+      >
+        <!-- Account Dropdown -->
         <p-dropdown
+          class="col-span-5"
           [options]="accounts"
           optionLabel="name"
           formControlName="account"
           placeholder="Select Account"
         ></p-dropdown>
+
+        <!-- Debit Input -->
         <input
           type="number"
           pInputText
           formControlName="debit"
           placeholder="Debit Amount"
+          class="col-span-3"
         />
+
+        <!-- Credit Input -->
         <input
           type="number"
           pInputText
           formControlName="credit"
           placeholder="Credit Amount"
+          class="col-span-3"
         />
+
+        <!-- Remove Button -->
         <button
           pButton
           icon="pi pi-minus"
-          class="p-button-danger"
+          class="p-button-danger col-span-1"
           (click)="removeTransaction(i)"
+          pTooltip="Remove transaction"
         ></button>
       </div>
+
+      <!-- Validation Error for Transactions -->
+      <small
+        *ngIf="transactions.invalid && transactions.touched"
+        class="text-red-500"
+      >
+        Ensure all transactions are valid and balanced.
+      </small>
     </div>
 
-    <button
-      pButton
-      icon="pi pi-plus"
-      label="Add Transaction"
-      (click)="addTransaction()"
-    ></button>
+    <!-- Add Transaction Button -->
+    <div>
+      <button
+        pButton
+        icon="pi pi-plus"
+        label="Add Transaction"
+        class="p-button-outlined w-full"
+        (click)="addTransaction()"
+      ></button>
+    </div>
 
-    <div class="form-actions">
+    <!-- Form Actions -->
+    <div class="flex justify-end space-x-3 mt-4">
       <button
         pButton
         label="Save"
         icon="pi pi-check"
         type="submit"
         class="p-button-success"
+        [disabled]="journalEntryForm.invalid"
       ></button>
       <button
         pButton
