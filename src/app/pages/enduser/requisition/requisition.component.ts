@@ -30,16 +30,7 @@ interface SelectedProduct {
   specifications?: string;
 }
 
-interface ExtendedRequisition extends Requisition {
-  selectedGroups?: string[];
-  productQuantities?: Record<string, number>;
-  productSpecifications?: Record<string, string>;
-  dateCreated?: Date;
-  lastModified?: Date;
-  ppmpAttachment?: string;
-  createdByUserId?: string;
-  createdByUserName?: string;
-}
+
 
 @Component({
   selector: 'app-requisition',
@@ -71,17 +62,21 @@ export class RequisitionComponent implements OnInit {
   selectedGroups: string[] = [];
   availableProducts: Product[] = [];
   selectedProducts: SelectedProduct[] = [];
-  requisitions: ExtendedRequisition[] = [];
-  pendingRequisitions: ExtendedRequisition[] = [];
-  approvedRequisitions: ExtendedRequisition[] = [];
+  requisitions: Requisition[] = [];
+  pendingRequisitions: Requisition[] = [];
+  approvedRequisitions: Requisition[] = [];
   loading = false;
   submitted = false;
   activeTabIndex = 0;
   displayPdfDialog = false;
   pdfDataUrl: SafeResourceUrl | null = null;
   displayPpmpPreview = false;
+  displayPurchaseRequestPreview = false; 
+
   selectedRequisitionPdf: SafeResourceUrl | null = null;
-  tempRequisitionData?: Partial<ExtendedRequisition>;
+  selectedPurchaseRequestPdf: SafeResourceUrl | null = null; 
+
+  tempRequisitionData?: Partial<Requisition>;
   currentUser?: User;
 
   constructor(
@@ -137,7 +132,15 @@ export class RequisitionComponent implements OnInit {
   try {
     this.loading = true;
     const allRequisitions = await this.requisitionService.getAllRequisitions();
-    this.requisitions = allRequisitions;
+
+    console.log('Fetched Requisitions:', allRequisitions); // Debugging line
+
+    this.requisitions = allRequisitions.map((req) => ({
+      ...req,
+      ppmpAttachment: req.ppmpAttachment || undefined,
+      purchaseRequestAttachment: req.purchaseRequestAttachment || undefined,
+    }));
+
     this.filterRequisitions();
   } catch (error) {
     this.handleError(error, 'Error loading requisitions');
@@ -145,6 +148,8 @@ export class RequisitionComponent implements OnInit {
     this.loading = false;
   }
 }
+
+
 
 private filterRequisitions(): void {
   this.pendingRequisitions = this.requisitions.filter(req => req.status === 'Pending');
@@ -209,7 +214,7 @@ private filterRequisitions(): void {
     return product?.name || 'Unknown Product';
   }
 
-  private generatePPMPPdf(reqData: Partial<ExtendedRequisition>): string {
+  private generatePPMPPdf(reqData: Partial<Requisition>): string {
     const doc = new jsPDF({
       orientation: 'portrait',
       unit: 'pt',
@@ -354,49 +359,100 @@ private filterRequisitions(): void {
     return doc.output('datauristring');
   }
 
-  async saveRequisition(): Promise<void> {
-    this.submitted = true;
+  // async saveRequisition(): Promise<void> {
+  //   this.submitted = true;
 
-    if (this.requisitionForm.invalid || !this.selectedGroups.length || !this.selectedProducts.length) {
-      this.messageService.add({
-        severity: 'error',
-        summary: 'Validation Error',
-        detail: 'Please complete all required fields'
-      });
-      return;
-    }
+  //   if (this.requisitionForm.invalid || !this.selectedGroups.length || !this.selectedProducts.length) {
+  //     this.messageService.add({
+  //       severity: 'error',
+  //       summary: 'Validation Error',
+  //       detail: 'Please complete all required fields'
+  //     });
+  //     return;
+  //   }
 
-    const requisitionData: Partial<ExtendedRequisition> = {
-      title: this.requisitionForm.get('title')?.value,
-      description: this.requisitionForm.get('description')?.value,
-      status: 'Pending',
-      group: this.selectedGroups[0],
-      selectedGroups: this.selectedGroups,
-      products: this.selectedProducts.map(p => ({
-        id: p.id,
-        name: p.name,
-        quantity: p.quantity,
-        price: p.price,
-        specifications: p.specifications,
-      })),
-      productQuantities: Object.fromEntries(
-        this.selectedProducts.map(p => [p.id, p.quantity])
-      ),
-      productSpecifications: Object.fromEntries(
-        this.selectedProducts.map(p => [p.id, p.specifications || ''])
-      ),
-      dateCreated: new Date(),
-      classifiedItemId: this.generateClassifiedItemId(),
-      createdByUserId: this.currentUser?.id,
-      createdByUserName: this.currentUser?.fullname
-    };
+  //   const requisitionData: Partial<Requisition> = {
+  //     title: this.requisitionForm.get('title')?.value,
+  //     description: this.requisitionForm.get('description')?.value,
+  //     status: 'Pending',
+  //     group: this.selectedGroups[0],
+  //     selectedGroups: this.selectedGroups,
+  //     products: this.selectedProducts.map(p => ({
+  //       id: p.id,
+  //       name: p.name,
+  //       quantity: p.quantity,
+  //       price: p.price,
+  //       specifications: p.specifications,
+  //     })),
+  //     productQuantities: Object.fromEntries(
+  //       this.selectedProducts.map(p => [p.id, p.quantity])
+  //     ),
+  //     productSpecifications: Object.fromEntries(
+  //       this.selectedProducts.map(p => [p.id, p.specifications || ''])
+  //     ),
+  //     dateCreated: new Date(),
+  //     classifiedItemId: this.generateClassifiedItemId(),
+  //     createdByUserId: this.currentUser?.id,
+  //     createdByUserName: this.currentUser?.fullname
+  //   };
 
-    const pdfBase64 = this.generatePPMPPdf(requisitionData);
-    requisitionData.ppmpAttachment = pdfBase64;
-    this.tempRequisitionData = requisitionData;
-    this.pdfDataUrl = this.sanitizer.bypassSecurityTrustResourceUrl(pdfBase64);
-    this.displayPdfDialog = true;
+  //   const pdfBase64 = this.generatePPMPPdf(requisitionData);
+  //   requisitionData.ppmpAttachment = pdfBase64;
+  //   this.tempRequisitionData = requisitionData;
+  //   this.pdfDataUrl = this.sanitizer.bypassSecurityTrustResourceUrl(pdfBase64);
+  //   this.displayPdfDialog = true;
+  // }
+
+ async saveRequisition(): Promise<void> {
+  this.submitted = true;
+
+  if (this.requisitionForm.invalid || !this.selectedGroups.length || !this.selectedProducts.length) {
+    this.messageService.add({
+      severity: 'error',
+      summary: 'Validation Error',
+      detail: 'Please complete all required fields.',
+    });
+    return;
   }
+
+  // Prepare requisition data
+  const requisitionData: Partial<Requisition> = {
+    title: this.requisitionForm.get('title')?.value,
+    description: this.requisitionForm.get('description')?.value,
+    status: 'Pending',
+    group: this.selectedGroups[0],
+    selectedGroups: this.selectedGroups,
+    products: this.selectedProducts.map((p) => ({
+      id: p.id,
+      name: p.name,
+      quantity: p.quantity,
+      price: p.price,
+      specifications: p.specifications,
+    })),
+    productQuantities: Object.fromEntries(this.selectedProducts.map((p) => [p.id, p.quantity])),
+    productSpecifications: Object.fromEntries(this.selectedProducts.map((p) => [p.id, p.specifications || ''])),
+    dateCreated: new Date(),
+    classifiedItemId: this.generateClassifiedItemId(),
+    createdByUserId: this.currentUser?.id,
+    createdByUserName: this.currentUser?.fullname,
+  };
+
+  try {
+    // Generate PPMP PDF as Base64
+    const ppmpBase64 = this.generatePPMPPdf(requisitionData);
+
+    // Save the PDF Base64 in temporary data
+    this.tempRequisitionData = { ...requisitionData, ppmpAttachment: ppmpBase64 };
+
+    // Display the PPMP for preview
+    this.pdfDataUrl = this.sanitizer.bypassSecurityTrustResourceUrl(ppmpBase64);
+    this.displayPdfDialog = true; // Open the dialog for preview
+  } catch (error) {
+    this.handleError(error, 'Error generating PPMP.');
+  }
+}
+
+
 
   async finalizeRequisitionSave(): Promise<void> {
     if (!this.tempRequisitionData) return;
@@ -404,7 +460,7 @@ private filterRequisitions(): void {
     try {
       this.loading = true;
       await this.requisitionService.addRequisition(
-        this.tempRequisitionData as Omit<ExtendedRequisition, 'id'>
+        this.tempRequisitionData as Omit<Requisition, 'id'>
       );
 
       this.messageService.add({
@@ -430,7 +486,7 @@ private filterRequisitions(): void {
     this.tempRequisitionData = undefined;
   }
 
-  async editRequisition(req: ExtendedRequisition): Promise<void> {
+  async editRequisition(req: Requisition): Promise<void> {
     this.activeTabIndex = 0;
     try {
       this.loading = true;
@@ -459,7 +515,10 @@ private filterRequisitions(): void {
     }
   }
 
-  deleteRequisition(req: ExtendedRequisition): void {
+ 
+
+
+  deleteRequisition(req: Requisition): void {
     this.confirmationService.confirm({
       message: `Are you sure you want to delete the requisition "${req.title}"?`,
       header: 'Confirm Deletion',
@@ -486,12 +545,7 @@ private filterRequisitions(): void {
     });
   }
 
-  viewPPMP(requisition: ExtendedRequisition): void {
-    if (requisition.ppmpAttachment) {
-      this.selectedRequisitionPdf = this.sanitizer.bypassSecurityTrustResourceUrl(requisition.ppmpAttachment);
-      this.displayPpmpPreview = true;
-    }
-  }
+  
 
   resetForm(): void {
     this.submitted = false;
@@ -531,4 +585,91 @@ private filterRequisitions(): void {
       0
     );
   }
+
+  // viewPPMP(requisition: Requisition): void {
+  //   if (requisition.ppmpAttachment) {
+  //     this.selectedRequisitionPdf = this.sanitizer.bypassSecurityTrustResourceUrl(requisition.ppmpAttachment);
+  //     this.displayPpmpPreview = true;
+  //   }
+  // }
+
+  viewPPMP(requisition: Requisition): void {
+  if (requisition.ppmpAttachment) {
+    this.selectedRequisitionPdf = this.sanitizer.bypassSecurityTrustResourceUrl(requisition.ppmpAttachment);
+    this.displayPpmpPreview = true;
+  } else {
+    this.messageService.add({
+      severity: 'warn',
+      summary: 'No Document',
+      detail: 'PPMP document is not available for this requisition.',
+    });
+  }
+}
+
+
+  
+viewPurchaseRequest(request: any): void {
+  const savedAttachment = localStorage.getItem(`purchaseRequest_${request.id}`);
+  if (savedAttachment) {
+    this.selectedRequisitionPdf = this.sanitizer.bypassSecurityTrustResourceUrl(savedAttachment);
+    this.displayPpmpPreview = true;
+  } else {
+    this.messageService.add({
+      severity: 'warn',
+      summary: 'No Document',
+      detail: 'No saved Purchase Request document found.',
+    });
+  }
+}
+
+
+
+
+  
+  closeDialog(): void {
+  this.displayPpmpPreview = false;
+  this.displayPurchaseRequestPreview = false;
+  this.selectedRequisitionPdf = null;
+  this.selectedPurchaseRequestPdf = null;
+}
+
+
+cancelRequisitionSubmission(): void {
+  this.displayPdfDialog = false;
+  this.tempRequisitionData = undefined; // Clear temporary data
+}
+
+  async confirmRequisitionSubmission(): Promise<void> {
+  if (!this.tempRequisitionData) return;
+
+  try {
+    this.loading = true;
+
+    // Submit the requisition with the PPMP attachment
+    await this.requisitionService.addRequisition(
+      this.tempRequisitionData as Requisition
+    );
+
+    this.messageService.add({
+      severity: 'success',
+      summary: 'Success',
+      detail: 'Requisition submitted successfully.',
+    });
+
+    // Reset and reload
+    this.resetForm();
+    await this.loadRequisitions();
+    this.activeTabIndex = 1; // Switch to the "Pending Requisitions" tab
+  } catch (error) {
+    this.handleError(error, 'Error submitting requisition.');
+  } finally {
+    this.loading = false;
+    this.displayPdfDialog = false;
+    this.tempRequisitionData = undefined;
+  }
+}
+
+
+
+
 }

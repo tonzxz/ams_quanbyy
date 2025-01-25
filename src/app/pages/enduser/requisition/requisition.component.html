@@ -224,7 +224,8 @@
 
 
     <!-- Approved Requisitions Tab -->
-   <p-tabPanel header="Approved Requisitions">
+ <!-- Approved Requisitions Tab -->
+<p-tabPanel header="Approved Requisitions">
   <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
     <div
       *ngFor="let req of approvedRequisitions"
@@ -253,12 +254,92 @@
             </li>
           </ul>
         </div>
+
+        <!-- Add buttons to view PPMP and Purchase Order -->
+        <div class="flex justify-between items-center mt-4">
+          <p-button
+            *ngIf="req.ppmpAttachment"
+            label="View PPMP"
+            icon="pi pi-file-pdf"
+            (onClick)="viewPPMP(req)"
+            [outlined]="true"
+            size="small"
+          ></p-button>
+          
+          <p-button
+            *ngIf="req.purchaseRequestAttachment"
+            label="View Purchase Request"
+            icon="pi pi-file-pdf"
+            (onClick)="viewPurchaseRequest(req)"
+            [outlined]="true"
+            size="small"
+          ></p-button>
+        </div>
       </div>
     </div>
   </div>
 </p-tabPanel>
+
+
   </p-tabView>
 </p-card>
+
+
+<p-dialog
+  header="Preview PPMP"
+  [(visible)]="displayPdfDialog"
+  [modal]="true"
+  [style]="{ width: '90vw', maxWidth: '800px' }"
+  [resizable]="false"
+>
+  <div class="mb-4">
+    <iframe
+      *ngIf="pdfDataUrl"
+      [src]="pdfDataUrl"
+      width="100%"
+      height="500px"
+      style="border: none;"
+    ></iframe>
+  </div>
+  <ng-template pTemplate="footer">
+    <div class="flex justify-end gap-2">
+      <button
+        pButton
+        label="Cancel"
+        class="p-button-secondary"
+        (click)="cancelRequisitionSubmission()"
+      ></button>
+      <button
+        pButton
+        label="Confirm Submission"
+        class="p-button-success"
+        (click)="confirmRequisitionSubmission()"
+      ></button>
+    </div>
+  </ng-template>
+</p-dialog>
+
+
+
+<!-- Dialog for Purchase Request -->
+<p-dialog
+  header="View Purchase Request"
+  [(visible)]="displayPurchaseRequestPreview"
+  [modal]="true"
+  [style]="{ width: '90vw', maxWidth: '800px' }"
+  [resizable]="false"
+>
+  <div class="mb-4">
+    <iframe
+      *ngIf="selectedPurchaseRequestPdf"
+      [src]="selectedPurchaseRequestPdf"
+      width="100%"
+      height="500px"
+      style="border: none;"
+    ></iframe>
+  </div>
+</p-dialog>
+
 
 <!-- Dialogs -->
 <p-dialog 
@@ -302,6 +383,8 @@
     ></iframe>
   </div>
 </p-dialog>
+
+
 
 <p-confirmDialog [style]="{ width: '450px' }"></p-confirmDialog>
 <p-toast position="bottom-right"></p-toast>

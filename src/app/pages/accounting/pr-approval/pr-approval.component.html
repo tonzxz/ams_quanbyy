@@ -1,6 +1,6 @@
 <p-card header="Purchase Request Approval" class="mb-4">
   <p class="text-sm text-gray-600 mb-4">
-    Review and manage pending purchase requests below.
+    Review and manage purchase requests below.
   </p>
 
   <!-- Loading Spinner -->
@@ -8,75 +8,142 @@
     <p-progressSpinner></p-progressSpinner>
   </div>
 
-  <!-- No Requests Available -->
-  <div *ngIf="!loading && purchaseRequests.length === 0" class="text-center">
-    <p>No pending purchase requests available for approval.</p>
-  </div>
+  <!-- Tab View -->
+  <p-tabView>
+    <!-- Requests Tab -->
+    <p-tabPanel header="Requests">
+      <!-- No Requests Available -->
+      <div *ngIf="!loading && purchaseRequests.length === 0" class="text-center">
+        <p>No pending purchase requests available for approval.</p>
+      </div>
 
-  <!-- Pending Purchase Requests -->
-  <div *ngIf="!loading && purchaseRequests.length > 0">
-    <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
-      <div
-        *ngFor="let request of purchaseRequests"
-        class="bg-white rounded-lg border border-gray-200 shadow-sm hover:shadow-lg transition-all duration-200 relative"
-      >
-        <!-- Title and Description -->
-        <div class="p-6">
-          <div class="mb-4 flex justify-between items-center">
-            <h3 class="text-lg font-bold text-gray-800">{{ request.title }}</h3>
-            <!-- Preview Button -->
-            <button
-              pButton
-              icon="pi pi-eye"
-              class="p-button-secondary p-button-sm"
-              [outlined]="true"
-              (click)="viewPPMP(request)"
-            ></button>
-          </div>
-          <p class="text-sm text-gray-500">Description: {{ request.description }}</p>
+      <!-- Pending Purchase Requests -->
+      <div *ngIf="!loading && purchaseRequests.length > 0">
+        <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
+          <div
+            *ngFor="let request of purchaseRequests"
+            class="bg-white rounded-lg border border-gray-200 shadow-sm hover:shadow-lg transition-all duration-200 relative"
+          >
+            <!-- Title and Description -->
+            <div class="p-6">
+              <div class="mb-4 flex justify-between items-center">
+                <h3 class="text-lg font-bold text-gray-800">{{ request.title }}</h3>
+                <!-- Preview Button -->
+                <button
+                  pButton
+                  icon="pi pi-eye"
+                  class="p-button-secondary p-button-sm"
+                  [outlined]="true"
+                  (click)="viewPPMP(request)"
+                ></button>
+              </div>
+              <p class="text-sm text-gray-500">Description: {{ request.description }}</p>
 
-          <!-- Requested Products -->
-          <div class="mb-4">
-            <h4 class="text-sm font-medium text-gray-700 mt-2 mb-2">Requested Products</h4>
-            <ul class="space-y-1">
-              <li
-                *ngFor="let product of request.products"
-                class="flex justify-between text-sm text-gray-600"
-              >
-                <span>*{{ product.name }}</span>
-                <span class="text-gray-500">x{{ product.quantity }}</span>
-              </li>
-            </ul>
-          </div>
+              <!-- Requested Products -->
+              <div class="mb-4">
+                <h4 class="text-sm font-medium text-gray-700 mt-2 mb-2">Requested Products</h4>
+                <ul class="space-y-1">
+                  <li
+                    *ngFor="let product of request.products"
+                    class="flex justify-between text-sm text-gray-600"
+                  >
+                    <span>*{{ product.name }}</span>
+                    <span class="text-gray-500">x{{ product.quantity }}</span>
+                  </li>
+                </ul>
+              </div>
 
-          <!-- Action Buttons -->
-          <div class="flex justify-between items-center mt-6 gap-4">
-            <!-- Approve Button -->
-            <button
-              pButton
-              label="Approve"
-              icon="pi pi-check"
-              class="p-button-success w-full"
-              [outlined]="true"
-              size="small"
-              (click)="openSignatureDialog(request)"
-            ></button>
+              <!-- Action Buttons -->
+              <div class="flex justify-between items-center mt-6 gap-4">
+                <!-- Approve Button -->
+                <button
+                  pButton
+                  label="Approve"
+                  icon="pi pi-check"
+                  class="p-button-success w-full"
+                  [outlined]="true"
+                  size="small"
+                  (click)="openSignatureDialog(request)"
+                ></button>
 
-            <!-- Reject Button -->
-            <button
-              pButton
-              label="Reject"
-              icon="pi pi-times"
-              class="p-button-danger w-full"
-              [outlined]="true"
-              size="small"
-              (click)="updateRequestStatus(request.id, 'Rejected')"
-            ></button>
+                <!-- Reject Button -->
+                <button
+                  pButton
+                  label="Reject"
+                  icon="pi pi-times"
+                  class="p-button-danger w-full"
+                  [outlined]="true"
+                  size="small"
+                  (click)="updateRequestStatus(request.id, 'Rejected')"
+                ></button>
+              </div>
+            </div>
           </div>
         </div>
       </div>
-    </div>
-  </div>
+    </p-tabPanel>
+
+    <!-- Approved Tab -->
+    <p-tabPanel header="Approved">
+      <!-- No Approved Requests Available -->
+      <div *ngIf="!loading && approvedRequests.length === 0" class="text-center">
+        <p>No approved purchase requests available.</p>
+      </div>
+
+      <!-- Approved Purchase Requests -->
+      <div *ngIf="!loading && approvedRequests.length > 0">
+        <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
+          <div
+            *ngFor="let request of approvedRequests"
+            class="bg-white rounded-lg border border-gray-200 shadow-sm hover:shadow-lg transition-all duration-200 relative"
+          >
+            <!-- Title and Description -->
+            <div class="p-6">
+              <div class="mb-4 flex justify-between items-center">
+                <h3 class="text-lg font-bold text-gray-800">{{ request.title }}</h3>
+                <!-- Preview Button -->
+                <button
+                  pButton
+                  icon="pi pi-eye"
+                  class="p-button-secondary p-button-sm"
+                  [outlined]="true"
+                  (click)="viewPPMP(request)"
+                ></button>
+              </div>
+              <p class="text-sm text-gray-500">Description: {{ request.description }}</p>
+
+              <!-- Requested Products -->
+              <div class="mb-4">
+                <h4 class="text-sm font-medium text-gray-700 mt-2 mb-2">Requested Products</h4>
+                <ul class="space-y-1">
+                  <li
+                    *ngFor="let product of request.products"
+                    class="flex justify-between text-sm text-gray-600"
+                  >
+                    <span>*{{ product.name }}</span>
+                    <span class="text-gray-500">x{{ product.quantity }}</span>
+                  </li>
+                </ul>
+              </div>
+
+              <!-- View Purchase Request Button -->
+              <div class="flex justify-center items-center mt-6">
+                <button
+                  pButton
+                  label="View Purchase Request"
+                  icon="pi pi-file-pdf"
+                  class="p-button-info w-full"
+                  [outlined]="true"
+                  size="small"
+                  (click)="viewPurchaseRequest(request)"
+                ></button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </p-tabPanel>
+  </p-tabView>
 </p-card>
 
 <!-- PPMP Preview Dialog -->
@@ -177,11 +244,11 @@
       ></button>
       <button
         pButton
-        label="Confirm and Generate"
+        label="Approve and Confirm"
         icon="pi pi-check"
         class="p-button-success"
         [outlined]="true"
-        (click)="generatePrPdf()"
+        (click)="confirmApproval()"
       ></button>
     </div>
   </ng-template>
