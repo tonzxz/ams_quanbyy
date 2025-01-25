@@ -293,6 +293,7 @@ export class GeneralJournalComponent implements OnInit {
     const chiefAccountantWidth = doc.getTextWidth(chiefAccountantText.split('\n')[0]); 
     const chiefAccountantCenterX = (lineStartX + lineEndX - chiefAccountantWidth) / 2; 
     doc.text(chiefAccountantText, chiefAccountantCenterX, signatureY + 5);
+    
     doc.save(`${entry.entryNo}_general_ledger.pdf`);
 }
 
