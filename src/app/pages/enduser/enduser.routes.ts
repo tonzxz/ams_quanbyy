@@ -4,6 +4,7 @@ import { DashboardComponent } from './dashboard/dashboard.component';
 import { ViewPlanComponent } from './view-plan/view-plan.component';
 import { RequisitionComponent } from './requisition/requisition.component';
 import { ReceivingComponent } from './receiving/receiving.component';
+import { CanvassingComponent } from './canvassing/canvassing.component';
 
 export const enduserRoutes: Routes = [
   {
@@ -38,6 +39,13 @@ export const enduserRoutes: Routes = [
         path: 'receiving',
         component: ReceivingComponent,
         data: { breadcrumb: 'Receiving', roles: ['end-user'] },
+        canActivate: [roleGuard],
+      },
+
+        {
+        path: 'canvassing',
+        component: CanvassingComponent,
+        data: { breadcrumb: 'Canvassing', roles: ['end-user'] },
         canActivate: [roleGuard],
       },
     ],
