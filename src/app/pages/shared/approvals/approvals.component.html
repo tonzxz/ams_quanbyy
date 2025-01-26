@@ -44,7 +44,9 @@
           <th pSortableColumn="dateCreated">Date Created <p-sortIcon field="dateCreated"></p-sortIcon></th>
           <th pSortableColumn="approvalSequenceDetails.departmentName">Department <p-sortIcon field="approvalSequenceDetails.departmentName"></p-sortIcon></th>
           <th>Attachments</th>
-          <th>Actions</th>
+          @if(currentUser?.role != 'end-user'){
+            <th>Actions</th>
+          }
         </tr>
       </ng-template>
 
@@ -85,26 +87,29 @@
               pTooltip="View Purchase Request"
             ></button>
           </td>
-          <td>
-            <div  class="flex gap-2">
-              <button
-                pButton
-                icon="pi pi-check"
-                class="p-button-rounded p-button-success p-button-sm"
-                (click)="openSignatureDialog(req)"
-                pTooltip="Approve"
-              ></button>
-              <button
-                pButton
-                icon="pi pi-times"
-                class="p-button-rounded p-button-danger p-button-sm"
-                (click)="onReject(req.id)"
-                [outlined]="false"
-                pTooltip="Reject"
-              ></button>
-            </div>
-
-          </td>
+          @if(currentUser?.role != 'end-user'){
+            
+            <td>
+              <div  class="flex gap-2">
+                <button
+                  pButton
+                  icon="pi pi-check"
+                  class="p-button-rounded p-button-success p-button-sm"
+                  (click)="openSignatureDialog(req)"
+                  pTooltip="Approve"
+                ></button>
+                <button
+                  pButton
+                  icon="pi pi-times"
+                  class="p-button-rounded p-button-danger p-button-sm"
+                  (click)="onReject(req)"
+                  [outlined]="false"
+                  pTooltip="Reject"
+                ></button>
+              </div>
+  
+            </td>
+          }
         </tr>
       </ng-template>
 

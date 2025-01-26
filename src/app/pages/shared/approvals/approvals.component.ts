@@ -7,7 +7,7 @@ import { TooltipModule } from 'primeng/tooltip';
 import { DialogModule } from 'primeng/dialog';
 import { DomSanitizer, SafeResourceUrl } from '@angular/platform-browser';
 import { RequisitionService, Requisition } from 'src/app/services/requisition.service';
-import { UserService } from 'src/app/services/user.service';
+import { User, UserService } from 'src/app/services/user.service';
 import { MessageService } from 'primeng/api';
 import { ToastModule } from 'primeng/toast';
 import { ApprovalSequenceService } from 'src/app/services/approval-sequence.service';
@@ -41,6 +41,7 @@ export class ApprovalsComponent implements OnInit {
   signatureDataUrl: string | null = null;
   departmentName: string = 'N/A';
   officeName: string = 'N/A';
+  currentUser?:User;
 
   @ViewChild('signatureCanvas', { static: false })
   signatureCanvas!: ElementRef<HTMLCanvasElement>;
@@ -64,7 +65,7 @@ export class ApprovalsComponent implements OnInit {
   private async loadRequisitions() {
     try {
       this.loading = true;
-      const currentUser = this.userService.getUser();
+      this.currentUser = this.userService.getUser();
       const allRequisitions = await this.requisitionService.getAllRequisitions();
       const allSequences = await this.requisitionService.getAllApprovalSequences();
 
@@ -84,7 +85,7 @@ export class ApprovalsComponent implements OnInit {
 ,
           };
         })
-        .filter((req) => req.approvalSequenceDetails && (req.approvalSequenceDetails?.userId === currentUser?.id || currentUser?.role == 'end-user' || currentUser?.role == 'superadmin'));
+        .filter((req) => req.approvalSequenceDetails && (req.approvalSequenceDetails?.userId === this.currentUser?.id || this.currentUser?.role == 'end-user' || this.currentUser?.role == 'superadmin'));
     } catch (error) {
       console.error('Failed to load requisitions:', error);
       this.messageService.add({
@@ -205,8 +206,10 @@ export class ApprovalsComponent implements OnInit {
     const currentSequenceIndex = allSequences.findIndex(seq=>seq.id==this.selectedRequest?.approvalSequenceId)
     if(currentSequenceIndex + 1 < allSequences.length){
       this.selectedRequest.approvalSequenceId = allSequences[currentSequenceIndex + 1].id;
+      this.selectedRequest.currentApprovalLevel = allSequences[currentSequenceIndex + 1].level;
     }else{
       this.selectedRequest.approvalSequenceId = undefined;
+      this.selectedRequest.currentApprovalLevel = 0;
       this.selectedRequest.approvalStatus = 'Approved'; 
     }
 
@@ -240,8 +243,8 @@ async confirmApproval() {
 
     // Update the requisition with the signature and approval status
     this.selectedRequest.signature = this.signatureDataUrl;
-    this.selectedRequest.approvalStatus = 'Approved';
-    this.selectedRequest.currentApprovalLevel += 1;
+    // this.selectedRequest.approvalStatus = 'Approved';
+    // this.selectedRequest.currentApprovalLevel += 1;
 
     // Save the updated requisition
     await this.requisitionService.updateRequisition(this.selectedRequest);
@@ -272,9 +275,21 @@ async confirmApproval() {
     this.signatureDataUrl = null;
   }
 
-  async onReject(requisitionId: string) {
+  async onReject(req: Requisition) {
     try {
-      await this.requisitionService.updateRequisitionStatus(requisitionId, 'Rejected');
+      this.selectedRequest = req;
+      const allSequences = await this.requisitionService.getAllApprovalSequences();
+
+      const currentSequenceIndex = allSequences.findIndex(seq=>seq.id==this.selectedRequest?.approvalSequenceId)
+      if(currentSequenceIndex + 1 < allSequences.length){
+        this.selectedRequest.approvalSequenceId = allSequences[currentSequenceIndex + 1].id;
+      }else{
+        this.selectedRequest.approvalSequenceId = undefined;
+        this.selectedRequest.approvalStatus = 'Approved'; 
+      }
+
+      await this.requisitionService.updateRequisition(this.selectedRequest);
+
       this.loadRequisitions();
       this.messageService.add({
         severity: 'success',
