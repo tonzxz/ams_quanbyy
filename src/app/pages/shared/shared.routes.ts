@@ -12,6 +12,7 @@ import { RisComponent } from './ris/ris.component';
 import { SemiExpendableComponent } from './semi-expendable/semi-expendable.component';
 import { AoqComponent } from './aoq/aoq.component';
 import { BudgetUtilizationComponent } from './budget-utilization/budget-utilization.component';
+import { RequestForQuotationListComponent } from './request-for-quotation-list/request-for-quotation-list.component';
 
 export const SharedRoutes: Routes = [
   {
@@ -86,6 +87,11 @@ export const SharedRoutes: Routes = [
         path: 'budget-utilization',
         component: BudgetUtilizationComponent,
         data: {breadcrumb:'Budget Utilization Report Template'}
+      },
+      {
+        path: 'rfq-list',
+        component: RequestForQuotationListComponent,
+        data: {breadcrumb:'Request for Quotations'}
       },
     ],
   },

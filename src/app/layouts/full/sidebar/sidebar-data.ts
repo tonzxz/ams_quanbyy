@@ -22,7 +22,12 @@ export const navItems: NavItem[] = [
     iconName: 'solar:widget-add-line-duotone',
     route: '/shared/request-quotation',
     requiredRoles: ['bac'],
-
+  },
+  {
+    displayName: 'Quotation Abstract',
+    iconName: 'solar:widget-add-line-duotone',
+    route: '/shared/rfq-list',
+    requiredRoles: ['bac'],
   },
   {
     displayName: 'Purchase Request',
