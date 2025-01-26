@@ -488,27 +488,11 @@ export class RequisitionComponent implements OnInit {
 
    try {
      this.loading = true;
-     const id = await this.requisitionService.addRequisition(
+    await this.requisitionService.addRequisition(
        this.tempRequisitionData as Omit<Requisition, 'id'>
      );
 
-     const sequences = await firstValueFrom(
-      this.approvalSequenceService.getSequencesByType('procurement')
-    );
-
-     if(sequences[0]?.id){
-      const nextUserRole = sequences[0]?.roleCode;
-          const users = await firstValueFrom (this.userService.getAllUsers());
-          for(let user of users){
-            if(user.role == 'superadmin' || nextUserRole == user.role  ){
-              this.notifService.addNotification(
-              `Requisiton No. ${id} has been created and now under ${sequences[0].name}.`,
-              'info',
-              user.id
-              )
-            }
-          }
-     }
+     
      this.messageService.add({
        severity: 'success',
        summary: 'Success',
@@ -633,7 +617,7 @@ async finalizeRequisitionSave(): Promise<void> {
 
   try {
     this.loading = true;
-    await this.requisitionService.addRequisition(
+    const id = await this.requisitionService.addRequisition(
       this.tempRequisitionData as Omit<Requisition, 'id'>
     );
 
@@ -642,6 +626,23 @@ async finalizeRequisitionSave(): Promise<void> {
       summary: 'Success',
       detail: 'Requisition saved successfully'
     });
+
+    const allSequences = await this.requisitionService.getAllApprovalSequences();
+     if(allSequences[0]){
+      alert(allSequences[0].roleCode);
+      const nextUserRole = allSequences[0]?.roleCode;
+          const users = await firstValueFrom (this.userService.getAllUsers());
+          for(let user of users){
+            if(user.role == 'superadmin' || nextUserRole == user.role  ){
+              alert(user.role);
+              this.notifService.addNotification(
+              `Requisiton No. ${id} has been created and now under ${allSequences[0].name}.`,
+              'info',
+              user.id
+              )
+            }
+          }
+     }
     
     this.resetForm();
     await this.loadRequisitions();
