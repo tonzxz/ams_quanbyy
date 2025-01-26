@@ -14,17 +14,21 @@ export const navItems: NavItem[] = [
     displayName: 'Approvals',
     iconName: 'solar:widget-add-line-duotone',
     route: '/shared/approvals',
+    requiredRoles: ['end-user', 'bac', 'accounting', 'caf', 'president', 'inspection'],
+
   },
   {
     displayName: 'Request Quotation',
     iconName: 'solar:widget-add-line-duotone',
     route: '/shared/request-quotation',
+    requiredRoles: ['bac'],
+
   },
-  {
-    displayName: 'Purchase Request',
-    iconName: 'solar:widget-add-line-duotone',
-    route: '/shared/purchase-req',
-  },
+  // {
+  //   displayName: 'Purchase Request',
+  //   iconName: 'solar:widget-add-line-duotone',
+  //   route: '/shared/purchase-req',
+  // },
 
   // End User Section
   {
@@ -49,107 +53,107 @@ export const navItems: NavItem[] = [
   {
     navCap: 'Inspection',
     divider: true,
-    requiredRoles: ['inspection', 'superadmin'],
+    requiredRoles: ['inspection'],
   },
   {
     displayName: 'Dashboard',
     iconName: 'solar:widget-add-line-duotone',
     route: '/inspection/inspection-dashboard',
-    requiredRoles: ['inspection', 'superadmin'],
+    requiredRoles: ['inspection'],
   },
   {
     displayName: 'Purchase Requests',
     iconName: 'solar:documents-broken',
     route: '/inspection/purchase-request',
-    requiredRoles: ['inspection', 'superadmin'],
+    requiredRoles: ['inspection'],
   },
   {
     displayName: 'Receipt Approval',
     iconName: 'solar:documents-broken',
     route: '/inspection/receipt-approval',
-    requiredRoles: ['inspection', 'superadmin'],
+    requiredRoles: ['inspection'],
   },
 
   // Supply Unit Section
   {
     navCap: 'Supply Unit',
     divider: true,
-    requiredRoles: ['supply', 'superadmin'],
+    requiredRoles: ['supply'],
   },
   {
     displayName: 'Delivery Receipts',
     iconName: 'solar:documents-broken',
     route: '/shared/delivery-receipts',
-    requiredRoles: ['supply', 'superadmin'],
+    requiredRoles: ['supply'],
   },
   {
     displayName: 'Supply Stocking',
     iconName: 'solar:inbox-archive-outline',
     route: '/supply-management/stocking',
-    requiredRoles: ['supply', 'superadmin'],
+    requiredRoles: ['supply'],
   },
   {
     displayName: 'Delivered Items',
     iconName: 'fluent:check-24-regular',
     route: '/shared/delivered-items',
-    requiredRoles: ['supply', 'superadmin'],
+    requiredRoles: ['supply'],
   },
   {
     displayName: 'Disbursement Vouchers',
     iconName: 'solar:ticket-sale-broken',
     route: '/shared/disbursement-vouchers',
-    requiredRoles: ['supply', 'superadmin'],
+    requiredRoles: ['supply'],
   },
 
   // Accounting Section
   {
     navCap: 'Accounting',
     divider: true,
-    requiredRoles: ['admin', 'superadmin', 'accounting'],
+    requiredRoles: [ 'accounting'],
   },
   {
     displayName: 'Budget',
     iconName: 'solar:widget-add-line-duotone',
     route: '/accounting/budget',
-    requiredRoles: ['admin', 'superadmin','accounting'],
+    requiredRoles: ['accounting'],
   },
    {
     displayName: 'Purchase Request Approval',
     iconName: 'solar:widget-add-line-duotone',
     route: '/accounting/pr-approval',
-    requiredRoles: ['admin', 'superadmin' ,'accounting'],
+    requiredRoles: ['accounting'],
   },
   {
     displayName: 'Voucher Review',
     iconName: 'solar:ticket-sale-broken',
     route: '/accounting/voucher-review',
-    requiredRoles: ['admin', 'superadmin', 'accounting'],
+    requiredRoles: [ 'accounting'],
   },
   {
     displayName: 'Journal Entry Voucher',
     iconName: 'solar:ticket-sale-broken',
     route: '/accounting/journal-entry-voucher',
-    requiredRoles: ['admin', 'superadmin', 'accounting'],
+    requiredRoles: [ 'accounting'],
   },
   {
     displayName: 'General Ledger',
     iconName: 'solar:ticket-sale-broken',
     route: '/accounting/general-ledger',
-    requiredRoles: ['admin', 'superadmin', 'accounting'],
+    requiredRoles: [ 'accounting'],
   },
   {
     displayName: 'General Journal',
     iconName: 'solar:ticket-sale-broken',
     route: '/accounting/general-journal',
-    requiredRoles: ['admin', 'superadmin', 'accounting'],
+    requiredRoles: [ 'accounting'],
   },
 
   // Admin Section
-  {
-    navCap: 'Admin',
-    divider: true,
-    requiredRoles: ['admin', 'superadmin'],
-  },
+  // {
+  //   navCap: 'Admin',
+  //   divider: true,
+  //   requiredRoles: ['admin', 'superadmin'],
+  // },
   {
     displayName: 'User Management',
     iconName: 'solar:widget-add-line-duotone',
@@ -222,19 +226,25 @@ export const navItems: NavItem[] = [
   {
     navCap: 'BAC',
     divider: true,
-    requiredRoles: ['bac', 'superadmin'],
+    requiredRoles: ['bac'],
   },
   {
     displayName: 'Validate Approved Request',
     iconName: 'solar:checklist-minimalistic-line-duotone',
     route: '/bac/validate-approved-request',
-    requiredRoles: ['bac', 'superadmin'],
+    requiredRoles: ['bac'],
+  },
+   {
+    displayName: 'Approved Purchase Request',
+    iconName: 'solar:checklist-minimalistic-line-duotone',
+    route: '/bac/approved-purchase-requests',
+    requiredRoles: ['bac'],
   },
   {
     displayName: 'Prepare Purchase Orders',
     iconName: 'solar:document-add-line-duotone',
     route: '/bac/prepare-purchase-orders',
-    requiredRoles: ['bac', 'superadmin'],
+    requiredRoles: ['bac'],
   },
   //  {
   //   navCap: 'President',

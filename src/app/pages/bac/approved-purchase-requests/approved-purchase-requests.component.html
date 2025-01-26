@@ -1,0 +1,94 @@
+<div class="p-4">
+  <h1 class="text-2xl font-bold mb-4">Approved Purchase Requests (Level 4)</h1>
+
+  <!-- Loading spinner -->
+  <p-progressSpinner *ngIf="loading" styleClass="w-8 h-8" strokeWidth="4" animationDuration=".5s"></p-progressSpinner>
+
+  <!-- No requisitions message -->
+  <p *ngIf="!loading && requisitions.length === 0" class="text-center">
+    No requisitions found for approval level 4.
+  </p>
+
+  <!-- Requisitions table -->
+  <p-table *ngIf="!loading && requisitions.length > 0" [value]="requisitions" [paginator]="true" [rows]="10">
+    <ng-template pTemplate="header">
+      <tr>
+        <th>ID</th>
+        <th>Title</th>
+        <th>Description</th>
+        <th>Status</th>
+        <th>Created By</th>
+        <th>Date Created</th>
+        <th>Attachments</th>
+        <th>Actions</th>
+      </tr>
+    </ng-template>
+    <ng-template pTemplate="body" let-requisition>
+      <tr>
+        <td>{{ requisition.id }}</td>
+        <td>{{ requisition.title }}</td>
+        <td>{{ requisition.description }}</td>
+        <td>
+          <span [ngClass]="{
+            'bg-green-100 text-green-800': requisition.approvalStatus === 'Approved',
+            'bg-yellow-100 text-yellow-800': requisition.approvalStatus === 'Pending',
+            'bg-red-100 text-red-800': requisition.approvalStatus === 'Rejected'
+          }" class="px-2 py-1 rounded-full text-sm">
+            {{ requisition.approvalStatus }}
+          </span>
+        </td>
+        <td>{{ requisition.createdByUserName }}</td>
+        <td>{{ requisition.dateCreated | date: 'medium' }}</td>
+        <td>
+          <button pButton pRipple type="button" icon="pi pi-file-pdf" class="p-button-rounded p-button-danger"
+            (click)="showAttachments(requisition)"></button>
+        </td>
+        <td>
+          <button pButton pRipple type="button" icon="pi pi-eye" class="p-button-rounded p-button-info"
+            (click)="viewDetails(requisition.id)"></button>
+        </td>
+      </tr>
+    </ng-template>
+  </p-table>
+</div>
+
+<!-- Modal for displaying attachments -->
+<p-dialog [(visible)]="displayModal" [modal]="true" [style]="{ width: '50vw' }" [draggable]="false" [resizable]="false">
+  <ng-template pTemplate="header">
+    <h3 class="text-lg font-bold">Attachments</h3>
+  </ng-template>
+  <div *ngIf="selectedRequisition">
+    <ul>
+      <li *ngIf="selectedRequisition.ppmpAttachment">
+        <a [href]="selectedRequisition.ppmpAttachment" target="_blank" class="text-blue-500 hover:underline">PPMP Attachment</a>
+      </li>
+      <li *ngIf="selectedRequisition.purchaseRequestAttachment">
+        <a [href]="selectedRequisition.purchaseRequestAttachment" target="_blank" class="text-blue-500 hover:underline">Purchase Request Attachment</a>
+      </li>
+      <li *ngIf="selectedRequisition.rfqAttachement">
+        <a [href]="selectedRequisition.rfqAttachement" target="_blank" class="text-blue-500 hover:underline">RFQ Attachment</a>
+      </li>
+      <li *ngIf="selectedRequisition.rfqFromSuppliersAttachment">
+        <a [href]="selectedRequisition.rfqFromSuppliersAttachment" target="_blank" class="text-blue-500 hover:underline">RFQ From Suppliers Attachment</a>
+      </li>
+      <li *ngIf="selectedRequisition.abstractOfQuotationAttachment">
+        <a [href]="selectedRequisition.abstractOfQuotationAttachment" target="_blank" class="text-blue-500 hover:underline">Abstract of Quotation Attachment</a>
+      </li>
+      <li *ngIf="selectedRequisition.budgetUtilizationReportAttachment">
+        <a [href]="selectedRequisition.budgetUtilizationReportAttachment" target="_blank" class="text-blue-500 hover:underline">Budget Utilization Report Attachment</a>
+      </li>
+      <li *ngIf="selectedRequisition.noticeOfAwardAttachment">
+        <a [href]="selectedRequisition.noticeOfAwardAttachment" target="_blank" class="text-blue-500 hover:underline">Notice of Award Attachment</a>
+      </li>
+      <li *ngIf="selectedRequisition.purchaseOrderAttachment">
+        <a [href]="selectedRequisition.purchaseOrderAttachment" target="_blank" class="text-blue-500 hover:underline">Purchase Order Attachment</a>
+      </li>
+      <li *ngIf="selectedRequisition.noticeToProceedAttachment">
+        <a [href]="selectedRequisition.noticeToProceedAttachment" target="_blank" class="text-blue-500 hover:underline">Notice to Proceed Attachment</a>
+      </li>
+    </ul>
+  </div>
+  <ng-template pTemplate="footer">
+    <button pButton pRipple type="button" label="Close" class="p-button-text" (click)="displayModal = false"></button>
+  </ng-template>
+</p-dialog>
