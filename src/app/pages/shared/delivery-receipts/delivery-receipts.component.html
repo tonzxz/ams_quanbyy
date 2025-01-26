@@ -150,16 +150,16 @@
 
     <div class="flex items-center gap-4 mb-2">
       <label for="supplier_id" class="font-semibold w-32">Supplier</label>
-      <p-select [options]="suppliers" formControlName="supplier" optionLabel="contactPerson" [filter]="true"
-        filterBy="contactPerson" [showClear]="true" placeholder="Select a supplier" class="flex-auto">
+      <p-select [options]="suppliers" formControlName="supplier" optionLabel="name" [filter]="true"
+        filterBy="name" [showClear]="true" placeholder="Select a supplier" class="flex-auto">
         <ng-template #selectedItem let-selectedOption>
           <div class="flex items-center gap-2">
-            <div>{{ selectedOption.contactPerson }}</div>
+            <div>{{ selectedOption.name }}</div>
           </div>
         </ng-template>
         <ng-template let-supplier #item>
           <div class="flex items-center gap-2">
-            <div>{{ supplier.contactPerson }}</div>
+            <div>{{ supplier.name }}</div>
           </div>
         </ng-template>
       </p-select>

@@ -54,21 +54,18 @@
       </ng-template>
 
       <ng-template pTemplate="body" let-req>
-        <tr>
+        <tr (click)="openPurchaseReqDialog(req.id)">
           <td>{{ req.id }}</td>
           <td>{{ req.title }}</td>
           <td>{{ req.description }}</td>
           <td>Level {{ req.approvalSequenceDetails?.level }}</td>
           <td>
-            <span
-            class="text-yellow-600"
-            >
+            <span class="text-yellow-600">
               Under {{ req.approvalSequenceDetails?.name }}...
             </span>
           </td>
           <td>{{ req.dateCreated | date: 'short' }}</td>
           <td>{{ req.approvalSequenceDetails?.departmentName || 'N/A' }}</td>
-        
           <!-- Attachments Column -->
           <td>
             <!-- PPMP Attachment -->
@@ -77,44 +74,44 @@
               pButton
               icon="pi pi-file-pdf"
               class="p-button-rounded p-button-secondary p-button-sm"
-              (click)="viewAttachment(req.ppmpAttachment, 'PPMP')"
+              (click)="viewAttachment(req.ppmpAttachment, 'PPMP'); $event.stopPropagation()" 
               pTooltip="View PPMP"
             ></button>
 
             <!-- Purchase Request Attachment -->
             <button
-              *ngIf="req.purchaseRequestAttachment"
-              pButton
-              icon="pi pi-file-pdf"
-              class="p-button-rounded p-button-secondary p-button-sm ml-2"
-              (click)="viewAttachment(req.purchaseRequestAttachment, 'Purchase Request')"
-              pTooltip="View Purchase Request"
-            ></button>
+  *ngIf="req.purchaseRequestAttachment && req.approvalSequenceDetails?.level >= 2"
+  pButton
+  icon="pi pi-file-pdf"
+  class="p-button-rounded p-button-secondary p-button-sm ml-2"
+  (click)="openPurchaseReqDialog(req.id); $event.stopPropagation()"
+  pTooltip="View Purchase Request"
+></button>
           </td>
           @if(currentUser?.role != 'end-user'){
             <td>
-              <div  class="flex gap-2">
+              <div class="flex gap-2">
                 @if(currentUser?.role != 'supply'){
+                  <!-- Approve Button -->
+<button
+  pButton
+  icon="pi pi-check"
+  class="p-button-rounded p-button-success p-button-sm"
+  (click)="openSignatureDialog(req); $event.stopPropagation()"
+  pTooltip="Approve"
+></button>
                   <button
-                  pButton
-                  icon="pi pi-check"
-                  class="p-button-rounded p-button-success p-button-sm"
-                  (click)="openSignatureDialog(req)"
-                  pTooltip="Approve"
-                ></button>
-                <button
-                  pButton
-                  icon="pi pi-times"
-                  class="p-button-rounded p-button-danger p-button-sm"
-                  (click)="onReject(req)"
-                  [outlined]="false"
-                  pTooltip="Reject"
-                ></button>
+                    pButton
+                    icon="pi pi-times"
+                    class="p-button-rounded p-button-danger p-button-sm"
+                    (click)="onReject(req)"
+                    [outlined]="false"
+                    pTooltip="Reject"
+                  ></button>
                 }@else{
                   <span>Pending</span>
                 }
               </div>
-  
             </td>
           }
         </tr>
@@ -133,6 +130,8 @@
   </mat-card-content>
 </mat-card>
 
+
+<!-- Signature Dialog -->
 <!-- Signature Dialog -->
 <p-dialog
   header="Approve Request"
@@ -164,6 +163,16 @@
           (click)="clearSignature()"
         ></button>
       </div>
+    </div>
+
+    <!-- Comment Field -->
+    <div class="p-4 bg-white border border-gray-300 rounded-lg shadow-md">
+      <h4 class="text-sm font-medium text-gray-700 mb-2">Comments</h4>
+      <textarea
+        [(ngModel)]="approvalComment"
+        class="w-full p-2 border border-gray-300 rounded-md"
+        placeholder="Enter your comments here..."
+      ></textarea>
     </div>
   </div>
 
@@ -256,50 +265,15 @@
   ></iframe>
 </p-dialog>
 
-<!-- Preview Dialog -->
+<!-- Purchase Request Dialog -->
+
 <p-dialog
-  header="Preview Purchase Request"
-  [(visible)]="displayPreviewDialog"
+  header="Purchase Request"
+  [(visible)]="displayPurchaseReqDialog"
   [modal]="true"
   [style]="{ width: '90vw', maxWidth: '800px' }"
   [resizable]="false"
+  (onHide)="closePurchaseReqDialog()" 
 >
-  <div class="preview-content">
-    <h2 class="text-xl font-bold mb-4">Purchase Request Details</h2>
-    <div class="mb-4">
-      <p><strong>Title:</strong> {{ selectedRequest?.title }}</p>
-      <p><strong>Description:</strong> {{ selectedRequest?.description }}</p>
-      <p><strong>Department:</strong> {{ departmentName }}</p>
-      <p><strong>Office:</strong> {{ officeName }}</p>
-      <p><strong>Date Created:</strong> {{ selectedRequest?.dateCreated | date: 'short' }}</p>
-    </div>
-
-    <h3 class="text-lg font-bold mb-2">Signature</h3>
-    <div class="signature-preview">
-      <img *ngIf="signatureDataUrl" [src]="signatureDataUrl" alt="Signature" class="w-48 h-24 border border-gray-300" />
-    </div>
-  </div>
-
-  <ng-template pTemplate="footer">
-    <div class="flex justify-between gap-4">
-      <button
-        pButton
-        label="Cancel"
-        icon="pi pi-times"
-        class="p-button-secondary"
-        [outlined]="true"
-        size="small"
-        (click)="closePreviewDialog()"
-      ></button>
-      <button
-        pButton
-        label="Confirm Approval"
-        icon="pi pi-check"
-        class="p-button-success"
-        [outlined]="true"
-        size="small"
-        (click)="confirmApproval()"
-      ></button>
-    </div>
-  </ng-template>
+  <app-purchase-req *ngIf="selectedRequisitionId" [requisitionId]="selectedRequisitionId"></app-purchase-req>
 </p-dialog>

@@ -68,20 +68,25 @@
             <td>        
               <div class="flex gap-3">
                 @if(receipt.status != 'verified'){
-                  <p-button severity="secondary" pTooltip="Click to upload inspection reports" (click)="openUploadReportsModal(receipt)" [outlined]="true"
-                  size="small" icon="pi pi-upload" rounded />
+                  <p-button severity="secondary" pTooltip="Click to open purchase checklist" (click)="viewChecklist(receipt)" [outlined]="true"
+                  size="small" icon="pi pi-check-square" rounded />
                   <p-button [outlined]="true" [severity]="'danger'"
                   pTooltip="Click to reject this receipt"
-                  (click)="confirmToReject($event, receipt)" size="small" icon="pi pi-times" rounded />
+                  (click)="openUploadReportsModal(receipt)" size="small" icon="pi pi-times" rounded />
                   <p-button [outlined]="true" [severity]="'success'"
                   pTooltip="Click to verify receipt"
                   (click)="confirmToVerification($event, receipt)" size="small" icon="pi pi-arrow-right" rounded />
           
                 }@else{
+                    <p-button  (click)="generateInspectionReport(receipt)" [outlined]="true" pTooltip="Click to download inspection report" [severity]="'secondary'" size="small" icon="pi pi-file-pdf"
+                    rounded />
                     @if(!receipt.stocked){
-                      <i  class="pi pi-verified text-2xl text-green-500"></i>
+                      <p-button disabled="true" [outlined]="true" [severity]="'success'" size="small" icon="pi pi-verified"
+                      rounded />
                     }@else {
-                      <i  class="pi pi-box text-2xl"></i>
+                      <p-button disabled="true" [outlined]="true" [severity]="'secondary'" size="small" icon="pi pi-box"
+                      rounded />
+                 
                     }
                 }
                 
@@ -114,10 +119,10 @@
     <ng-template #header>
       <div class="py-0 inline-flex items-center justify-center gap-3">
         <i class="pi pi-receipt text-lg"></i>
-        <span class="font-bold text-lg whitespace-nowrap">Inspection Reports</span>
+        <span class="font-bold text-lg whitespace-nowrap">Inspection Report</span>
       </div>
     </ng-template>
-    <span class="text-surface-500 dark:text-surface-400 block mb-2">Please uploading supporting documents for IAR.</span>
+    <span class="text-surface-500 dark:text-surface-400 block mb-2">Specify rejection notes or supporting documents.</span>
     <form [formGroup]="form" (submit)="uploadReports()">
       
       <div class="flex items-center gap-4 mb-2">
@@ -181,7 +186,7 @@
     </form>
     <ng-template #footer>
       <p-button size="small" label="Cancel" [text]="true" icon="pi pi-times" severity="secondary" (click)="showReceiptModal = false" />
-      <p-button size="small" label="Edit" icon="pi pi-plus" [disabled]="!form.valid" (click)="uploadReports()" />
+      <p-button size="small" severity="danger" label="Reject" icon="pi pi-times" [disabled]="!form.valid" (click)="uploadReports()" />
     </ng-template>
   </p-dialog>
   
