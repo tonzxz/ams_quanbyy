@@ -606,11 +606,12 @@ private loadDummyData(): void {
    * Add a new requisition.
    * @param data - The requisition data (without ID).
    */
-  async addRequisition(data: Omit<Requisition, 'id'>): Promise<void> {
+  async addRequisition(data: Omit<Requisition, 'id'>): Promise<string> {
+    const id =this.generate6DigitId();
     const currentUser = this.userService.getUser(); // Get the current logged-in user
     const newRequisition: Requisition = {
       ...data,
-      id: this.generate6DigitId(),
+      id: id,
       createdByUserId: currentUser?.id || 'Unknown',
       createdByUserName: currentUser?.fullname || 'Unknown',
       currentApprovalLevel: 1, // Default to level 1
@@ -621,6 +622,7 @@ private loadDummyData(): void {
     requisitionSchema.parse(newRequisition); // Validate the new requisition
     this.requisitions.push(newRequisition);
     this.saveToLocalStorage();
+    return id
   }
 
   /**

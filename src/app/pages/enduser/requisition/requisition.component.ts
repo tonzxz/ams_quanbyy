@@ -24,6 +24,7 @@ import { Product, ProductsService } from 'src/app/services/products.service';
 import { UserService, User } from 'src/app/services/user.service';
 import { PurchaseRequestService, PurchaseRequest } from 'src/app/services/purchase-request.service';
 import { ApprovalSequenceService } from 'src/app/services/approval-sequence.service';
+import { NotificationService } from 'src/app/services/notifications.service';
 
 interface SelectedProduct {
  id: string;
@@ -84,6 +85,7 @@ export class RequisitionComponent implements OnInit {
 
  constructor(
    private formBuilder: FormBuilder,
+   private notifService:NotificationService,
    private requisitionService: RequisitionService,
    private groupService: GroupService,
    private productsService: ProductsService,
@@ -439,6 +441,9 @@ export class RequisitionComponent implements OnInit {
        approvalHistory: []
      };
 
+     
+ 
+
      const ppmpBase64 = this.generatePPMPPdf(requisitionData);
 
    // Continued from before
@@ -483,10 +488,27 @@ export class RequisitionComponent implements OnInit {
 
    try {
      this.loading = true;
-     await this.requisitionService.addRequisition(
+     const id = await this.requisitionService.addRequisition(
        this.tempRequisitionData as Omit<Requisition, 'id'>
      );
 
+     const sequences = await firstValueFrom(
+      this.approvalSequenceService.getSequencesByType('procurement')
+    );
+
+     if(sequences[0]?.id){
+      const nextUserRole = sequences[0]?.roleCode;
+          const users = await firstValueFrom (this.userService.getAllUsers());
+          for(let user of users){
+            if(user.role == 'superadmin' || nextUserRole == user.role  ){
+              this.notifService.addNotification(
+              `Requisiton No. ${id} has been created and now under ${sequences[0].name}.`,
+              'info',
+              user.id
+              )
+            }
+          }
+     }
      this.messageService.add({
        severity: 'success',
        summary: 'Success',
