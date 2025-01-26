@@ -215,7 +215,7 @@ export class ApprovalsComponent implements OnInit {
       for(let user of users){
         if(user.role == 'superadmin' || nextUserRole == user.role || user.id == this.selectedRequest.createdByUserId ){
           this.notificationService.addNotification(
-          `Requisiton No. ${this.selectedRequest.id} has been approved to ${allSequences[currentSequenceIndex+1].name}.`,
+          `Requisiton No. ${this.selectedRequest.id} has been approved and now under ${allSequences[currentSequenceIndex+1].name}.`,
           'info',
           user.id
           )
