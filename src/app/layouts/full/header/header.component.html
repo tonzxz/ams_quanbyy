@@ -56,12 +56,12 @@
     }
   </button>
 
-  <mat-menu #notification="matMenu" class="topbar-dd cardWithShadow">
-    <mat-card>
+  <mat-menu #notification="matMenu" class="topbar-dd cardWithShadow !pb-0 !mb-0">
+    <mat-card class="!pb-0 !mb-0">
       <div class="px-6 py-2 flex items-end text-lg">
         Notifications
       </div>
-      @if(notifications.length <=0){
+      @if(notifications.length <= 0){
         <div class=" rounded-lg mx-2 my-2 px-4 py-2">
           <div class="flex items-center gap-4">
             <i class="pi pi-inbox text-2xl ml-2"></i>
@@ -72,7 +72,7 @@
       }@else{
         <p-scrollpanel [style]="{ width: '100%', height: '200px' }" >
           @for(notification of notifications; track notification.id){
-            <div class=" rounded-lg mx-2 my-2 px-4 py-2 cursor-pointer hover:bg-gray-50 border-b-2 border-gray-100">
+            <div class=" rounded-lg mx-2 my-2 px-4 py-2 cursor-pointer hover:bg-gray-50 border-b-2 border-gray-100 overflow-x-auto">
               <div class="flex items-center gap-4">
                 @if(notification.type == 'success'){
                   <i class="pi pi-check-circle text-2xl ml-2 text-green-500"></i>

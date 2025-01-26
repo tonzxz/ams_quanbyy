@@ -334,10 +334,10 @@ import { firstValueFrom } from 'rxjs';
  * Zod schema for an Extended Requisition.
  */
 export const requisitionSchema = z.object({
-  id: z.string().length(32, "ID must be exactly 32 characters").optional(),
+  id: z.string().length(6, "ID must be exactly 6 characters").optional(),
   title: z.string().min(1, "Title is required"),
   description: z.string().max(500).optional(),
-  status: z.enum(['Pending', 'Approved', 'Rejected']),
+  status: z.string(),
   classifiedItemId: z.string().length(32, "Classified Item ID is required"),
   group: z.string().min(1, "Group is required"),
   products: z.array(
@@ -359,7 +359,7 @@ export const requisitionSchema = z.object({
   signature: z.string().optional(),
   createdByUserId: z.string().optional(),
   createdByUserName: z.string().optional(),
-  approvalSequenceId: z.string().min(1, "Approval Sequence ID is required"),
+  approvalSequenceId: z.string().min(1, "Approval Sequence ID is required").optional(),
   currentApprovalLevel: z.number().min(1).default(1), // Default to level 1
   approvalStatus: z.enum(['Pending', 'Approved', 'Rejected']).default('Pending'),
   approvalHistory: z.array(
@@ -416,17 +416,25 @@ export class RequisitionService {
 
   // Generate a random 32-character hex ID
   private generate32CharId(): string {
-    return Array.from({ length: 32 }, () =>
+    return Array.from({ length: 4 }, () =>
       Math.floor(Math.random() * 16).toString(16)
     ).join('');
   }
+
+
+  private generate6DigitId(): string {
+  return Array.from({ length: 6 }, () => 
+    Math.floor(Math.random() * 10).toString()
+  ).join('');
+  }
+  
 
   // Load some dummy data (optional)
 private loadDummyData(): void {
   const dummy: Requisition[] = [
     // Level 1: Budget Unit Review (Procurement Flow)
     {
-      id: '12345678901234567890123456789012',
+      id: '1111',
       title: 'Office Supplies Request',
       description: 'Request for stationery items.',
       status: 'Pending',
@@ -453,7 +461,7 @@ private loadDummyData(): void {
     },
     // Level 2: Technical Specification Review (Procurement Flow)
     {
-      id: '23456789012345678901234567890123',
+      id: '2222',
       title: 'Electronics Request',
       description: 'Request for new laptops.',
       status: 'Pending',
@@ -481,7 +489,7 @@ private loadDummyData(): void {
     },
     // Level 3: College President Approval (Procurement Flow)
     {
-      id: '34567890123456789012345678901234',
+      id: '3333',
       title: 'Furniture Request',
       description: 'Request for office chairs and desks.',
       status: 'Pending',
@@ -511,7 +519,7 @@ private loadDummyData(): void {
     },
     // Level 4: BAC Final Review (Procurement Flow)
     {
-      id: '45678901234567890123456789012345',
+      id: '4444',
       title: 'Software License Request',
       description: 'Request for software licenses for the IT department.',
       status: 'Pending',
@@ -541,7 +549,7 @@ private loadDummyData(): void {
     },
     // Level 5: Delivery Inspection (Supply Management Flow)
     {
-      id: '56789012345678901234567890123456',
+      id: '5555',
       title: 'Projector Request',
       description: 'Request for projectors for the conference room.',
       status: 'Pending',
@@ -598,11 +606,12 @@ private loadDummyData(): void {
    * Add a new requisition.
    * @param data - The requisition data (without ID).
    */
-  async addRequisition(data: Omit<Requisition, 'id'>): Promise<void> {
+  async addRequisition(data: Omit<Requisition, 'id'>): Promise<string> {
+    const id =this.generate6DigitId();
     const currentUser = this.userService.getUser(); // Get the current logged-in user
     const newRequisition: Requisition = {
       ...data,
-      id: this.generate32CharId(),
+      id: id,
       createdByUserId: currentUser?.id || 'Unknown',
       createdByUserName: currentUser?.fullname || 'Unknown',
       currentApprovalLevel: 1, // Default to level 1
@@ -613,6 +622,7 @@ private loadDummyData(): void {
     requisitionSchema.parse(newRequisition); // Validate the new requisition
     this.requisitions.push(newRequisition);
     this.saveToLocalStorage();
+    return id
   }
 
   /**
@@ -840,7 +850,7 @@ async loadUserFullName(requisitionId: string): Promise<string | undefined> {
 
     // Fetch the approval sequence using the requisition's approvalSequenceId
     const approvalSequence = await this.approvalSequenceService
-      .getSequenceById(requisition.approvalSequenceId)
+      .getSequenceById(requisition.approvalSequenceId??'#')
       .toPromise();
 
     if (!approvalSequence) {

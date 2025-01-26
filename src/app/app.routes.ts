@@ -80,6 +80,7 @@ export const routes: Routes = [
         loadChildren: () =>
           import('./pages/accounting/accounting.routes').then((m) => m.AccountingRoutes), 
       },
+     
     ],
     canActivate: [dashboardGuard], // Apply dashboardGuard to all child routes
   },

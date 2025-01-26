@@ -7,12 +7,13 @@ import { TooltipModule } from 'primeng/tooltip';
 import { DialogModule } from 'primeng/dialog';
 import { DomSanitizer, SafeResourceUrl } from '@angular/platform-browser';
 import { RequisitionService, Requisition } from 'src/app/services/requisition.service';
-import { UserService } from 'src/app/services/user.service';
+import { User, UserService } from 'src/app/services/user.service';
 import { MessageService } from 'primeng/api';
 import { ToastModule } from 'primeng/toast';
 import { ApprovalSequenceService } from 'src/app/services/approval-sequence.service';
 import { firstValueFrom } from 'rxjs';
 import { DepartmentService } from 'src/app/services/departments.service';
+import { NotificationService } from 'src/app/services/notifications.service';
 
 @Component({
   selector: 'app-approvals',
@@ -41,6 +42,7 @@ export class ApprovalsComponent implements OnInit {
   signatureDataUrl: string | null = null;
   departmentName: string = 'N/A';
   officeName: string = 'N/A';
+  currentUser?:User;
 
   @ViewChild('signatureCanvas', { static: false })
   signatureCanvas!: ElementRef<HTMLCanvasElement>;
@@ -53,7 +55,8 @@ export class ApprovalsComponent implements OnInit {
     private approvalSequenceService: ApprovalSequenceService,
     private sanitizer: DomSanitizer,
     private messageService: MessageService,
-    private departmentService: DepartmentService
+    private departmentService: DepartmentService,
+    private notificationService: NotificationService
   ) {}
 
   async ngOnInit() {
@@ -64,40 +67,28 @@ export class ApprovalsComponent implements OnInit {
   private async loadRequisitions() {
     try {
       this.loading = true;
-      const currentUser = this.userService.getUser();
+      this.currentUser = this.userService.getUser();
       const allRequisitions = await this.requisitionService.getAllRequisitions();
       const allSequences = await this.requisitionService.getAllApprovalSequences();
 
       this.requisitions = allRequisitions
         .map((req) => {
-          const typeSequences = allSequences.filter(
-            (seq) => seq.type === (req.currentApprovalLevel <= 4 ? 'procurement' : 'supply')
-          );
+          // const typeSequences = allSequences.filter(
+          //   (seq) => seq.type === (req.currentApprovalLevel <= 4 ? 'procurement' : 'supply')
+          // );
 
-          const currentSequence = typeSequences.find(
-            (seq) => seq.level === req.currentApprovalLevel
+          const currentSequence = allSequences.find(
+            (seq) => seq.id === req.approvalSequenceId
           );
 
           return {
             ...req,
             approvalSequenceDetails: currentSequence
-              ? {
-                  level: currentSequence.level,
-                  departmentName: currentSequence.departmentName,
-                  roleName: currentSequence.roleName,
-                  userFullName: currentSequence.userFullName,
-                  userId: currentSequence.userId,
-                }
-              : {
-                  level: 'N/A',
-                  departmentName: 'N/A',
-                  roleName: 'N/A',
-                  userFullName: 'N/A',
-                  userId: 'N/A',
-                },
+,
           };
         })
-        .filter((req) => req.approvalSequenceDetails?.userId === currentUser?.id);
+        .filter((req) => req.approvalSequenceDetails && (req.approvalSequenceDetails?.userId === this.currentUser?.id || this.currentUser?.role == 'end-user' || this.currentUser?.role == 'superadmin' || 
+          (this.currentUser?.role =='supply' && req.approvalSequenceDetails.roleCode == 'inspection')));
     } catch (error) {
       console.error('Failed to load requisitions:', error);
       this.messageService.add({
@@ -211,9 +202,32 @@ export class ApprovalsComponent implements OnInit {
 
     // Update the requisition with the signature
     this.selectedRequest.signature = this.signatureDataUrl;
-    this.selectedRequest.approvalStatus = 'Approved';
-    this.selectedRequest.currentApprovalLevel += 1;
+    // this.selectedRequest.approvalStatus = 'Approved';
+    // Find current approval position
+    const allSequences = await this.requisitionService.getAllApprovalSequences();
 
+    const currentSequenceIndex = allSequences.findIndex(seq=>seq.id==this.selectedRequest?.approvalSequenceId)
+    if(currentSequenceIndex + 1 < allSequences.length){
+      this.selectedRequest.approvalSequenceId = allSequences[currentSequenceIndex + 1].id;
+      this.selectedRequest.currentApprovalLevel = allSequences[currentSequenceIndex + 1].level;
+      const nextUserRole = allSequences[currentSequenceIndex+1].roleCode
+      const users = await firstValueFrom (this.userService.getAllUsers());
+      for(let user of users){
+        if(user.role == 'superadmin' || nextUserRole == user.role || user.id == this.selectedRequest.createdByUserId ){
+          this.notificationService.addNotification(
+          `Requisiton No. ${this.selectedRequest.id} has been approved and now under ${allSequences[currentSequenceIndex+1].name}.`,
+          'info',
+          user.id
+          )
+        }
+      }
+    }else{
+      this.selectedRequest.approvalSequenceId = undefined;
+      this.selectedRequest.currentApprovalLevel = 0;
+      this.selectedRequest.approvalStatus = 'Approved'; 
+    }
+
+    
     // Show the preview dialog
     this.displayPreviewDialog = true;
     this.displaySignatureDialog = false;
@@ -244,11 +258,12 @@ async confirmApproval() {
 
     // Update the requisition with the signature and approval status
     this.selectedRequest.signature = this.signatureDataUrl;
-    this.selectedRequest.approvalStatus = 'Approved';
-    this.selectedRequest.currentApprovalLevel += 1;
+    // this.selectedRequest.approvalStatus = 'Approved';
+    // this.selectedRequest.currentApprovalLevel += 1;
 
     // Save the updated requisition
     await this.requisitionService.updateRequisition(this.selectedRequest);
+    
     this.loadRequisitions();
 
     // Show success message
@@ -276,9 +291,32 @@ async confirmApproval() {
     this.signatureDataUrl = null;
   }
 
-  async onReject(requisitionId: string) {
+  async onReject(req: Requisition) {
     try {
-      await this.requisitionService.updateRequisitionStatus(requisitionId, 'Rejected');
+      this.selectedRequest = req;
+      const allSequences = await this.requisitionService.getAllApprovalSequences();
+
+      const users = await firstValueFrom (this.userService.getAllUsers());
+
+      const currentSequenceIndex = allSequences.findIndex(seq=>seq.id==this.selectedRequest?.approvalSequenceId)
+      if(currentSequenceIndex - 1  >= 0){
+        this.selectedRequest.approvalSequenceId = allSequences[currentSequenceIndex - 1].id;
+        await this.requisitionService.updateRequisition(this.selectedRequest);
+        const lastUserRole = allSequences[currentSequenceIndex-1].roleCode
+      
+        for(let user of users){
+          if(user.role == 'superadmin' || lastUserRole == user.role || user.id == this.selectedRequest.createdByUserId ){
+            this.notificationService.addNotification(
+            `Requisiton No. ${this.selectedRequest.id} has been rejected back to ${allSequences[currentSequenceIndex-1].name}.`,
+            'info',
+            user.id
+            )
+          }
+        }
+      }
+
+    
+
       this.loadRequisitions();
       this.messageService.add({
         severity: 'success',
