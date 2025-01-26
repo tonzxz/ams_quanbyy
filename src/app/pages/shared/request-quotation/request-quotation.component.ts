@@ -102,8 +102,8 @@ interface Supplier {
                       <input type="number" [(ngModel)]="item.qty" (input)="calculateTotal(i)" class="w-full px-2 py-1 border rounded-md">
                     </td>
                     <td class="px-4 py-3">ABC</td>
-                    <td class="px-4 py-3">
-                      <input type="text" [(ngModel)]="item.description" class="w-full px-2 py-1 border rounded-md">
+                    <td class="px-4 py-3 description-cell">
+                      <textarea [(ngModel)]="item.description" class="w-full px-2 py-1 border rounded-md description-text" rows="3"></textarea>
                     </td>
                     <td class="px-4 py-3">
                       <input type="text" [(ngModel)]="item.brand" class="w-full px-2 py-1 border rounded-md">
@@ -161,7 +161,18 @@ interface Supplier {
         </div>
       </div>
     </div>
-  `
+  `,
+  styles: [`
+    .description-cell textarea {
+      white-space: pre-wrap;
+      min-height: 100px;
+      line-height: 1.5;
+    }
+    .description-text {
+      white-space: pre-wrap;
+      word-break: break-word;
+    }
+  `]
 })
 export class RequestQuotationComponent {
   requestDetails: RequestDetails = {
@@ -207,51 +218,80 @@ export class RequestQuotationComponent {
     const element = document.getElementById('quotation-form') as HTMLElement;
     if (!element) return;
 
-    const pdfContent = element.cloneNode(true) as HTMLElement;
-    document.body.appendChild(pdfContent);
-    pdfContent.style.position = 'absolute';
-    pdfContent.style.left = '-9999px';
+    const pdf = new jsPDF('p', 'mm', 'a4');
+    const pdfWidth = pdf.internal.pageSize.getWidth();
+    const pdfHeight = pdf.internal.pageSize.getHeight();
+    let currentPage = 1;
 
-    pdfContent.querySelectorAll('.pdf-hide').forEach((el) => {
-      (el as HTMLElement).style.display = 'none';
+    // Pre-process textareas to maintain formatting
+    const textareas = element.querySelectorAll('textarea');
+    textareas.forEach(textarea => {
+      const text = textarea.value;
+      const div = document.createElement('div');
+      div.style.whiteSpace = 'pre-wrap';
+      div.style.wordBreak = 'break-word';
+      div.style.width = textarea.style.width;
+      div.style.minHeight = textarea.style.height;
+      div.style.padding = '8px';
+      div.style.border = '1px solid #ccc';
+      div.style.lineHeight = '1.5';
+      div.textContent = text;
+      textarea.parentNode?.replaceChild(div, textarea);
     });
 
-    pdfContent.querySelectorAll('input').forEach((input: Element) => {
-      const inputEl = input as HTMLInputElement;
-      const textBox = document.createElement('div');
-      textBox.textContent = inputEl.value || ' ';
-      textBox.style.border = '1px solid #ccc';
-      textBox.style.padding = '6px';
-      textBox.style.borderRadius = '4px';
-      textBox.style.backgroundColor = '#fff';
-      inputEl.parentNode?.replaceChild(textBox, inputEl);
-    });
+    const buttons = element.querySelectorAll('.pdf-hide');
+    buttons.forEach((button) => (button as HTMLElement).style.display = 'none');
 
-    pdfContent.querySelectorAll('table').forEach((table) => {
-      table.setAttribute('border', '1');
-      table.style.borderCollapse = 'collapse';
-      table.style.width = '100%';
-      table.querySelectorAll('th, td').forEach((cell) => {
-        const cellEl = cell as HTMLElement;
-        cellEl.style.border = '1px solid #ccc';
-        cellEl.style.padding = '8px';
-        cellEl.style.textAlign = 'left';
-      });
-    });
-
-    html2canvas(pdfContent, {
+    html2canvas(element, {
       scale: 2,
       useCORS: true,
       logging: false,
       backgroundColor: '#ffffff',
+      windowWidth: 1200,
+      onclone: (clonedDoc) => {
+        const clonedTextareas = clonedDoc.querySelectorAll('.description-cell div');
+        clonedTextareas.forEach(div => {
+          (div as HTMLElement).style.whiteSpace = 'pre-wrap';
+          (div as HTMLElement).style.minHeight = '100px';
+        });
+      }
     }).then((canvas) => {
-      document.body.removeChild(pdfContent);
-      const imgData = canvas.toDataURL('image/jpeg', 1.0);
-      const pdf = new jsPDF('p', 'mm', 'a4');
-      const pdfWidth = pdf.internal.pageSize.getWidth();
-      const pdfHeight = (canvas.height * pdfWidth) / canvas.width;
+      // Restore textareas
+      const divs = element.querySelectorAll('.description-cell div');
+      divs.forEach(div => {
+        const textarea = document.createElement('textarea');
+        textarea.value = div.textContent || '';
+        textarea.className = 'w-full px-2 py-1 border rounded-md description-text';
+        textarea.rows = 3;
+        div.parentNode?.replaceChild(textarea, div);
+      });
 
-      pdf.addImage(imgData, 'JPEG', 0, 0, pdfWidth, pdfHeight);
+      buttons.forEach((button) => (button as HTMLElement).style.display = '');
+
+      const imgData = canvas.toDataURL('image/jpeg', 1.0);
+      const imgWidth = pdfWidth;
+      const imgHeight = (canvas.height * pdfWidth) / canvas.width;
+
+      let position = 0;
+      let heightLeft = imgHeight;
+
+      while (heightLeft > 0) {
+        pdf.addImage(imgData, 'JPEG', 0, position, imgWidth, imgHeight);
+        heightLeft -= pdfHeight;
+        position = -heightLeft;
+
+        if (heightLeft > 0) {
+          pdf.addPage();
+          currentPage++;
+        }
+      }
+
+      for (let i = 1; i <= currentPage; i++) {
+        pdf.setPage(i);
+        pdf.setFontSize(10);
+        pdf.text(`Page ${i} of ${currentPage}`, pdfWidth - 40, pdfHeight - 10);
+      }
+
       pdf.save(`RFQ-${this.requestDetails.projectName || 'Quotation'}.pdf`);
     });
   }

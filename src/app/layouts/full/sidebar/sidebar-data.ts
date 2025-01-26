@@ -29,22 +29,24 @@ export const navItems: NavItem[] = [
     route: '/shared/rfq-list',
     requiredRoles: ['bac'],
   },
-  {
-    displayName: 'Purchase Request',
-    iconName: 'solar:widget-add-line-duotone',
-    route: '/shared/purchase-req',
-  },
+  // {
+  //   displayName: 'Purchase Request',
+  //   iconName: 'solar:widget-add-line-duotone',
+  //   route: '/shared/purchase-req',
+  // },
 
   // End User Section
-  {
-    navCap: 'End User',
-    divider: true,
-    requiredRoles: ['end-user'],
-  },
+  
   {
     displayName: 'Requisition',
     iconName: 'solar:documents-broken',
     route: '/enduser/requisition',
+    requiredRoles: ['end-user'],
+  },
+  {
+    displayName: 'Canvassing',
+    iconName: 'solar:documents-broken',
+    route: '/enduser/canvassing',
     requiredRoles: ['end-user'],
   },
   {
@@ -228,29 +230,29 @@ export const navItems: NavItem[] = [
   },
 
   // BAC Section
-  {
-    navCap: 'BAC',
-    divider: true,
-    requiredRoles: ['bac'],
-  },
-  {
-    displayName: 'Validate Approved Request',
-    iconName: 'solar:checklist-minimalistic-line-duotone',
-    route: '/bac/validate-approved-request',
-    requiredRoles: ['bac'],
-  },
+  // {
+  //   navCap: 'BAC',
+  //   divider: true,
+  //   requiredRoles: ['bac'],
+  // },
+  // {
+  //   displayName: 'Validate Approved Request',
+  //   iconName: 'solar:checklist-minimalistic-line-duotone',
+  //   route: '/bac/validate-approved-request',
+  //   requiredRoles: ['bac'],
+  // },
    {
     displayName: 'Approved Purchase Request',
     iconName: 'solar:checklist-minimalistic-line-duotone',
     route: '/bac/approved-purchase-requests',
     requiredRoles: ['bac'],
   },
-  {
-    displayName: 'Prepare Purchase Orders',
-    iconName: 'solar:document-add-line-duotone',
-    route: '/bac/prepare-purchase-orders',
-    requiredRoles: ['bac'],
-  },
+  // {
+  //   displayName: 'Prepare Purchase Orders',
+  //   iconName: 'solar:document-add-line-duotone',
+  //   route: '/bac/prepare-purchase-orders',
+  //   requiredRoles: ['bac'],
+  // },
   //  {
   //   navCap: 'President',
   //   divider: true,
