@@ -24,9 +24,9 @@ export const userSchema = z
    fullname: z.string().min(1, "Full name is required"),
    username: z.string().min(1, "Username is required"),
    password: z.string().min(6, "Password must be at least 6 characters"),
-   role: z.enum(['superadmin', 'accounting', 'supply', 'bac', 'inspection', 'end-user']),
+   role: z.enum(['superadmin', 'accounting', 'supply', 'bac', 'inspection', 'end-user', 'president']),
    profile: z.string().min(1, "Profile is required"),
-   officeId: z.string().length(32, "Office ID must be exactly 32 characters"), // Keep only officeId
+   officeId: z.string().length(32, "Office ID must be exactly 32 characters"), 
    position: z.string().optional(),
    assignedAccountCodes: z.array(z.string()).optional(),
    assignedSubAccounts: z.array(z.string()).optional()
@@ -75,176 +75,7 @@ export class UserService {
   // ------------------------------------------------------------------
 
   
-// private users: User[] = [
-//   {
-//     id: this.generateId(),
-//     fullname: 'John Doe',
-//     username: 'accounting',
-//     password: 'test123',
-//     role: 'accounting',
-//     profile: 'profile-pic-url-1',
-//     position: undefined,
-//     officeId: '550e8400e29b41d4a716446655440010', // Dean's Office - COE
-//     assignedAccountCodes: [],
-//     assignedSubAccounts: []
-//   },
-//   {
-//     id: this.generateId(),
-//     fullname: 'Jane Smith',
-//     username: 'superadmin',
-//     password: 'test123',
-//     role: 'superadmin',
-//     profile: 'profile-pic-url-2',
-//     position: undefined,
-//     officeId: '550e8400e29b41d4a716446655440011', // Registrar's Office - CBA
-//     assignedAccountCodes: [],
-//     assignedSubAccounts: []
-//   },
-//   {
-//     id: this.generateId(),
-//     fullname: 'Alice Johnson',
-//     username: 'supply',
-//     password: 'test123',
-//     role: 'supply',
-//     profile: 'profile-pic-url-3',
-//     position: undefined,
-//     officeId: '550e8400e29b41d4a716446655440012', // Faculty Room - COED
-//     assignedAccountCodes: [],
-//     assignedSubAccounts: []
-//   },
-//   {
-//     id: this.generateId(),
-//     fullname: 'Bob Brown',
-//     username: 'bac',
-//     password: 'test123',
-//     role: 'bac',
-//     profile: 'profile-pic-url-4',
-//     position: undefined,
-//     officeId: '550e8400e29b41d4a716446655440013', // IT Lab - CIT
-//     assignedAccountCodes: [],
-//     assignedSubAccounts: []
-//   },
-//   {
-//     id: this.generateId(),
-//     fullname: 'Charlie White',
-//     username: 'inspection',
-//     password: 'test123',
-//     role: 'inspection',
-//     profile: 'profile-pic-url-5',
-//     position: undefined,
-//     officeId: '550e8400e29b41d4a716446655440014', // Dean's Office - COA
-//     assignedAccountCodes: [],
-//     assignedSubAccounts: []
-//   },
-//   {
-//     id: this.generateId(),
-//     fullname: 'Diana Green',
-//     username: 'enduser',
-//     password: 'test123',
-//     role: 'end-user',
-//     profile: 'profile-pic-url-6',
-//     position: 'Manager',
-//     officeId: '550e8400e29b41d4a716446655440015', // Simulation Lab - CON
-//     assignedAccountCodes: [],
-//     assignedSubAccounts: []
-//   },
-//   {
-//     id: this.generateId(),
-//     fullname: 'Dr. Maria Santos',
-//     username: 'mariasantos',
-//     password: 'test123',
-//     role: 'end-user',
-//     profile: 'profile-pic-url-7',
-//     position: 'Dean of Engineering',
-//     officeId: '550e8400e29b41d4a716446655440010', // Dean's Office - COE
-//     assignedAccountCodes: [],
-//     assignedSubAccounts: []
-//   },
-//   {
-//     id: this.generateId(),
-//     fullname: 'Dr. Juan Dela Cruz',
-//     username: 'juandelacruz',
-//     password: 'test123',
-//     role: 'end-user',
-//     profile: 'profile-pic-url-8',
-//     position: 'Dean of Business Administration',
-//     officeId: '550e8400e29b41d4a716446655440011', // Registrar's Office - CBA
-//     assignedAccountCodes: [],
-//     assignedSubAccounts: []
-//   },
-//   {
-//     id: this.generateId(),
-//     fullname: 'Dr. Ana Reyes',
-//     username: 'anareyes',
-//     password: 'test123',
-//     role: 'end-user',
-//     profile: 'profile-pic-url-9',
-//     position: 'Dean of Education',
-//     officeId: '550e8400e29b41d4a716446655440012', // Faculty Room - COED
-//     assignedAccountCodes: [],
-//     assignedSubAccounts: []
-//   },
-//   {
-//     id: this.generateId(),
-//     fullname: 'Dr. Michael Tan',
-//     username: 'michaeltan',
-//     password: 'test123',
-//     role: 'end-user',
-//     profile: 'profile-pic-url-10',
-//     position: 'Dean of Information Technology',
-//     officeId: '550e8400e29b41d4a716446655440013', // IT Lab - CIT
-//     assignedAccountCodes: [],
-//     assignedSubAccounts: []
-//   },
-//   {
-//     id: this.generateId(),
-//     fullname: 'Dr. Pedro Gomez',
-//     username: 'pedrogomez',
-//     password: 'test123',
-//     role: 'end-user',
-//     profile: 'profile-pic-url-11',
-//     position: 'Dean of Agriculture',
-//     officeId: '550e8400e29b41d4a716446655440014', // Dean's Office - COA
-//     assignedAccountCodes: [],
-//     assignedSubAccounts: []
-//   },
-//   {
-//     id: this.generateId(),
-//     fullname: 'Dr. Sofia Ramirez',
-//     username: 'sofiaramirez',
-//     password: 'test123',
-//     role: 'end-user',
-//     profile: 'profile-pic-url-12',
-//     position: 'Dean of Nursing',
-//     officeId: '550e8400e29b41d4a716446655440015', // Simulation Lab - CON
-//     assignedAccountCodes: [],
-//     assignedSubAccounts: []
-//   },
-//   {
-//     id: this.generateId(),
-//     fullname: 'Dr. Carlos Mendoza',
-//     username: 'carlosmendoza',
-//     password: 'test123',
-//     role: 'end-user',
-//     profile: 'profile-pic-url-13',
-//     position: 'Dean of Arts and Sciences',
-//     officeId: '550e8400e29b41d4a716446655440016', // Research Office - CAS
-//     assignedAccountCodes: [],
-//     assignedSubAccounts: []
-//   },
-//   {
-//     id: this.generateId(),
-//     fullname: 'Dr. Roberto Lim',
-//     username: 'robertolim',
-//     password: 'test123',
-//     role: 'end-user',
-//     profile: 'profile-pic-url-14',
-//     position: 'Dean of Criminal Justice Education',
-//     officeId: '550e8400e29b41d4a716446655440017', // Mock Courtroom - CCJE
-//     assignedAccountCodes: [],
-//     assignedSubAccounts: []
-//   }
-  // ];
+
   
  private users: User[] = [
   {
@@ -266,11 +97,12 @@ export class UserService {
     password: 'test123',
     role: 'superadmin',
     profile: 'profile-pic-url-2',
-    position: 'College President',
+    position: '',
     officeId: '550e8400e29b41d4a716446655440011', // Registrar's Office - CBA
     assignedAccountCodes: [],
     assignedSubAccounts: []
-  },
+   },
+   
   {
     id: '3',
     fullname: 'Alice Johnson',
@@ -414,7 +246,19 @@ export class UserService {
     officeId: '550e8400e29b41d4a716446655440017', // Mock Courtroom - CCJE
     assignedAccountCodes: [],
     assignedSubAccounts: []
-  }
+  },
+  {
+    id: '15',
+    fullname: 'Dr. Kenneth James Belga',
+    username: 'president',
+    password: 'test123',
+    role: 'president',
+    profile: 'profile-pic-url-2',
+    position: 'College President',
+    officeId: '550e8400e29b41d4a716446655440011', // Registrar's Office - CBA
+    assignedAccountCodes: [],
+    assignedSubAccounts: []
+  },
 ];
 
 

@@ -236,6 +236,17 @@ export const navItems: NavItem[] = [
     route: '/bac/prepare-purchase-orders',
     requiredRoles: ['bac', 'superadmin'],
   },
+  //  {
+  //   navCap: 'President',
+  //   divider: true,
+  //   requiredRoles: ['president'],
+  // },
+  //   {
+  //   displayName: 'Approvals',
+  //   iconName: 'solar:widget-add-line-duotone',
+  //   route: '/shared/approvals',
+  // },
+ 
 ];
 
   // UI Components Section (No specific roles required)
