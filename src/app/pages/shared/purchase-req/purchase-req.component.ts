@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, Input, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ButtonModule } from 'primeng/button';
 import { FormsModule } from '@angular/forms';
@@ -15,8 +15,8 @@ import { UserService } from 'src/app/services/user.service';
   templateUrl: './purchase-req.component.html',
   styleUrls: ['./purchase-req.component.scss']
 })
-export class PurchaseReqComponent {
-  requisitionId: string = '076396';
+export class PurchaseReqComponent implements OnInit {
+  @Input() requisitionId: string = '';
   requisition: Requisition | undefined;
   approvers: { accounting: string, inspection: string, president: string } = {
     accounting: '',
@@ -29,6 +29,12 @@ export class PurchaseReqComponent {
     private approvalSequenceService: ApprovalSequenceService,
     private userService: UserService
   ) {}
+
+  ngOnInit(): void {
+    if (this.requisitionId) {
+      this.loadRequisition();
+    }
+  }
 
   async loadRequisition() {
     if (!this.requisitionId) {

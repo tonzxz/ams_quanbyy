@@ -170,17 +170,14 @@ export class RequisitionComponent implements OnInit {
 //    }
   //  }
   
-  async loadRequisitions(): Promise<void> {
+async loadRequisitions(): Promise<void> {
   try {
     this.loading = true;
     const allRequisitions = await this.requisitionService.getAllRequisitions();
 
-    // Debugging: Log all requisitions
-    console.log('All Requisitions:', allRequisitions);
-
     // Filter requisitions based on their approval level and status
-    this.pendingRequisitions = allRequisitions.filter(req => req.currentApprovalLevel === 1 && req.status === 'Pending');
-    this.approvedRequisitions = allRequisitions.filter(req => req.currentApprovalLevel === 2 && req.status === 'Pending');
+    this.pendingRequisitions = allRequisitions.filter(req => req.currentApprovalLevel === 1);
+    this.approvedRequisitions = allRequisitions.filter(req => req.currentApprovalLevel >= 2);
 
     // Debugging: Log filtered requests
     console.log('Pending Requisitions:', this.pendingRequisitions);
@@ -191,11 +188,8 @@ export class RequisitionComponent implements OnInit {
     this.loading = false;
   }
 }
-
- private filterRequisitions(): void {
-   this.pendingRequisitions = this.requisitions.filter(req => req.status === 'Pending');
-   this.approvedRequisitions = this.requisitions.filter(req => req.status === 'Approved');
- }
+  
+  
 
  onGroupsSelectionChange(newSelectedGroups: string[]): void {
    this.selectedGroups = newSelectedGroups;
@@ -629,7 +623,6 @@ async finalizeRequisitionSave(): Promise<void> {
 
     const allSequences = await this.requisitionService.getAllApprovalSequences();
      if(allSequences[0]){
-      alert(allSequences[0].roleCode);
       const nextUserRole = allSequences[0]?.roleCode;
           const users = await firstValueFrom (this.userService.getAllUsers());
           for(let user of users){

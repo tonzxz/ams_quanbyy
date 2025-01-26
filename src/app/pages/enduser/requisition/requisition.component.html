@@ -168,37 +168,29 @@
     </p-tabPanel>
 
    <!-- Pending Requisitions Tab -->
+<!-- Pending Requisitions Tab -->
 <p-tabPanel header="Pending Requisitions">
-  <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
-    <div
-      *ngFor="let req of pendingRequisitions"
-      class="bg-white rounded-lg border border-gray-200 shadow-sm hover:shadow-md transition-all duration-200"
-    >
-      <div class="p-6">
-        <div class="flex items-start justify-between mb-4">
-          <div>
-            <h3 class="text-lg font-semibold text-gray-900">{{ req.title }}</h3>
-            <p class="text-sm text-gray-500 mt-1">{{ req.description }}</p>
-          </div>
+  <p-table [value]="pendingRequisitions" [rows]="10" [paginator]="true" [rowsPerPageOptions]="[5, 10, 20]">
+    <ng-template pTemplate="header">
+      <tr>
+        <th>Title</th>
+        <th>Description</th>
+        <th>Level</th>
+        <th>Status</th>
+        <th>Actions</th>
+      </tr>
+    </ng-template>
+    <ng-template pTemplate="body" let-req>
+      <tr>
+        <td>{{ req.title }}</td>
+        <td>{{ req.description }}</td>
+        <td>{{ req.currentApprovalLevel }}</td>
+        <td>
           <span class="px-3 py-1 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800">
-            For Approval
+            {{ req.status }}
           </span>
-        </div>
-
-        <div class="mb-4">
-          <h4 class="text-sm font-medium text-gray-700 mb-2">Requested Products</h4>
-          <ul class="space-y-2">
-            <li
-              *ngFor="let product of req.products"
-              class="text-sm text-gray-600 flex items-center justify-between"
-            >
-              <span>{{ getProductName(product.id) }}</span>
-              <span class="text-gray-500">x{{ req.productQuantities?.[product.id] || 1 }}</span>
-            </li>
-          </ul>
-        </div>
-
-        <div class="flex justify-between items-center mt-4">
+        </td>
+        <td>
           <p-button
             *ngIf="req.ppmpAttachment"
             label="View PPMP"
@@ -207,7 +199,6 @@
             [outlined]="true"
             size="small"
           ></p-button>
-          
           <p-button
             icon="pi pi-trash"
             (onClick)="deleteRequisition(req)"
@@ -215,48 +206,43 @@
             [outlined]="true"
             size="small"
             label="Delete"
+            class="ml-2"
           ></p-button>
-        </div>
-      </div>
-    </div>
-  </div>
+        </td>
+      </tr>
+    </ng-template>
+  </p-table>
 </p-tabPanel>
 
-
-    <!-- Approved Requisitions Tab -->
- <!-- Approved Requisitions Tab -->
+ 
 <p-tabPanel header="Approved Requisitions">
-  <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
-    <div
-      *ngFor="let req of approvedRequisitions"
-      class="bg-white rounded-lg border border-gray-200 shadow-sm hover:shadow-md transition-all duration-200"
-    >
-      <div class="p-6">
-        <div class="flex items-start justify-between mb-4">
-          <div>
-            <h3 class="text-lg font-semibold text-gray-900">{{ req.title }}</h3>
-            <p class="text-sm text-gray-500 mt-1">{{ req.description }}</p>
-          </div>
+  <p-table [value]="approvedRequisitions" [rows]="10" [paginator]="true" [rowsPerPageOptions]="[5, 10, 20]">
+    <ng-template pTemplate="header">
+      <tr>
+        <th>Code</th>
+        <th>Title</th>
+        <th>Description</th>
+        <th>Level</th>
+        <th>Status</th>
+        <th>Date Created</th>
+        <th>Department</th>
+        <th>Attachments</th>
+      </tr>
+    </ng-template>
+    <ng-template pTemplate="body" let-req>
+      <tr>
+        <td>{{ req.id }}</td>
+        <td>{{ req.title }}</td>
+        <td>{{ req.description }}</td>
+        <td>Level {{ req.currentApprovalLevel }}</td>
+        <td>
           <span class="px-3 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800">
             {{ req.status }}
           </span>
-        </div>
-
-        <div>
-          <h4 class="text-sm font-medium text-gray-700 mb-2">Approved Products</h4>
-          <ul class="space-y-2">
-            <li
-              *ngFor="let product of req.products"
-              class="text-sm text-gray-600 flex items-center justify-between"
-            >
-              <span>{{ getProductName(product.id) }}</span>
-              <span class="text-gray-500">x{{ req.productQuantities?.[product.id] || 1 }}</span>
-            </li>
-          </ul>
-        </div>
-
-        <!-- Add buttons to view PPMP and Purchase Order -->
-        <div class="flex justify-between items-center mt-4">
+        </td>
+        <td>{{ req.dateCreated | date: 'short' }}</td>
+        <td>{{ req.approvalSequenceDetails?.departmentName || 'N/A' }}</td>
+        <td>
           <p-button
             *ngIf="req.ppmpAttachment"
             label="View PPMP"
@@ -265,7 +251,6 @@
             [outlined]="true"
             size="small"
           ></p-button>
-          
           <p-button
             *ngIf="req.purchaseRequestAttachment"
             label="View Purchase Request"
@@ -273,12 +258,15 @@
             (onClick)="viewPurchaseRequest(req)"
             [outlined]="true"
             size="small"
+            class="ml-2"
           ></p-button>
-        </div>
-      </div>
-    </div>
-  </div>
+        </td>
+      </tr>
+    </ng-template>
+  </p-table>
 </p-tabPanel>
+
+
 
 
   </p-tabView>
@@ -321,7 +309,6 @@
 
 
 
-<!-- Dialog for Purchase Request -->
 <p-dialog
   header="View Purchase Request"
   [(visible)]="displayPurchaseRequestPreview"
@@ -370,7 +357,7 @@
   header="View PPMP"
   [(visible)]="displayPpmpPreview"
   [modal]="true"
-  [style]="{width: '90vw', maxWidth: '800px'}"
+  [style]="{ width: '90vw', maxWidth: '800px' }"
   [resizable]="false"
 >
   <div class="mb-4">

@@ -10,11 +10,12 @@ import { TimelineModule } from 'primeng/timeline';
 import { CardModule } from 'primeng/card';
 import { DomSanitizer, SafeResourceUrl } from '@angular/platform-browser';
 import { MatCardModule } from '@angular/material/card';
+import { PurchaseReqComponent } from '../../shared/purchase-req/purchase-req.component';
 
 @Component({
   selector: 'app-approved-purchase-requests',
   standalone: true,
-  imports: [CommonModule, TableModule, ButtonModule, DialogModule, ProgressSpinnerModule, TimelineModule, CardModule, MatCardModule],
+  imports: [CommonModule, TableModule, ButtonModule, DialogModule, ProgressSpinnerModule, TimelineModule, CardModule, MatCardModule, PurchaseReqComponent],
   templateUrl: './approved-purchase-requests.component.html',
   styleUrls: ['./approved-purchase-requests.component.scss']
 })
@@ -67,4 +68,13 @@ export class ApprovedPurchaseRequestsComponent implements OnInit {
     this.selectedAttachmentUrl = this.sanitizer.bypassSecurityTrustResourceUrl(attachmentUrl);
     this.displayAttachmentModal = true;
   }
+
+  displayPurchaseRequestModal: boolean = false;
+selectedRequisitionId: string | null = null;
+
+viewPurchaseRequest(requisitionId: string): void {
+  this.selectedRequisitionId = requisitionId;
+  this.displayPurchaseRequestModal = true;
+}
+
 }
