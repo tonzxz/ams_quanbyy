@@ -1,28 +1,35 @@
 import { Component, OnInit } from '@angular/core';
-import { RequisitionService, Requisition } from 'src/app/services/requisition.service'; // Adjust the import path as needed
-import { Router } from '@angular/router'; // Import Router for navigation
-import { CommonModule } from '@angular/common'; // Import CommonModule for ngClass and date pipe
-import { TableModule } from 'primeng/table'; // Import PrimeNG TableModule
-import { ButtonModule } from 'primeng/button'; // Import PrimeNG ButtonModule
-import { DialogModule } from 'primeng/dialog'; // Import PrimeNG DialogModule for modal
-import { ProgressSpinner, ProgressSpinnerModule } from 'primeng/progressspinner';
+import { RequisitionService, Requisition } from 'src/app/services/requisition.service';
+import { Router } from '@angular/router';
+import { CommonModule } from '@angular/common';
+import { TableModule } from 'primeng/table';
+import { ButtonModule } from 'primeng/button';
+import { DialogModule } from 'primeng/dialog';
+import { ProgressSpinnerModule } from 'primeng/progressspinner';
+import { TimelineModule } from 'primeng/timeline';
+import { CardModule } from 'primeng/card';
+import { DomSanitizer, SafeResourceUrl } from '@angular/platform-browser';
+import { MatCardModule } from '@angular/material/card';
 
 @Component({
   selector: 'app-approved-purchase-requests',
-  standalone: true, // Mark the component as standalone
-  imports: [CommonModule, TableModule, ButtonModule, DialogModule, ProgressSpinnerModule], // Import required modules
+  standalone: true,
+  imports: [CommonModule, TableModule, ButtonModule, DialogModule, ProgressSpinnerModule, TimelineModule, CardModule, MatCardModule],
   templateUrl: './approved-purchase-requests.component.html',
   styleUrls: ['./approved-purchase-requests.component.scss']
 })
 export class ApprovedPurchaseRequestsComponent implements OnInit {
   requisitions: Requisition[] = []; // Array to store requisitions
   loading: boolean = true; // Loading state
-  displayModal: boolean = false; // Modal visibility state
+  displayModal: boolean = false; // Modal visibility state for attachments and history
+  displayAttachmentModal: boolean = false; // Modal visibility state for attachment preview
   selectedRequisition: Requisition | null = null; // Selected requisition for modal
+  selectedAttachmentUrl: SafeResourceUrl | null = null; // URL of the selected attachment
 
   constructor(
     private requisitionService: RequisitionService,
-    private router: Router // Inject Router for navigation
+    private router: Router,
+    private sanitizer: DomSanitizer // For sanitizing URLs
   ) {}
 
   ngOnInit(): void {
@@ -32,10 +39,7 @@ export class ApprovedPurchaseRequestsComponent implements OnInit {
   // Fetch requisitions with currentApprovalLevel = 4
   async loadRequisitions(): Promise<void> {
     try {
-      // Fetch all requisitions from the service
       const allRequisitions = await this.requisitionService.getAllRequisitions();
-      
-      // Filter requisitions where currentApprovalLevel is 4
       this.requisitions = allRequisitions.filter(req => req.currentApprovalLevel === 4);
     } catch (error) {
       console.error('Failed to load requisitions:', error);
@@ -44,14 +48,18 @@ export class ApprovedPurchaseRequestsComponent implements OnInit {
     }
   }
 
-  // Navigate to the details page for a specific requisition
-  viewDetails(requisitionId: string): void {
-    this.router.navigate(['/requisition-details', requisitionId]);
+  // Show modal with attachments and approval history for a specific requisition
+  showAttachments(requisition: Requisition): void {
+    this.selectedRequisition = {
+      ...requisition,
+      approvalHistory: requisition.approvalHistory || [] // Ensure approvalHistory is always an array
+    };
+    this.displayModal = true;
   }
 
-  // Show modal with attachments for a specific requisition
-  showAttachments(requisition: Requisition): void {
-    this.selectedRequisition = requisition;
-    this.displayModal = true;
+  // Open the attachment preview modal
+  viewAttachment(attachmentUrl: string): void {
+    this.selectedAttachmentUrl = this.sanitizer.bypassSecurityTrustResourceUrl(attachmentUrl);
+    this.displayAttachmentModal = true;
   }
 }
