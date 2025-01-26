@@ -56,12 +56,12 @@
     }
   </button>
 
-  <mat-menu #notification="matMenu" class="topbar-dd cardWithShadow">
-    <mat-card>
+  <mat-menu #notification="matMenu" class="topbar-dd cardWithShadow !pb-0 !mb-0">
+    <mat-card class="!pb-0 !mb-0">
       <div class="px-6 py-2 flex items-end text-lg">
         Notifications
       </div>
-      @if(notifications.length <=0){
+      @if(notifications.length <= 0){
         <div class=" rounded-lg mx-2 my-2 px-4 py-2">
           <div class="flex items-center gap-4">
             <i class="pi pi-inbox text-2xl ml-2"></i>
