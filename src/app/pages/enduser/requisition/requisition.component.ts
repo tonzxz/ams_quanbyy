@@ -634,7 +634,6 @@ async finalizeRequisitionSave(): Promise<void> {
           const users = await firstValueFrom (this.userService.getAllUsers());
           for(let user of users){
             if(user.role == 'superadmin' || nextUserRole == user.role  ){
-              alert(user.role);
               this.notifService.addNotification(
               `Requisiton No. ${id} has been created and now under ${allSequences[0].name}.`,
               'info',
