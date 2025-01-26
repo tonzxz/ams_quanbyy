@@ -334,7 +334,7 @@ import { firstValueFrom } from 'rxjs';
  * Zod schema for an Extended Requisition.
  */
 export const requisitionSchema = z.object({
-  id: z.string().length(32, "ID must be exactly 32 characters").optional(),
+  id: z.string().length(6, "ID must be exactly 6 characters").optional(),
   title: z.string().min(1, "Title is required"),
   description: z.string().max(500).optional(),
   status: z.string(),
@@ -416,10 +416,18 @@ export class RequisitionService {
 
   // Generate a random 32-character hex ID
   private generate32CharId(): string {
-    return Array.from({ length: 32 }, () =>
+    return Array.from({ length: 4 }, () =>
       Math.floor(Math.random() * 16).toString(16)
     ).join('');
   }
+
+
+  private generate6DigitId(): string {
+  return Array.from({ length: 6 }, () => 
+    Math.floor(Math.random() * 10).toString()
+  ).join('');
+  }
+  
 
   // Load some dummy data (optional)
 private loadDummyData(): void {
@@ -602,7 +610,7 @@ private loadDummyData(): void {
     const currentUser = this.userService.getUser(); // Get the current logged-in user
     const newRequisition: Requisition = {
       ...data,
-      id: this.generate32CharId(),
+      id: this.generate6DigitId(),
       createdByUserId: currentUser?.id || 'Unknown',
       createdByUserName: currentUser?.fullname || 'Unknown',
       currentApprovalLevel: 1, // Default to level 1
