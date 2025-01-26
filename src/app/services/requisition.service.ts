@@ -426,7 +426,7 @@ private loadDummyData(): void {
   const dummy: Requisition[] = [
     // Level 1: Budget Unit Review (Procurement Flow)
     {
-      id: '12345678901234567890123456789012',
+      id: '1111',
       title: 'Office Supplies Request',
       description: 'Request for stationery items.',
       status: 'Pending',
@@ -453,7 +453,7 @@ private loadDummyData(): void {
     },
     // Level 2: Technical Specification Review (Procurement Flow)
     {
-      id: '23456789012345678901234567890123',
+      id: '2222',
       title: 'Electronics Request',
       description: 'Request for new laptops.',
       status: 'Pending',
@@ -481,7 +481,7 @@ private loadDummyData(): void {
     },
     // Level 3: College President Approval (Procurement Flow)
     {
-      id: '34567890123456789012345678901234',
+      id: '3333',
       title: 'Furniture Request',
       description: 'Request for office chairs and desks.',
       status: 'Pending',
@@ -511,7 +511,7 @@ private loadDummyData(): void {
     },
     // Level 4: BAC Final Review (Procurement Flow)
     {
-      id: '45678901234567890123456789012345',
+      id: '4444',
       title: 'Software License Request',
       description: 'Request for software licenses for the IT department.',
       status: 'Pending',
@@ -541,7 +541,7 @@ private loadDummyData(): void {
     },
     // Level 5: Delivery Inspection (Supply Management Flow)
     {
-      id: '56789012345678901234567890123456',
+      id: '5555',
       title: 'Projector Request',
       description: 'Request for projectors for the conference room.',
       status: 'Pending',

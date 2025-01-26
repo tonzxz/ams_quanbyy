@@ -157,19 +157,19 @@ export class ReceiptApprovalComponent implements OnInit {
       },
       accept: async () => {
           
-          const req = await this.requisitionService.getRequisitionById(receipt.purchase_order!);
-          const allSequences = await this.requisitionService.getAllApprovalSequences();
+          // const req = await this.requisitionService.getRequisitionById(receipt.purchase_order!);
+          // const allSequences = await this.requisitionService.getAllApprovalSequences();
     
-          const currentSequenceIndex = allSequences.findIndex(seq=>seq.id==req?.approvalSequenceId)
-          if(currentSequenceIndex + 1 < allSequences.length){
-            req!.approvalSequenceId = allSequences[currentSequenceIndex + 1].id;
-            req!.currentApprovalLevel = allSequences[currentSequenceIndex + 1].level;
-          }else{
-            req!.approvalSequenceId = undefined;
-            req!.currentApprovalLevel = 0;
-            req!.approvalStatus = 'Approved'; 
-          }
-          await this.requisitionService.updateRequisition(req!);
+          // const currentSequenceIndex = allSequences.findIndex(seq=>seq.id==req?.approvalSequenceId)
+          // if(currentSequenceIndex + 1 < allSequences.length){
+          //   req!.approvalSequenceId = allSequences[currentSequenceIndex + 1].id;
+          //   req!.currentApprovalLevel = allSequences[currentSequenceIndex + 1].level;
+          // }else{
+          //   req!.approvalSequenceId = undefined;
+          //   req!.currentApprovalLevel = 0;
+          //   req!.approvalStatus = 'Approved'; 
+          // }
+          // await this.requisitionService.updateRequisition(req!);
           
           await this.deliveryService.moveToVerified(receipt.id!)
           this.messageService.add({ severity: 'success', summary: 'Success', detail: `Successfully submitted receipt to verified receipts.` });
