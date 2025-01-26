@@ -94,7 +94,7 @@ export class ApprovalSequenceService {
           level: 3,
           departmentCode: 'ADMIN',
           departmentName: 'Administration',
-          roleCode: 'superadmin',
+          roleCode: 'president',
           roleName: 'College President',
           userId: '15',
           userFullName: 'Dr. Kenneth James Belga',
