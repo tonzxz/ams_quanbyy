@@ -165,6 +165,24 @@
       </p-select>
     </div>
 
+     <div class="flex items-center gap-4 mb-2">
+      <label for="purchase_order" class="font-semibold w-32">Purchase Order</label>
+      <p-select [options]="requisitions" formControlName="purchase_order" optionLabel="id" [filter]="true"
+        filterBy="id" [showClear]="true" placeholder="Select purchase order" class="flex-auto">
+        <ng-template #selectedItem let-selectedOption>
+          <div class="flex items-center gap-2">
+            <div>{{ selectedOption.id }}</div>
+          </div>
+        </ng-template>
+        <ng-template let-req #item>
+          <div class="flex items-center gap-2">
+            <div>{{ req.id }}</div>
+          </div>
+        </ng-template>
+      </p-select>
+    </div>
+
+
     <div class="flex items-center gap-4 mb-2">
       <label for="total_amount" class="font-semibold w-32">Total Amount</label>
       <p-inputnumber placeholder="Enter total amount" size="small" class="flex-1" formControlName="total_amount" inputId="currency-us" mode="currency"

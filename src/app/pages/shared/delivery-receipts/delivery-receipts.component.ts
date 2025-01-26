@@ -26,6 +26,8 @@ import { InputIconModule } from 'primeng/inputicon';
 import { Supplier, SuppliersService } from 'src/app/services/suppliers.service';
 import { SelectModule } from 'primeng/select';
 import { Department, DepartmentService } from 'src/app/services/departments.service';
+import { Requisition, RequisitionService } from 'src/app/services/requisition.service';
+import { UserService } from 'src/app/services/user.service';
 @Component({
   selector: 'app-delivery-receipts',
   standalone: true,
@@ -46,6 +48,7 @@ export class DeliveryReceiptsComponent implements OnInit {
   filteredReceipts:DeliveryReceipt[]=[];
   suppliers:Supplier[];
   departments:Department[];
+  requisitions: Requisition[];
   searchValue:string='';
 
   showReceiptModal:boolean = false;
@@ -55,6 +58,7 @@ export class DeliveryReceiptsComponent implements OnInit {
     receipt_number:  new FormControl('',[ Validators.required]),
     supplier:  new FormControl<Supplier|null>(null,[Validators.required]),
     department:  new FormControl<Department|null>(null,[Validators.required]),
+    purchase_order: new FormControl<Requisition|null>(null,[Validators.required]),
     total_amount:  new FormControl<number|null>( null,[Validators.required, Validators.min(0.001)]),
     notes:  new FormControl(''),
     files:  new FormControl<any>(null,[ Validators.required]), // You can later manage file upload logic in the component
@@ -62,6 +66,8 @@ export class DeliveryReceiptsComponent implements OnInit {
 
   constructor(
     private router:Router,
+    private userService:UserService,
+    private requisitionService:RequisitionService,
     private confirmationService:ConfirmationService,
     private messageService:MessageService,
     private departmentService:DepartmentService,
@@ -133,6 +139,7 @@ export class DeliveryReceiptsComponent implements OnInit {
       department_name: dr.department!.name!,
       delivery_date: new Date(dr.delivery_date!),
       total_amount: dr.total_amount!,
+      purchase_order: dr.purchase_order?.id,
       notes:dr.notes ?? '',
       status:'unverified',
       stocked:false,
@@ -162,6 +169,7 @@ export class DeliveryReceiptsComponent implements OnInit {
       department_name: dr.department!.name!,
       delivery_date: new Date(dr.delivery_date!),
       total_amount: dr.total_amount!,
+      purchase_order: dr.purchase_order?.id,
       notes:dr.notes ?? '',
       status:'unverified',
       stocked:false
@@ -267,6 +275,26 @@ export class DeliveryReceiptsComponent implements OnInit {
     this.receipts = await this.deliveryService.getAll();
     this.suppliers = await this.supplierService.getAll();
     this.departments = await this.departmentService.getAllDepartments();
+    const allRequisitions = await this.requisitionService.getAllRequisitions();
+    const allSequences = await this.requisitionService.getAllApprovalSequences();
+
+    this.requisitions = allRequisitions
+      .map((req) => {
+        // const typeSequences = allSequences.filter(
+        //   (seq) => seq.type === (req.currentApprovalLevel <= 4 ? 'procurement' : 'supply')
+        // );
+
+        const currentSequence = allSequences.find(
+          (seq) => seq.id === req.approvalSequenceId
+        );
+
+        return {
+          ...req,
+          approvalSequenceDetails: currentSequence
+,
+        };
+      })
+      .filter((req) => req.approvalSequenceDetails && (req.approvalSequenceDetails?.roleCode === 'supply' || req.approvalSequenceDetails?.roleCode === 'inspection'));
     this.filterByStatus('unverified');
   }
 }

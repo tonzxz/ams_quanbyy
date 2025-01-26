@@ -18,6 +18,7 @@ export const deliveryReceiptSchema = z.object({
   total_amount: z.number().min(0, "Total amount must be a positive number"), // Total amount of the delivery receipt
   notes: z.string().max(500, "Notes cannot exceed 500 characters").optional(), // Optional notes for the receipt
   status: z.enum(['unverified','processing','verified']),
+  purchase_order: z.string().optional(),
   stocked: z.boolean(),
   receipts: z.array(z.string()),
 });

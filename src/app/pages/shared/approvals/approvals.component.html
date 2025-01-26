@@ -37,6 +37,7 @@
     >
       <ng-template pTemplate="header">
         <tr>
+          <th pSortableColumn="id">Code <p-sortIcon field="id"></p-sortIcon></th>
           <th pSortableColumn="title">Title <p-sortIcon field="title"></p-sortIcon></th>
           <th pSortableColumn="description">Description <p-sortIcon field="description"></p-sortIcon></th>
           <th pSortableColumn="approvalSequenceDetails.level">Level <p-sortIcon field="approvalSequenceDetails.level"></p-sortIcon></th>
@@ -52,6 +53,7 @@
 
       <ng-template pTemplate="body" let-req>
         <tr>
+          <td>{{ req.id }}</td>
           <td>{{ req.title }}</td>
           <td>{{ req.description }}</td>
           <td>Level {{ req.approvalSequenceDetails?.level }}</td>
