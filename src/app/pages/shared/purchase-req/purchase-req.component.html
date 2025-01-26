@@ -1,1 +1,101 @@
-<p-button label="Export to PDF" (onClick)="exportPdf()" class="mt-4"></p-button>
+<div class="p-10 bg-white shadow-md rounded-lg">
+  <!-- Input field for requisitionId -->
+  <div class="mb-4">
+    <label for="requisitionId" class="block text-lg font-medium text-gray-700">Enter Requisition ID:</label>
+    <input
+      id="requisitionId"
+      type="text"
+      [(ngModel)]="requisitionId"
+      class="mt-1 block w-full p-2 border border-gray-300 rounded-md"
+      placeholder="Enter PR ID"
+    />
+    <button
+      (click)="loadRequisition()"
+      class="mt-2 px-4 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600"
+    >
+      Load PR
+    </button>
+  </div>
+
+  <!-- PR Preview Section -->
+  <div *ngIf="requisition" class="preview-section">
+    <h1 class="text-2xl font-bold mb-4 flex justify-center">Purchase Request</h1>
+    
+    <div class="mb-4 text-xl">
+      <div class="flex flex-row justify-between">
+        <p><strong>PR No.:</strong> {{ requisition.id }}</p>
+        <p><strong>Date:</strong> {{ requisition.dateCreated | date: 'longDate' }}</p>
+      </div>
+      <p><strong>Agency:</strong> PHILIPPINE INSTITUTE OF VOLCANOLOGY AND SEISMOLOGY</p>
+      <div class="flex flex-row gap-20">
+        <p><strong>Division:</strong> SOEPD</p>
+        <p><strong>Section:</strong> SMEE</p>
+      </div>
+    </div>
+  
+    <table class="w-full border-collapse border border-gray-300 text-xl">
+      <thead>
+        <tr class="bg-gray-200">
+          <th class="border border-gray-300 p-4">Qty</th>
+          <th class="border border-gray-300 p-4">Unit</th>
+          <th class="border border-gray-300 p-4">Item Description</th>
+          <th class="border border-gray-300 p-4">Stock No</th>
+          <th class="border border-gray-300 p-4">Estimated Unit Cost</th>
+          <th class="border border-gray-300 p-4">Estimated Total Cost</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let product of requisition?.products">
+          <td class="border border-gray-300 p-4">{{ product.quantity }}</td>
+          <td class="border border-gray-300 p-4">Unit(s)</td>
+          <td class="border border-gray-300 p-4">
+            {{ product.name }}<br>
+            Specifications:<br>
+            {{ product.specifications }}
+          </td>
+          <td class="border border-gray-300 p-4">-</td>
+          <td class="border border-gray-300 p-4">{{ product.price | currency }}</td>
+          <td class="border border-gray-300 p-4">{{ product.quantity * product.price | currency }}</td>
+        </tr>
+      </tbody>
+    </table>
+  
+    <div class="mt-4 text-xl">
+      <p><strong>Purpose:</strong> {{ requisition.description }}</p>
+    </div>
+  
+    <div class="mt-4 text-xl">
+      <p><strong>{{ requisition.createdByUserName }}</strong><br> End-User </p>
+    </div>
+
+    <!-- Approvers Section -->
+    <div class="mt-4 text-xl">
+  <div class="mb-8 relative" *ngIf="approvers.accounting">
+        <img *ngIf="getSignature('accounting')" [src]="getSignature('accounting')" alt="Signature" class="absolute -top-10 -left-10 h-20 w-64 ">
+
+    <p class="font-bold">{{ approvers.accounting }}</p>
+    <p>Budget Officer</p>
+  </div>
+  <div class="mb-8 relative" *ngIf="approvers.inspection">
+        <img *ngIf="getSignature('inspection')" [src]="getSignature('inspection')" alt="Signature" class="absolute -top-10 -left-10 h-20 w-64 ">
+
+    <p class="font-bold">{{ approvers.inspection }}</p>
+    <p>Inspection Officer</p>
+  </div>
+  <div class="mb-8 relative" *ngIf="approvers.president">
+        <img *ngIf="getSignature('president')" [src]="getSignature('president')" alt="Signature" class="absolute -top-10 -left-10 h-20 w-64 ">
+
+    <p class="font-bold">{{ approvers.president }}</p>
+    <p>College President</p>
+  </div>
+</div>
+  </div>
+
+  <!-- Export to PDF Button -->
+  <p-button
+    *ngIf="requisition"
+    label="Export to PDF"
+    (onClick)="exportPdf()"
+    class="mt-4"
+  ></p-button>
+</div>

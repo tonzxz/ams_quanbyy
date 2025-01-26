@@ -24,11 +24,11 @@ export const navItems: NavItem[] = [
     requiredRoles: ['bac'],
 
   },
-  // {
-  //   displayName: 'Purchase Request',
-  //   iconName: 'solar:widget-add-line-duotone',
-  //   route: '/shared/purchase-req',
-  // },
+  {
+    displayName: 'Purchase Request',
+    iconName: 'solar:widget-add-line-duotone',
+    route: '/shared/purchase-req',
+  },
 
   // End User Section
   {

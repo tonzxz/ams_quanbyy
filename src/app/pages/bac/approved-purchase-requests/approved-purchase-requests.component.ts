@@ -48,15 +48,20 @@ export class ApprovedPurchaseRequestsComponent implements OnInit {
     }
   }
 
-  // Show modal with attachments and approval history for a specific requisition
+ 
   showAttachments(requisition: Requisition): void {
-    this.selectedRequisition = {
-      ...requisition,
-      approvalHistory: requisition.approvalHistory || [] // Ensure approvalHistory is always an array
-    };
-    this.displayModal = true;
-  }
+  this.selectedRequisition = {
+    ...requisition,
+    approvalHistory: requisition.approvalHistory?.map(history => ({
+      ...history,
+      approversName: history.approversName || 'Unknown', // Default name if not provided
+      signature: history.signature || undefined // Set undefined if signature is null
+    })) || [] // Ensure approvalHistory is always an array
+  };
+  this.displayModal = true;
+}
 
+  
   // Open the attachment preview modal
   viewAttachment(attachmentUrl: string): void {
     this.selectedAttachmentUrl = this.sanitizer.bypassSecurityTrustResourceUrl(attachmentUrl);

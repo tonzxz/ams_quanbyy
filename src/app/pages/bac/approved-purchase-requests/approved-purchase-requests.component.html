@@ -113,16 +113,20 @@
 
     <div>
       <h4 class="font-semibold mb-2">Approval History</h4>
-      <p-timeline [value]="selectedRequisition.approvalHistory" align="alternate">
-        <ng-template pTemplate="content" let-history>
-          <p-card>
-            <p>{{ history.status }}</p>
-            <p class="text-sm text-gray-500">{{ history.timestamp | date: 'M/d/yy, h:mm a' }}</p>
-            <p class="text-sm text-gray-700">{{ history.comments || 'No comments' }}</p>
-            <p class="text-xs text-gray-500">By {{ history.user }}</p>
-          </p-card>
-        </ng-template>
-      </p-timeline>
+     <p-timeline [value]="selectedRequisition.approvalHistory" align="alternate">
+  <ng-template pTemplate="content" let-history>
+    <p-card>
+      <p>{{ history.status }}</p>
+      <p class="text-sm text-gray-500">{{ history.timestamp | date: 'M/d/yy, h:mm a' }}</p>
+      <p class="text-sm text-gray-700">{{ history.comments || 'No comments' }}</p>
+      <p class="text-xs text-gray-500">By: {{ history.approversName || 'Unknown' }}</p>
+      <p *ngIf="history.signature" class="text-xs text-gray-500">
+        Signature: <img [src]="history.signature" alt="Signature" class="inline-block h-8">
+      </p>
+    </p-card>
+  </ng-template>
+</p-timeline>
+
     </div>
   </div>
   <ng-template pTemplate="footer">

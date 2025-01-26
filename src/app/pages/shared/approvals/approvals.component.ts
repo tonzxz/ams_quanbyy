@@ -181,7 +181,67 @@ export class ApprovalsComponent implements OnInit {
     this.isSigned = false;
   }
 
- async submitApproval() {
+//  async submitApproval() {
+//   try {
+//     if (!this.selectedRequest) {
+//       throw new Error('No request selected for approval.');
+//     }
+
+//     if (!this.isSigned) {
+//       this.messageService.add({
+//         severity: 'warn',
+//         summary: 'No Signature',
+//         detail: 'Please provide your signature before approving.',
+//       });
+//       return;
+//     }
+
+//     // Capture the signature
+//     const canvas = this.signatureCanvas.nativeElement;
+//     this.signatureDataUrl = canvas.toDataURL('image/png');
+
+//     // Update the requisition with the signature
+//     this.selectedRequest.signature = this.signatureDataUrl;
+//     // this.selectedRequest.approvalStatus = 'Approved';
+//     // Find current approval position
+//     const allSequences = await this.requisitionService.getAllApprovalSequences();
+
+//     const currentSequenceIndex = allSequences.findIndex(seq=>seq.id==this.selectedRequest?.approvalSequenceId)
+//     if(currentSequenceIndex + 1 < allSequences.length){
+//       this.selectedRequest.approvalSequenceId = allSequences[currentSequenceIndex + 1].id;
+//       this.selectedRequest.currentApprovalLevel = allSequences[currentSequenceIndex + 1].level;
+//       const nextUserRole = allSequences[currentSequenceIndex+1].roleCode
+//       const users = await firstValueFrom (this.userService.getAllUsers());
+//       for(let user of users){
+//         if(user.role == 'superadmin' || nextUserRole == user.role || user.id == this.selectedRequest.createdByUserId ){
+//           this.notificationService.addNotification(
+//           `Requisiton No. ${this.selectedRequest.id} has been approved and now under ${allSequences[currentSequenceIndex+1].name}.`,
+//           'info',
+//           user.id
+//           )
+//         }
+//       }
+//     }else{
+//       this.selectedRequest.approvalSequenceId = undefined;
+//       this.selectedRequest.currentApprovalLevel = 0;
+//       this.selectedRequest.approvalStatus = 'Approved'; 
+//     }
+
+    
+//     // Show the preview dialog
+//     this.displayPreviewDialog = true;
+//     this.displaySignatureDialog = false;
+//   } catch (error) {
+//     console.error('Failed to approve requisition:', error);
+//     this.messageService.add({
+//       severity: 'error',
+//       summary: 'Error',
+//       detail: 'Failed to approve requisition.',
+//     });
+//   }
+// }
+
+    async submitApproval() {
   try {
     if (!this.selectedRequest) {
       throw new Error('No request selected for approval.');
@@ -200,37 +260,73 @@ export class ApprovalsComponent implements OnInit {
     const canvas = this.signatureCanvas.nativeElement;
     this.signatureDataUrl = canvas.toDataURL('image/png');
 
-    // Update the requisition with the signature
-    this.selectedRequest.signature = this.signatureDataUrl;
-    // this.selectedRequest.approvalStatus = 'Approved';
-    // Find current approval position
-    const allSequences = await this.requisitionService.getAllApprovalSequences();
+    // Add the approval history entry
+    const approverName = this.currentUser?.fullname || 'Unknown';
+    this.selectedRequest.approvalHistory = this.selectedRequest.approvalHistory || [];
+    this.selectedRequest.approvalHistory.push({
+      level: this.selectedRequest.currentApprovalLevel,
+      status: 'Approved',
+      timestamp: new Date(),
+      comments: '', // Add a field for comments if necessary
+      approversName: approverName,
+      signature: this.signatureDataUrl, // Attach the captured signature
+    });
 
-    const currentSequenceIndex = allSequences.findIndex(seq=>seq.id==this.selectedRequest?.approvalSequenceId)
-    if(currentSequenceIndex + 1 < allSequences.length){
+    // Advance the approval level or finalize approval
+    const allSequences = await this.requisitionService.getAllApprovalSequences();
+    const currentSequenceIndex = allSequences.findIndex(seq => seq.id === this.selectedRequest?.approvalSequenceId);
+
+    if (currentSequenceIndex + 1 < allSequences.length) {
+      // Move to the next level
       this.selectedRequest.approvalSequenceId = allSequences[currentSequenceIndex + 1].id;
       this.selectedRequest.currentApprovalLevel = allSequences[currentSequenceIndex + 1].level;
-      const nextUserRole = allSequences[currentSequenceIndex+1].roleCode
-      const users = await firstValueFrom (this.userService.getAllUsers());
-      for(let user of users){
-        if(user.role == 'superadmin' || nextUserRole == user.role || user.id == this.selectedRequest.createdByUserId ){
-          this.notificationService.addNotification(
-          `Requisiton No. ${this.selectedRequest.id} has been approved and now under ${allSequences[currentSequenceIndex+1].name}.`,
-          'info',
-          user.id
-          )
-        }
-      }
-    }else{
+
+      // Notify the next approver(s)
+      const nextUserRole = allSequences[currentSequenceIndex + 1].roleCode;
+      const users = await firstValueFrom(this.userService.getAllUsers());
+      users.forEach(async user => {
+       if (this.selectedRequest) {
+  const nextUserRole = allSequences[currentSequenceIndex + 1]?.roleCode;
+  const users = await firstValueFrom(this.userService.getAllUsers());
+
+  users.forEach(user => {
+    if (
+      user.role === 'superadmin' ||
+      user.role === nextUserRole ||
+      user.id === this.selectedRequest!.createdByUserId // Use non-null assertion
+    ) {
+      this.notificationService.addNotification(
+        `Requisition No. ${this.selectedRequest!.id} has been approved and is now under ${allSequences[currentSequenceIndex + 1]?.name}.`, // Optional chaining
+        'info',
+        user.id
+      );
+    }
+  });
+}
+
+      });
+    } else {
+      // Finalize approval
       this.selectedRequest.approvalSequenceId = undefined;
       this.selectedRequest.currentApprovalLevel = 0;
-      this.selectedRequest.approvalStatus = 'Approved'; 
+      this.selectedRequest.approvalStatus = 'Approved';
     }
 
-    
-    // Show the preview dialog
-    this.displayPreviewDialog = true;
+    // Save the updated requisition
+    await this.requisitionService.updateRequisition(this.selectedRequest);
+
+    this.loadRequisitions();
+
+    // Show success message
+    this.messageService.add({
+      severity: 'success',
+      summary: 'Approved',
+      detail: 'The requisition has been successfully approved.',
+    });
+
+    // Close dialogs
     this.displaySignatureDialog = false;
+    this.signatureDataUrl = null;
   } catch (error) {
     console.error('Failed to approve requisition:', error);
     this.messageService.add({
@@ -241,6 +337,7 @@ export class ApprovalsComponent implements OnInit {
   }
 }
 
+  
 async confirmApproval() {
   try {
     if (!this.selectedRequest || !this.signatureDataUrl) {
