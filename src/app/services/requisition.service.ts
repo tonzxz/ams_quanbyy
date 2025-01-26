@@ -337,7 +337,7 @@ export const requisitionSchema = z.object({
   id: z.string().length(32, "ID must be exactly 32 characters").optional(),
   title: z.string().min(1, "Title is required"),
   description: z.string().max(500).optional(),
-  status: z.enum(['Pending', 'Approved', 'Rejected']),
+  status: z.string(),
   classifiedItemId: z.string().length(32, "Classified Item ID is required"),
   group: z.string().min(1, "Group is required"),
   products: z.array(
@@ -359,7 +359,7 @@ export const requisitionSchema = z.object({
   signature: z.string().optional(),
   createdByUserId: z.string().optional(),
   createdByUserName: z.string().optional(),
-  approvalSequenceId: z.string().min(1, "Approval Sequence ID is required"),
+  approvalSequenceId: z.string().min(1, "Approval Sequence ID is required").optional(),
   currentApprovalLevel: z.number().min(1).default(1), // Default to level 1
   approvalStatus: z.enum(['Pending', 'Approved', 'Rejected']).default('Pending'),
   approvalHistory: z.array(
@@ -840,7 +840,7 @@ async loadUserFullName(requisitionId: string): Promise<string | undefined> {
 
     // Fetch the approval sequence using the requisition's approvalSequenceId
     const approvalSequence = await this.approvalSequenceService
-      .getSequenceById(requisition.approvalSequenceId)
+      .getSequenceById(requisition.approvalSequenceId??'#')
       .toPromise();
 
     if (!approvalSequence) {

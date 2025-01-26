@@ -70,34 +70,21 @@ export class ApprovalsComponent implements OnInit {
 
       this.requisitions = allRequisitions
         .map((req) => {
-          const typeSequences = allSequences.filter(
-            (seq) => seq.type === (req.currentApprovalLevel <= 4 ? 'procurement' : 'supply')
-          );
+          // const typeSequences = allSequences.filter(
+          //   (seq) => seq.type === (req.currentApprovalLevel <= 4 ? 'procurement' : 'supply')
+          // );
 
-          const currentSequence = typeSequences.find(
-            (seq) => seq.level === req.currentApprovalLevel
+          const currentSequence = allSequences.find(
+            (seq) => seq.id === req.approvalSequenceId
           );
 
           return {
             ...req,
             approvalSequenceDetails: currentSequence
-              ? {
-                  level: currentSequence.level,
-                  departmentName: currentSequence.departmentName,
-                  roleName: currentSequence.roleName,
-                  userFullName: currentSequence.userFullName,
-                  userId: currentSequence.userId,
-                }
-              : {
-                  level: 'N/A',
-                  departmentName: 'N/A',
-                  roleName: 'N/A',
-                  userFullName: 'N/A',
-                  userId: 'N/A',
-                },
+,
           };
         })
-        .filter((req) => req.approvalSequenceDetails?.userId === currentUser?.id);
+        .filter((req) => req.approvalSequenceDetails && (req.approvalSequenceDetails?.userId === currentUser?.id || currentUser?.role == 'end-user' || currentUser?.role == 'superadmin'));
     } catch (error) {
       console.error('Failed to load requisitions:', error);
       this.messageService.add({
@@ -211,8 +198,17 @@ export class ApprovalsComponent implements OnInit {
 
     // Update the requisition with the signature
     this.selectedRequest.signature = this.signatureDataUrl;
-    this.selectedRequest.approvalStatus = 'Approved';
-    this.selectedRequest.currentApprovalLevel += 1;
+    // this.selectedRequest.approvalStatus = 'Approved';
+    // Find current approval position
+    const allSequences = await this.requisitionService.getAllApprovalSequences();
+
+    const currentSequenceIndex = allSequences.findIndex(seq=>seq.id==this.selectedRequest?.approvalSequenceId)
+    if(currentSequenceIndex + 1 < allSequences.length){
+      this.selectedRequest.approvalSequenceId = allSequences[currentSequenceIndex + 1].id;
+    }else{
+      this.selectedRequest.approvalSequenceId = undefined;
+      this.selectedRequest.approvalStatus = 'Approved'; 
+    }
 
     // Show the preview dialog
     this.displayPreviewDialog = true;

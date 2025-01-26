@@ -40,7 +40,7 @@
           <th pSortableColumn="title">Title <p-sortIcon field="title"></p-sortIcon></th>
           <th pSortableColumn="description">Description <p-sortIcon field="description"></p-sortIcon></th>
           <th pSortableColumn="approvalSequenceDetails.level">Level <p-sortIcon field="approvalSequenceDetails.level"></p-sortIcon></th>
-          <th pSortableColumn="approvalStatus">Status <p-sortIcon field="approvalStatus"></p-sortIcon></th>
+          <th pSortableColumn="approvalSequieceDetails.name">Status <p-sortIcon field="approvalSequieceDetails.name"></p-sortIcon></th>
           <th pSortableColumn="dateCreated">Date Created <p-sortIcon field="dateCreated"></p-sortIcon></th>
           <th pSortableColumn="approvalSequenceDetails.departmentName">Department <p-sortIcon field="approvalSequenceDetails.departmentName"></p-sortIcon></th>
           <th>Attachments</th>
@@ -55,9 +55,9 @@
           <td>Level {{ req.approvalSequenceDetails?.level }}</td>
           <td>
             <span
-              [class]="req.approvalStatus === 'Pending' ? 'text-yellow-600' : req.approvalStatus === 'Approved' ? 'text-green-600' : 'text-red-600'"
+            class="text-yellow-600"
             >
-              {{ req.approvalStatus }}
+              Under {{ req.approvalSequenceDetails?.name }}...
             </span>
           </td>
           <td>{{ req.dateCreated | date: 'short' }}</td>
@@ -86,7 +86,7 @@
             ></button>
           </td>
           <td>
-            <div *ngIf="req.approvalStatus === 'Pending'" class="flex gap-2">
+            <div  class="flex gap-2">
               <button
                 pButton
                 icon="pi pi-check"
@@ -103,9 +103,7 @@
                 pTooltip="Reject"
               ></button>
             </div>
-            <div *ngIf="req.approvalStatus !== 'Pending'">
-              <span class="text-gray-500">({{ req.approvalStatus | uppercase }})</span>
-            </div>
+
           </td>
         </tr>
       </ng-template>
