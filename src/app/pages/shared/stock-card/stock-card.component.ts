@@ -6,12 +6,11 @@ import html2canvas from 'html2canvas';
 @Component({
   selector: 'app-stock-card',
   standalone: true,
-  imports: [ButtonModule], // Import PrimeNG ButtonModule
+  imports: [ButtonModule], 
   templateUrl: './stock-card.component.html',
   styleUrls: ['./stock-card.component.scss']
 })
 export class StockCardComponent {
-  // Mock data for the stock card
   mockData = {
     entityName: 'Sample Entity',
     fundCluster: '101',
@@ -35,7 +34,6 @@ export class StockCardComponent {
   };
 
   exportPdf() {
-    // Create a temporary div to hold the HTML content
     const content = document.createElement('div');
     content.innerHTML = `
       <div class="p-10 bg-white shadow-md rounded-lg">
@@ -90,10 +88,8 @@ export class StockCardComponent {
       </div>
     `;
 
-    // Append the content to the body temporarily
     document.body.appendChild(content);
 
-    // Use html2canvas to capture the content as an image
     html2canvas(content).then((canvas) => {
       const imgData = canvas.toDataURL('image/png');
       const pdf = new jsPDF('p', 'mm', 'a4');
@@ -106,7 +102,6 @@ export class StockCardComponent {
       pdf.addImage(imgData, 'PNG', 0, position, imgWidth, imgHeight);
       heightLeft -= pageHeight;
 
-      // Add additional pages if the content is too long
       while (heightLeft >= 0) {
         position = heightLeft - imgHeight;
         pdf.addPage();
@@ -114,10 +109,8 @@ export class StockCardComponent {
         heightLeft -= pageHeight;
       }
 
-      // Save the PDF
       pdf.save('stock-card.pdf');
 
-      // Remove the temporary content from the DOM
       document.body.removeChild(content);
     });
   }

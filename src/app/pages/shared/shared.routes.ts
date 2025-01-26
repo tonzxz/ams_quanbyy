@@ -8,6 +8,10 @@ import { RequestQuotationComponent } from './request-quotation/request-quotation
 import { PurchaseReqComponent } from './purchase-req/purchase-req.component';
 import { DisbursementComponent } from './disbursement/disbursement.component';
 import { StockCardComponent } from './stock-card/stock-card.component';
+import { RisComponent } from './ris/ris.component';
+import { SemiExpendableComponent } from './semi-expendable/semi-expendable.component';
+import { AoqComponent } from './aoq/aoq.component';
+import { BudgetUtilizationComponent } from './budget-utilization/budget-utilization.component';
 
 export const SharedRoutes: Routes = [
   {
@@ -62,7 +66,27 @@ export const SharedRoutes: Routes = [
         path: 'stock-card',
         component: StockCardComponent,
         data: {breadcrumb:'Stock Card Template'}
-      }
+      },
+      {
+        path: 'ris',
+        component: RisComponent,
+        data: {breadcrumb:'Requisition and Issue Slip Template'}
+      },
+      {
+        path: 'semi-expendable',
+        component: SemiExpendableComponent,
+        data: {breadcrumb:'Report of Semi-Expendable Property Issued Template'}
+      },
+      {
+        path: 'aoq',
+        component: AoqComponent,
+        data: {breadcrumb:'Abstract of Quotations Template'}
+      },
+      {
+        path: 'budget-utilization',
+        component: BudgetUtilizationComponent,
+        data: {breadcrumb:'Budget Utilization Report Template'}
+      },
     ],
   },
 ];
