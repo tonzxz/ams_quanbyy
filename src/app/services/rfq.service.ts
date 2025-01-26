@@ -7,7 +7,7 @@ import { SuppliersService } from './suppliers.service';
 import { firstValueFrom } from 'rxjs';
 export const rfqSchema = z.object({
   id: z.string().length(32, "ID must be exactly 32 characters").optional(),
-  status: z.enum(['new','canvasing']),
+  status: z.enum(['new','canvasing','approved']),
   purchase_order: z.string().optional(),
   suppliers: z.array(z.object({
     supplierId: z.string().length(32),

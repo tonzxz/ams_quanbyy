@@ -22,7 +22,7 @@ import { Router } from '@angular/router';
 import { Supplier, SuppliersService } from 'src/app/services/suppliers.service';
 import { SelectModule } from 'primeng/select';
 import { Department, DepartmentService } from 'src/app/services/departments.service';
-import { UserService } from 'src/app/services/user.service';
+import { User, UserService } from 'src/app/services/user.service';
 import { LottieAnimationComponent } from '../../ui-components/lottie-animation/lottie-animation.component';
 import { IconFieldModule } from 'primeng/iconfield';
 import { InputIconModule } from 'primeng/inputicon';
@@ -33,6 +33,7 @@ import { DividerModule } from 'primeng/divider';
 import { Requisition, RequisitionService } from 'src/app/services/requisition.service';
 import { ApprovalSequenceService } from 'src/app/services/approval-sequence.service';
 import { firstValueFrom } from 'rxjs';
+import { NotificationService } from 'src/app/services/notifications.service';
 
 @Component({
   selector: 'app-rfq',
@@ -83,6 +84,9 @@ export class RequestForQuotationListComponent implements OnInit {
   supplier_upload_form = new FormGroup({
     upload: new FormControl('',[Validators.required])
   });
+  reject_form = new FormGroup({
+    notes: new FormControl('',[Validators.required])
+  });
   constructor(
     private router: Router,
     private userService: UserService,
@@ -92,7 +96,8 @@ export class RequestForQuotationListComponent implements OnInit {
     private requisitionService:RequisitionService,
     private approvalSequenceService:ApprovalSequenceService,
     private confirmationService: ConfirmationService,
-    private messageService: MessageService
+    private messageService: MessageService,
+    private notifService:NotificationService,
   ) {}
 
   ngOnInit(): void {
@@ -107,6 +112,8 @@ export class RequestForQuotationListComponent implements OnInit {
     this.showRFQModal = true;
   }
 
+
+  currentUser?:User;
 
   selectedRFQ?:RFQ;
 
@@ -163,6 +170,17 @@ export class RequestForQuotationListComponent implements OnInit {
     this.activeStep = 1;
   }
 
+
+  showReject:boolean =  false;
+
+  openReject(rfq:RFQ){
+    this.reject_form.reset();
+    this.showReject = true;
+    this.selectedRFQ = rfq;
+  }
+
+
+
   async addRFQ() {
     const rfq = this.form.value;
     const id = `RFQ-${new Date().getFullYear()}-${Math.floor(Math.random() * 1000000)}`;
@@ -180,7 +198,7 @@ export class RequestForQuotationListComponent implements OnInit {
   }
 
 
-  filterByStatus(status:  'new' | 'canvasing') {
+  filterByStatus(status:  'new' | 'canvasing'|'approved') {
     this.filteredRFQs = this.rfqs.filter(rfq => rfq.status == status);
   }
 
@@ -193,10 +211,13 @@ export class RequestForQuotationListComponent implements OnInit {
       case 2:
         this.filterByStatus('canvasing');
         break;
+      case 3:
+        this.filterByStatus('approved');
+        break;
     }
   }
 
-  countRFQ(status:'new'|'canvasing'){
+  countRFQ(status:'new'|'canvasing'|'approved'){
     return this.rfqs.filter(rfq => rfq.status == status).length;
   }
 
@@ -209,11 +230,14 @@ export class RequestForQuotationListComponent implements OnInit {
       case 2:
         this.filterByStatus('canvasing');
         break;
+      case 3:
+        this.filterByStatus('approved');
+        break;
 
     }
   }
 
-  switchTab(number:1|2){
+  switchTab(number:1|2|3){
     this.activeStep=number;
     switch (this.activeStep) {
       case 1:
@@ -221,6 +245,9 @@ export class RequestForQuotationListComponent implements OnInit {
         break;
       case 2:
         this.filterByStatus('canvasing');
+        break;
+      case 3:
+        this.filterByStatus('approved');
         break;
 
     }
@@ -269,7 +296,8 @@ export class RequestForQuotationListComponent implements OnInit {
           ...rfq,
           suppliers: rfq.suppliers.filter(s=>s.supplierId != id)
         })
-    
+
+     
     
         this.messageService.add({ severity: 'success', summary: 'Success', detail: `Successfully removed supplier.` });
         await this.fetchItems();
@@ -298,14 +326,87 @@ export class RequestForQuotationListComponent implements OnInit {
           ...rfq,
           status:'canvasing',
         })
+        const users = await firstValueFrom(this.userService.getAllUsers());
+        const po = this.allRequisitions.find(r=>r.id == rfq.purchase_order);
+        for(let user of users){
+          if(user.role == 'bac' || user.id == po?.createdByUserId ){
+            this.notifService.addNotification(
+            `RFQ No. ${rfq.id} has been submitted for end-user canvasing.`,
+            'info',
+            user.id
+            )
+          }
+        }
+    
         this.messageService.add({ severity: 'success', summary: 'Success', detail: `Successfully submitted RFQ for End User Canvasing.` });
         await this.fetchItems();
-        this.activeStep = 1;
+        this.filterByStatus('canvasing');
+        this.activeStep = 2;
       },
       reject: () => {},
     });
   }
 
+
+
+  async confirmApprove(event: Event, rfq:RFQ) {
+    this.confirmationService.confirm({
+      target: event.target as EventTarget,
+      message: 'Are you sure you want to approve this RFQ?',
+      icon: 'pi pi-exclamation-triangle',
+      rejectButtonProps: {
+        label: 'Cancel',
+        severity: 'secondary',
+        outlined: true,
+      },
+      acceptButtonProps: {
+        label: 'Confirm',
+      },
+      accept: async () => {
+        await this.rfqService.editRFQ({
+          ...rfq,
+          status:'approved',
+        })
+        this.messageService.add({ severity: 'success', summary: 'Success', detail: `Successfully approved RFQ.` });
+        const users = await firstValueFrom(this.userService.getAllUsers());
+        for(let user of users){
+          if(user.role == 'bac'  ){
+            this.notifService.addNotification(
+            `RFQ No. ${rfq.id} has been approved on end-user canvasing.`,
+            'info',
+            user.id
+            )
+          }
+        }
+        await this.fetchItems();
+        this.filterByStatus('canvasing');
+        this.activeStep = 2;
+      },
+      reject: () => {},
+    });
+  }
+
+  async rejectRFQ(rfq:RFQ){
+    await this.rfqService.editRFQ({
+      ...rfq,
+      status:'new',
+    })
+    this.showReject= false;
+    const users = await firstValueFrom(this.userService.getAllUsers());
+        for(let user of users){
+          if(user.role == 'bac'  ){
+            this.notifService.addNotification(
+            `RFQ No. ${rfq.id} has been rejected on end-user canvasing.`,
+            'info',
+            user.id
+            )
+          }
+        }
+    this.messageService.add({ severity: 'success', summary: 'Success', detail: `Successfully rejected RFQ.` });
+    await this.fetchItems();
+    this.filterByStatus('canvasing');
+    this.activeStep = 2;
+  }
 
   getPR(id:string){
     return this.allRequisitions.find(r => r.id == id);
@@ -321,6 +422,7 @@ export class RequestForQuotationListComponent implements OnInit {
   }
 
   async fetchItems() {
+    this.currentUser = this.userService.getUser();
     this.rfqs = await this.rfqService.getAll();
     this.suppliers = await this.supplierService.getAll();
     this.departments = await this.departmentService.getAllDepartments();
@@ -348,6 +450,11 @@ export class RequestForQuotationListComponent implements OnInit {
         }
         return req.approvalSequenceDetails && (req.approvalSequenceDetails?.roleName == 'bac') 
       });
-    this.filterByStatus('new');
+    if(this.currentUser?.role =='end-user'){
+      this.filterByStatus('canvasing');
+      this.activeStep = 2;
+    }else{
+      this.filterByStatus('new');
+    }
   }
 }

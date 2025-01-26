@@ -44,9 +44,9 @@ export const navItems: NavItem[] = [
     requiredRoles: ['end-user'],
   },
   {
-    displayName: 'Canvassing',
+    displayName: 'Canvasing',
     iconName: 'solar:documents-broken',
-    route: '/enduser/canvassing',
+    route: '/shared/rfq-list',
     requiredRoles: ['end-user'],
   },
   {
