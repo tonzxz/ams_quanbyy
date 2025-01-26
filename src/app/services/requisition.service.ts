@@ -354,8 +354,15 @@ export const requisitionSchema = z.object({
   productSpecifications: z.record(z.string(), z.string()).optional(),
   ppmpAttachment: z.string().optional(),
   purchaseRequestAttachment: z.string().optional(),
-  dateCreated: z.coerce.date().optional(), // Change this line
- lastModified: z.coerce.date().optional(), // Change this line
+  rfqAttachement: z.string().optional(), 
+  rfqFromSuppliersAttachment: z.array(z.string()).optional(), 
+  abstractOfQuotationAttachment: z.string().optional(), 
+  budgetUtilizationReportAttachment: z.string().optional(), 
+  noticeOfAwardAttachment: z.string().optional(), 
+  purchaseOrderAttachment: z.string().optional(), 
+  noticeToProceedAttachment: z.string().optional(), 
+  dateCreated: z.coerce.date().optional(), 
+ lastModified: z.coerce.date().optional(), 
   signature: z.string().optional(),
   createdByUserId: z.string().optional(),
   createdByUserName: z.string().optional(),
