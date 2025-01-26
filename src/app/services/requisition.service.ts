@@ -347,6 +347,7 @@ export const requisitionSchema = z.object({
       quantity: z.number().min(1, "Quantity must be at least 1"),
       specifications: z.string().optional(),
       price: z.number().min(0, "Price cannot be negative"),
+      status:  z.enum(['pending', 'delivered', 'received']).optional(),
     })
   ),
   selectedGroups: z.array(z.string()).optional(),

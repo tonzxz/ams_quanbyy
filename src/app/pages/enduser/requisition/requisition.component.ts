@@ -629,7 +629,6 @@ async finalizeRequisitionSave(): Promise<void> {
 
     const allSequences = await this.requisitionService.getAllApprovalSequences();
      if(allSequences[0]){
-      alert(allSequences[0].roleCode);
       const nextUserRole = allSequences[0]?.roleCode;
           const users = await firstValueFrom (this.userService.getAllUsers());
           for(let user of users){

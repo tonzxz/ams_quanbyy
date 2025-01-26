@@ -134,7 +134,7 @@ export class DeliveryReceiptsComponent implements OnInit {
         'assets/images/products/sample-receipt.png'
       ],
       receipt_number: dr.receipt_number!.toUpperCase(),
-      supplier_name: dr.supplier!.contactPerson,
+      supplier_name: dr.supplier!.name,
       supplier_id: dr.supplier!.id!,
       department_id: dr.department!.id!,
       department_name: dr.department!.name!,
@@ -164,7 +164,7 @@ export class DeliveryReceiptsComponent implements OnInit {
         'assets/images/products/sample-receipt.png'
       ],
       receipt_number: dr.receipt_number!.toUpperCase(),
-      supplier_name: dr.supplier!.contactPerson,
+      supplier_name: dr.supplier!.name,
       supplier_id: dr.supplier!.id!,
       department_id: dr.department!.id!,
       department_name: dr.department!.name!,
@@ -295,7 +295,12 @@ export class DeliveryReceiptsComponent implements OnInit {
 ,
         };
       })
-      .filter((req) => req.approvalSequenceDetails && (req.approvalSequenceDetails?.roleCode === 'supply' || req.approvalSequenceDetails?.roleCode === 'inspection'));
+      .filter((req) => {
+        if(this.receipts.find(dr=>dr.purchase_order == req.id)){
+          return false;
+        }
+        return req.approvalSequenceDetails && (req.approvalSequenceDetails?.roleCode === 'supply' || req.approvalSequenceDetails?.roleCode === 'inspection')
+      });
     this.filterByStatus('unverified');
   }
 }
