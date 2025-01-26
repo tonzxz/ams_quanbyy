@@ -72,10 +72,10 @@
                   size="small" icon="pi pi-upload" rounded />
                   <p-button [outlined]="true" [severity]="'danger'"
                   pTooltip="Click to reject this receipt"
-                  (click)="confirmToReject($event, receipt.id)" size="small" icon="pi pi-times" rounded />
+                  (click)="confirmToReject($event, receipt)" size="small" icon="pi pi-times" rounded />
                   <p-button [outlined]="true" [severity]="'success'"
                   pTooltip="Click to verify receipt"
-                  (click)="confirmToVerification($event, receipt.id)" size="small" icon="pi pi-arrow-right" rounded />
+                  (click)="confirmToVerification($event, receipt)" size="small" icon="pi pi-arrow-right" rounded />
           
                 }@else{
                     @if(!receipt.stocked){

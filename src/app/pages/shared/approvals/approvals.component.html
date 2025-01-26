@@ -1,9 +1,11 @@
 <mat-card class="cardWithShadow">
   <mat-card-content>
-    <mat-card-title>Requisitions</mat-card-title>
+
+    <mat-card-title>Requisition</mat-card-title>
     <mat-card-subtitle class="text-sm text-gray-500">
       View requisitions assigned to you for approval.
     </mat-card-subtitle>
+  
 
     <!-- Filters and Actions -->
     <div class="flex justify-between items-center mt-4">
@@ -90,10 +92,10 @@
             ></button>
           </td>
           @if(currentUser?.role != 'end-user'){
-            
             <td>
               <div  class="flex gap-2">
-                <button
+                @if(currentUser?.role != 'supply'){
+                  <button
                   pButton
                   icon="pi pi-check"
                   class="p-button-rounded p-button-success p-button-sm"
@@ -108,6 +110,9 @@
                   [outlined]="false"
                   pTooltip="Reject"
                 ></button>
+                }@else{
+                  <span>Pending</span>
+                }
               </div>
   
             </td>

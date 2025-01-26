@@ -102,6 +102,7 @@ export class DeliveryReceiptsComponent implements OnInit {
       receipt_number: dr.receipt_number,
       supplier: this.suppliers.find(supplier => supplier.id ==dr.supplier_id),
       department: this.departments.find(department => department.id ==dr.department_id),
+      purchase_order: this.requisitions.find(req=>req.id == dr.purchase_order),
       delivery_date: `${date[1]}/${date[2]}/${date[0]}`,
       total_amount: Number(dr.total_amount!),
       notes:dr.notes ?? '',

@@ -22,6 +22,7 @@ import { Router } from '@angular/router';
 import { LottieAnimationComponent } from '../../ui-components/lottie-animation/lottie-animation.component';
 import { InputIconModule } from 'primeng/inputicon';
 import { IconFieldModule } from 'primeng/iconfield';
+import { RequisitionService } from 'src/app/services/requisition.service';
 @Component({
   selector: 'app-receipt-approval',
   standalone: true,
@@ -52,6 +53,7 @@ export class ReceiptApprovalComponent implements OnInit {
 
   constructor(
     private router:Router,
+    private requisitionService:RequisitionService,
     private confirmationService:ConfirmationService,
     private messageService:MessageService,
     private deliveryService:DeliveryReceiptService){}
@@ -140,7 +142,7 @@ export class ReceiptApprovalComponent implements OnInit {
     }
   }
 
-  async confirmToVerification(event: Event,id:string){
+  async confirmToVerification(event: Event,receipt:DeliveryReceipt){
     this.confirmationService.confirm({
       target: event.target as EventTarget,
       message: 'Are you sure you want to submit this receipt to verified receipts?',
@@ -154,7 +156,22 @@ export class ReceiptApprovalComponent implements OnInit {
           label: 'Confirm'
       },
       accept: async () => {
-          await this.deliveryService.moveToVerified(id)
+          
+          const req = await this.requisitionService.getRequisitionById(receipt.purchase_order!);
+          const allSequences = await this.requisitionService.getAllApprovalSequences();
+    
+          const currentSequenceIndex = allSequences.findIndex(seq=>seq.id==req?.approvalSequenceId)
+          if(currentSequenceIndex + 1 < allSequences.length){
+            req!.approvalSequenceId = allSequences[currentSequenceIndex + 1].id;
+            req!.currentApprovalLevel = allSequences[currentSequenceIndex + 1].level;
+          }else{
+            req!.approvalSequenceId = undefined;
+            req!.currentApprovalLevel = 0;
+            req!.approvalStatus = 'Approved'; 
+          }
+          await this.requisitionService.updateRequisition(req!);
+          
+          await this.deliveryService.moveToVerified(receipt.id!)
           this.messageService.add({ severity: 'success', summary: 'Success', detail: `Successfully submitted receipt to verified receipts.` });
           await this.fetchItems();
           this.filterByStatus('verified');

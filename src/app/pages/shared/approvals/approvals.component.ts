@@ -13,6 +13,7 @@ import { ToastModule } from 'primeng/toast';
 import { ApprovalSequenceService } from 'src/app/services/approval-sequence.service';
 import { firstValueFrom } from 'rxjs';
 import { DepartmentService } from 'src/app/services/departments.service';
+import { NotificationService } from 'src/app/services/notifications.service';
 
 @Component({
   selector: 'app-approvals',
@@ -54,7 +55,8 @@ export class ApprovalsComponent implements OnInit {
     private approvalSequenceService: ApprovalSequenceService,
     private sanitizer: DomSanitizer,
     private messageService: MessageService,
-    private departmentService: DepartmentService
+    private departmentService: DepartmentService,
+    private notificationService: NotificationService
   ) {}
 
   async ngOnInit() {
@@ -85,7 +87,8 @@ export class ApprovalsComponent implements OnInit {
 ,
           };
         })
-        .filter((req) => req.approvalSequenceDetails && (req.approvalSequenceDetails?.userId === this.currentUser?.id || this.currentUser?.role == 'end-user' || this.currentUser?.role == 'superadmin'));
+        .filter((req) => req.approvalSequenceDetails && (req.approvalSequenceDetails?.userId === this.currentUser?.id || this.currentUser?.role == 'end-user' || this.currentUser?.role == 'superadmin' || 
+          (this.currentUser?.role =='supply' && req.approvalSequenceDetails.roleCode == 'inspection')));
     } catch (error) {
       console.error('Failed to load requisitions:', error);
       this.messageService.add({
@@ -207,12 +210,24 @@ export class ApprovalsComponent implements OnInit {
     if(currentSequenceIndex + 1 < allSequences.length){
       this.selectedRequest.approvalSequenceId = allSequences[currentSequenceIndex + 1].id;
       this.selectedRequest.currentApprovalLevel = allSequences[currentSequenceIndex + 1].level;
+      const nextUserRole = allSequences[currentSequenceIndex+1].roleCode
+      const users = await firstValueFrom (this.userService.getAllUsers());
+      for(let user of users){
+        if(user.role == 'superadmin' || nextUserRole == user.role || user.id == this.selectedRequest.createdByUserId ){
+          this.notificationService.addNotification(
+          `Requisiton No. ${this.selectedRequest.id} has been approved to ${allSequences[currentSequenceIndex+1].name}.`,
+          'info',
+          user.id
+          )
+        }
+      }
     }else{
       this.selectedRequest.approvalSequenceId = undefined;
       this.selectedRequest.currentApprovalLevel = 0;
       this.selectedRequest.approvalStatus = 'Approved'; 
     }
 
+    
     // Show the preview dialog
     this.displayPreviewDialog = true;
     this.displaySignatureDialog = false;
@@ -248,6 +263,7 @@ async confirmApproval() {
 
     // Save the updated requisition
     await this.requisitionService.updateRequisition(this.selectedRequest);
+    
     this.loadRequisitions();
 
     // Show success message
@@ -280,12 +296,26 @@ async confirmApproval() {
       this.selectedRequest = req;
       const allSequences = await this.requisitionService.getAllApprovalSequences();
 
+      const users = await firstValueFrom (this.userService.getAllUsers());
+
       const currentSequenceIndex = allSequences.findIndex(seq=>seq.id==this.selectedRequest?.approvalSequenceId)
       if(currentSequenceIndex - 1  >= 0){
         this.selectedRequest.approvalSequenceId = allSequences[currentSequenceIndex - 1].id;
+        await this.requisitionService.updateRequisition(this.selectedRequest);
+        const lastUserRole = allSequences[currentSequenceIndex-1].roleCode
+      
+        for(let user of users){
+          if(user.role == 'superadmin' || lastUserRole == user.role || user.id == this.selectedRequest.createdByUserId ){
+            this.notificationService.addNotification(
+            `Requisiton No. ${this.selectedRequest.id} has been rejected back to ${allSequences[currentSequenceIndex-1].name}.`,
+            'info',
+            user.id
+            )
+          }
+        }
       }
 
-      await this.requisitionService.updateRequisition(this.selectedRequest);
+    
 
       this.loadRequisitions();
       this.messageService.add({
