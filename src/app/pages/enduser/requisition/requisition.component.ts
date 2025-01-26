@@ -25,6 +25,8 @@ import { UserService, User } from 'src/app/services/user.service';
 import { PurchaseRequestService, PurchaseRequest } from 'src/app/services/purchase-request.service';
 import { ApprovalSequenceService } from 'src/app/services/approval-sequence.service';
 import { NotificationService } from 'src/app/services/notifications.service';
+import { PurchaseReqComponent } from '../../shared/purchase-req/purchase-req.component';
+import { TimelineModule } from 'primeng/timeline';
 
 interface SelectedProduct {
  id: string;
@@ -56,6 +58,8 @@ interface SelectedProduct {
    TooltipModule,
    TextareaModule,
    MultiSelectModule,
+   PurchaseReqComponent,
+   TimelineModule
  ],
  providers: [ConfirmationService, MessageService],
 })
@@ -523,18 +527,7 @@ async loadRequisitions(): Promise<void> {
    }
  }
 
- viewPurchaseRequest(requisition: Requisition): void {
-   if (requisition.purchaseRequestAttachment) {
-     this.selectedPurchaseRequestPdf = this.sanitizer.bypassSecurityTrustResourceUrl(requisition.purchaseRequestAttachment);
-     this.displayPurchaseRequestPreview = true;
-   } else {
-     this.messageService.add({
-       severity: 'warn',
-       summary: 'No Document',
-       detail: 'Purchase Request document is not available.'
-     });
-   }
- }
+ 
 
  closeDialog(): void {
    this.displayPpmpPreview = false;
@@ -647,4 +640,56 @@ async finalizeRequisitionSave(): Promise<void> {
     this.tempRequisitionData = undefined;
   }
 }
+  
+  displayPurchaseRequestModal: boolean = false;
+selectedPurchaseRequestId: string | null = null;
+
+
+  openPurchaseRequestModal(purchaseRequestId: string): void {
+  this.closePurchaseRequestModal(); // Ensure the previous state is reset
+  setTimeout(() => {
+    this.selectedPurchaseRequestId = purchaseRequestId;
+    this.displayPurchaseRequestModal = true;
+  });
+}
+
+  closePurchaseRequestModal(): void {
+  this.selectedPurchaseRequestId = null;
+  this.displayPurchaseRequestModal = false;
+}
+
+
+  displayModal: boolean = false; // State for the attachments and approval history modal
+displayAttachmentModal: boolean = false; // State for the attachment preview modal
+selectedRequisition: Requisition | null = null; // Currently selected requisition for the modal
+selectedAttachmentUrl: SafeResourceUrl | null = null; // URL for the selected attachment preview
+
+// Show attachments and approval history
+showAttachments(requisition: Requisition): void {
+  this.selectedRequisition = {
+    ...requisition,
+    approvalHistory: requisition.approvalHistory?.map(history => ({
+      ...history,
+      approversName: history.approversName || 'Unknown', // Provide default name if missing
+      signature: history.signature || undefined // Ensure undefined if signature is null
+    })) || [] // Ensure approvalHistory is always an array
+  };
+  this.displayModal = true;
+}
+
+// Preview the attachment in a modal
+viewAttachment(attachmentUrl: string): void {
+  this.selectedAttachmentUrl = this.sanitizer.bypassSecurityTrustResourceUrl(attachmentUrl);
+  this.displayAttachmentModal = true;
+}
+
+  
+// View purchase request (modal already defined in your code)
+viewPurchaseRequest(requisitionId: string): void {
+  this.selectedPurchaseRequestId = requisitionId;
+  this.displayPurchaseRequestModal = true;
+}
+  
+
+
 }
