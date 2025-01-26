@@ -281,11 +281,8 @@ async confirmApproval() {
       const allSequences = await this.requisitionService.getAllApprovalSequences();
 
       const currentSequenceIndex = allSequences.findIndex(seq=>seq.id==this.selectedRequest?.approvalSequenceId)
-      if(currentSequenceIndex + 1 < allSequences.length){
-        this.selectedRequest.approvalSequenceId = allSequences[currentSequenceIndex + 1].id;
-      }else{
-        this.selectedRequest.approvalSequenceId = undefined;
-        this.selectedRequest.approvalStatus = 'Approved'; 
+      if(currentSequenceIndex - 1  >= 0){
+        this.selectedRequest.approvalSequenceId = allSequences[currentSequenceIndex - 1].id;
       }
 
       await this.requisitionService.updateRequisition(this.selectedRequest);
