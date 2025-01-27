@@ -191,8 +191,19 @@
                 }@else{
                 @if(item.supplierId == rfq.supplier){
                   @if(rfq.awarding == 'awarded'){
-                    <p-button outlined="true" severity="warn" pTooltip="Click to print notice of award"
-                  (click)="null" size="small" icon="pi pi-trophy" rounded />
+                
+
+                    <p-button
+  outlined="true"
+  severity="warn"
+  pTooltip="Click to print notice of award"
+  (click)="openNOAModal(rfq.id)"
+  size="small"
+  icon="pi pi-trophy"
+  rounded
+></p-button>
+
+
                   }
                   <p-button outlined="true" severity="success" pTooltip="Click to print abstract of quotation"
                     (click)="generateAOQ(rfq.id)" size="small" icon="pi pi-receipt" rounded />
@@ -550,6 +561,17 @@
   header="BAC Resolution">
   <app-bac-resolution *ngIf="selectedRFQResoId" [rfqId]="selectedRFQResoId"></app-bac-resolution>
 </p-dialog>
+
+<p-dialog
+  header="Notice of Award"
+  [(visible)]="showNOAModal"
+  [modal]="true"
+  [closable]="true"
+  [style]="{ width: '55vw', height: '90vh' }"
+>
+  <app-noa *ngIf="selectedRFQId" [rfqId]="selectedRFQId"></app-noa>
+</p-dialog>
+
 
 
 <p-toast position="bottom-right" />

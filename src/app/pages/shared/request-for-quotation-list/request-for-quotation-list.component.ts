@@ -38,6 +38,7 @@ import { RequestQuotationComponent } from '../request-quotation/request-quotatio
 import { AoqComponent } from '../aoq/aoq.component';
 import { BACResolutionComponent } from '../bac-resolution/bac-resolution.component';
 import { BudgetUtilizationComponent } from '../budget-utilization/budget-utilization.component';
+import { NoaComponent } from '../noa/noa.component';
 
 @Component({
   selector: 'app-rfq',
@@ -45,7 +46,7 @@ import { BudgetUtilizationComponent } from '../budget-utilization/budget-utiliza
   imports: [MaterialModule, CommonModule, StepperModule, TableModule, ButtonModule, ButtonGroupModule, TabsModule, OverlayBadgeModule, BadgeModule,
     InputTextModule, FormsModule, SelectModule, FileUploadModule, DatePickerModule, InputNumberModule, ToastModule, ReactiveFormsModule, TextareaModule, LottieAnimationComponent,
     FluidModule, TooltipModule, DialogModule, ConfirmPopupModule, IconFieldModule, InputIconModule, DividerModule, RequestQuotationComponent, AoqComponent, 
-    BudgetUtilizationComponent,
+    BudgetUtilizationComponent,NoaComponent,
     BACResolutionComponent],
   providers: [MessageService, ConfirmationService],
   templateUrl: './request-for-quotation-list.component.html',
@@ -546,10 +547,10 @@ export class RequestForQuotationListComponent implements OnInit {
 
   showBudgetReport: boolean = false; // Modal visibility control
   selectedRFQBudgetId: string | null = null; // Selected RFQ ID for AOQ
-  generateBudgetReport(rfqId: string): void {
-    this.selectedRFQBudgetId = rfqId; // Set the RFQ ID to pass to AoqComponent
-    this.showBudgetReport = true; // Show the modal
-  }
+ generateBudgetReport(rfqId: string): void {
+  this.selectedRFQBudgetId = rfqId; // Set the RFQ ID to pass to BudgetUtilizationComponent
+  this.showBudgetReport = true; // Show the modal for budget report
+}
 
 
   @ViewChild('signatureCanvas', { static: false })
@@ -677,5 +678,12 @@ openBudgetSignatureDialog(rfq:RFQ) {
     this.canvasContext.clearRect(0, 0, canvas.width, canvas.height); // Clear the canvas
     this.isSigned = false; // Reset the signature flag
   }
+
+  showNOAModal: boolean = false; // Control modal visibility for NOA
+
+  openNOAModal(rfqId: string): void {
+  this.selectedRFQId = rfqId; // Set the RFQ ID to pass to the NoaComponent
+  this.showNOAModal = true; // Show the NOA modal
+}
 
 }

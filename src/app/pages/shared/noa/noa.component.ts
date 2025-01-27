@@ -1,37 +1,100 @@
-import { Component } from '@angular/core';
+import { Component, Input, OnInit } from '@angular/core';
+import { RFQService, RFQ } from 'src/app/services/rfq.service';
+import { RequisitionService, Requisition } from 'src/app/services/requisition.service';
+import { SuppliersService, Supplier } from 'src/app/services/suppliers.service';
 import { ButtonModule } from 'primeng/button';
+import { DialogModule } from 'primeng/dialog';
 import jsPDF from 'jspdf';
 import html2canvas from 'html2canvas';
+import { CommonModule } from '@angular/common';
 
 @Component({
   selector: 'app-noa',
   standalone: true,
-  imports: [ButtonModule],
+  imports: [ButtonModule, DialogModule, CommonModule],
   templateUrl: './noa.component.html',
   styleUrls: ['./noa.component.scss']
 })
-export class NoaComponent {
-  mockData = {
-    noaNumber: 'ODG-2024-11-022',
-    date: 'November 12, 2024',
-    recipient: {
-      name: 'MARIA CRISMA EDITHA MAXWELL',
-      position: 'Chief Operating Officer',
-      company: 'Quanby Solutions Inc.',
-      address: '4F Landlo Business Park Imperial St.',
-      email: 'chrisma@quanbyit.com'
-    },
-    items: [
-      { description: '5 TB External Hard Drive', quantity: 10, unit: 'Pos', price: '79,000.00' },
-      { description: 'Portable Fast Document Scanner', quantity: 2, unit: 'Units', price: '96,000.00' },
-      { description: 'LED Smart TV with stand', quantity: 3, unit: 'Units', price: '147,000.00' },
-      { description: 'HDMI Cables', quantity: 5, unit: 'Pos', price: '7,500.00' }
-    ],
-    totalPrice: '329,500.00',
-    deliveryInstructions: 'Within the date indicated in the Work Order (WO) / Purchase Order (PO)'
-  };
+export class NoaComponent implements OnInit {
+  @Input() rfqId!: string; // Accept RFQ ID as an input
+  displayModal: boolean = false; // For controlling modal visibility
+  mockData: any = {};
 
-  exportPdf() {
+  constructor(
+    private rfqService: RFQService,
+    private requisitionService: RequisitionService,
+    private suppliersService: SuppliersService
+  ) {}
+
+  async ngOnInit(): Promise<void> {
+    if (this.rfqId) {
+      await this.loadData(this.rfqId);
+    }
+  }
+
+async loadData(rfqId: string): Promise<void> {
+  try {
+    // Fetch RFQ and Requisition Data
+    const rfq: RFQ | undefined = await this.rfqService.getById(rfqId);
+    const requisition: Requisition | undefined = rfq && rfq.purchase_order ? await this.requisitionService.getRequisitionById(rfq.purchase_order) : undefined;
+
+    if (!rfq || !requisition) {
+      console.error('RFQ or Requisition not found');
+      return;
+    }
+
+    // Get Supplier Information
+    const supplierId = rfq.suppliers[0]?.supplierId;
+    const supplier: Supplier | undefined = (await this.suppliersService.getAll()).find(s => s.id === supplierId);
+
+    if (!supplier) {
+      console.error('Supplier not found');
+      return;
+    }
+
+    // Map Data to NOA Format
+    this.mockData = {
+      noaNumber: rfq.id,
+      date: new Date().toLocaleDateString('en-US', {
+        year: 'numeric',
+        month: 'long',
+        day: 'numeric'
+      }),
+      recipient: {
+        name: supplier.contactPerson,
+        position: 'Supplier Representative',
+        company: supplier.name,
+        address: supplier.address || 'N/A',
+        email: supplier.email || 'N/A'
+      },
+      items: requisition.products.map((product: { name: any; quantity: any; price: { toLocaleString: (arg0: string, arg1: { style: string; currency: string; }) => any; }; }) => ({
+        description: product.name,
+        quantity: product.quantity,
+        unit: 'Units', // Example unit
+        price: product.price.toLocaleString('en-US', { style: 'currency', currency: 'USD' })
+      })),
+      totalPrice: requisition.products.reduce((sum, product) => sum + product.price * product.quantity, 0)
+        .toLocaleString('en-US', { style: 'currency', currency: 'USD' }),
+      deliveryInstructions: 'Within the date indicated in the Work Order (WO) / Purchase Order (PO)'
+    };
+
+    // Add a delay to export the PDF
+    setTimeout(() => this.exportPdfs(), 500);
+  } catch (error) {
+    console.error('Error loading data:', error);
+  }
+}
+
+
+  showModal() {
+    this.displayModal = true;
+  }
+
+  hideModal() {
+    this.displayModal = false;
+  }
+
+  exportPdfs() {
     const content = document.createElement('div');
     content.innerHTML = `
       <div class="p-10 ml-10 bg-white shadow-md" style="width: 360mm; min-height: 350mm; font-family: Arial, sans-serif;">
@@ -50,7 +113,7 @@ export class NoaComponent {
         </div>
 
         <div class="mb-6 text-xl">
-          <p class="font-bold">Dear MS. MAXWELL:</p>
+          <p class="font-bold">Dear ${this.mockData.recipient.name}:</p>
           <p class="mt-2">This is to inform you that the Anti-Red Tape Authority has recommended the award
           of contract in your favor for the Procurement of Semi-Expendable ICT Equipment
           for the Office of the Director General, and you are hereby issued this NOTICE OF
@@ -68,7 +131,7 @@ export class NoaComponent {
             </tr>
           </thead>
           <tbody>
-            ${this.mockData.items.map((item, index) => `
+            ${this.mockData.items.map((item: { description: any; quantity: any; unit: any; price: any; }, index: number) => `
               <tr>
                 <td class="border border-black p-2 text-center">${index + 1}</td>
                 <td class="border border-black p-2">${item.description}</td>
@@ -87,21 +150,6 @@ export class NoaComponent {
         <div class="mb-8 text-xl">
           <p class="font-bold mb-2">Delivery Instructions:</p>
           <p>${this.mockData.deliveryInstructions}</p>
-        </div>
-
-        <div class="mb-6 text-xl">
-          <p class="mb-4">INSTRUCTIONS:</p>
-          <p>Please sign this Notice of Award (NOA) if you have no corrections to the contents and
-          Work Order (WO) within five (5) calendar days from receipt hereof. The original copy
-          of the NOA and WO shall be returned to the Anti-Red Tape Authority. Failure to sign</p>
-        </div>
-
-        <div class="mt-16 text-xl">
-          <p class="mb-4">Page 1 of 2</p>
-          <p class="border-t-2 border-black pt-4">Authorized Signature</p>
-          <p>Printed Name: _________________________</p>
-          <p>Designation: _________________________</p>
-          <p>Date: _________________________</p>
         </div>
       </div>
     `;

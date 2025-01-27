@@ -13,6 +13,7 @@ import { DropdownModule } from 'primeng/dropdown';
 import { FormsModule } from '@angular/forms';
 import { ButtonModule } from 'primeng/button';
 import { TabViewModule } from 'primeng/tabview';
+import { NoaComponent } from '../../shared/noa/noa.component';
 
 @Component({
   selector: 'app-purchase-orders',
@@ -27,7 +28,9 @@ import { TabViewModule } from 'primeng/tabview';
     DropdownModule,
     FormsModule,
     ButtonModule,
-    TabViewModule
+    TabViewModule,
+    NoaComponent,
+    CommonModule
   ],
   templateUrl: './purchase-orders.component.html',
   styleUrls: ['./purchase-orders.component.scss'],
@@ -69,19 +72,20 @@ export class PurchaseOrdersComponent implements OnInit {
 
           if (requisition && !requisition.purchaseOrderId) {
             return {
-              id: rfq.id,
-              title: requisition?.title || 'No Title',
-              description: requisition?.description || 'No Description',
-              totalEstimatedValue: rfq.suppliers?.reduce(
-                (sum, supplier) => sum + (supplier.biddingPrice || 0),
-                0
-              ) || 0,
-              requestedBy: user?.fullname || 'Unknown',
-              dateRequested: requisition?.dateCreated || new Date(),
-              qualifiedSupplier: rfq.suppliers?.[0]?.supplierName || 'N/A',
-              noticeOfAward: requisition?.noticeOfAwardAttachment || null,
-              purchase_order: rfq.purchase_order
-            };
+  id: rfq.id,
+  title: requisition?.title || 'No Title',
+  description: requisition?.description || 'No Description',
+  totalEstimatedValue: rfq.suppliers?.reduce(
+    (sum, supplier) => sum + (supplier.biddingPrice || 0),
+    0
+  ) || 0,
+  requestedBy: user?.fullname || 'Unknown',
+  dateRequested: requisition?.dateCreated || new Date(),
+  qualifiedSupplier: rfq.suppliers?.[0]?.supplierName || 'N/A',
+  noticeOfAward: requisition?.noticeOfAwardAttachment || null,
+  purchase_order: rfq.purchase_order
+};
+
           }
           return null;
         })
@@ -208,17 +212,19 @@ viewPurchaseRequest(attachment: string) {
     }
   }
 
-  viewNoticeOfAward(attachment: string) {
-    if (attachment) {
-      window.open(attachment, '_blank');
-    } else {
-      this.messageService.add({
-        severity: 'warn',
-        summary: 'No Notice of Award',
-        detail: 'No Notice of Award has been attached for this RFQ.',
-      });
-    }
+ viewNoticeOfAward(attachment: string) {
+  if (attachment) {
+    window.open(attachment, '_blank');
+  } else {
+    this.messageService.add({
+      severity: 'warn',
+      summary: 'No Notice of Award',
+      detail: 'No Notice of Award has been attached for this RFQ.',
+    });
   }
+   
+   
+}
 
  
 
@@ -284,4 +290,18 @@ async createNTP() {
     });
   }
 }
+  
+  showNOAModal: boolean = false;
+selectedRFQId: string | null = null;
+
+  openNOAModal(rfqId: string): void {
+  this.selectedRFQId = rfqId; // Pass the RFQ ID to the NOA component
+  this.showNOAModal = true; // Open the modal
+}
+
+  closeNOAModal(): void {
+  this.selectedRFQId = null; // Clear the RFQ ID
+  this.showNOAModal = false; // Close the modal
+}
+
 }

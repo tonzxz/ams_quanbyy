@@ -27,7 +27,7 @@ export const navItems: NavItem[] = [
   },
  
   {
-    displayName: 'Quotation Abstract',
+    displayName: 'Request for Quotation',
     iconName: 'solar:widget-add-line-duotone',
     route: '/shared/rfq-list',
     requiredRoles: ['bac'],
@@ -56,20 +56,10 @@ export const navItems: NavItem[] = [
  
   
   {
-    displayName: 'Purchase Order Template',
+    displayName: 'Notice to Proceed',
     iconName: 'solar:widget-add-line-duotone',
-    route: '/shared/purchase-order',
+    route: '/shared/ntp',
   },
-  {
-    displayName: 'Notice of Approval',
-    iconName: 'solar:widget-add-line-duotone',
-    route: '/shared/noa',
-  },
-  // {
-  //   displayName: 'Notice to Proceed',
-  //   iconName: 'solar:widget-add-line-duotone',
-  //   route: '/shared/ntp',
-  // },
   // {
   //   displayName: 'Purchase Request',
   //   iconName: 'solar:widget-add-line-duotone',

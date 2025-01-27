@@ -62,11 +62,19 @@
               <td>{{ rfq.requestedBy }}</td>
               <td>{{ rfq.dateRequested | date: 'short' }}</td>
               <td>{{ rfq.qualifiedSupplier }}</td>
-              <td>
+           <td>
+  <p-button 
+    outlined="true" 
+    severity="warn" 
+    pTooltip="Click to view Notice of Award"
+    (click)="openNOAModal(rfq.id)"
+    size="small" 
+    icon="pi pi-trophy" 
+    rounded>
+  </p-button>
+</td>
 
-                 <p-button outlined="true" severity="warn" pTooltip="Click to print notice of award"
-                  (click)="null" size="small" icon="pi pi-trophy" rounded />
-              </td>
+
             </tr>
           </ng-template>
 
@@ -289,4 +297,15 @@
       [disabled]="!selectedPO"
     />
   </div>
+</p-dialog>
+
+
+<p-dialog 
+  [(visible)]="showNOAModal"
+  [modal]="true" 
+  [closable]="true" 
+  [style]="{ width: '55vw', height: '90vh' }"
+  header="Notice of Award"
+>
+  <app-noa *ngIf="selectedRFQId" [rfqId]="selectedRFQId"></app-noa>
 </p-dialog>

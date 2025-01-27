@@ -62,39 +62,152 @@ export class InventoryService {
     ).join('');
   }
 
-  private loadDummyData() {
-    // create a couple of locations
-    const loc1: InventoryLocation = {
-      id: this.generateId(),
-      name: 'Location A',
-      officeId: 'ffffffffffffffffffffffffffffffff', // example office ID
-      capacity: 50
-    };
-    const loc2: InventoryLocation = {
-      id: this.generateId(),
-      name: 'Location B',
-      officeId: 'eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee',
-      capacity: 30
-    };
+private loadDummyData() {
+  // Generate multiple locations
+  const loc1: InventoryLocation = {
+    id: this.generateId(),
+    name: 'Main Warehouse',
+    officeId: '550e8400e29b41d4a716446655440010', // Example office ID
+    capacity: 1000
+  };
+  const loc2: InventoryLocation = {
+    id: this.generateId(),
+    name: 'IT Storage Room',
+    officeId: '550e8400e29b41d4a716446655440013', // Example office ID
+    capacity: 200
+  };
+  const loc3: InventoryLocation = {
+    id: this.generateId(),
+    name: 'Engineering Supply Depot',
+    officeId: '550e8400e29b41d4a716446655440011', // Example office ID
+    capacity: 300
+  };
+  const loc4: InventoryLocation = {
+    id: this.generateId(),
+    name: 'Nursing Equipment Storage',
+    officeId: '550e8400e29b41d4a716446655440015', // Example office ID
+    capacity: 150
+  };
+  const loc5: InventoryLocation = {
+    id: this.generateId(),
+    name: 'Business Administration Archive',
+    officeId: '550e8400e29b41d4a716446655440012', // Example office ID
+    capacity: 100
+  };
 
-    // create sample inventory
-    const inv1: Inventory = {
+  // Generate sample inventory items
+  const inventoryItems: Inventory[] = [
+    {
       id: this.generateId(),
-      itemName: 'Office Supplies', // from classification
-      locationId: loc1.id!,
-      quantity: 500
-    };
-    const inv2: Inventory = {
-      id: this.generateId(),
-      itemName: 'Electronics', // from classification
+      itemName: 'Laptops',
       locationId: loc2.id!,
-      quantity: 10
-    };
+      quantity: 20,
+      dateAcquired: new Date('2023-01-15'),
+      notes: 'Used for IT and computer science programs.'
+    },
+    {
+      id: this.generateId(),
+      itemName: 'Whiteboards',
+      locationId: loc3.id!,
+      quantity: 50,
+      dateAcquired: new Date('2023-03-10'),
+      notes: 'For engineering classrooms and offices.'
+    },
+    {
+      id: this.generateId(),
+      itemName: 'First Aid Kits',
+      locationId: loc4.id!,
+      quantity: 75,
+      dateAcquired: new Date('2023-02-25'),
+      notes: 'For nursing students and faculty.'
+    },
+    {
+      id: this.generateId(),
+      itemName: 'Projectors',
+      locationId: loc1.id!,
+      quantity: 10,
+      dateAcquired: new Date('2022-12-30'),
+      notes: 'Shared among all departments.'
+    },
+    {
+      id: this.generateId(),
+      itemName: 'Office Chairs',
+      locationId: loc1.id!,
+      quantity: 100,
+      dateAcquired: new Date('2022-10-15'),
+      notes: 'Stored for future use or replacements.'
+    },
+    {
+      id: this.generateId(),
+      itemName: 'Textbooks - Business Administration',
+      locationId: loc5.id!,
+      quantity: 200,
+      dateAcquired: new Date('2022-09-20'),
+      notes: 'Stored for reference and student use.'
+    },
+    {
+      id: this.generateId(),
+      itemName: 'CAD Workstations',
+      locationId: loc3.id!,
+      quantity: 15,
+      dateAcquired: new Date('2023-01-05'),
+      notes: 'High-performance computers for engineering design.'
+    },
+    {
+      id: this.generateId(),
+      itemName: 'Digital Thermometers',
+      locationId: loc4.id!,
+      quantity: 50,
+      dateAcquired: new Date('2023-04-01'),
+      notes: 'For practical nursing training.'
+    },
+    {
+      id: this.generateId(),
+      itemName: 'Network Switches',
+      locationId: loc2.id!,
+      quantity: 25,
+      dateAcquired: new Date('2023-03-12'),
+      notes: 'Used for IT networking projects.'
+    },
+    {
+      id: this.generateId(),
+      itemName: 'Filing Cabinets',
+      locationId: loc5.id!,
+      quantity: 30,
+      dateAcquired: new Date('2023-01-20'),
+      notes: 'For archiving department documents.'
+    },
+    {
+      id: this.generateId(),
+      itemName: 'Printers',
+      locationId: loc1.id!,
+      quantity: 15,
+      dateAcquired: new Date('2022-11-25'),
+      notes: 'Distributed across various offices.'
+    },
+    {
+      id: this.generateId(),
+      itemName: 'Desks',
+      locationId: loc3.id!,
+      quantity: 120,
+      dateAcquired: new Date('2022-08-10'),
+      notes: 'Extra desks for classrooms and offices.'
+    },
+    {
+      id: this.generateId(),
+      itemName: 'Microscopes',
+      locationId: loc4.id!,
+      quantity: 40,
+      dateAcquired: new Date('2023-02-15'),
+      notes: 'For use in nursing laboratory experiments.'
+    }
+  ];
 
-    this.locations = [loc1, loc2];
-    this.inventoryList = [inv1, inv2];
-    this.saveToLocalStorage();
-  }
+  this.locations = [loc1, loc2, loc3, loc4, loc5];
+  this.inventoryList = inventoryItems;
+  this.saveToLocalStorage();
+}
+
 
   // CRUD for Inventory Locations
   async getAllLocations(): Promise<InventoryLocation[]> {
