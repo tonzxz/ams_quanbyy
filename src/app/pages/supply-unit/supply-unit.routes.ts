@@ -6,6 +6,7 @@ import { RsmiComponent } from './rsmi/rsmi.component';
 import { IcsComponent } from './ics/ics.component';
 import { ParComponent } from './par/par.component';
 import { CompileReportsComponent } from './compile-reports/compile-reports.component';
+import { SupplyDashboardComponent } from './supply-dashboard/supply-dashboard.component';
 
 
 export const SupplyUnitRoutes: Routes = [
@@ -16,6 +17,12 @@ export const SupplyUnitRoutes: Routes = [
         path: '',
         redirectTo: '/stocking',
         pathMatch: 'full',
+      },
+      {
+        path: 'supply-dashboard',
+        component: SupplyDashboardComponent,
+        canActivate: [roleGuard],
+        data: { roles: ['supply', 'superadmin'], breadcrumb: 'Dashboard'  } // specify roles here
       },
       {
         path: 'stocking',

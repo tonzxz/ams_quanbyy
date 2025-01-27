@@ -5,8 +5,15 @@ import { PreparePurchasedOrdersComponent } from './prepare-purchased-orders/prep
 import { ApprovedPurchaseRequestsComponent } from './approved-purchase-requests/approved-purchase-requests.component';
 import { PurchaseOrderComponent } from '../shared/purchase-order/purchase-order.component';
 import { PurchaseOrdersComponent } from './purchase-orders/purchase-orders.component';
+import { BacDashboardComponent } from './bac-dashboard/bac-dashboard.component';
 
 export const bacRoutes: Routes = [
+  {
+    path: 'bac-dashboard',
+    component: BacDashboardComponent, // Single page for BAC functionality
+    data: { breadcrumb: 'Dashboard', roles: ['bac'] }, // Only 'bac' and 'superadmin' can access
+    canActivate: [roleGuard], // Protect the route with roleGuard
+  },
   {
     path: 'validate-approved-request',
     component: ValidateApprovedRequestComponent, // Single page for BAC functionality

@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { Component, OnInit, ViewChild } from '@angular/core';
+import { Component, ElementRef, OnInit, ViewChild } from '@angular/core';
 import { MaterialModule } from 'src/app/material.module';
 import { StepperModule } from 'primeng/stepper';
 import { TableModule } from 'primeng/table';
@@ -36,13 +36,17 @@ import { firstValueFrom } from 'rxjs';
 import { NotificationService } from 'src/app/services/notifications.service';
 import { RequestQuotationComponent } from '../request-quotation/request-quotation.component';
 import { AoqComponent } from '../aoq/aoq.component';
+import { BACResolutionComponent } from '../bac-resolution/bac-resolution.component';
+import { BudgetUtilizationComponent } from '../budget-utilization/budget-utilization.component';
 
 @Component({
   selector: 'app-rfq',
   standalone: true,
   imports: [MaterialModule, CommonModule, StepperModule, TableModule, ButtonModule, ButtonGroupModule, TabsModule, OverlayBadgeModule, BadgeModule,
     InputTextModule, FormsModule, SelectModule, FileUploadModule, DatePickerModule, InputNumberModule, ToastModule, ReactiveFormsModule, TextareaModule, LottieAnimationComponent,
-    FluidModule, TooltipModule, DialogModule, ConfirmPopupModule, IconFieldModule, InputIconModule, DividerModule, RequestQuotationComponent, AoqComponent],
+    FluidModule, TooltipModule, DialogModule, ConfirmPopupModule, IconFieldModule, InputIconModule, DividerModule, RequestQuotationComponent, AoqComponent, 
+    BudgetUtilizationComponent,
+    BACResolutionComponent],
   providers: [MessageService, ConfirmationService],
   templateUrl: './request-for-quotation-list.component.html',
   styleUrls: ['./request-for-quotation-list.component.scss']
@@ -91,6 +95,9 @@ export class RequestForQuotationListComponent implements OnInit {
     bid: new FormControl(0, [Validators.min(0.001),Validators.required])
   });
   supplier_upload_form = new FormGroup({
+    upload: new FormControl('', [Validators.required])
+  });
+  budget_upload_form = new FormGroup({
     upload: new FormControl('', [Validators.required])
   });
   reject_form = new FormGroup({
@@ -176,6 +183,15 @@ export class RequestForQuotationListComponent implements OnInit {
     this.showUploadSupplier = true;
   }
 
+  showUploadBudget: boolean = false;
+
+  openUploadBudget(rfq: RFQ) {
+    this.files = [];
+    this.budget_upload_form.reset();
+    this.selectedRFQ = rfq;
+    this.showUploadBudget = true;
+  }
+
   openEditRFQModal(rfq: RFQ) {
     this.form.reset();
     if (this.fileUpload) {
@@ -251,6 +267,9 @@ export class RequestForQuotationListComponent implements OnInit {
 
   filterByStatus(status: 'new' | 'canvasing' | 'approved') {
     this.filteredRFQs = this.rfqs.filter(rfq => rfq.status == status);
+    if(this.currentUser?.role =='accounting'){
+      this.filteredRFQs = this.filteredRFQs.filter(rfq => rfq.awarding =='pending');
+    }
   }
 
   nextStep() {
@@ -500,7 +519,11 @@ export class RequestForQuotationListComponent implements OnInit {
     if (this.currentUser?.role == 'end-user') {
       this.filterByStatus('canvasing');
       this.activeStep = 2;
-    } else {
+    }else if(this.currentUser?.role == 'accounting'){
+      this.filterByStatus('approved');
+      this.activeStep =3;
+    }
+     else {
       this.filterByStatus('new');
     }
   }
@@ -514,5 +537,145 @@ export class RequestForQuotationListComponent implements OnInit {
     this.showAOQModal = true; // Show the modal
   }
 
+  showBACResolution: boolean = false; // Modal visibility control
+  selectedRFQResoId: string | null = null; // Selected RFQ ID for AOQ
+  generateBACResolution(rfqId: string): void {
+    this.selectedRFQResoId = rfqId; // Set the RFQ ID to pass to AoqComponent
+    this.showBACResolution = true; // Show the modal
+  }
+
+  showBudgetReport: boolean = false; // Modal visibility control
+  selectedRFQBudgetId: string | null = null; // Selected RFQ ID for AOQ
+  generateBudgetReport(rfqId: string): void {
+    this.selectedRFQBudgetId = rfqId; // Set the RFQ ID to pass to AoqComponent
+    this.showBudgetReport = true; // Show the modal
+  }
+
+
+  @ViewChild('signatureCanvas', { static: false })
+  signatureCanvas!: ElementRef<HTMLCanvasElement>;
+  private canvasContext!: CanvasRenderingContext2D;
+  private isSigned = false;
+
+  closeSignatureDialog() {
+    this.displaySignatureDialog = false;
+    this.clearSignature();
+  }
+
+  signatureDataUrl:string;
+
+  async submitApproval() {
+    try {
+      if (!this.isSigned) {
+        this.messageService.add({
+          severity: 'warn',
+          summary: 'No Signature',
+          detail: 'Please provide your signature before approving.',
+        });
+        return;
+      }  
+      // Capture the signature
+      const canvas = this.signatureCanvas.nativeElement;
+      this.signatureDataUrl = canvas.toDataURL('image/png');
+     
+      if(this.currentUser?.role == 'accounting'){
+        await this.rfqService.editRFQ({
+          ...this.selectedRFQ!,
+          awarding:'awarded'
+        })
+      }else{
+        await this.rfqService.editRFQ({
+          ...this.selectedRFQ!,
+          awarding:'pending'
+        })
+      }
+
+      const users = await firstValueFrom(this.userService.getAllUsers());
+      for (let user of users) {
+        if (user.role == 'bac' || user.role == 'accounting' || user.role =='end-user') {
+          
+          if(this.currentUser?.role == 'accounting'){
+            this.notifService.addNotification(
+              `RFQ No. ${this.selectedRFQ!.id} budget utilization report has been submitted.`,
+              'info',
+              user.id
+            )
+            if(user.role =='bac'){
+              this.notifService.addNotification(
+                `RFQ No. ${this.selectedRFQ!.id} notice of award can now be distributed.`,
+                'info',
+                user.id
+              )
+            }
+          }else{
+            this.notifService.addNotification(
+              `RFQ No. ${this.selectedRFQ!.id} BAC Resolution has been forwarded.`,
+              'info',
+              user.id
+            )
+          }
+        }
+      }
+      this.messageService.add({ severity: 'success', summary: 'Success', detail: `Successfully submitted Budget Utilization Report.` });
+      this.displaySignatureDialog = false;
+      await this.fetchItems();
+      this.filterByStatus('approved');
+      this.activeStep = 3;
+
+
+    }catch (e) {}
+  }
+
+
+displaySignatureDialog:boolean =false;
+  
+openSignatureDialog(rfq:RFQ) {
+  this.selectedRFQ = rfq;
+  this.displaySignatureDialog = true;
+  setTimeout(() => this.setupSignatureCanvas(), 0); // Initialize the canvas after the dialog is opened
+}
+
+openBudgetSignatureDialog(rfq:RFQ) {
+  this.selectedRFQ = rfq;
+  this.displaySignatureDialog = true;
+  setTimeout(() => this.setupSignatureCanvas(), 0); // Initialize the canvas after the dialog is opened
+}
+
+
+  private setupSignatureCanvas() {
+    const canvas = this.signatureCanvas.nativeElement;
+    this.canvasContext = canvas.getContext('2d')!;
+    this.canvasContext.clearRect(0, 0, canvas.width, canvas.height); // Clear the canvas
+    this.isSigned = false; // Reset the signature flag
+  
+    let isDrawing = false;
+  
+    // Event listeners for drawing on the canvas
+    canvas.addEventListener('mousedown', () => {
+      isDrawing = true;
+      this.isSigned = true; // Mark that a signature has been drawn
+      this.canvasContext.beginPath(); // Start a new drawing path
+    });
+  
+    canvas.addEventListener('mousemove', (event: MouseEvent) => {
+      if (isDrawing) {
+        const rect = canvas.getBoundingClientRect();
+        const x = event.clientX - rect.left; // Get the X coordinate relative to the canvas
+        const y = event.clientY - rect.top; // Get the Y coordinate relative to the canvas
+        this.canvasContext.lineTo(x, y); // Draw a line to the new coordinates
+        this.canvasContext.stroke(); // Render the line
+      }
+    });
+  
+    canvas.addEventListener('mouseup', () => (isDrawing = false)); // Stop drawing when the mouse is released
+    canvas.addEventListener('mouseout', () => (isDrawing = false)); // Stop drawing when the mouse leaves the canvas
+  }
+  
+  // Clears the signature canvas.
+  clearSignature() {
+    const canvas = this.signatureCanvas.nativeElement;
+    this.canvasContext.clearRect(0, 0, canvas.width, canvas.height); // Clear the canvas
+    this.isSigned = false; // Reset the signature flag
+  }
 
 }

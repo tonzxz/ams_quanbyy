@@ -22,13 +22,13 @@ import {
 
 
 @Component({
-  selector: 'app-dashboard',
+  selector: 'app-supply-dashboard',
   standalone: true,
   imports: [ChartModule, CardModule, ButtonModule, ScrollPanelModule, CalendarModule, CommonModule, FormsModule, NgApexchartsModule ],
-  templateUrl: './dashboard.component.html',
-  styleUrls: ['./dashboard.component.scss']
+  templateUrl: './supply-dashboard.component.html',
+  styleUrls: ['./supply-dashboard.component.scss']
 })
-export class DashboardComponent implements OnInit {
+export class SupplyDashboardComponent implements OnInit {
   data: any;
   options: any;
   departmentData: any;
@@ -43,7 +43,7 @@ export class DashboardComponent implements OnInit {
     yaxis: ApexYAxis;
     stroke: ApexStroke;
     title: ApexTitleSubtitle;
-  } = {
+  } = { 
     series: [],
     chart: {
       type: 'line',
@@ -71,12 +71,12 @@ export class DashboardComponent implements OnInit {
   
   ngOnInit() {
     this.data = {
-      labels: ['Pending', 'Approved'],
+      labels: ['Laptop', 'Mouse', 'Keyboard', 'Bond Paper', 'Paper Clip'],
       datasets: [
         {
-          data: [65, 60],
-          backgroundColor: ['#42A5F5', '#ffd700'],
-          hoverBackgroundColor: ['#64B5F6', '#FFEB3B']
+          data: [65, 60, 21, 80, 110],
+          backgroundColor: ['#42A5F5', '#FFD700', '#FF6384', '#36A2EB', '#FFCE56'],
+          hoverBackgroundColor: ['#64B5F6', '#FFEB3B', '#FF6384', '#36A2EB', '#FFCE56']
         }
       ]
     };
@@ -90,7 +90,7 @@ export class DashboardComponent implements OnInit {
         },
         title: {
           display: true,
-          text: 'Total Requisitions'
+          text: 'Total Supply'
         }
       }
     };
@@ -116,7 +116,7 @@ export class DashboardComponent implements OnInit {
     };
   
     this.lineChartOptions.title = {
-      text: "Total Purchase Requests",
+      text: "Supplies Delivered by Month",
       align: "left"
     };
   
