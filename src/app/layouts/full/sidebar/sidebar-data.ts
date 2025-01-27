@@ -202,6 +202,12 @@ export const navItems: NavItem[] = [
     requiredRoles: ['accounting'],
   },
   {
+    displayName: 'Budget Utilization Report',
+    iconName: 'solar:widget-add-line-duotone',
+    route: '/shared/rfq-list',
+    requiredRoles: ['accounting'],
+  },
+  {
     displayName: 'Voucher Review',
     iconName: 'solar:ticket-sale-broken',
     route: '/accounting/voucher-review',

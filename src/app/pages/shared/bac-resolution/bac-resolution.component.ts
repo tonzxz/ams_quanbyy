@@ -101,6 +101,7 @@ export class BACResolutionComponent implements OnChanges {
       const rfq = await this.rfqService.getById(this.rfqId);
       if (rfq) {
         this.populateMockData(rfq);
+        this.exportPdf();
       }
     }
   }
