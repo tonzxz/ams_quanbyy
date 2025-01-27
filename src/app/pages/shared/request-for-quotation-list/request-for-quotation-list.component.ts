@@ -583,6 +583,11 @@ export class RequestForQuotationListComponent implements OnInit {
           ...this.selectedRFQ!,
           awarding:'awarded'
         })
+      }else{
+        await this.rfqService.editRFQ({
+          ...this.selectedRFQ!,
+          awarding:'pending'
+        })
       }
 
       const users = await firstValueFrom(this.userService.getAllUsers());
