@@ -15,6 +15,7 @@ import { BudgetUtilizationComponent } from './budget-utilization/budget-utilizat
 import { RequestForQuotationListComponent } from './request-for-quotation-list/request-for-quotation-list.component';
 import { RfqComponent } from './rfq/rfq.component';
 import { BACResolutionComponent } from './bac-resolution/bac-resolution.component';
+import { PurchaseOrderComponent } from './purchase-order/purchase-order.component';
 
 export const SharedRoutes: Routes = [
   {
@@ -104,6 +105,11 @@ export const SharedRoutes: Routes = [
         path: 'bac-resolution',
         component: BACResolutionComponent,
         data: {breadcrumb:'BAC Resolution Template'}
+      },
+      {
+        path: 'purchase-order',
+        component: PurchaseOrderComponent,
+        data: {breadcrumb:'Purchase Order Template'}
       },
     ],
   },
