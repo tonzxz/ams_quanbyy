@@ -95,94 +95,162 @@
   <!-- Second tab - Notice to Proceed -->
  <!-- Update only the Notice to Proceed tab content in your p-tabView -->
 <p-tabPanel header="Notice to Proceed">
-    <mat-card class="cardWithShadow">
-      <mat-card-content>
-        <mat-card-title>Notice to Proceed</mat-card-title>
-        <mat-card-subtitle class="text-sm text-gray-500">
-          Generate Notice to Proceed for Purchase Orders.
-        </mat-card-subtitle>
+  <p-tabView>
+    <!-- Create Tab -->
+    <p-tabPanel header="Create">
+      <mat-card class="cardWithShadow">
+        <mat-card-content>
+          <mat-card-title>Notice to Proceed</mat-card-title>
+          <mat-card-subtitle class="text-sm text-gray-500">
+            Generate Notice to Proceed for Purchase Orders.
+          </mat-card-subtitle>
 
-         <div class="flex justify-between items-center mt-4">
-          <p-button
-            icon="pi pi-file"
-            label="Create Notice To Proceed"
-            severity="primary"
-            outlined="true"
-            size="small"
-            (click)="openNTPModal()"
-          ></p-button>
+          <div class="flex justify-between items-center mt-4">
+            <p-button
+              icon="pi pi-file"
+              label="Create Notice To Proceed"
+              severity="primary"
+              outlined="true"
+              size="small"
+              (click)="openNTPModal()"
+            ></p-button>
+            <div class="relative w-[300px]">
+              <i class="pi pi-search absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500"></i>
+              <input
+                pInputText
+                type="text"
+                #searchCreate
+                (input)="dtCreate.filterGlobal(searchCreate.value, 'contains')"
+                placeholder="Search Purchase Orders"
+                style="text-indent: 1.5rem;"
+                class="w-full border border-gray-300 rounded-md py-2 pl-10 pr-3 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 placeholder:ml-6"
+              />
+            </div>
+          </div>
 
-        <div class="relative w-[300px] ">
-          <i class="pi pi-search absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500"></i>
-          <input
-            pInputText
-            type="text"
-            #searchNTP
-            (input)="dtNTP.filterGlobal(searchNTP.value, 'contains')"
-            placeholder="Search Purchase Orders"
-            style="text-indent: 1.5rem;"
-            class="w-full border border-gray-300 rounded-md py-2 pl-10 pr-3 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 placeholder:ml-6"
-          />
-        </div>
-        </div>
+          <p-table
+            #dtCreate
+            [value]="rfqsWithPO"
+            [rows]="5"
+            [paginator]="true"
+            [rowsPerPageOptions]="[5, 10, 20]"
+            responsiveLayout="scroll"
+            styleClass="p-datatable-sm mt-4"
+          >
+            <ng-template pTemplate="header">
+              <tr>
+                <th>Purchase Order ID</th>
+                <th>Title</th>
+                <th>Description</th>
+                <th>Total Value</th>
+                <th>Requested By</th>
+                <th>Date Requested</th>
+                <th>Purchase Order</th>
+              </tr>
+            </ng-template>
 
-        <p-table
-          #dtNTP
-          [value]="rfqsWithPO"
-          [rows]="5"
-          [paginator]="true"
-          [rowsPerPageOptions]="[5, 10, 20]"
-          responsiveLayout="scroll"
-          styleClass="p-datatable-sm mt-4"
-        >
-          <ng-template pTemplate="header">
-            <tr>
-              <th>Purchase Order ID</th>
-              <th>Title</th>
-              <th>Description</th>
-              <th>Total Value</th>
-              <th>Requested By</th>
-              <th>Date Requested</th>
-              <th>Purchase Request</th>
-            </tr>
-          </ng-template>
+            <ng-template pTemplate="body" let-rfq>
+  <tr>
+    <td>{{ rfq.purchaseOrderId }}</td>
+    <td>{{ rfq.title }}</td>
+    <td>{{ rfq.description }}</td>
+    <td>{{ rfq.totalEstimatedValue | currency }}</td>
+    <td>{{ rfq.requestedBy }}</td>
+    <td>{{ rfq.dateRequested | date: 'short' }}</td>
+    <td>
+      <p-button
+        icon="pi pi-eye"
+        severity="info"
+        size="small"
+        (click)="openPurchaseOrderModal(rfq.id)"
+        outlined="true"
+      ></p-button>
+    </td>
+  </tr>
+</ng-template>
 
-          <ng-template pTemplate="body" let-rfq>
-            <tr>
-              <td>{{ rfq.purchaseOrderId }}</td>
-              <td>{{ rfq.title }}</td>
-              <td>{{ rfq.description }}</td>
-              <td>{{ rfq.totalEstimatedValue | currency }}</td>
-              <td>{{ rfq.requestedBy }}</td>
-              <td>{{ rfq.dateRequested | date: 'short' }}</td>
-              <td>
-                <button
-                  pButton
-                  icon="pi pi-eye"
-                  outlined="true"
-                  class="p-button-rounded p-button-info p-button-sm"
-                  (click)="viewPurchaseRequest(rfq.purchaseRequestAttachment)"
-                  pTooltip="View Purchase Request"
-                  [disabled]="!rfq.purchaseRequestAttachment"
-                ></button>
-              </td>
-              
-            </tr>
-          </ng-template>
 
-          <ng-template pTemplate="emptymessage">
-            <tr>
-              <td colspan="8">
-                <div class="flex flex-col w-full items-center justify-center py-8">
-                  <span>No Purchase Orders found.</span>
-                </div>
-              </td>
-            </tr>
-          </ng-template>
-        </p-table>
-      </mat-card-content>
-    </mat-card>
-  </p-tabPanel>
+
+            <ng-template pTemplate="emptymessage">
+              <tr>
+                <td colspan="7">
+                  <div class="flex flex-col w-full items-center justify-center py-8">
+                    <span>No Purchase Orders found.</span>
+                  </div>
+                </td>
+              </tr>
+            </ng-template>
+          </p-table>
+        </mat-card-content>
+      </mat-card>
+    </p-tabPanel>
+
+    <!-- For Sending Tab -->
+    <p-tabPanel header="For Sending">
+      <mat-card class="cardWithShadow">
+        <mat-card-content>
+          <mat-card-title>For Sending</mat-card-title>
+          <mat-card-subtitle class="text-sm text-gray-500">
+            View Notices to Proceed ready for sending.
+          </mat-card-subtitle>
+
+          <p-table
+            #dtForSending
+            [value]="createdNTPs"
+            [rows]="5"
+            [paginator]="true"
+            [rowsPerPageOptions]="[5, 10, 20]"
+            responsiveLayout="scroll"
+            styleClass="p-datatable-sm mt-4"
+          >
+            <ng-template pTemplate="header">
+              <tr>
+                <th>Notice to Proceed ID</th>
+                <th>Title</th>
+                <th>Description</th>
+                <th>Total Value</th>
+                <th>Requested By</th>
+                <th>Date Created</th>
+                <th>Actions</th>
+              </tr>
+            </ng-template>
+
+            <ng-template pTemplate="body" let-ntp>
+              <tr>
+                <td>{{ ntp.id }}</td>
+                <td>{{ ntp.title }}</td>
+                <td>{{ ntp.description }}</td>
+                <td>{{ ntp.totalValue | currency }}</td>
+                <td>{{ ntp.requestedBy }}</td>
+                <td>{{ ntp.dateCreated | date: 'short' }}</td>
+                <td>
+                  <p-button
+                    icon="pi pi-send"
+                    label="Send"
+                    severity="primary"
+                    size="small"
+                    (click)="sendNTP(ntp.id)"
+                  ></p-button>
+                </td>
+              </tr>
+            </ng-template>
+
+            <ng-template pTemplate="emptymessage">
+              <tr>
+                <td colspan="7">
+                  <div class="flex flex-col w-full items-center justify-center py-8">
+                    <span>No Notices to Proceed ready for sending.</span>
+                  </div>
+                </td>
+              </tr>
+            </ng-template>
+          </p-table>
+        </mat-card-content>
+      </mat-card>
+    </p-tabPanel>
+  </p-tabView>
+</p-tabPanel>
+
 </p-tabView>
 
 <!-- Purchase Order Modal -->
@@ -308,4 +376,17 @@
   header="Notice of Award"
 >
   <app-noa *ngIf="selectedRFQId" [rfqId]="selectedRFQId"></app-noa>
+</p-dialog>
+
+<p-dialog
+  [(visible)]="isPurchaseOrderModalVisible"
+  [modal]="true"
+  [closable]="true"
+  [style]="{ width: '55vw', height: '90vh' }"
+  header="Purchase Order Preview"
+>
+  <app-purchase-order
+    *ngIf="selectedRFQId"
+    [rfqId]="selectedRFQId"
+  ></app-purchase-order>
 </p-dialog>

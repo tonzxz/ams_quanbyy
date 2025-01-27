@@ -14,6 +14,7 @@ import { FormsModule } from '@angular/forms';
 import { ButtonModule } from 'primeng/button';
 import { TabViewModule } from 'primeng/tabview';
 import { NoaComponent } from '../../shared/noa/noa.component';
+import { PurchaseOrderComponent } from '../../shared/purchase-order/purchase-order.component';
 
 @Component({
   selector: 'app-purchase-orders',
@@ -30,7 +31,9 @@ import { NoaComponent } from '../../shared/noa/noa.component';
     ButtonModule,
     TabViewModule,
     NoaComponent,
-    CommonModule
+    CommonModule,
+    PurchaseOrderComponent,
+    
   ],
   templateUrl: './purchase-orders.component.html',
   styleUrls: ['./purchase-orders.component.scss'],
@@ -253,43 +256,7 @@ onCancelNTP() {
   this.selectedPO = null;
 }
 
-async createNTP() {
-  if (!this.selectedPO) {
-    this.messageService.add({
-      severity: 'warn',
-      summary: 'Warning',
-      detail: 'Please select a Purchase Order to create a Notice to Proceed.',
-    });
-    return;
-  }
 
-  try {
-    const ntpId = Math.random().toString(36).substring(2, 8).toUpperCase();
-    
-    await this.requisitionService.updateNoticeToProceedId(
-      this.selectedPO.requisitionId,
-      ntpId
-    );
-
-    await this.loadRFQsWithPO(); // Refresh the list
-    
-    this.isNTPModalVisible = false;
-    this.selectedPO = null;
-
-    this.messageService.add({
-      severity: 'success',
-      summary: 'Success',
-      detail: `Notice to Proceed ${ntpId} created successfully!`,
-    });
-  } catch (error) {
-    console.error('Error creating NTP:', error);
-    this.messageService.add({
-      severity: 'error',
-      summary: 'Error',
-      detail: 'Failed to create Notice to Proceed.',
-    });
-  }
-}
   
   showNOAModal: boolean = false;
 selectedRFQId: string | null = null;
@@ -303,5 +270,90 @@ selectedRFQId: string | null = null;
   this.selectedRFQId = null; // Clear the RFQ ID
   this.showNOAModal = false; // Close the modal
 }
+
+  
+  createdNTPs: any[] = [];
+sentNTPs: any[] = [];
+
+async createNTP(rfq?: any) {
+  // Use the rfq parameter if available, otherwise fall back to selectedPO
+  const target = rfq || this.selectedPO;
+
+  if (!target) {
+    this.messageService.add({
+      severity: 'warn',
+      summary: 'Warning',
+      detail: 'Please select a valid Purchase Order to create a Notice to Proceed.',
+    });
+    return;
+  }
+
+  try {
+    const ntpId = Math.random().toString(36).substring(2, 8).toUpperCase();
+
+    // Update the backend with the new NTP ID
+    await this.requisitionService.updateNoticeToProceedId(target.requisitionId, ntpId);
+
+    // Add the newly created NTP to the createdNTPs list
+    this.createdNTPs.push({
+      id: ntpId,
+      title: target.title,
+      description: target.description,
+      totalValue: target.totalEstimatedValue,
+      requestedBy: target.requestedBy,
+      dateCreated: new Date(),
+    });
+
+    // Refresh the list of RFQs with POs
+    await this.loadRFQsWithPO();
+
+    this.messageService.add({
+      severity: 'success',
+      summary: 'Success',
+      detail: `Notice to Proceed ${ntpId} created successfully!`,
+    });
+
+    // Clear selection for modal-based button
+    this.selectedPO = null;
+    this.isNTPModalVisible = false;
+  } catch (error) {
+    console.error('Error creating NTP:', error);
+    this.messageService.add({
+      severity: 'error',
+      summary: 'Error',
+      detail: 'Failed to create Notice to Proceed.',
+    });
+  }
+}
+
+
+sendNTP(ntpId: string): void {
+  const ntpIndex = this.createdNTPs.findIndex((ntp) => ntp.id === ntpId);
+
+  if (ntpIndex > -1) {
+    const sentNTP = { ...this.createdNTPs[ntpIndex], dateSent: new Date() };
+    this.sentNTPs.push(sentNTP); // Move to sent
+    this.createdNTPs.splice(ntpIndex, 1); // Remove from created
+
+    this.messageService.add({
+      severity: 'success',
+      summary: 'Success',
+      detail: `Notice to Proceed ${ntpId} sent successfully!`,
+    });
+  }
+}
+
+  
+  isPurchaseOrderModalVisible: boolean = false;
+openPurchaseOrderModal(rfqId: string): void {
+  this.selectedRFQId = rfqId; // Set the RFQ ID for the modal
+  this.isPurchaseOrderModalVisible = true; // Open the modal
+}
+
+closePurchaseOrderModal(): void {
+  this.selectedRFQId = null; // Clear the RFQ ID
+  this.isPurchaseOrderModalVisible = false; // Close the modal
+}
+
 
 }

@@ -50,7 +50,7 @@ export const navItems: NavItem[] = [
     displayName: 'Approvals',
     iconName: 'solar:widget-add-line-duotone',
     route: '/shared/approvals',
-    requiredRoles: ['end-user', 'bac', 'accounting', 'caf', 'president', 'inspection'],
+    requiredRoles: ['end-user', 'bac', 'accounting','supply', 'caf', 'president', 'inspection'],
 
   },
 

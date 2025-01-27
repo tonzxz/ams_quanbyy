@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, Input, OnChanges, SimpleChanges } from '@angular/core';
 import { ButtonModule } from 'primeng/button';
 import { SuppliersService } from 'src/app/services/suppliers.service';
 import { RequisitionService } from 'src/app/services/requisition.service';
@@ -15,8 +15,9 @@ import { CommonModule } from '@angular/common';
   templateUrl: './purchase-order.component.html',
   styleUrls: ['./purchase-order.component.scss']
 })
-export class PurchaseOrderComponent {
-  rfqId: string = '';
+export class PurchaseOrderComponent implements OnChanges {
+  @Input() rfqId: string = '';
+
   purchaseOrderData: any = {
     requestingOffice: 'OFFICE OF THE DIRECTOR GENERAL',
     contractor: '',
@@ -59,22 +60,28 @@ export class PurchaseOrderComponent {
     private rfqService: RFQService
   ) {}
 
+  ngOnChanges(changes: SimpleChanges): void {
+    if (changes['rfqId'] && this.rfqId) {
+      this.loadPurchaseOrderData();
+    }
+  }
+
   async loadPurchaseOrderData() {
     if (!this.rfqId) {
-      alert('Please enter an RFQ ID.');
+      console.warn('RFQ ID is not provided.');
       return;
     }
 
     try {
       const rfq = await this.rfqService.getById(this.rfqId);
       if (!rfq) {
-        alert('RFQ not found.');
+        console.warn('RFQ not found.');
         return;
       }
 
       const requisition = await this.requisitionService.getRequisitionById(rfq.purchase_order || '');
       if (!requisition) {
-        alert('Requisition not found.');
+        console.warn('Requisition not found.');
         return;
       }
 
@@ -82,7 +89,7 @@ export class PurchaseOrderComponent {
         suppliers.find(s => s.id === rfq.suppliers[0]?.supplierId)
       );
       if (!supplier) {
-        alert('Supplier not found.');
+        console.warn('Supplier not found.');
         return;
       }
 
