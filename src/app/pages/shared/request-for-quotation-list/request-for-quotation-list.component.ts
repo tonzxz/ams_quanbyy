@@ -60,6 +60,7 @@ export class RequestForQuotationListComponent implements OnInit {
 
   showRFQModal: boolean = false;
   showSupplierModal: boolean = false;
+  showAwardModal: boolean = false;
 
   responsiveOptions: any[] = [
     {
@@ -79,6 +80,9 @@ export class RequestForQuotationListComponent implements OnInit {
   });
 
   supplier_form = new FormGroup({
+    supplier: new FormControl<Supplier|null>(null,[Validators.required])
+  });
+  award_form = new FormGroup({
     supplier: new FormControl<Supplier|null>(null,[Validators.required])
   });
   supplier_upload_form = new FormGroup({
@@ -123,6 +127,11 @@ export class RequestForQuotationListComponent implements OnInit {
     this.showSupplierModal = true;
   }
 
+  openAwardModal(rfq:RFQ) {
+    this.award_form.reset();
+    this.selectedRFQ = rfq;
+    this.showAwardModal = true;
+  }
 
   onSelectedFiles(event:any) {
     this.files = event.currentFiles ?? []
@@ -349,41 +358,31 @@ export class RequestForQuotationListComponent implements OnInit {
 
 
 
-  async confirmApprove(event: Event, rfq:RFQ) {
-    this.confirmationService.confirm({
-      target: event.target as EventTarget,
-      message: 'Are you sure you want to approve this RFQ?',
-      icon: 'pi pi-exclamation-triangle',
-      rejectButtonProps: {
-        label: 'Cancel',
-        severity: 'secondary',
-        outlined: true,
-      },
-      acceptButtonProps: {
-        label: 'Confirm',
-      },
-      accept: async () => {
-        await this.rfqService.editRFQ({
-          ...rfq,
-          status:'approved',
-        })
-        this.messageService.add({ severity: 'success', summary: 'Success', detail: `Successfully approved RFQ.` });
-        const users = await firstValueFrom(this.userService.getAllUsers());
-        for(let user of users){
-          if(user.role == 'bac'  ){
-            this.notifService.addNotification(
-            `RFQ No. ${rfq.id} has been approved on end-user canvasing.`,
-            'info',
-            user.id
-            )
-          }
-        }
-        await this.fetchItems();
-        this.filterByStatus('canvasing');
-        this.activeStep = 2;
-      },
-      reject: () => {},
-    });
+  async confirmApprove(rfq:RFQ) {
+    const supplier = this.award_form.value;
+    await this.rfqService.editRFQ({
+      ...rfq,
+      status:'approved',
+      supplier: supplier.supplier!.id
+    })
+    this.messageService.add({ severity: 'success', summary: 'Success', detail: `Successfully approved RFQ.` });
+    const users = await firstValueFrom(this.userService.getAllUsers());
+    for(let user of users){
+      if(user.role == 'bac'  ){
+        this.notifService.addNotification(
+        `RFQ No. ${rfq.id} has been approved on end-user canvasing.`,
+        'info',
+        user.id
+        )
+      }
+    }
+    await this.fetchItems();
+    this.filterByStatus('canvasing');
+    this.activeStep = 2;
+    this.showAwardModal =false;
+  }
+  getSupplierName(id?:string){
+    return this.suppliers.find(s=>s.id == id)?.name ?? 'N/A';
   }
 
   async rejectRFQ(rfq:RFQ){
@@ -408,7 +407,7 @@ export class RequestForQuotationListComponent implements OnInit {
     this.activeStep = 2;
   }
 
-  getPR(id:string){
+  getPR(id?:string){
     return this.allRequisitions.find(r => r.id == id);
   }
 
@@ -421,13 +420,19 @@ export class RequestForQuotationListComponent implements OnInit {
     return this.suppliers.filter(s=>  !rfq?.suppliers.map(t=>t.supplierId).includes(s.id!))
   }
 
+  getTakenSuppliers(rfq:RFQ){
+    return this.suppliers.filter(s=>  rfq?.suppliers.map(t=>t.supplierId).includes(s.id!))
+  }
+
   async fetchItems() {
     this.currentUser = this.userService.getUser();
+    this.allRequisitions = await this.requisitionService.getAllRequisitions();
     this.rfqs = await this.rfqService.getAll();
+    this.rfqs = this.rfqs.filter(r=>this.getPR(r.purchase_order));
     this.suppliers = await this.supplierService.getAll();
     this.departments = await this.departmentService.getAllDepartments();
     const allSequences = await firstValueFrom(this.approvalSequenceService.getAllSequences());
-    this.allRequisitions = await this.requisitionService.getAllRequisitions();
+   
     this.requisitions = this.allRequisitions
       .map((req) => {
         // const typeSequences = allSequences.filter(
@@ -448,7 +453,7 @@ export class RequestForQuotationListComponent implements OnInit {
         if(this.rfqs.find(dr=>dr.purchase_order == req.id)){
           return false;
         }
-        return req.approvalSequenceDetails && (req.approvalSequenceDetails?.roleName == 'bac') 
+        return req.approvalSequenceDetails && (req.approvalSequenceDetails?.roleCode == 'bac') 
       });
     if(this.currentUser?.role =='end-user'){
       this.filterByStatus('canvasing');
