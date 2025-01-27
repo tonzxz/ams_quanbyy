@@ -15,7 +15,7 @@ export const navItems: NavItem[] = [
     iconName: 'solar:widget-add-line-duotone',
     route: '/shared/approvals',
   },
-  {
+  { //PLEASE REMOVE EVERYTHING FROM HERE HEHE THESE ARE ALL JUST JSPDF TEMPLATES
     displayName: 'Request Quotation',
     iconName: 'solar:widget-add-line-duotone',
     route: '/shared/request-quotation',
@@ -24,6 +24,46 @@ export const navItems: NavItem[] = [
     displayName: 'Purchase Request',
     iconName: 'solar:widget-add-line-duotone',
     route: '/shared/purchase-req',
+  },
+  {
+    displayName: 'Disbursement Template',
+    iconName: 'solar:widget-add-line-duotone',
+    route: '/shared/disbursement',
+  },
+  {
+    displayName: 'Stock-Card Template',
+    iconName: 'solar:widget-add-line-duotone',
+    route: '/shared/stock-card',
+  },
+  {
+    displayName: 'Requisition and Issue Slip',
+    iconName: 'solar:widget-add-line-duotone',
+    route: '/shared/ris',
+  },
+  {
+    displayName: 'Semi-Expendable',
+    iconName: 'solar:widget-add-line-duotone',
+    route: '/shared/semi-expendable',
+  },
+  {
+    displayName: 'Abstract of Quotations',
+    iconName: 'solar:widget-add-line-duotone',
+    route: '/shared/aoq',
+  },
+  {
+    displayName: 'Budget Utilization',
+    iconName: 'solar:widget-add-line-duotone',
+    route: '/shared/budget-utilization',
+  },
+  {
+    displayName: 'RFQ',
+    iconName: 'solar:widget-add-line-duotone',
+    route: '/shared/rfq',
+  },
+  {
+    displayName: 'BAC Resolution',
+    iconName: 'solar:widget-add-line-duotone',
+    route: '/shared/bac-resolution',
   },
 
   // End User Section
@@ -100,6 +140,37 @@ export const navItems: NavItem[] = [
     route: '/shared/disbursement-vouchers',
     requiredRoles: ['supply', 'superadmin'],
   },
+
+  {
+    navCap: 'Reports Generation',
+    divider: true,
+    requiredRoles: ['supply', 'superadmin'],
+  },
+  {
+    displayName: 'RSMI',
+    iconName: 'solar:ticket-sale-broken',
+    route: '/supply-management/rsmi',
+    requiredRoles: ['supply', 'superadmin'],
+  },
+  {
+    displayName: 'PAR',
+    iconName: 'solar:ticket-sale-broken',
+    route: '/supply-management/par',
+    requiredRoles: ['supply', 'superadmin'],
+  },
+  {
+    displayName: 'ICS',
+    iconName: 'solar:ticket-sale-broken',
+    route: '/supply-management/ics',
+    requiredRoles: ['supply', 'superadmin'],
+  },
+  {
+    displayName: 'Compile Reports',
+    iconName: 'solar:ticket-sale-broken',
+    route: '/supply-management/compile-reports',
+    requiredRoles: ['supply', 'superadmin'],
+  },
+
 
   // Accounting Section
   {
