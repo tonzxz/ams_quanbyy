@@ -17,12 +17,7 @@ export const navItems: NavItem[] = [
     requiredRoles: ['end-user', 'bac', 'accounting', 'caf', 'president', 'inspection'],
 
   },
-  { //PLEASE REMOVE EVERYTHING FROM HERE HEHE THESE ARE ALL JUST JSPDF TEMPLATES
-    displayName: 'Request Quotation',
-    iconName: 'solar:widget-add-line-duotone',
-    route: '/shared/request-quotation',
-    requiredRoles: ['bac'],
-  },
+ 
   {
     displayName: 'Quotation Abstract',
     iconName: 'solar:widget-add-line-duotone',

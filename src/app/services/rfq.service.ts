@@ -135,4 +135,11 @@ export class RFQService {
     this.rfqData = this.rfqData.filter(item => item.id !== id);
     localStorage.setItem('rfqs', JSON.stringify(this.rfqData));
   }
+
+  async getById(id: string): Promise<RFQ | undefined> {
+  const rfqs = await this.getAll(); // Reuse the existing getAll logic
+  return rfqs.find((rfq) => rfq.id === id);
 }
+
+}
+

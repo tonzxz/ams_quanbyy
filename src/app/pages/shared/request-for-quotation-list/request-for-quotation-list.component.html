@@ -92,8 +92,8 @@
             <td>
          
               <p-button
-              pTooltip="Click to print abstract of quotation"
-              size="small" icon="pi pi-building-columns" (click)="null" severity="secondary"
+              pTooltip="Click to view abstract of quotation"
+              size="small" icon="pi pi-building-columns" (click)="generateAOQ(rfq.id)" severity="secondary"
                     [outlined]="true" rounded />
             </td>
           }
@@ -372,6 +372,19 @@
 </p-dialog>
 
 
+
+<p-dialog
+  [(visible)]="showAOQModal"
+  [modal]="true"
+  [closable]="true"
+  [style]="{ width: '55vw', height: '90vh' }"
+  header="Abstract of Quotation"
+>
+  <app-aoq
+    *ngIf="selectedRFQId"
+    [rfqId]="selectedRFQId"
+  ></app-aoq>
+</p-dialog>
 
 <p-dialog
   header="Request for Quotation"
