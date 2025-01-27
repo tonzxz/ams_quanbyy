@@ -17,6 +17,7 @@ import { RfqComponent } from './rfq/rfq.component';
 import { BACResolutionComponent } from './bac-resolution/bac-resolution.component';
 import { PurchaseOrderComponent } from './purchase-order/purchase-order.component';
 import { NoaComponent } from './noa/noa.component';
+import { NtpComponent } from './ntp/ntp.component';
 
 export const SharedRoutes: Routes = [
   {
@@ -116,6 +117,11 @@ export const SharedRoutes: Routes = [
         path: 'noa',
         component: NoaComponent,
         data: {breadcrumb:'Notice of Award Template'}
+      },
+      {
+        path: 'ntp',
+        component: NtpComponent,
+        data: {breadcrumb:'Notice to Proceed Template'}
       },
     ],
   },

@@ -74,6 +74,11 @@ export const navItems: NavItem[] = [
     iconName: 'solar:widget-add-line-duotone',
     route: '/shared/noa',
   },
+  {
+    displayName: 'Notice to Proceed',
+    iconName: 'solar:widget-add-line-duotone',
+    route: '/shared/ntp',
+  },
   // {
   //   displayName: 'Purchase Request',
   //   iconName: 'solar:widget-add-line-duotone',
