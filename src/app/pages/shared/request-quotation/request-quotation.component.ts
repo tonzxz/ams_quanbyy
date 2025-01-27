@@ -1,298 +1,151 @@
-import { Component } from '@angular/core';
-import { FormsModule } from '@angular/forms';
+import { Component, Input, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { jsPDF } from 'jspdf';
+import { ButtonModule } from 'primeng/button';
+import { FormsModule } from '@angular/forms';
+import jsPDF from 'jspdf';
 import html2canvas from 'html2canvas';
-
-interface Item {
-  qty: number;
-  description: string;
-  brand: string;
-  unitPrice: number;
-  totalAmount: number;
-}
-
-interface RequestDetails {
-  vendorName: string;
-  projectName: string;
-  prNumber: string;
-}
-
-interface Supplier {
-  signature: string;
-  nameDesignation: string;
-  company: string;
-  address: string;
-  telephone: string;
-  email: string;
-  tin: string;
-}
+import { RequisitionService, Requisition } from 'src/app/services/requisition.service';
+import { ApprovalSequenceService } from 'src/app/services/approval-sequence.service';
 
 @Component({
   selector: 'app-request-quotation',
   standalone: true,
-  imports: [FormsModule, CommonModule],
+  imports: [CommonModule, ButtonModule, FormsModule],
   template: `
     <div class="min-h-screen bg-gray-50 py-8 px-4">
-      <div id="quotation-form" class="max-w-4xl mx-auto bg-white shadow-lg rounded-lg">
+      <div class="max-w-4xl mx-auto bg-white shadow-lg rounded-lg">
         <div class="bg-blue-600 py-4 px-6 rounded-t-lg">
-          <h1 class="title-text text-center text-white text-xl font-bold">REQUEST FOR QUOTATION</h1>
+          <h1 class="text-center text-white text-xl font-bold">REQUEST FOR QUOTATION</h1>
+          <h2 class="text-center text-white text-lg">
+            {{ requisition?.title || 'PROCUREMENT OF GOODS AND SERVICES' }}
+          </h2>
         </div>
 
         <div class="p-6">
-          <div class="grid grid-cols-2 gap-6 mb-8">
-            <div class="form-group">
-              <label class="block text-sm font-medium text-gray-600 mb-1">Vendor Name</label>
-              <input [(ngModel)]="requestDetails.vendorName" class="w-full px-3 py-2 border rounded-md shadow-sm focus:ring-1 focus:ring-blue-500" />
-            </div>
-            <div class="form-group">
-              <label class="block text-sm font-medium text-gray-600 mb-1">Project Name</label>
-              <input [(ngModel)]="requestDetails.projectName" class="w-full px-3 py-2 border rounded-md shadow-sm focus:ring-1 focus:ring-blue-500" />
-            </div>
-          </div>
+          <div *ngIf="requisition" class="preview-section">
+            <h1 class="text-2xl font-bold mb-4 flex justify-center">Request for Quotation</h1>
 
-          <div class="mb-8">
-            <label class="block text-sm font-medium text-gray-600 mb-1">P.R. No./Date Received</label>
-            <input [(ngModel)]="requestDetails.prNumber" class="w-64 px-3 py-2 border rounded-md shadow-sm focus:ring-1 focus:ring-blue-500">
-          </div>
-
-          <div class="mb-8 text-gray-700">
-            <p>Dear <span>{{requestDetails.vendorName || '_____'}}</span>,</p>
-            <p class="mt-3">
-              We are currently seeking proposals for the construction of {{requestDetails.projectName || '_____'}}.
-              We have identified your company as a potential vendor for this project and would like to request a quote from you.
-            </p>
-            <p class="mt-2">Please provide us with your best quote for the following services:</p>
-          </div>
-
-          <div class="mb-8">
-            <h2 class="font-semibold mb-3">Terms and Conditions</h2>
-            <ol class="list-decimal list-inside space-y-2 text-gray-600">
-              <li>All entries shall be typed or written in a clear legible manner.</li>
-              <li>Bids should not exceed the Approved Budget for the Contract (ABC).</li>
-              <li>All prices offered herein are valid, binding and effective for 30 calendar days upon issuance of this document.</li>
-            </ol>
-          </div>
-
-          <div class="mb-8">
-            <div class="flex justify-between items-center mb-3">
-              <h2 class="font-semibold">Item List</h2>
-              <button (click)="addRow()" class="pdf-hide px-4 py-2 text-sm bg-green-600 text-white rounded-md hover:bg-green-700">
-                Add Row
-              </button>
-            </div>
-
-            <div class="overflow-x-auto border rounded-lg">
-              <table class="w-full">
-                <thead class="bg-gray-50">
-                  <tr>
-                    <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">No.</th>
-                    <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">QTY</th>
-                    <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">ABC</th>
-                    <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">ITEM/DESCRIPTION</th>
-                    <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Brand/Model</th>
-                    <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Unit Price</th>
-                    <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Total Amount</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  <tr *ngFor="let item of items; let i = index" class="border-t">
-                    <td class="px-4 py-3">{{i + 1}}</td>
-                    <td class="px-4 py-3">
-                      <input type="number" [(ngModel)]="item.qty" (input)="calculateTotal(i)" class="w-full px-2 py-1 border rounded-md">
-                    </td>
-                    <td class="px-4 py-3">ABC</td>
-                    <td class="px-4 py-3 description-cell">
-                      <textarea [(ngModel)]="item.description" class="w-full px-2 py-1 border rounded-md description-text" rows="3"></textarea>
-                    </td>
-                    <td class="px-4 py-3">
-                      <input type="text" [(ngModel)]="item.brand" class="w-full px-2 py-1 border rounded-md">
-                    </td>
-                    <td class="px-4 py-3">
-                      <input type="number" [(ngModel)]="item.unitPrice" (input)="calculateTotal(i)" class="w-full px-2 py-1 border rounded-md">
-                    </td>
-                    <td class="px-4 py-3 text-right">{{item.totalAmount | number:'1.2-2'}}</td>
-                  </tr>
-                </tbody>
-              </table>
-            </div>
-          </div>
-
-          <div class="grid grid-cols-2 gap-8">
-            <div>
-              <div class="mb-4">
-                <label class="block text-sm font-medium text-gray-600 mb-1">Signature</label>
-                <input [(ngModel)]="supplier.signature" class="w-full px-3 py-2 border rounded-md shadow-sm focus:ring-1 focus:ring-blue-500">
+            <div class="mb-4 text-xl">
+              <div class="flex flex-row justify-between">
+                <p><strong>Requisition ID:</strong> {{ requisition.id }}</p>
+                <p><strong>Date:</strong> {{ requisition.dateCreated | date: 'longDate' }}</p>
               </div>
-              <div class="mb-4">
-                <label class="block text-sm font-medium text-gray-600 mb-1">Name/Designation</label>
-                <input [(ngModel)]="supplier.nameDesignation" class="w-full px-3 py-2 border rounded-md shadow-sm focus:ring-1 focus:ring-blue-500">
-              </div>
-              <div class="mb-4">
-                <label class="block text-sm font-medium text-gray-600 mb-1">Company Name</label>
-                <input [(ngModel)]="supplier.company" class="w-full px-3 py-2 border rounded-md shadow-sm focus:ring-1 focus:ring-blue-500">
+              <p><strong>Agency:</strong> CAGAYAN DE ORO STATE COLLEGE</p>
+              <div class="flex flex-row gap-20">
+                <p><strong>Division:</strong> SOEPD</p>
+                <p><strong>Section:</strong> SMEE</p>
               </div>
             </div>
-            <div>
-              <div class="mb-4">
-                <label class="block text-sm font-medium text-gray-600 mb-1">Address</label>
-                <input [(ngModel)]="supplier.address" class="w-full px-3 py-2 border rounded-md shadow-sm focus:ring-1 focus:ring-blue-500">
-              </div>
-              <div class="mb-4">
-                <label class="block text-sm font-medium text-gray-600 mb-1">Contact Number</label>
-                <input [(ngModel)]="supplier.telephone" class="w-full px-3 py-2 border rounded-md shadow-sm focus:ring-1 focus:ring-blue-500">
-              </div>
-              <div class="mb-4">
-                <label class="block text-sm font-medium text-gray-600 mb-1">Email Address</label>
-                <input [(ngModel)]="supplier.email" type="email" class="w-full px-3 py-2 border rounded-md shadow-sm focus:ring-1 focus:ring-blue-500">
-              </div>
-              <div class="mb-4">
-                <label class="block text-sm font-medium text-gray-600 mb-1">TIN</label>
-                <input [(ngModel)]="supplier.tin" class="w-full px-3 py-2 border rounded-md shadow-sm focus:ring-1 focus:ring-blue-500">
-              </div>
-            </div>
-          </div>
 
-          <div class="flex justify-end mt-8">
-            <button (click)="exportToPDF()" class="pdf-hide px-6 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700">
-              Export to PDF
-            </button>
+            <h2 class="font-semibold mb-3">Approver Information</h2>
+            <p>BAC Chairman: <strong>{{ approverName }}</strong></p>
+
+            <table class="w-full border-collapse border border-gray-300 text-xl">
+              <thead>
+                <tr class="bg-gray-200">
+                  <th class="border border-gray-300 p-4">Qty</th>
+                  <th class="border border-gray-300 p-4">Item Description</th>
+                  <th class="border border-gray-300 p-4">Specifications</th>
+                  <th class="border border-gray-300 p-4">ABC</th>
+                  <th class="border border-gray-300 p-4">Total ABC</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr *ngFor="let product of requisition?.products">
+                  <td class="border border-gray-300 p-4">{{ product.quantity }}</td>
+                  <td class="border border-gray-300 p-4">{{ product.name }}</td>
+                  <td class="border border-gray-300 p-4">{{ product.specifications }}</td>
+                  <td class="border border-gray-300 p-4">{{ product.price | currency: 'PHP' }}</td>
+                  <td class="border border-gray-300 p-4">{{ product.quantity * product.price | currency: 'PHP' }}</td>
+                </tr>
+              </tbody>
+            </table>
+
+            <div class="mt-4 text-xl">
+              <p><strong>Total ABC:</strong> {{ totalABC | currency: 'PHP' }}</p>
+            </div>
+
+            <div class="mt-4 text-xl">
+              <p><strong>Purpose:</strong> {{ requisition.description }}</p>
+            </div>
+
+            <div class="flex justify-end mt-8">
+              <p-button label="Export to PDF" (onClick)="exportToPDF()" class="mt-4"></p-button>
+            </div>
           </div>
         </div>
       </div>
     </div>
   `,
-  styles: [`
-    .description-cell textarea {
-      white-space: pre-wrap;
-      min-height: 100px;
-      line-height: 1.5;
-    }
-    .description-text {
-      white-space: pre-wrap;
-      word-break: break-word;
-    }
-  `]
 })
-export class RequestQuotationComponent {
-  requestDetails: RequestDetails = {
-    vendorName: '',
-    projectName: '',
-    prNumber: ''
-  };
+export class RequestQuotationComponent implements OnInit {
+  @Input() requisitionId!: string;
+  requisition: Requisition | undefined;
+  approverName: string = '';
+  totalABC: number = 0;
 
-  items: Item[] = Array(4).fill(null).map(() => ({
-    qty: 0,
-    description: '',
-    brand: '',
-    unitPrice: 0,
-    totalAmount: 0
-  }));
+  constructor(
+    private requisitionService: RequisitionService,
+    private approvalSequenceService: ApprovalSequenceService
+  ) {}
 
-  supplier: Supplier = {
-    signature: '',
-    nameDesignation: '',
-    company: '',
-    address: '',
-    telephone: '',
-    email: '',
-    tin: ''
-  };
-
-  addRow() {
-    this.items.push({
-      qty: 0,
-      description: '',
-      brand: '',
-      unitPrice: 0,
-      totalAmount: 0
-    });
+  ngOnInit(): void {
+    if (this.requisitionId) {
+      this.loadRequisition();
+    }
   }
 
-  calculateTotal(index: number) {
-    const item = this.items[index];
-    item.totalAmount = (item.qty || 0) * (item.unitPrice || 0);
+  async loadRequisition() {
+    try {
+      this.requisition = await this.requisitionService.getRequisitionById(this.requisitionId);
+      if (this.requisition) {
+        this.totalABC = this.requisition.products.reduce((sum, product) => sum + product.quantity * product.price, 0);
+        await this.loadApproverInfo('444');
+      } else {
+        console.error('Requisition not found.');
+      }
+    } catch (error) {
+      console.error('Error loading requisition:', error);
+    }
+  }
+
+  async loadApproverInfo(sequenceId: string) {
+    try {
+      const sequence = await this.approvalSequenceService.getSequenceById(sequenceId).toPromise();
+      if (sequence) {
+        this.approverName = sequence.userFullName;
+      } else {
+        this.approverName = 'Unknown';
+      }
+    } catch (error) {
+      console.error('Error loading approver info:', error);
+      this.approverName = 'Unknown';
+    }
   }
 
   exportToPDF() {
-    const element = document.getElementById('quotation-form') as HTMLElement;
-    if (!element) return;
+    const content = document.querySelector('.preview-section') as HTMLElement;
 
-    const pdf = new jsPDF('p', 'mm', 'a4');
-    const pdfWidth = pdf.internal.pageSize.getWidth();
-    const pdfHeight = pdf.internal.pageSize.getHeight();
-    let currentPage = 1;
-
-    // Pre-process textareas to maintain formatting
-    const textareas = element.querySelectorAll('textarea');
-    textareas.forEach(textarea => {
-      const text = textarea.value;
-      const div = document.createElement('div');
-      div.style.whiteSpace = 'pre-wrap';
-      div.style.wordBreak = 'break-word';
-      div.style.width = textarea.style.width;
-      div.style.minHeight = textarea.style.height;
-      div.style.padding = '8px';
-      div.style.border = '1px solid #ccc';
-      div.style.lineHeight = '1.5';
-      div.textContent = text;
-      textarea.parentNode?.replaceChild(div, textarea);
-    });
-
-    const buttons = element.querySelectorAll('.pdf-hide');
-    buttons.forEach((button) => (button as HTMLElement).style.display = 'none');
-
-    html2canvas(element, {
-      scale: 2,
-      useCORS: true,
-      logging: false,
-      backgroundColor: '#ffffff',
-      windowWidth: 1200,
-      onclone: (clonedDoc) => {
-        const clonedTextareas = clonedDoc.querySelectorAll('.description-cell div');
-        clonedTextareas.forEach(div => {
-          (div as HTMLElement).style.whiteSpace = 'pre-wrap';
-          (div as HTMLElement).style.minHeight = '100px';
-        });
-      }
-    }).then((canvas) => {
-      // Restore textareas
-      const divs = element.querySelectorAll('.description-cell div');
-      divs.forEach(div => {
-        const textarea = document.createElement('textarea');
-        textarea.value = div.textContent || '';
-        textarea.className = 'w-full px-2 py-1 border rounded-md description-text';
-        textarea.rows = 3;
-        div.parentNode?.replaceChild(textarea, div);
-      });
-
-      buttons.forEach((button) => (button as HTMLElement).style.display = '');
-
-      const imgData = canvas.toDataURL('image/jpeg', 1.0);
-      const imgWidth = pdfWidth;
-      const imgHeight = (canvas.height * pdfWidth) / canvas.width;
-
-      let position = 0;
+    html2canvas(content).then((canvas) => {
+      const imgData = canvas.toDataURL('image/png');
+      const pdf = new jsPDF('p', 'mm', 'a4');
+      const imgWidth = 210;
+      const pageHeight = 295;
+      const imgHeight = (canvas.height * imgWidth) / canvas.width;
       let heightLeft = imgHeight;
+      let position = 0;
 
-      while (heightLeft > 0) {
-        pdf.addImage(imgData, 'JPEG', 0, position, imgWidth, imgHeight);
-        heightLeft -= pdfHeight;
-        position = -heightLeft;
+      pdf.addImage(imgData, 'PNG', 0, position, imgWidth, imgHeight);
+      heightLeft -= pageHeight;
 
-        if (heightLeft > 0) {
-          pdf.addPage();
-          currentPage++;
-        }
+      while (heightLeft >= 0) {
+        position = heightLeft - imgHeight;
+        pdf.addPage();
+        pdf.addImage(imgData, 'PNG', 0, position, imgWidth, imgHeight);
+        heightLeft -= pageHeight;
       }
 
-      for (let i = 1; i <= currentPage; i++) {
-        pdf.setPage(i);
-        pdf.setFontSize(10);
-        pdf.text(`Page ${i} of ${currentPage}`, pdfWidth - 40, pdfHeight - 10);
-      }
-
-      pdf.save(`RFQ-${this.requestDetails.projectName || 'Quotation'}.pdf`);
+      pdf.save('request-for-quotation.pdf');
     });
   }
 }
