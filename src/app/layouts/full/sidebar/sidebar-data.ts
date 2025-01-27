@@ -69,6 +69,11 @@ export const navItems: NavItem[] = [
     iconName: 'solar:widget-add-line-duotone',
     route: '/shared/bac-resolution',
   },
+  {
+    displayName: 'Purchase Order',
+    iconName: 'solar:widget-add-line-duotone',
+    route: '/shared/purchase-order',
+  },
   // {
   //   displayName: 'Purchase Request',
   //   iconName: 'solar:widget-add-line-duotone',
