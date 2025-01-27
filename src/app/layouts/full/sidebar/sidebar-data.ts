@@ -74,6 +74,11 @@ export const navItems: NavItem[] = [
     iconName: 'solar:widget-add-line-duotone',
     route: '/shared/purchase-order',
   },
+  {
+    displayName: 'Notice of Approval',
+    iconName: 'solar:widget-add-line-duotone',
+    route: '/shared/noa',
+  },
   // {
   //   displayName: 'Purchase Request',
   //   iconName: 'solar:widget-add-line-duotone',
@@ -81,7 +86,12 @@ export const navItems: NavItem[] = [
   // },
 
   // End User Section
-  
+  {
+    displayName: 'Dashboard',
+    iconName: 'solar:widget-add-line-duotone',
+    route: '/enduser/dashboard',
+    requiredRoles: ['end-user'],
+  },
   {
     displayName: 'Requisition',
     iconName: 'solar:documents-broken',
@@ -130,6 +140,12 @@ export const navItems: NavItem[] = [
   {
     navCap: 'Supply Unit',
     divider: true,
+    requiredRoles: ['supply'],
+  },
+  {
+    displayName: 'Dashboard',
+    iconName: 'solar:documents-broken',
+    route: '/supply-management/supply-dashboard',
     requiredRoles: ['supply'],
   },
   {
@@ -306,11 +322,17 @@ export const navItems: NavItem[] = [
   },
 
   // BAC Section
-  // {
-  //   navCap: 'BAC',
-  //   divider: true,
-  //   requiredRoles: ['bac'],
-  // },
+  {
+    navCap: 'BAC',
+    divider: true,
+    requiredRoles: ['bac'],
+  },
+  {
+    displayName: 'Dashboard',
+    iconName: 'solar:checklist-minimalistic-line-duotone',
+    route: '/bac/bac-dashboard',
+    requiredRoles: ['bac'],
+  },
   // {
   //   displayName: 'Validate Approved Request',
   //   iconName: 'solar:checklist-minimalistic-line-duotone',
