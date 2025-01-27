@@ -66,66 +66,165 @@ export class PdfGeneratorService {
     const doc = new jsPDF();
 
     // Header
-    doc.setFontSize(18);
-    doc.text('INSPECTION AND ACCEPTANCE REPORT', 105, 15, { align: 'center' });
+    this.addHeaderImage(doc);
+    doc.setFillColor(63, 81, 181);
+    doc.rect(0, 0, 210, 40, 'F');
 
-    // Document Info
+    doc.setTextColor(255);
+    doc.setFontSize(24);
+    doc.text('INSPECTION AND ACCEPTANCE REPORT', 105, 25, { align: 'center' });
+
+    // Content
+    doc.setTextColor(0);
     doc.setFontSize(12);
-    doc.text(`IAR No: ${item.id}`, 15, 30);
-    doc.text(`Date: ${new Date().toLocaleDateString()}`, 15, 40);
 
-    // Supplier Info
-    doc.text('Supplier Information:', 15, 55);
-    doc.text(`Name: ${item.supplierName}`, 25, 65);
-    doc.text(`ID: ${item.supplierId}`, 25, 75);
-    doc.text(`Department: ${item.department}`, 25, 85);
+    // Company Info Box
+    doc.setFillColor(240, 240, 240);
+    doc.rect(10, 50, 190, 50, 'F');
 
-    // Items Table
+    doc.setFontSize(10);
+    const leftColumn = [
+      { label: 'Report No:', value: `${item.id}` },
+      { label: 'Inspection Date:', value: new Date().toLocaleDateString() },
+      { label: 'PO Number:', value: item.poNumber || 'N/A' },
+      { label: 'Total Amount:', value: item.totalAmount ? `P${item.totalAmount.toLocaleString()}` : 'N/A' }
+    ];
+
+    const rightColumn = [
+      { label: 'Supplier:', value: item.supplierName },
+      { label: 'Department:', value: item.department },
+      { label: 'Delivery Date:', value: new Date(item.dateDelivered).toLocaleDateString() }
+    ];
+
+    let yPos = 60;
+    leftColumn.forEach(row => {
+      this.setFontBold(doc);
+      doc.text(row.label, 15, yPos);
+      this.setFontNormal(doc);
+      doc.text(row.value, 50, yPos);
+      yPos += 10;
+    });
+
+    yPos = 60;
+    rightColumn.forEach(row => {
+      this.setFontBold(doc);
+      doc.text(row.label, 110, yPos);
+      this.setFontNormal(doc);
+      doc.text(row.value, 145, yPos);
+      yPos += 10;
+    });
+
+    // Inspection Results Table
     const tableData = item.items.map(i => [
       i.id,
       i.name,
       i.quantity.toString(),
       i.isDelivered ? 'Pass' : 'Pending',
-      '' // Remarks
+      i.isDelivered ? 'Item meets specifications' : 'Inspection pending',
+      i.dateChecked ? new Date(i.dateChecked).toLocaleDateString() : 'N/A'
     ]);
 
     (doc as any).autoTable({
-      startY: 95,
-      head: [['Item ID', 'Item Description', 'Quantity', 'Inspection', 'Remarks']],
+      startY: 110,
+      head: [['Item ID', 'Description', 'Qty', 'Status', 'Remarks', 'Date Inspected']],
       body: tableData,
       theme: 'grid',
-      styles: { fontSize: 10 },
-      headStyles: { fillColor: [41, 128, 185], textColor: 255 }
+      headStyles: {
+        fillColor: [63, 81, 181],
+        fontSize: 10,
+        halign: 'center'
+      },
+      bodyStyles: {
+        fontSize: 9
+      },
+      alternateRowStyles: {
+        fillColor: [245, 245, 245]
+      },
+      columnStyles: {
+        0: { cellWidth: 25 },
+        1: { cellWidth: 50 },
+        2: { cellWidth: 15, halign: 'center' },
+        3: { cellWidth: 25, halign: 'center' },
+        4: { cellWidth: 45 },
+        5: { cellWidth: 30, halign: 'center' }
+      }
     });
 
-    // Inspection Details
-    const finalY = (doc as any).lastAutoTable.finalY + 30;
+    // Quality Assurance Section
+    const finalY = (doc as any).lastAutoTable.finalY + 20;
 
-    doc.text('INSPECTION', 15, finalY);
-    doc.text('Date Inspected: _________________', 25, finalY + 10);
-    doc.text('Time Started: ___________________', 25, finalY + 20);
-    doc.text('Time Finished: __________________', 25, finalY + 30);
+    doc.setFontSize(12);
+    this.setFontBold(doc);
+    doc.text('Quality Assurance Certification', 15, finalY);
 
-    // Checkboxes
-    doc.text('Inspection Findings:', 15, finalY + 45);
-    doc.rect(25, finalY + 50, 5, 5); // Checkbox
-    doc.text('Inspected and verified the items as to quantity and specifications', 35, finalY + 54);
+    doc.setFontSize(10);
+    this.setFontNormal(doc);
+    doc.text('This is to certify that the above items have been inspected and verified according to', 15, finalY + 10);
+    doc.text('specified quality standards and requirements.', 15, finalY + 17);
+    // Signature Section - Continued from previous code
+    const signatureY = finalY + 35;
 
-    doc.rect(25, finalY + 60, 5, 5); // Checkbox
-    doc.text('Complete and in good condition', 35, finalY + 64);
+    // Inspector
+    doc.setFontSize(10);
+    doc.text('Inspected by:', 15, signatureY);
+    doc.line(15, signatureY + 20, 85, signatureY + 20);
+    doc.setFontSize(8);
+    doc.text('Quality Inspector', 15, signatureY + 25);
+    doc.text('Date: _________________', 15, signatureY + 32);
 
-    // Signatures
-    doc.text('Inspected by:', 15, finalY + 80);
-    doc.line(15, finalY + 100, 85, finalY + 100);
-    doc.text('Inspector', 35, finalY + 110);
+    // Supervisor
+    doc.setFontSize(10);
+    doc.text('Verified by:', 105, signatureY);
+    doc.line(105, signatureY + 20, 175, signatureY + 20);
+    doc.setFontSize(8);
+    doc.text('QA Supervisor', 105, signatureY + 25);
+    doc.text('Date: _________________', 105, signatureY + 32);
 
-    doc.text('Accepted by:', 120, finalY + 80);
-    doc.line(120, finalY + 100, 190, finalY + 100);
-    doc.text('Property Officer', 140, finalY + 110);
+    // Add footer to all pages
+    const pageCount = doc.getNumberOfPages();
+    for (let i = 1; i <= pageCount; i++) {
+      doc.setPage(i);
+      this.addFooter(doc, i);
+    }
 
     return doc.output('blob');
   }
 
+
+
+  private addHeaderImage(doc: jsPDF) {
+    doc.setFillColor(63, 81, 181);
+    doc.circle(20, 15, 8, 'F');
+    doc.setTextColor(255);
+    doc.setFontSize(12);
+    doc.text('AMS', 20, 17, { align: 'center' });
+  }
+
+  private addFooter(doc: jsPDF, pageNumber: number) {
+    const totalPages = doc.getNumberOfPages();
+    doc.setFontSize(8);
+    doc.setTextColor(128);
+    doc.text(
+      `Page ${pageNumber} of ${totalPages}`,
+      doc.internal.pageSize.width / 2,
+      doc.internal.pageSize.height - 10,
+      { align: 'center' }
+    );
+    doc.text(
+      `Generated on ${new Date().toLocaleString()}`,
+      doc.internal.pageSize.width - 20,
+      doc.internal.pageSize.height - 10,
+      { align: 'right' }
+    );
+  }
+
+  private setFontBold(doc: jsPDF) {
+    doc.setFont('helvetica', 'bold');
+  }
+
+  private setFontNormal(doc: jsPDF) {
+    doc.setFont('helvetica', 'normal');
+  }
   // Method for generating a Disbursement Voucher PDF
   generateDisbursementVoucher(voucher: DisbursementVoucher): Blob {
     const doc = new jsPDF();
@@ -193,7 +292,7 @@ export class PdfGeneratorService {
       bodyStyles: { textColor: 0, lineWidth: 0.1 },  // Ensure black body text and border
       margin: { top: 20 },
     });
-    
+
 
     // Final Amount & Notes (Optional)
     const finalY = (doc as any).lastAutoTable.finalY + 10;

@@ -1,326 +1,3 @@
-// private loadDummyData(): void {
-//   const dummy: Requisition[] = [
-//     {
-//       id: this.generate32CharId(),
-//       title: 'Office Supplies Request',
-//       description: 'Request for stationery items.',
-//       status: 'Pending',
-//       classifiedItemId: 'dummyClassifiedItemId1',
-//       group: '12345678901234567890123456789012',
-//       products: [
-//         { id: '12345678901234567890123456789012', name: 'Pen', quantity: 10, price: 10, specifications: 'Blue ink' },
-//         { id: '23456789012345678901234567890123', name: 'Notebook', quantity: 5, price: 50, specifications: 'A5 size' },
-//       ],
-//       selectedGroups: ['Group1', 'Group2'],
-//       productQuantities: { '12345678901234567890123456789012': 10, '23456789012345678901234567890123': 5 },
-//       productSpecifications: { '12345678901234567890123456789012': 'Blue ink', '23456789012345678901234567890123': 'A5 size' },
-//       ppmpAttachment: 'ppmp-attachment-url-1',
-//       purchaseRequestAttachment: 'purchase-request-attachment-url-1',
-//       dateCreated: new Date('2023-10-01T08:00:00Z'),
-//       lastModified: new Date('2023-10-01T08:00:00Z'),
-//       signature: 'signature-url-1',
-//       createdByUserId: 'enduser',
-//       createdByUserName: 'Diana Green',
-//       approvalSequenceId: 'level-1-budget-review',
-//       currentApprovalLevel: 1,
-//       approvalStatus: 'Pending',
-//       approvalHistory: [], // No approvals yet
-//     },
-//     // Level 2: Technical Specification Review (Procurement Flow)
-//     {
-//       id: this.generate32CharId(),
-//       title: 'Electronics Request',
-//       description: 'Request for new laptops.',
-//       status: 'Pending',
-//       classifiedItemId: 'dummyClassifiedItemId2',
-//       group: '23456789012345678901234567890123',
-//       products: [
-//         { id: '34567890123456789012345678901234', name: 'Laptop', quantity: 2, price: 50000, specifications: '16GB RAM, 512GB SSD' },
-//       ],
-//       selectedGroups: ['Group3'],
-//       productQuantities: { '34567890123456789012345678901234': 2 },
-//       productSpecifications: { '34567890123456789012345678901234': '16GB RAM, 512GB SSD' },
-//       ppmpAttachment: 'ppmp-attachment-url-2',
-//       purchaseRequestAttachment: 'purchase-request-attachment-url-2',
-//       dateCreated: new Date('2023-10-02T09:00:00Z'),
-//       lastModified: new Date('2023-10-02T09:00:00Z'),
-//       signature: 'signature-url-2',
-//       createdByUserId: 'enduser',
-//       createdByUserName: 'Diana Green',
-//       approvalSequenceId: 'level-2-inspection-review',
-//       currentApprovalLevel: 2,
-//       approvalStatus: 'Pending',
-//       approvalHistory: [
-//         { level: 1, status: 'Approved', timestamp: new Date('2023-10-01T10:00:00Z'), comments: 'Budget approved.' },
-//       ],
-//     },
-//     // Level 3: College President Approval (Procurement Flow)
-//     {
-//       id: this.generate32CharId(),
-//       title: 'Furniture Request',
-//       description: 'Request for office chairs and desks.',
-//       status: 'Pending',
-//       classifiedItemId: 'dummyClassifiedItemId3',
-//       group: '34567890123456789012345678901234',
-//       products: [
-//         { id: '45678901234567890123456789012345', name: 'Office Chair', quantity: 5, price: 2000, specifications: 'Ergonomic design' },
-//         { id: '56789012345678901234567890123456', name: 'Desk', quantity: 3, price: 5000, specifications: 'Adjustable height' },
-//       ],
-//       selectedGroups: ['Group4'],
-//       productQuantities: { '45678901234567890123456789012345': 5, '56789012345678901234567890123456': 3 },
-//       productSpecifications: { '45678901234567890123456789012345': 'Ergonomic design', '56789012345678901234567890123456': 'Adjustable height' },
-//       ppmpAttachment: 'ppmp-attachment-url-3',
-//       purchaseRequestAttachment: 'purchase-request-attachment-url-3',
-//       dateCreated: new Date('2023-10-03T10:00:00Z'),
-//       lastModified: new Date('2023-10-03T10:00:00Z'),
-//       signature: 'signature-url-3',
-//       createdByUserId: 'enduser',
-//       createdByUserName: 'Diana Green',
-//       approvalSequenceId: 'level-3-president-approval',
-//       currentApprovalLevel: 3,
-//       approvalStatus: 'Pending',
-//       approvalHistory: [
-//         { level: 1, status: 'Approved', timestamp: new Date('2023-10-02T09:00:00Z'), comments: 'Budget approved.' },
-//         { level: 2, status: 'Approved', timestamp: new Date('2023-10-03T14:30:00Z'), comments: 'Technical specifications verified.' },
-//       ],
-//     },
-//     // Level 4: BAC Final Review (Procurement Flow)
-//     {
-//       id: this.generate32CharId(),
-//       title: 'Software License Request',
-//       description: 'Request for software licenses for the IT department.',
-//       status: 'Pending',
-//       classifiedItemId: 'dummyClassifiedItemId4',
-//       group: '45678901234567890123456789012345',
-//       products: [
-//         { id: '67890123456789012345678901234567', name: 'Software License', quantity: 10, price: 1000, specifications: 'Annual subscription' },
-//       ],
-//       selectedGroups: ['Group5'],
-//       productQuantities: { '67890123456789012345678901234567': 10 },
-//       productSpecifications: { '67890123456789012345678901234567': 'Annual subscription' },
-//       ppmpAttachment: 'ppmp-attachment-url-4',
-//       purchaseRequestAttachment: 'purchase-request-attachment-url-4',
-//       dateCreated: new Date('2023-10-04T11:00:00Z'),
-//       lastModified: new Date('2023-10-04T11:00:00Z'),
-//       signature: 'signature-url-4',
-//       createdByUserId: 'enduser',
-//       createdByUserName: 'Diana Green',
-//       approvalSequenceId: 'level-4-bac-review',
-//       currentApprovalLevel: 4,
-//       approvalStatus: 'Pending',
-//       approvalHistory: [
-//         { level: 1, status: 'Approved', timestamp: new Date('2023-10-04T11:00:00Z'), comments: 'Budget approved.' },
-//         { level: 2, status: 'Approved', timestamp: new Date('2023-10-05T15:00:00Z'), comments: 'Technical specifications verified.' },
-//         { level: 3, status: 'Approved', timestamp: new Date('2023-10-06T10:00:00Z'), comments: 'Approved by College President.' },
-//       ],
-//     },
-//     // Level 5: Delivery Inspection (Supply Management Flow)
-//     {
-//       id: this.generate32CharId(),
-//       title: 'Projector Request',
-//       description: 'Request for projectors for the conference room.',
-//       status: 'Pending',
-//       classifiedItemId: 'dummyClassifiedItemId5',
-//       group: '56789012345678901234567890123456',
-//       products: [
-//         { id: '78901234567890123456789012345678', name: 'Projector', quantity: 3, price: 15000, specifications: 'HD resolution' },
-//       ],
-//       selectedGroups: ['Group6'],
-//       productQuantities: { '78901234567890123456789012345678': 3 },
-//       productSpecifications: { '78901234567890123456789012345678': 'HD resolution' },
-//       ppmpAttachment: 'ppmp-attachment-url-5',
-//       purchaseRequestAttachment: 'purchase-request-attachment-url-5',
-//       dateCreated: new Date('2023-10-07T12:00:00Z'),
-//       lastModified: new Date('2023-10-07T12:00:00Z'),
-//       signature: 'signature-url-5',
-//       createdByUserId: 'enduser',
-//       createdByUserName: 'Diana Green',
-//       approvalSequenceId: 'level-5-delivery-inspection',
-//       currentApprovalLevel: 5,
-//       approvalStatus: 'Pending',
-//       approvalHistory: [
-//         { level: 1, status: 'Approved', timestamp: new Date('2023-10-07T12:00:00Z'), comments: 'Budget approved.' },
-//         { level: 2, status: 'Approved', timestamp: new Date('2023-10-08T16:00:00Z'), comments: 'Technical specifications verified.' },
-//         { level: 3, status: 'Approved', timestamp: new Date('2023-10-09T10:00:00Z'), comments: 'Approved by College President.' },
-//         { level: 4, status: 'Approved', timestamp: new Date('2023-10-10T09:00:00Z'), comments: 'Final review by BAC.' },
-//       ],
-//     },
-//     // Level 6: RIS Review (Supply Management Flow)
-//     {
-//       id: this.generate32CharId(),
-//       title: 'Printer Request',
-//       description: 'Request for printers for the office.',
-//       status: 'Pending',
-//       classifiedItemId: 'dummyClassifiedItemId6',
-//       group: '67890123456789012345678901234567',
-//       products: [
-//         { id: '89012345678901234567890123456789', name: 'Printer', quantity: 5, price: 8000, specifications: 'Laser printer' },
-//       ],
-//       selectedGroups: ['Group7'],
-//       productQuantities: { '89012345678901234567890123456789': 5 },
-//       productSpecifications: { '89012345678901234567890123456789': 'Laser printer' },
-//       ppmpAttachment: 'ppmp-attachment-url-6',
-//       purchaseRequestAttachment: 'purchase-request-attachment-url-6',
-//       dateCreated: new Date('2023-10-11T12:00:00Z'),
-//       lastModified: new Date('2023-10-11T12:00:00Z'),
-//       signature: 'signature-url-6',
-//       createdByUserId: 'enduser',
-//       createdByUserName: 'Diana Green',
-//       approvalSequenceId: 'level-6-ris-review',
-//       currentApprovalLevel: 6,
-//       approvalStatus: 'Pending',
-//       approvalHistory: [
-//         { level: 1, status: 'Approved', timestamp: new Date('2023-10-11T12:00:00Z'), comments: 'Budget approved.' },
-//         { level: 2, status: 'Approved', timestamp: new Date('2023-10-12T16:00:00Z'), comments: 'Technical specifications verified.' },
-//         { level: 3, status: 'Approved', timestamp: new Date('2023-10-13T10:00:00Z'), comments: 'Approved by College President.' },
-//         { level: 4, status: 'Approved', timestamp: new Date('2023-10-14T09:00:00Z'), comments: 'Final review by BAC.' },
-//         { level: 5, status: 'Approved', timestamp: new Date('2023-10-15T14:00:00Z'), comments: 'Delivery inspected.' },
-//       ],
-//     },
-//     // Level 7: End User Receipt (Supply Management Flow)
-//     {
-//       id: this.generate32CharId(),
-//       title: 'Scanner Request',
-//       description: 'Request for scanners for the office.',
-//       status: 'Pending',
-//       classifiedItemId: 'dummyClassifiedItemId7',
-//       group: '78901234567890123456789012345678',
-//       products: [
-//         { id: '90123456789012345678901234567890', name: 'Scanner', quantity: 2, price: 12000, specifications: 'High-speed scanning' },
-//       ],
-//       selectedGroups: ['Group8'],
-//       productQuantities: { '90123456789012345678901234567890': 2 },
-//       productSpecifications: { '90123456789012345678901234567890': 'High-speed scanning' },
-//       ppmpAttachment: 'ppmp-attachment-url-7',
-//       purchaseRequestAttachment: 'purchase-request-attachment-url-7',
-//       dateCreated: new Date('2023-10-16T12:00:00Z'),
-//       lastModified: new Date('2023-10-16T12:00:00Z'),
-//       signature: 'signature-url-7',
-//       createdByUserId: 'enduser',
-//       createdByUserName: 'Diana Green',
-//       approvalSequenceId: 'level-7-receipt-acknowledgement',
-//       currentApprovalLevel: 7,
-//       approvalStatus: 'Pending',
-//       approvalHistory: [
-//         { level: 1, status: 'Approved', timestamp: new Date('2023-10-16T12:00:00Z'), comments: 'Budget approved.' },
-//         { level: 2, status: 'Approved', timestamp: new Date('2023-10-17T16:00:00Z'), comments: 'Technical specifications verified.' },
-//         { level: 3, status: 'Approved', timestamp: new Date('2023-10-18T10:00:00Z'), comments: 'Approved by College President.' },
-//         { level: 4, status: 'Approved', timestamp: new Date('2023-10-19T09:00:00Z'), comments: 'Final review by BAC.' },
-//         { level: 5, status: 'Approved', timestamp: new Date('2023-10-20T14:00:00Z'), comments: 'Delivery inspected.' },
-//         { level: 6, status: 'Approved', timestamp: new Date('2023-10-21T11:00:00Z'), comments: 'RIS reviewed.' },
-//       ],
-//     },
-//     // Level 8: Final Document Verification (Supply Management Flow)
-//     {
-//       id: this.generate32CharId(),
-//       title: 'Server Request',
-//       description: 'Request for servers for the IT department.',
-//       status: 'Pending',
-//       classifiedItemId: 'dummyClassifiedItemId8',
-//       group: '89012345678901234567890123456789',
-//       products: [
-//         { id: '01234567890123456789012345678901', name: 'Server', quantity: 1, price: 100000, specifications: 'High-performance server' },
-//       ],
-//       selectedGroups: ['Group9'],
-//       productQuantities: { '01234567890123456789012345678901': 1 },
-//       productSpecifications: { '01234567890123456789012345678901': 'High-performance server' },
-//       ppmpAttachment: 'ppmp-attachment-url-8',
-//       purchaseRequestAttachment: 'purchase-request-attachment-url-8',
-//       dateCreated: new Date('2023-10-22T12:00:00Z'),
-//       lastModified: new Date('2023-10-22T12:00:00Z'),
-//       signature: 'signature-url-8',
-//       createdByUserId: 'enduser',
-//       createdByUserName: 'Diana Green',
-//       approvalSequenceId: 'level-8-document-verification',
-//       currentApprovalLevel: 8,
-//       approvalStatus: 'Pending',
-//       approvalHistory: [
-//         { level: 1, status: 'Approved', timestamp: new Date('2023-10-22T12:00:00Z'), comments: 'Budget approved.' },
-//         { level: 2, status: 'Approved', timestamp: new Date('2023-10-23T16:00:00Z'), comments: 'Technical specifications verified.' },
-//         { level: 3, status: 'Approved', timestamp: new Date('2023-10-24T10:00:00Z'), comments: 'Approved by College President.' },
-//         { level: 4, status: 'Approved', timestamp: new Date('2023-10-25T09:00:00Z'), comments: 'Final review by BAC.' },
-//         { level: 5, status: 'Approved', timestamp: new Date('2023-10-26T14:00:00Z'), comments: 'Delivery inspected.' },
-//         { level: 6, status: 'Approved', timestamp: new Date('2023-10-27T11:00:00Z'), comments: 'RIS reviewed.' },
-//         { level: 7, status: 'Approved', timestamp: new Date('2023-10-28T13:00:00Z'), comments: 'Received by end user.' },
-//       ],
-//     },
-//     // Level 9: Property Inspection (Supply Management Flow)
-//     {
-//       id: this.generate32CharId(),
-//       title: 'Network Equipment Request',
-//       description: 'Request for network equipment for the IT department.',
-//       status: 'Pending',
-//       classifiedItemId: 'dummyClassifiedItemId9',
-//       group: '90123456789012345678901234567890',
-//       products: [
-//         { id: '12345678901234567890123456789012', name: 'Router', quantity: 5, price: 5000, specifications: 'High-speed router' },
-//         { id: '23456789012345678901234567890123', name: 'Switch', quantity: 3, price: 3000, specifications: '24-port switch' },
-//       ],
-//       selectedGroups: ['Group10'],
-//       productQuantities: { '12345678901234567890123456789012': 5, '23456789012345678901234567890123': 3 },
-//       productSpecifications: { '12345678901234567890123456789012': 'High-speed router', '23456789012345678901234567890123': '24-port switch' },
-//       ppmpAttachment: 'ppmp-attachment-url-9',
-//       purchaseRequestAttachment: 'purchase-request-attachment-url-9',
-//       dateCreated: new Date('2023-10-29T12:00:00Z'),
-//       lastModified: new Date('2023-10-29T12:00:00Z'),
-//       signature: 'signature-url-9',
-//       createdByUserId: 'enduser',
-//       createdByUserName: 'Diana Green',
-//       approvalSequenceId: 'level-9-property-inspection',
-//       currentApprovalLevel: 9,
-//       approvalStatus: 'Pending',
-//       approvalHistory: [
-//         { level: 1, status: 'Approved', timestamp: new Date('2023-10-29T12:00:00Z'), comments: 'Budget approved.' },
-//         { level: 2, status: 'Approved', timestamp: new Date('2023-10-30T16:00:00Z'), comments: 'Technical specifications verified.' },
-//         { level: 3, status: 'Approved', timestamp: new Date('2023-10-31T10:00:00Z'), comments: 'Approved by College President.' },
-//         { level: 4, status: 'Approved', timestamp: new Date('2023-11-01T09:00:00Z'), comments: 'Final review by BAC.' },
-//         { level: 5, status: 'Approved', timestamp: new Date('2023-11-02T14:00:00Z'), comments: 'Delivery inspected.' },
-//         { level: 6, status: 'Approved', timestamp: new Date('2023-11-03T11:00:00Z'), comments: 'RIS reviewed.' },
-//         { level: 7, status: 'Approved', timestamp: new Date('2023-11-04T13:00:00Z'), comments: 'Received by end user.' },
-//         { level: 8, status: 'Approved', timestamp: new Date('2023-11-05T15:00:00Z'), comments: 'Documents verified.' },
-//       ],
-//     },
-//     // Level 10: Disposal Review (Supply Management Flow)
-//     {
-//       id: this.generate32CharId(),
-//       title: 'Old Equipment Disposal Request',
-//       description: 'Request for disposal of old equipment.',
-//       status: 'Pending',
-//       classifiedItemId: 'dummyClassifiedItemId10',
-//       group: '01234567890123456789012345678901',
-//       products: [
-//         { id: '34567890123456789012345678901234', name: 'Old Server', quantity: 2, price: 0, specifications: 'For disposal' },
-//       ],
-//       selectedGroups: ['Group11'],
-//       productQuantities: { '34567890123456789012345678901234': 2 },
-//       productSpecifications: { '34567890123456789012345678901234': 'For disposal' },
-//       ppmpAttachment: 'ppmp-attachment-url-10',
-//       purchaseRequestAttachment: 'purchase-request-attachment-url-10',
-//       dateCreated: new Date('2023-11-06T12:00:00Z'),
-//       lastModified: new Date('2023-11-06T12:00:00Z'),
-//       signature: 'signature-url-10',
-//       createdByUserId: 'enduser',
-//       createdByUserName: 'Diana Green',
-//       approvalSequenceId: 'level-10-disposal-review',
-//       currentApprovalLevel: 10,
-//       approvalStatus: 'Pending',
-//       approvalHistory: [
-//         { level: 1, status: 'Approved', timestamp: new Date('2023-11-06T12:00:00Z'), comments: 'Budget approved.' },
-//         { level: 2, status: 'Approved', timestamp: new Date('2023-11-07T16:00:00Z'), comments: 'Technical specifications verified.' },
-//         { level: 3, status: 'Approved', timestamp: new Date('2023-11-08T10:00:00Z'), comments: 'Approved by College President.' },
-//         { level: 4, status: 'Approved', timestamp: new Date('2023-11-09T09:00:00Z'), comments: 'Final review by BAC.' },
-//         { level: 5, status: 'Approved', timestamp: new Date('2023-11-10T14:00:00Z'), comments: 'Delivery inspected.' },
-//         { level: 6, status: 'Approved', timestamp: new Date('2023-11-11T11:00:00Z'), comments: 'RIS reviewed.' },
-//         { level: 7, status: 'Approved', timestamp: new Date('2023-11-12T13:00:00Z'), comments: 'Received by end user.' },
-//         { level: 8, status: 'Approved', timestamp: new Date('2023-11-13T15:00:00Z'), comments: 'Documents verified.' },
-//         { level: 9, status: 'Approved', timestamp: new Date('2023-11-14T17:00:00Z'), comments: 'Property inspected.' },
-//       ],
-//     },
-//   ]
-
-//   this.requisitions = dummy;
-//   this.saveToLocalStorage();
-// }
 
 
 import { Injectable } from '@angular/core';
@@ -334,7 +11,7 @@ import { firstValueFrom } from 'rxjs';
  * Zod schema for an Extended Requisition.
  */
 export const requisitionSchema = z.object({
-  id: z.string().length(32, "ID must be exactly 32 characters").optional(),
+  id: z.string().length(6, "ID must be exactly 6 characters").optional(),
   title: z.string().min(1, "Title is required"),
   description: z.string().max(500).optional(),
   status: z.string(),
@@ -347,6 +24,7 @@ export const requisitionSchema = z.object({
       quantity: z.number().min(1, "Quantity must be at least 1"),
       specifications: z.string().optional(),
       price: z.number().min(0, "Price cannot be negative"),
+      status:  z.enum(['pending', 'delivered', 'received']).optional(),
     })
   ),
   selectedGroups: z.array(z.string()).optional(),
@@ -354,8 +32,15 @@ export const requisitionSchema = z.object({
   productSpecifications: z.record(z.string(), z.string()).optional(),
   ppmpAttachment: z.string().optional(),
   purchaseRequestAttachment: z.string().optional(),
-  dateCreated: z.coerce.date().optional(), // Change this line
- lastModified: z.coerce.date().optional(), // Change this line
+  rfqAttachment: z.string().optional(), 
+  rfqFromSuppliersAttachment: z.array(z.string()).optional(), 
+  abstractOfQuotationAttachment: z.string().optional(), 
+  budgetUtilizationReportAttachment: z.string().optional(), 
+  noticeOfAwardAttachment: z.string().optional(), 
+  purchaseOrderAttachment: z.string().optional(), 
+  noticeToProceedAttachment: z.string().optional(), 
+  dateCreated: z.coerce.date().optional(), 
+ lastModified: z.coerce.date().optional(), 
   signature: z.string().optional(),
   createdByUserId: z.string().optional(),
   createdByUserName: z.string().optional(),
@@ -368,6 +53,10 @@ export const requisitionSchema = z.object({
       status: z.enum(['Approved', 'Rejected']),
       timestamp: z.date().default(() => new Date()),
       comments: z.string().optional(),
+      approversName: z.string().optional(),
+      signature: z.string().optional(), 
+
+
     })
   ).optional(),
 });
@@ -416,10 +105,18 @@ export class RequisitionService {
 
   // Generate a random 32-character hex ID
   private generate32CharId(): string {
-    return Array.from({ length: 32 }, () =>
+    return Array.from({ length: 4 }, () =>
       Math.floor(Math.random() * 16).toString(16)
     ).join('');
   }
+
+
+  private generate6DigitId(): string {
+  return Array.from({ length: 6 }, () => 
+    Math.floor(Math.random() * 10).toString()
+  ).join('');
+  }
+  
 
   // Load some dummy data (optional)
 private loadDummyData(): void {
@@ -441,6 +138,7 @@ private loadDummyData(): void {
       productSpecifications: { '12345678901234567890123456789012': 'Blue ink', '23456789012345678901234567890123': 'A5 size' },
       ppmpAttachment: 'ppmp-attachment-url-1',
       purchaseRequestAttachment: 'purchase-request-attachment-url-1',
+      rfqAttachment: 'rfq-attachment-url-1',
       dateCreated: new Date('2023-10-01T08:00:00Z'),
       lastModified: new Date('2023-10-01T08:00:00Z'),
       signature: 'signature-url-1',
@@ -598,11 +296,12 @@ private loadDummyData(): void {
    * Add a new requisition.
    * @param data - The requisition data (without ID).
    */
-  async addRequisition(data: Omit<Requisition, 'id'>): Promise<void> {
+  async addRequisition(data: Omit<Requisition, 'id'>): Promise<string> {
+    const id =this.generate6DigitId();
     const currentUser = this.userService.getUser(); // Get the current logged-in user
     const newRequisition: Requisition = {
       ...data,
-      id: this.generate32CharId(),
+      id: id,
       createdByUserId: currentUser?.id || 'Unknown',
       createdByUserName: currentUser?.fullname || 'Unknown',
       currentApprovalLevel: 1, // Default to level 1
@@ -613,6 +312,7 @@ private loadDummyData(): void {
     requisitionSchema.parse(newRequisition); // Validate the new requisition
     this.requisitions.push(newRequisition);
     this.saveToLocalStorage();
+    return id
   }
 
   /**
@@ -641,20 +341,45 @@ private loadDummyData(): void {
 //   }
   // }
   
+//   async updateRequisition(requisition: Requisition): Promise<void> {
+//   try {
+//     // Convert timestamp strings to Date objects in approvalHistory
+//     if (requisition.approvalHistory) {
+//       requisition.approvalHistory = requisition.approvalHistory.map(history => ({
+//         ...history,
+//         timestamp: new Date(history.timestamp), // Convert string to Date
+//       }));
+//     }
+
+//     // Validate the requisition
+//     requisitionSchema.parse(requisition);
+
+//     // Save the updated requisition
+//     const index = this.requisitions.findIndex(req => req.id === requisition.id);
+//     if (index !== -1) {
+//       this.requisitions[index] = requisition;
+//       this.saveToLocalStorage();
+//     }
+//   } catch (error) {
+//     console.error('Error updating requisition:', error);
+//     throw error;
+//   }
+  // }
+  
   async updateRequisition(requisition: Requisition): Promise<void> {
   try {
-    // Convert timestamp strings to Date objects in approvalHistory
+    // Convert timestamps to Date objects in approvalHistory
     if (requisition.approvalHistory) {
       requisition.approvalHistory = requisition.approvalHistory.map(history => ({
         ...history,
-        timestamp: new Date(history.timestamp), // Convert string to Date
+        timestamp: new Date(history.timestamp), // Ensure Date format
       }));
     }
 
     // Validate the requisition
     requisitionSchema.parse(requisition);
 
-    // Save the updated requisition
+    // Update and save to storage
     const index = this.requisitions.findIndex(req => req.id === requisition.id);
     if (index !== -1) {
       this.requisitions[index] = requisition;
@@ -665,6 +390,7 @@ private loadDummyData(): void {
     throw error;
   }
 }
+
 
   /**
    * Update the status of a requisition.
@@ -759,7 +485,9 @@ private loadDummyData(): void {
    level: requisition.currentApprovalLevel,
    status,
    timestamp: new Date(),
-   comments
+   comments,
+   approversName: this.userService.getUser()?.fullname || 'Unknown', 
+   signature: signature, 
  };
  requisition.approvalHistory = [
    ...requisition.approvalHistory.map(h => ({

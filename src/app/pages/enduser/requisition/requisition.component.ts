@@ -24,6 +24,9 @@ import { Product, ProductsService } from 'src/app/services/products.service';
 import { UserService, User } from 'src/app/services/user.service';
 import { PurchaseRequestService, PurchaseRequest } from 'src/app/services/purchase-request.service';
 import { ApprovalSequenceService } from 'src/app/services/approval-sequence.service';
+import { NotificationService } from 'src/app/services/notifications.service';
+import { PurchaseReqComponent } from '../../shared/purchase-req/purchase-req.component';
+import { TimelineModule } from 'primeng/timeline';
 
 interface SelectedProduct {
  id: string;
@@ -55,6 +58,8 @@ interface SelectedProduct {
    TooltipModule,
    TextareaModule,
    MultiSelectModule,
+   PurchaseReqComponent,
+   TimelineModule
  ],
  providers: [ConfirmationService, MessageService],
 })
@@ -84,6 +89,7 @@ export class RequisitionComponent implements OnInit {
 
  constructor(
    private formBuilder: FormBuilder,
+   private notifService:NotificationService,
    private requisitionService: RequisitionService,
    private groupService: GroupService,
    private productsService: ProductsService,
@@ -168,17 +174,14 @@ export class RequisitionComponent implements OnInit {
 //    }
   //  }
   
-  async loadRequisitions(): Promise<void> {
+async loadRequisitions(): Promise<void> {
   try {
     this.loading = true;
     const allRequisitions = await this.requisitionService.getAllRequisitions();
 
-    // Debugging: Log all requisitions
-    console.log('All Requisitions:', allRequisitions);
-
     // Filter requisitions based on their approval level and status
-    this.pendingRequisitions = allRequisitions.filter(req => req.currentApprovalLevel === 1 && req.status === 'Pending');
-    this.approvedRequisitions = allRequisitions.filter(req => req.currentApprovalLevel === 2 && req.status === 'Pending');
+    this.pendingRequisitions = allRequisitions.filter(req => req.currentApprovalLevel === 1);
+    this.approvedRequisitions = allRequisitions.filter(req => req.currentApprovalLevel >= 2);
 
     // Debugging: Log filtered requests
     console.log('Pending Requisitions:', this.pendingRequisitions);
@@ -189,11 +192,8 @@ export class RequisitionComponent implements OnInit {
     this.loading = false;
   }
 }
-
- private filterRequisitions(): void {
-   this.pendingRequisitions = this.requisitions.filter(req => req.status === 'Pending');
-   this.approvedRequisitions = this.requisitions.filter(req => req.status === 'Approved');
- }
+  
+  
 
  onGroupsSelectionChange(newSelectedGroups: string[]): void {
    this.selectedGroups = newSelectedGroups;
@@ -439,6 +439,9 @@ export class RequisitionComponent implements OnInit {
        approvalHistory: []
      };
 
+     
+ 
+
      const ppmpBase64 = this.generatePPMPPdf(requisitionData);
 
    // Continued from before
@@ -483,10 +486,11 @@ export class RequisitionComponent implements OnInit {
 
    try {
      this.loading = true;
-     await this.requisitionService.addRequisition(
+    await this.requisitionService.addRequisition(
        this.tempRequisitionData as Omit<Requisition, 'id'>
      );
 
+     
      this.messageService.add({
        severity: 'success',
        summary: 'Success',
@@ -523,18 +527,7 @@ export class RequisitionComponent implements OnInit {
    }
  }
 
- viewPurchaseRequest(requisition: Requisition): void {
-   if (requisition.purchaseRequestAttachment) {
-     this.selectedPurchaseRequestPdf = this.sanitizer.bypassSecurityTrustResourceUrl(requisition.purchaseRequestAttachment);
-     this.displayPurchaseRequestPreview = true;
-   } else {
-     this.messageService.add({
-       severity: 'warn',
-       summary: 'No Document',
-       detail: 'Purchase Request document is not available.'
-     });
-   }
- }
+ 
 
  closeDialog(): void {
    this.displayPpmpPreview = false;
@@ -611,7 +604,7 @@ async finalizeRequisitionSave(): Promise<void> {
 
   try {
     this.loading = true;
-    await this.requisitionService.addRequisition(
+    const id = await this.requisitionService.addRequisition(
       this.tempRequisitionData as Omit<Requisition, 'id'>
     );
 
@@ -620,6 +613,21 @@ async finalizeRequisitionSave(): Promise<void> {
       summary: 'Success',
       detail: 'Requisition saved successfully'
     });
+
+    const allSequences = await this.requisitionService.getAllApprovalSequences();
+     if(allSequences[0]){
+      const nextUserRole = allSequences[0]?.roleCode;
+          const users = await firstValueFrom (this.userService.getAllUsers());
+          for(let user of users){
+            if(user.role == 'superadmin' || nextUserRole == user.role  ){
+              this.notifService.addNotification(
+              `Requisiton No. ${id} has been created and now under ${allSequences[0].name}.`,
+              'info',
+              user.id
+              )
+            }
+          }
+     }
     
     this.resetForm();
     await this.loadRequisitions();
@@ -632,4 +640,56 @@ async finalizeRequisitionSave(): Promise<void> {
     this.tempRequisitionData = undefined;
   }
 }
+  
+  displayPurchaseRequestModal: boolean = false;
+selectedPurchaseRequestId: string | null = null;
+
+
+  openPurchaseRequestModal(purchaseRequestId: string): void {
+  this.closePurchaseRequestModal(); // Ensure the previous state is reset
+  setTimeout(() => {
+    this.selectedPurchaseRequestId = purchaseRequestId;
+    this.displayPurchaseRequestModal = true;
+  });
+}
+
+  closePurchaseRequestModal(): void {
+  this.selectedPurchaseRequestId = null;
+  this.displayPurchaseRequestModal = false;
+}
+
+
+  displayModal: boolean = false; // State for the attachments and approval history modal
+displayAttachmentModal: boolean = false; // State for the attachment preview modal
+selectedRequisition: Requisition | null = null; // Currently selected requisition for the modal
+selectedAttachmentUrl: SafeResourceUrl | null = null; // URL for the selected attachment preview
+
+// Show attachments and approval history
+showAttachments(requisition: Requisition): void {
+  this.selectedRequisition = {
+    ...requisition,
+    approvalHistory: requisition.approvalHistory?.map(history => ({
+      ...history,
+      approversName: history.approversName || 'Unknown', // Provide default name if missing
+      signature: history.signature || undefined // Ensure undefined if signature is null
+    })) || [] // Ensure approvalHistory is always an array
+  };
+  this.displayModal = true;
+}
+
+// Preview the attachment in a modal
+viewAttachment(attachmentUrl: string): void {
+  this.selectedAttachmentUrl = this.sanitizer.bypassSecurityTrustResourceUrl(attachmentUrl);
+  this.displayAttachmentModal = true;
+}
+
+  
+// View purchase request (modal already defined in your code)
+viewPurchaseRequest(requisitionId: string): void {
+  this.selectedPurchaseRequestId = requisitionId;
+  this.displayPurchaseRequestModal = true;
+}
+  
+
+
 }

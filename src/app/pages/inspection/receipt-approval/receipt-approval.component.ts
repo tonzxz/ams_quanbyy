@@ -23,6 +23,10 @@ import { LottieAnimationComponent } from '../../ui-components/lottie-animation/l
 import { InputIconModule } from 'primeng/inputicon';
 import { IconFieldModule } from 'primeng/iconfield';
 import { RequisitionService } from 'src/app/services/requisition.service';
+import { DeliveredItem, DeliveryItem } from '../../shared/delivered-items/delivered-items.interface';
+import { PdfGeneratorService } from 'src/app/services/pdf-generator.service';
+import { ChecklistModalComponent } from './checklist-modal.component';
+import { MatDialog } from '@angular/material/dialog';
 @Component({
   selector: 'app-receipt-approval',
   standalone: true,
@@ -34,6 +38,7 @@ import { RequisitionService } from 'src/app/services/requisition.service';
   templateUrl: './receipt-approval.component.html',
   styleUrl: './receipt-approval.component.scss'
 })
+
 export class ReceiptApprovalComponent implements OnInit {
 
   @ViewChild('fileUpload') fileUpload: FileUpload;
@@ -55,13 +60,34 @@ export class ReceiptApprovalComponent implements OnInit {
     private router:Router,
     private requisitionService:RequisitionService,
     private confirmationService:ConfirmationService,
+    private dialog: MatDialog,
     private messageService:MessageService,
+    private pdfService:PdfGeneratorService,
     private deliveryService:DeliveryReceiptService){}
 
   ngOnInit(): void {
     this.fetchItems();
   }
   
+   async viewChecklist(item: DeliveryReceipt) {
+    const requisition = await this.requisitionService.getRequisitionById(item.purchase_order??'#');
+    if(!requisition) return;
+    const dialogRef = this.dialog.open(ChecklistModalComponent, {
+      width: '800px',
+      data: { ...requisition }
+    });
+
+    dialogRef.afterClosed().subscribe( async result => {
+      if (result) {
+        await this.requisitionService.updateRequisition(requisition);
+        this.fetchItems();
+        this.filterByStatus('processing');
+        this.messageService.add({ severity: 'success', summary: 'Success', detail: `Successfully updated receipt checklist.` });
+      }
+    });
+  }
+
+
   openReceiptModal(){
     this.form.reset();
     this.files = [];
@@ -112,11 +138,16 @@ export class ReceiptApprovalComponent implements OnInit {
       this.fileUpload.clear(); 
     }
     this.showReceiptModal = false;
-    this.messageService.add({ severity: 'success', summary: 'Success', detail: `Successfully uploaded inspection reports to Receipt No. ${this.selectedDeliveryReceipt?.receipt_number?.toUpperCase()}` });
+    await this.deliveryService.moveToRejected(this.selectedDeliveryReceipt?.id??'#')
+    this.messageService.add({ severity: 'success', summary: 'Success', detail: `Successfully rejected receipt.` });
+    await this.fetchItems();
+    this.filterByStatus('processing');
+    this.activeStep = 1;
     await this.fetchItems();
     this.activeStep = 1;
   }
 
+  
 
 
   nextStep(){
@@ -170,7 +201,13 @@ export class ReceiptApprovalComponent implements OnInit {
           //   req!.approvalStatus = 'Approved'; 
           // }
           // await this.requisitionService.updateRequisition(req!);
-          
+          const requisition = await this.requisitionService.getRequisitionById(receipt.purchase_order??'#');
+          if(requisition){
+            if(requisition?.products.length > requisition?.products.filter(product=>product.status == 'delivered').length){
+              this.messageService.add({ severity: 'error', summary: 'Failed', detail: `Purchase Order checklist has not been cleared` });
+              return;
+            }
+          }
           await this.deliveryService.moveToVerified(receipt.id!)
           this.messageService.add({ severity: 'success', summary: 'Success', detail: `Successfully submitted receipt to verified receipts.` });
           await this.fetchItems();
@@ -181,6 +218,47 @@ export class ReceiptApprovalComponent implements OnInit {
           
       }
     });
+  }
+
+  async generateInspectionReport(receipt:DeliveryReceipt){
+    const requisition = await this.requisitionService.getRequisitionById(receipt.purchase_order??'#');
+    if(requisition){
+     
+      const deliveredItem:DeliveredItem={
+        id : `IAR-${new Date().getFullYear()}-${Math.floor(Math.random() * 1000000)}`,
+        supplierName: receipt.supplier_name,
+        supplierId: receipt.supplier_id,
+        dateDelivered: new Date(receipt.delivery_date),
+        department: receipt.department_name??'N/A',
+        documentUrl: '',
+        status:'accepted',
+        items :  requisition.products.reduce((acc:DeliveryItem[], curr)=>{
+          return [...acc,
+            {
+                id: curr.id,
+                name: curr.name,
+                quantity: curr.quantity,
+                status:  'delivered',
+                isDelivered: true,
+                remarks: '',
+                dateChecked: new Date(),
+            } as DeliveryItem
+          ]
+        },[]),
+        totalAmount: receipt.total_amount,
+        poNumber: receipt.purchase_order,
+        remarks: 'asd',
+        lastUpdated: new Date()
+      };
+     
+      const blob =  this.pdfService.generateInspectionReport(deliveredItem);
+      const url = window.URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = `${deliveredItem.id}.pdf`;
+      link.click();
+    }
+
   }
 
   async confirmToReject(event: Event,id:string){
