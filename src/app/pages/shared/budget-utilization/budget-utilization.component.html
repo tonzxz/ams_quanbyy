@@ -1,21 +1,4 @@
-<div class="p-10 ml-5 bg-white shadow-md rounded-lg" style="width: 380mm; height: auto;">
-  <!-- Input field for RFQ ID -->
-  <div class="mb-4">
-    <label for="rfqId" class="block text-lg font-semibold mb-2">Enter RFQ ID:</label>
-    <input
-      type="text"
-      id="rfqId"
-      [(ngModel)]="rfqId"
-      class="p-2 border rounded w-1/3"
-      placeholder="Enter RFQ ID"
-    />
-    <button
-      (click)="loadRFQData()"
-      class="ml-2 bg-blue-500 text-white px-4 py-2 rounded"
-    >
-      Load Data
-    </button>
-  </div>
+<div class="p-10 ml-5 bg-white shadow-md rounded-lg" style="width: 380mm; height: auto;">  
 
   <!-- Data Display -->
   <div *ngIf="mockData">

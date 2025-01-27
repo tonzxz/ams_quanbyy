@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, Input, OnChanges, SimpleChanges } from '@angular/core';
 import { BudgetService } from 'src/app/services/budget.service';
 import { RFQService } from 'src/app/services/rfq.service';
 import { RequisitionService } from 'src/app/services/requisition.service';
@@ -17,8 +17,8 @@ import { FormsModule } from '@angular/forms';
   templateUrl: './budget-utilization.component.html',
   styleUrls: ['./budget-utilization.component.scss'],
 })
-export class BudgetUtilizationComponent {
-  rfqId: string = ''; // Two-way binding for RFQ ID input
+export class BudgetUtilizationComponent implements OnChanges {
+  @Input() rfqId: string = ''; // Input property for RFQ ID
   mockData: any = {}; // Placeholder for the mock data
 
   constructor(
@@ -29,9 +29,15 @@ export class BudgetUtilizationComponent {
     private departmentService: DepartmentService
   ) {}
 
+  ngOnChanges(changes: SimpleChanges): void {
+    if (changes['rfqId'] && this.rfqId) {
+      this.loadRFQData();
+    }
+  }
+
   async loadRFQData() {
     if (!this.rfqId) {
-      alert('Please enter an RFQ ID.');
+      alert('RFQ ID is required.');
       return;
     }
 
@@ -47,112 +53,106 @@ export class BudgetUtilizationComponent {
     }
   }
 
-  
- async populateMockData(rfq: any) {
-  try {
-    const requisition = await this.requisitionService.getRequisitionById(rfq.purchase_order || '');
-    console.log('Requisition:', requisition);
+  async populateMockData(rfq: any) {
+    try {
+      const requisition = await this.requisitionService.getRequisitionById(rfq.purchase_order || '');
+      console.log('Requisition:', requisition);
 
-    const createdByUser = this.userService.getUserById(requisition?.createdByUserId || '');
-    console.log('Created By User:', createdByUser);
+      const createdByUser = this.userService.getUserById(requisition?.createdByUserId || '');
+      console.log('Created By User:', createdByUser);
 
-    if (!createdByUser) {
-      alert('User not found.');
-      return;
-    }
+      if (!createdByUser) {
+        alert('User not found.');
+        return;
+      }
 
-    // Fetch all offices and departments to find the correct department and office
-    const offices = await this.departmentService.getAllOffices();
-    const office = offices.find((o) => o.id === createdByUser.officeId);
-    console.log('Office:', office);
+      const offices = await this.departmentService.getAllOffices();
+      const office = offices.find((o) => o.id === createdByUser.officeId);
+      console.log('Office:', office);
 
-    if (!office) {
-      alert('Office not found for the user.');
-      return;
-    }
+      if (!office) {
+        alert('Office not found for the user.');
+        return;
+      }
 
-    const departments = await this.departmentService.getAllDepartments();
-    const department = departments.find((d) => d.id === office.departmentId);
-    console.log('Department:', department);
+      const departments = await this.departmentService.getAllDepartments();
+      const department = departments.find((d) => d.id === office.departmentId);
+      console.log('Department:', department);
 
-    if (!department) {
-      alert('Department not found for the office.');
-      return;
-    }
+      if (!department) {
+        alert('Department not found for the office.');
+        return;
+      }
 
-    const budgets = (await this.budgetService.getAllBudgetAllocations().toPromise()) || [];
-    if (!budgets.length) {
-      alert('No budgets found.');
-      return;
-    }
+      const budgets = (await this.budgetService.getAllBudgetAllocations().toPromise()) || [];
+      if (!budgets.length) {
+        alert('No budgets found.');
+        return;
+      }
 
-    const budget = budgets.find((b) => b.departmentId === department.id);
-    console.log('Budget:', budget);
+      const budget = budgets.find((b) => b.departmentId === department.id);
+      console.log('Budget:', budget);
 
-    if (!budget) {
-      alert('No budget found for this department.');
-      return;
-    }
+      if (!budget) {
+        alert('No budget found for this department.');
+        return;
+      }
 
-    // Fetch the logged-in user details
-    const loggedInUser = this.userService.getUser();
-    const certifiedByName = loggedInUser?.fullname || 'N/A';
-    const certifiedByPosition = loggedInUser?.position || 'N/A';
+      const loggedInUser = this.userService.getUser();
+      const certifiedByName = loggedInUser?.fullname || 'N/A';
+      const certifiedByPosition = loggedInUser?.position || 'N/A';
 
-    this.mockData = {
-      title: 'ANNEX C',
-      subtitle: 'LOCAL GOVERNMENT SUPPORT FUND',
-      reportTitle: 'Report on Fund Utilization and Status of Program/Project Implementation',
-      quarterEnded: 'For the Quarter Ended ______',
-      tableHeaders: [
-        'Fund Source',
-        'Date of Notice of Authority to Debit Account Issued (NADAI)',
-        'Type of Program/ Project',
-        'Name/Title of Program/ Project',
-        'Specific Location',
-        'Mechanism/ Mode of Implementation',
-        'Estimated Number of Beneficiaries',
-        'Amount',
-        'Estimated Period of Completion (month and year)',
-        'Remarks on Program/ Project Status',
-      ],
-      tableData: [
-        {
-          fundSource: `Budget ID: ${budget?.id || 'N/A'}`,
-          nadaiDate: requisition?.dateCreated
-            ? new Date(requisition.dateCreated).toLocaleDateString()
-            : 'N/A',
-          programType: 'Infrastructure',
-          programTitle: requisition?.title || 'N/A',
-          location: `${office.roomNumber || 'N/A'}, Floor ${office.floor || 'N/A'}, ${
-            office.name || 'N/A'
-          }`,
-          implementationMode: 'Contractor',
-          beneficiaries: requisition?.products.reduce((sum, product) => sum + product.quantity, 0),
-          amountReceived: `${budget?.totalBudget || 0}`, // Total budget assigned to the department
-          amountContracted: `${budget?.allocatedAmount || 0}`, // Amount allocated for specific projects (e.g., supplier contracts)
-          amountDisbursed: `${budget?.totalBudget - budget?.remainingBalance || 0}`, // Total disbursed amount = totalBudget - remainingBalance
-          completionPeriod: 'December 2025',
-          remarks: 'Ongoing',
+      this.mockData = {
+        title: 'ANNEX C',
+        subtitle: 'LOCAL GOVERNMENT SUPPORT FUND',
+        reportTitle: 'Report on Fund Utilization and Status of Program/Project Implementation',
+        quarterEnded: 'For the Quarter Ended ______',
+        tableHeaders: [
+          'Fund Source',
+          'Date of Notice of Authority to Debit Account Issued (NADAI)',
+          'Type of Program/ Project',
+          'Name/Title of Program/ Project',
+          'Specific Location',
+          'Mechanism/ Mode of Implementation',
+          'Estimated Number of Beneficiaries',
+          'Amount',
+          'Estimated Period of Completion (month and year)',
+          'Remarks on Program/ Project Status',
+        ],
+        tableData: [
+          {
+            fundSource: `Budget ID: ${budget?.id || 'N/A'}`,
+            nadaiDate: requisition?.dateCreated
+              ? new Date(requisition.dateCreated).toLocaleDateString()
+              : 'N/A',
+            programType: 'Infrastructure',
+            programTitle: requisition?.title || 'N/A',
+            location: `${office.roomNumber || 'N/A'}, Floor ${office.floor || 'N/A'}, ${
+              office.name || 'N/A'
+            }`,
+            implementationMode: 'Contractor',
+            beneficiaries: requisition?.products.reduce((sum, product) => sum + product.quantity, 0),
+            amountReceived: `${budget?.totalBudget || 0}`,
+            amountContracted: `${budget?.allocatedAmount || 0}`,
+            amountDisbursed: `${budget?.totalBudget - budget?.remainingBalance || 0}`,
+            completionPeriod: 'December 2025',
+            remarks: 'Ongoing',
+          },
+        ],
+        certifiedBy: {
+          name: certifiedByName,
+          position: certifiedByPosition,
         },
-      ],
-      certifiedBy: {
-        name: certifiedByName, // Name of the logged-in user
-        position: certifiedByPosition, // Position of the logged-in user
-      },
-      attestedBy: {
-        chiefExecutive: 'Local Chief Executive',
-        planningCoordinator: 'Local Planning and Development Coordinator',
-      },
-    };
-  } catch (error) {
-    console.error('Error populating mock data:', error);
-    alert('An error occurred while loading data.');
+        attestedBy: {
+          chiefExecutive: 'Local Chief Executive',
+          planningCoordinator: 'Local Planning and Development Coordinator',
+        },
+      };
+    } catch (error) {
+      console.error('Error populating mock data:', error);
+      alert('An error occurred while loading data.');
+    }
   }
-}
-
-
-
 
   exportPdf() {
     const content = document.querySelector('.p-10') as HTMLElement;
