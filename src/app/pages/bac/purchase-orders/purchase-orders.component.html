@@ -63,15 +63,9 @@
               <td>{{ rfq.dateRequested | date: 'short' }}</td>
               <td>{{ rfq.qualifiedSupplier }}</td>
               <td>
-                <button
-                  pButton
-                  icon="pi pi-eye"
-                  outlined="true"
-                  class="p-button-rounded p-button-info p-button-sm"
-                  (click)="viewNoticeOfAward(rfq.noticeOfAward)"
-                  pTooltip="View Notice of Award"
-                  [disabled]="!rfq.noticeOfAward"
-                ></button>
+
+                 <p-button outlined="true" severity="warn" pTooltip="Click to print notice of award"
+                  (click)="null" size="small" icon="pi pi-trophy" rounded />
               </td>
             </tr>
           </ng-template>

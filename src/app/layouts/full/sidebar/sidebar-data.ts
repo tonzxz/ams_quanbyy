@@ -14,7 +14,7 @@ export const navItems: NavItem[] = [
     displayName: 'Approvals',
     iconName: 'solar:widget-add-line-duotone',
     route: '/shared/approvals',
-    requiredRoles: ['end-user', 'bac', 'acucounting', 'caf', 'president', 'inspection'],
+    requiredRoles: ['end-user', 'bac', 'accounting', 'caf', 'president', 'inspection'],
 
   },
 
@@ -32,26 +32,26 @@ export const navItems: NavItem[] = [
     route: '/shared/rfq-list',
     requiredRoles: ['bac'],
   },
-  {
-    displayName: 'Disbursement Template',
-    iconName: 'solar:widget-add-line-duotone',
-    route: '/shared/disbursement',
-  },
-  {
-    displayName: 'Stock-Card Template',
-    iconName: 'solar:widget-add-line-duotone',
-    route: '/shared/stock-card',
-  },
-  {
-    displayName: 'Requisition and Issue Slip',
-    iconName: 'solar:widget-add-line-duotone',
-    route: '/shared/ris',
-  },
-  {
-    displayName: 'Semi-Expendable',
-    iconName: 'solar:widget-add-line-duotone',
-    route: '/shared/semi-expendable',
-  },
+  // {
+  //   displayName: 'Disbursement Template',
+  //   iconName: 'solar:widget-add-line-duotone',
+  //   route: '/shared/disbursement',
+  // },
+  // {
+  //   displayName: 'Stock-Card Template',
+  //   iconName: 'solar:widget-add-line-duotone',
+  //   route: '/shared/stock-card',
+  // },
+  // {
+  //   displayName: 'Requisition and Issue Slip',
+  //   iconName: 'solar:widget-add-line-duotone',
+  //   route: '/shared/ris',
+  // },
+  // {
+  //   displayName: 'Semi-Expendable',
+  //   iconName: 'solar:widget-add-line-duotone',
+  //   route: '/shared/semi-expendable',
+  // },
 
  
   
@@ -65,11 +65,11 @@ export const navItems: NavItem[] = [
     iconName: 'solar:widget-add-line-duotone',
     route: '/shared/noa',
   },
-  {
-    displayName: 'Notice to Proceed',
-    iconName: 'solar:widget-add-line-duotone',
-    route: '/shared/ntp',
-  },
+  // {
+  //   displayName: 'Notice to Proceed',
+  //   iconName: 'solar:widget-add-line-duotone',
+  //   route: '/shared/ntp',
+  // },
   // {
   //   displayName: 'Purchase Request',
   //   iconName: 'solar:widget-add-line-duotone',
