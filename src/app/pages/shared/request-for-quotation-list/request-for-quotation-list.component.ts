@@ -598,12 +598,14 @@ export class RequestForQuotationListComponent implements OnInit {
             'info',
             user.id
           )
-          if(user.role =='bac'){
-            this.notifService.addNotification(
-              `RFQ No. ${this.selectedRFQ!.id} notice of award can now be distributed.`,
-              'info',
-              user.id
-            )
+          if(this.currentUser?.role == 'accounting'){
+            if(user.role =='bac'){
+              this.notifService.addNotification(
+                `RFQ No. ${this.selectedRFQ!.id} notice of award can now be distributed.`,
+                'info',
+                user.id
+              )
+            }
           }
         }
       }
