@@ -1,81 +1,121 @@
-import { Component } from '@angular/core';
-import { ButtonModule } from 'primeng/button';
+import { Component, Input, OnInit } from '@angular/core';
 import jsPDF from 'jspdf';
 import html2canvas from 'html2canvas';
+import { RequisitionService, Requisition } from 'src/app/services/requisition.service';
+import { RFQService, RFQ } from 'src/app/services/rfq.service';
+import { CommonModule } from '@angular/common';
 
 @Component({
   selector: 'app-aoq',
   standalone: true,
-  imports: [ButtonModule],
+  imports:[CommonModule],
   templateUrl: './aoq.component.html',
-  styleUrls: ['./aoq.component.scss']
+  styleUrls: ['./aoq.component.scss'],
 })
-export class AoqComponent {
-  mockData = {
-    date: '15 2022',
-    modeOfProcurement: 'SMALL VALUE PROCUREMENT',
-    items: [
-      {
-        qty: 1,
-        unitOfMeasurement: 'pc',
-        itemDescription: 'HEAVY DUTY PAPER SHREDDER',
-        approvedBudget: '50,000.00',
-        philcopyCorporation: { unitPrice: '34,070.00', totalCost: '34,070.00' },
-        solidBusinessMachineInc: { unitPrice: 'HAVEN\'T SUBMITTED QUOTATION', totalCost: 'HAVEN\'T SUBMITTED QUOTATION' },
-        seccComputerSales: { unitPrice: 'HAVEN\'T SUBMITTED QUOTATION', totalCost: 'HAVEN\'T SUBMITTED QUOTATION' }
-      }
-    ],
-    preparedBy: 'ADMINISTRATIVE ASSISTANT',
-    checkedBy: 'BRANCH SERVICES OFFICER',
-    notedBy: 'BRANCH HEAD',
-    recommendingApproval: [
-      { name: 'APP IDOM A / GALLEGO', role: 'Chairperson, RBAC' },
-      { name: 'SM RYAN P PASTRANA', role: 'RBAC Member' },
-      { name: 'SM DAN CEEVYKYL - URBAN LATEL', role: 'RBAC Member' },
-      { name: 'SM ROSA CHLESTF PIERAS', role: 'Vice-Chairperson, RBAC' },
-      { name: 'SM CHRIST E. VALDENDELA', role: 'RBAC Member' },
-      { name: 'SB DOZI', role: 'RBAC Member' }
-    ],
-    approvedBy: 'Head of Procuring Entity (HOPE)'
-  };
+export class AoqComponent implements OnInit {
+  @Input() rfqId!: string; // Input property for RFQ ID
+  requisitionData: Requisition | undefined; // Fetched requisition data
+  rfqData: RFQ | undefined; // Fetched RFQ data
+  errorMessage: string = ''; // Error message for invalid search
+  totalPrice: number = 0; // Total price
+  currentDate:Date = new Date();
+  constructor(
+    private requisitionService: RequisitionService,
+    private rfqService: RFQService
+  ) {}
 
-  exportPdf() {
-    const content = document.createElement('div');
-    content.innerHTML = `
+  ngOnInit() {
+    // Automatically fetch data and generate the PDF when the rfqId is provided
+    if (this.rfqId) {
+      this.fetchData().then(() => {
+        if (this.rfqData && this.requisitionData) {
+          this.exportPdf();
+        }
+      });
+    }
+  }
+
+  getTotalPrice(products: { price: number; quantity: number }[]): number {
+    return products.reduce((total, product) => total + product.price * product.quantity, 0);
+  }
+
+  async fetchData() {
+    this.errorMessage = '';
+    this.requisitionData = undefined;
+    this.rfqData = undefined;
+
+    try {
+      const rfqs = await this.rfqService.getAll();
+      this.rfqData = rfqs.find((rfq) => rfq.id === this.rfqId);
+
+      if (!this.rfqData) {
+        this.errorMessage = 'RFQ not found.';
+        return;
+      }
+
+      const requisitions = await this.requisitionService.getAllRequisitions();
+      this.requisitionData = requisitions.find(
+        (req) => req.id === this.rfqData?.purchase_order
+      );
+
+      if (!this.requisitionData) {
+        this.errorMessage = 'Requisition not found for the given Purchase Order.';
+        return;
+      }
+
+      this.totalPrice = this.getTotalPrice(this.requisitionData.products);
+    } catch (error) {
+      this.errorMessage = 'An error occurred while fetching data.';
+      console.error(error);
+    }
+  }
+
+  getWinner(){
+    return this.rfqData?.suppliers.find(s=>s.supplierId == this.rfqData?.supplier);
+  }
+
+  async exportPdf() {
+    if (!this.requisitionData || !this.rfqData) {
+      this.errorMessage = 'No data available to export.';
+      return;
+    }
+
+    const supplier = this.rfqData.suppliers.find(s=>s.supplierId == this.rfqData?.supplier);
+
+    const container = document.createElement('div');
+    container.innerHTML = `
       <div class="p-10 ml-10 bg-white shadow-md rounded-lg" style="width: 390mm; height: 350mm;">
         <h1 class="text-2xl font-bold mb-4 flex justify-center">ABSTRACT OF QUOTATIONS</h1>
         
         <div class="mb-4 text-xl">
           <div class="flex flex-row justify-between">
-            <p><strong>DATE:</strong> ${this.mockData.date}</p>
-            <p><strong>MODE OF PROCUREMENT:</strong> ${this.mockData.modeOfProcurement}</p>
+            <p><strong>DATE:</strong> ${new Date().toLocaleDateString()}</p>
+            <p><strong>MODE OF PROCUREMENT:</strong> ${this.requisitionData.title} Small</p>
           </div>
         </div>
       
         <table class="w-full border-collapse border border-gray-300 text-xl" style="table-layout: fixed;">
           <thead>
             <tr class="bg-gray-200">
-              <th class="border border-gray-300 p-4" style="width: 5%;">QTY</th>
+              <th class="border border-gray-300 p-4" style="width: 5%;">Lot</th>
               <th class="border border-gray-300 p-4" style="width: 10%;">Unit of Measurement</th>
-              <th class="border border-gray-300 p-4" style="width: 20%;">ITEM DESCRIPTION</th>
-              <th class="border border-gray-300 p-4" style="width: 15%;">APPROVED BUDGET</th>
-              <th class="border border-gray-300 p-4" style="width: 15%;">PHILCOPY CORPORATION</th>
-              <th class="border border-gray-300 p-4" style="width: 15%;">SOLID BUSINESS MACHINE INC.</th>
-              <th class="border border-gray-300 p-4" style="width: 15%;">SECC COMPUTER SALES, SERVICE & ENTERPRISES</th>
+              <th class="border border-gray-300 p-4" style="width: 20%;">Item Description</th>
+              <th class="border border-gray-300 p-4" style="width: 15%;">ABC</th>
+              <th class="border border-gray-300 p-4" style="width: 15%;">Supplier Name</th>
+              <th class="border border-gray-300 p-4" style="width: 15%;">Supplier Price</th>
             </tr>
           </thead>
           <tbody>
-            ${this.mockData.items
+            ${this.requisitionData.products
               .map(
-                (item) => `
+                (product) => `
               <tr>
-                <td class="border border-gray-300 p-4">${item.qty}</td>
-                <td class="border border-gray-300 p-4">${item.unitOfMeasurement}</td>
-                <td class="border border-gray-300 p-4">${item.itemDescription}</td>
-                <td class="border border-gray-300 p-4">${item.approvedBudget}</td>
-                <td class="border border-gray-300 p-4">${item.philcopyCorporation.unitPrice}<br>${item.philcopyCorporation.totalCost}</td>
-                <td class="border border-gray-300 p-4">${item.solidBusinessMachineInc.unitPrice}<br>${item.solidBusinessMachineInc.totalCost}</td>
-                <td class="border border-gray-300 p-4">${item.seccComputerSales.unitPrice}<br>${item.seccComputerSales.totalCost}</td>
+                <td class="border border-gray-300 p-4">${1}</td>
+                <td class="border border-gray-300 p-4">lot</td>
+                <td class="border border-gray-300 p-4">${this.requisitionData?.title}</td>
+                <td class="border border-gray-300 p-4"> ${(product.quantity * product.price).toFixed(2)}</td>
+                <td class="border border-gray-300 p-4">${supplier?.supplierName || 'N/A'}</td>
+                <td class="border border-gray-300 p-4">P${supplier?.biddingPrice || 'N/A'}</td>
               </tr>
             `
               )
@@ -84,55 +124,48 @@ export class AoqComponent {
         </table>
 
         <div class="mt-4 text-xl">
-          <p><strong>RESOLVED,</strong> that based on the above Abstract of Quotations, the RBAC recommends to the Head of Procuring Entity (HOPE) that the contract be awarded in favor of PHILCOPY CORPORATION as the single calculated and responsive bidder/quotation.</p>
-          <p><strong>RESOLVED,</strong> this 15th day of 2022 in the City of Cebu.</p>
+          <p><strong>RESOLVED,</strong> that based on the above Abstract of Quotations, the BAC recommends to the Head that the contract be awarded in favor of ${supplier?.supplierName} as the single calculated and responsive bidder/quotation.</p>
+          <p><strong>RESOLVED,</strong> this ${new Date().toLocaleDateString()} in the Davao.</p>
         </div>
 
         <div class="mt-4 text-xl">
           <div class="flex flex-row justify-between">
-            <p><strong>Purchase Requisition No. 2022-025</strong></p>
-            <p><strong>Purchase Order No. 2022-025</strong></p>
+            <p><strong>Purchase Requisition No. ${this.requisitionData.id}</strong></p>
+            <p><strong>Purchase Order No. ${this.rfqData.purchase_order}</strong></p>
           </div>
           <div class="flex flex-row justify-between">
-            <p><strong>PREPARED BY:</strong> ${this.mockData.preparedBy}</p>
-            <p><strong>CHECKED BY:</strong> ${this.mockData.checkedBy}</p>
-            <p><strong>NOTED BY:</strong> ${this.mockData.notedBy}</p>
+            <p><strong>PREPARED BY:</strong> ${this.requisitionData.createdByUserName}</p>
           </div>
         </div>
 
         <div class="mt-4 text-xl">
           <p><strong>Recommending Approval:</strong></p>
-          ${this.mockData.recommendingApproval
-            .map(
-              (approver) => `
-            <p>${approver.name} - ${approver.role}</p>
-          `
-            )
-            .join('')}
+          <p>Admin - Chairperson, BAC</p>
+          <p>Manager - BAC Member</p>
         </div>
 
         <div class="mt-4 text-xl">
           <p><strong>APPROVED:</strong></p>
-          <p>${this.mockData.approvedBy}</p>
+          <p>Head of Procuring Entity </p>
         </div>
       </div>
     `;
 
-    document.body.appendChild(content);
+    document.body.appendChild(container);
 
-    html2canvas(content, { scale: 2 }).then((canvas) => {
+    html2canvas(container, { scale: 2 }).then((canvas) => {
       const imgData = canvas.toDataURL('image/png');
       const pdf = new jsPDF('l', 'mm', 'legal');
       const imgWidth = 330;
       const imgHeight = (canvas.height * imgWidth) / canvas.width;
 
-      const pageWidth = pdf.internal.pageSize.getWidth(); // Get the page width (297mm for A4 landscape)
-      const xOffset = (pageWidth - imgWidth) / 2;
-
       pdf.addImage(imgData, 'PNG', 0, 0, imgWidth, imgHeight);
       pdf.save('abstract-of-quotations.pdf');
 
-      document.body.removeChild(content);
+      document.body.removeChild(container);
     });
   }
 }
+
+
+

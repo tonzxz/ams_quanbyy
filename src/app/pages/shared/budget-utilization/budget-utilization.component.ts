@@ -1,140 +1,170 @@
-import { Component } from '@angular/core';
-import { ButtonModule } from 'primeng/button';
+import { Component, Input, OnChanges, SimpleChanges } from '@angular/core';
+import { BudgetService } from 'src/app/services/budget.service';
+import { RFQService } from 'src/app/services/rfq.service';
+import { RequisitionService } from 'src/app/services/requisition.service';
+import { UserService } from 'src/app/services/user.service';
+import { DepartmentService } from 'src/app/services/departments.service';
 import jsPDF from 'jspdf';
 import html2canvas from 'html2canvas';
+import { CommonModule } from '@angular/common';
+import { ButtonModule } from 'primeng/button';
+import { FormsModule } from '@angular/forms';
 
 @Component({
   selector: 'app-bur',
   standalone: true,
-  imports: [ButtonModule],
+  imports: [CommonModule, ButtonModule, FormsModule],
   templateUrl: './budget-utilization.component.html',
-  styleUrls: ['./budget-utilization.component.scss']
+  styleUrls: ['./budget-utilization.component.scss'],
 })
-export class BudgetUtilizationComponent {
-  mockData = {
-    title: 'ANNEX C',
-    subtitle: 'LOCAL GOVERNMENT SUPPORT FUND',
-    reportTitle: 'Report on Fund Utilization and Status of Program/Project Implementation',
-    quarterEnded: 'For the Quarter Ended ______',
-    tableHeaders: [
-      'Fund Source',
-      'Date of Notice of Authority to Debit Account Issued (NADAI)',
-      'Type of Program/ Project',
-      'Name/Title of Program/ Project',
-      'Specific Location',
-      'Mechanism/ Mode of Implementation',
-      'Estimated Number of Beneficiaries',
-      'Amount',
-      'Estimated Period of Completion (month and year)',
-      'Remarks on Program/ Project Status'
-    ],
-    tableData: [
-      {
-        fundSource: 'Sample Fund Source',
-        nadaiDate: '2022-01-01',
-        programType: 'Infrastructure',
-        programTitle: 'Sample Project',
-        location: 'Sample Location',
-        implementationMode: 'Contractor',
-        beneficiaries: 1000,
-        amountReceived: '1,000,000.00',
-        amountContracted: '900,000.00',
-        amountDisbursed: '800,000.00',
-        completionPeriod: 'December 2023',
-        remarks: 'Ongoing'
-      }
-    ],
-    certifiedBy: {
-      lfc: 'The Local Finance Committee (LFC)',
-      budgetOfficer: 'Local Budget Officer',
-      treasurer: 'Local Treasurer'
-    },
-    attestedBy: {
-      chiefExecutive: 'Local Chief Executive',
-      planningCoordinator: 'Local Planning and Development Coordinator'
+export class BudgetUtilizationComponent implements OnChanges {
+  @Input() rfqId: string = ''; // Input property for RFQ ID
+  mockData: any = {}; // Placeholder for the mock data
+
+  constructor(
+    private budgetService: BudgetService,
+    private rfqService: RFQService,
+    private requisitionService: RequisitionService,
+    private userService: UserService,
+    private departmentService: DepartmentService
+  ) {}
+
+  ngOnChanges(changes: SimpleChanges): void {
+    if (changes['rfqId'] && this.rfqId) {
+      this.loadRFQData();
     }
-  };
+  }
+
+  async loadRFQData() {
+    if (!this.rfqId) {
+      alert('RFQ ID is required.');
+      return;
+    }
+
+    try {
+      const rfq = await this.rfqService.getById(this.rfqId);
+      if (rfq) {
+        await this.populateMockData(rfq);
+      } else {
+        alert('RFQ not found.');
+      }
+    } catch (error) {
+      console.error('Error loading RFQ data:', error);
+    }
+  }
+
+  async populateMockData(rfq: any) {
+    try {
+      const requisition = await this.requisitionService.getRequisitionById(rfq.purchase_order || '');
+      console.log('Requisition:', requisition);
+
+      const createdByUser = this.userService.getUserById(requisition?.createdByUserId || '');
+      console.log('Created By User:', createdByUser);
+
+      if (!createdByUser) {
+        alert('User not found.');
+        return;
+      }
+
+      const offices = await this.departmentService.getAllOffices();
+      const office = offices.find((o) => o.id === createdByUser.officeId);
+      console.log('Office:', office);
+
+      if (!office) {
+        alert('Office not found for the user.');
+        return;
+      }
+
+      const departments = await this.departmentService.getAllDepartments();
+      const department = departments.find((d) => d.id === office.departmentId);
+      console.log('Department:', department);
+
+      if (!department) {
+        alert('Department not found for the office.');
+        return;
+      }
+
+      const budgets = (await this.budgetService.getAllBudgetAllocations().toPromise()) || [];
+      if (!budgets.length) {
+        alert('No budgets found.');
+        return;
+      }
+
+      const budget = budgets.find((b) => b.departmentId === department.id);
+      console.log('Budget:', budget);
+
+      if (!budget) {
+        alert('No budget found for this department.');
+        return;
+      }
+
+      const loggedInUser = this.userService.getUser();
+      const certifiedByName = loggedInUser?.fullname || 'N/A';
+      const certifiedByPosition = loggedInUser?.position || 'N/A';
+
+      this.mockData = {
+        title: 'ANNEX C',
+        subtitle: 'LOCAL GOVERNMENT SUPPORT FUND',
+        reportTitle: 'Report on Fund Utilization and Status of Program/Project Implementation',
+        quarterEnded: 'For the Quarter Ended ______',
+        tableHeaders: [
+          'Fund Source',
+          'Date of Notice of Authority to Debit Account Issued (NADAI)',
+          'Type of Program/ Project',
+          'Name/Title of Program/ Project',
+          'Specific Location',
+          'Mechanism/ Mode of Implementation',
+          'Estimated Number of Beneficiaries',
+          'Amount',
+          'Estimated Period of Completion (month and year)',
+          'Remarks on Program/ Project Status',
+        ],
+        tableData: [
+          {
+            fundSource: `Budget ID: ${budget?.id || 'N/A'}`,
+            nadaiDate: requisition?.dateCreated
+              ? new Date(requisition.dateCreated).toLocaleDateString()
+              : 'N/A',
+            programType: 'Infrastructure',
+            programTitle: requisition?.title || 'N/A',
+            location: `${office.roomNumber || 'N/A'}, Floor ${office.floor || 'N/A'}, ${
+              office.name || 'N/A'
+            }`,
+            implementationMode: 'Contractor',
+            beneficiaries: requisition?.products.reduce((sum, product) => sum + product.quantity, 0),
+            amountReceived: `${budget?.totalBudget || 0}`,
+            amountContracted: `${budget?.allocatedAmount || 0}`,
+            amountDisbursed: `${budget?.totalBudget - budget?.remainingBalance || 0}`,
+            completionPeriod: 'December 2025',
+            remarks: 'Ongoing',
+          },
+        ],
+        certifiedBy: {
+          name: certifiedByName,
+          position: certifiedByPosition,
+        },
+        attestedBy: {
+          chiefExecutive: 'Local Chief Executive',
+          planningCoordinator: 'Local Planning and Development Coordinator',
+        },
+      };
+    } catch (error) {
+      console.error('Error populating mock data:', error);
+      alert('An error occurred while loading data.');
+    }
+  }
 
   exportPdf() {
-    const content = document.createElement('div');
-    content.innerHTML = `
-      <div class="p-10 ml-5 bg-white shadow-md rounded-lg" style="width: 380mm; height: 250mm;">
-        <h1 class="text-4xl font-bold mb-4 flex justify-center">${this.mockData.title}</h1>
-        <h2 class="text-3xl font-bold mb-4 flex justify-center">${this.mockData.subtitle}</h2>
-        <h3 class="text-2xl font-bold mb-4 flex justify-center">${this.mockData.reportTitle}</h3>
-        <h4 class="text-xl font-bold mb-4 flex justify-center">${this.mockData.quarterEnded}</h4>
-
-        <!-- Table with expanded width and reduced font size -->
-        <table class="w-full border-collapse border border-gray-300 text-lg" style="table-layout: auto; width: 100%;">
-          <thead>
-            <tr class="bg-gray-200">
-              ${this.mockData.tableHeaders
-                .map(
-                  (header) => `
-                <th class="border border-gray-300 p-2" style="min-width: 100px;">${header}</th>
-              `
-                )
-                .join('')}
-            </tr>
-          </thead>
-          <tbody>
-            ${this.mockData.tableData
-              .map(
-                (row) => `
-              <tr>
-                <td class="border border-gray-300 p-2">${row.fundSource}</td>
-                <td class="border border-gray-300 p-2">${row.nadaiDate}</td>
-                <td class="border border-gray-300 p-2">${row.programType}</td>
-                <td class="border border-gray-300 p-2">${row.programTitle}</td>
-                <td class="border border-gray-300 p-2">${row.location}</td>
-                <td class="border border-gray-300 p-2">${row.implementationMode}</td>
-                <td class="border border-gray-300 p-2">${row.beneficiaries}</td>
-                <td class="border border-gray-300 p-2">
-                  <strong>Received:</strong> ${row.amountReceived}<br>
-                  <strong>Contracted:</strong> ${row.amountContracted}<br>
-                  <strong>Disbursed:</strong> ${row.amountDisbursed}
-                </td>
-                <td class="border border-gray-300 p-2">${row.completionPeriod}</td>
-                <td class="border border-gray-300 p-2">${row.remarks}</td>
-              </tr>
-            `
-              )
-              .join('')}
-          </tbody>
-        </table>
-
-        <!-- Spacing between table and certification section -->
-        <div class="mt-8 text-2xl">
-          <p><strong>Certified correct by:</strong></p>
-          <p>${this.mockData.certifiedBy.lfc}</p>
-          <p>${this.mockData.certifiedBy.budgetOfficer}</p>
-          <p>${this.mockData.certifiedBy.treasurer}</p>
-        </div>
-
-        <!-- Spacing between certification and attestation section -->
-        <div class="mt-8 text-2xl">
-          <p><strong>Attested by:</strong></p>
-          <p>${this.mockData.attestedBy.chiefExecutive}</p>
-          <p>${this.mockData.attestedBy.planningCoordinator}</p>
-        </div>
-      </div>
-    `;
-
-    document.body.appendChild(content);
+    const content = document.querySelector('.p-10') as HTMLElement;
 
     html2canvas(content, { scale: 2 }).then((canvas) => {
       const imgData = canvas.toDataURL('image/png');
       const pdf = new jsPDF('l', 'mm', 'a4');
-      const imgWidth = 297; 
+      const imgWidth = 297;
       const imgHeight = (canvas.height * imgWidth) / canvas.width;
 
-      const pageWidth = pdf.internal.pageSize.getWidth(); // Get the page width (297mm for A4 landscape)
-      const xOffset = (pageWidth - imgWidth) / 2; // Center the image horizontally
-
-      pdf.addImage(imgData, 'PNG', xOffset, 0, imgWidth, imgHeight);
-      pdf.save('fund-utilization-report.pdf');
-
-      document.body.removeChild(content);
+      pdf.addImage(imgData, 'PNG', 0, 0, imgWidth, imgHeight);
+      pdf.save('budget-utilization-report.pdf');
     });
   }
 }

@@ -30,6 +30,10 @@ export class BudgetService {
 
   constructor(private departmentService: DepartmentService) {
     this.loadFromStorage();
+    if (!this.budgetAllocations.length) {
+      this.initializeDummyData();
+      this.saveToStorage();
+    }
   }
 
   private generateId(): string {
@@ -54,6 +58,113 @@ export class BudgetService {
   private saveToStorage(): void {
     localStorage.setItem(this.BUDGET_STORAGE_KEY, JSON.stringify(this.budgetAllocations));
   }
+
+ 
+  private initializeDummyData(): void {
+  const dummyBudgets: BudgetAllocation[] = [
+    {
+      id: '550e8400e29b41d4a716446655440000',
+      departmentId: '550e8400e29b41d4a716446655440000',
+      fiscalYear: 2025,
+      totalBudget: 5000000,
+      allocatedAmount: 3000000,
+      remainingBalance: 2000000,
+      status: 'approved',
+      remarks: 'Budget approved for department',
+      createdAt: new Date(),
+      updatedAt: new Date()
+    },
+    {
+      id: '550e8400e29b41d4a716446655440001',
+      departmentId: '550e8400e29b41d4a716446655440001',
+      fiscalYear: 2025,
+      totalBudget: 3000000,
+      allocatedAmount: 1500000,
+      remainingBalance: 1500000,
+      status: 'pending',
+      remarks: 'Awaiting approval',
+      createdAt: new Date(),
+      updatedAt: new Date()
+    },
+    {
+      id: '550e8400e29b41d4a716446655440002',
+      departmentId: '550e8400e29b41d4a716446655440002',
+      fiscalYear: 2025,
+      totalBudget: 4000000,
+      allocatedAmount: 2500000,
+      remainingBalance: 1500000,
+      status: 'draft',
+      remarks: 'Draft budget submitted',
+      createdAt: new Date(),
+      updatedAt: new Date()
+    },
+    {
+      id: '550e8400e29b41d4a716446655440003',
+      departmentId: '550e8400e29b41d4a716446655440003',
+      fiscalYear: 2025,
+      totalBudget: 3500000,
+      allocatedAmount: 3000000,
+      remainingBalance: 500000,
+      status: 'rejected',
+            remarks: 'Budget rejected due to inconsistencies',
+      createdAt: new Date(),
+      updatedAt: new Date()
+    },
+    {
+      id: '550e8400e29b41d4a716446655440004',
+      departmentId: '550e8400e29b41d4a716446655440004',
+      fiscalYear: 2025,
+      totalBudget: 4500000,
+      allocatedAmount: 2000000,
+      remainingBalance: 2500000,
+      status: 'approved',
+      remarks: 'Approved for the agriculture department',
+      createdAt: new Date(),
+      updatedAt: new Date()
+    },
+    {
+      id: '550e8400e29b41d4a716446655440005',
+      departmentId: '550e8400e29b41d4a716446655440005',
+      fiscalYear: 2025,
+      totalBudget: 6000000,
+      allocatedAmount: 5000000,
+      remainingBalance: 1000000,
+      status: 'approved',
+      remarks: 'Nursing department budget allocation',
+      createdAt: new Date(),
+      updatedAt: new Date()
+    },
+    {
+      id: '550e8400e29b41d4a716446655440006',
+      departmentId: '550e8400e29b41d4a716446655440006',
+      fiscalYear: 2025,
+      totalBudget: 2500000,
+      allocatedAmount: 1000000,
+      remainingBalance: 1500000,
+      status: 'draft',
+      remarks: 'Arts and Sciences budget draft',
+      createdAt: new Date(),
+      updatedAt: new Date()
+    },
+    {
+      id: '550e8400e29b41d4a716446655440007',
+      departmentId: '550e8400e29b41d4a716446655440007',
+      fiscalYear: 2025,
+      totalBudget: 3200000,
+      allocatedAmount: 1500000,
+      remainingBalance: 1700000,
+      status: 'pending',
+      remarks: 'Pending review for Criminal Justice budget',
+      createdAt: new Date(),
+      updatedAt: new Date()
+    }
+  ];
+
+  // Assign dummy budgets to the service's budgetAllocations array.
+  this.budgetAllocations = dummyBudgets;
+  this.saveToStorage();
+}
+
 
   getAllBudgetAllocations(): Observable<BudgetAllocation[]> {
     return of(this.budgetAllocations);
