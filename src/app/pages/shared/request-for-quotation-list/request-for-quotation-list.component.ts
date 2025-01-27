@@ -133,7 +133,6 @@ export class RequestForQuotationListComponent implements OnInit {
   selectedRequisitionId: string = '';
 
   openRFQDocument(requisitionId?: string): void {
-    console.log('parotmo', requisitionId)
   if (requisitionId) {
     this.selectedRequisitionId = requisitionId; // Ensure it's valid
     this.isModalVisible = true;
