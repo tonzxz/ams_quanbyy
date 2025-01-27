@@ -42,26 +42,26 @@ export class AoqComponent {
   exportPdf() {
     const content = document.createElement('div');
     content.innerHTML = `
-      <div class="p-10 bg-white shadow-md rounded-lg" style="width: 297mm; height: 210mm;">
-        <h1 class="text-4xl font-bold mb-4 flex justify-center">ABSTRACT OF QUOTATIONS</h1>
+      <div class="p-10 ml-10 bg-white shadow-md rounded-lg" style="width: 390mm; height: 350mm;">
+        <h1 class="text-2xl font-bold mb-4 flex justify-center">ABSTRACT OF QUOTATIONS</h1>
         
-        <div class="mb-4 text-2xl">
+        <div class="mb-4 text-xl">
           <div class="flex flex-row justify-between">
             <p><strong>DATE:</strong> ${this.mockData.date}</p>
             <p><strong>MODE OF PROCUREMENT:</strong> ${this.mockData.modeOfProcurement}</p>
           </div>
         </div>
       
-        <table class="w-full border-collapse border border-gray-300 text-2xl" style="table-layout: fixed;">
+        <table class="w-full border-collapse border border-gray-300 text-xl" style="table-layout: fixed;">
           <thead>
             <tr class="bg-gray-200">
-              <th class="border border-gray-300 p-2" style="width: 5%;">QTY</th>
-              <th class="border border-gray-300 p-2" style="width: 10%;">Unit of Measurement</th>
-              <th class="border border-gray-300 p-2" style="width: 20%;">ITEM DESCRIPTION</th>
-              <th class="border border-gray-300 p-2" style="width: 15%;">APPROVED BUDGET</th>
-              <th class="border border-gray-300 p-2" style="width: 15%;">PHILCOPY CORPORATION</th>
-              <th class="border border-gray-300 p-2" style="width: 15%;">SOLID BUSINESS MACHINE INC.</th>
-              <th class="border border-gray-300 p-2" style="width: 15%;">SECC COMPUTER SALES, SERVICE & ENTERPRISES</th>
+              <th class="border border-gray-300 p-4" style="width: 5%;">QTY</th>
+              <th class="border border-gray-300 p-4" style="width: 10%;">Unit of Measurement</th>
+              <th class="border border-gray-300 p-4" style="width: 20%;">ITEM DESCRIPTION</th>
+              <th class="border border-gray-300 p-4" style="width: 15%;">APPROVED BUDGET</th>
+              <th class="border border-gray-300 p-4" style="width: 15%;">PHILCOPY CORPORATION</th>
+              <th class="border border-gray-300 p-4" style="width: 15%;">SOLID BUSINESS MACHINE INC.</th>
+              <th class="border border-gray-300 p-4" style="width: 15%;">SECC COMPUTER SALES, SERVICE & ENTERPRISES</th>
             </tr>
           </thead>
           <tbody>
@@ -69,13 +69,13 @@ export class AoqComponent {
               .map(
                 (item) => `
               <tr>
-                <td class="border border-gray-300 p-2">${item.qty}</td>
-                <td class="border border-gray-300 p-2">${item.unitOfMeasurement}</td>
-                <td class="border border-gray-300 p-2">${item.itemDescription}</td>
-                <td class="border border-gray-300 p-2">${item.approvedBudget}</td>
-                <td class="border border-gray-300 p-2">${item.philcopyCorporation.unitPrice}<br>${item.philcopyCorporation.totalCost}</td>
-                <td class="border border-gray-300 p-2">${item.solidBusinessMachineInc.unitPrice}<br>${item.solidBusinessMachineInc.totalCost}</td>
-                <td class="border border-gray-300 p-2">${item.seccComputerSales.unitPrice}<br>${item.seccComputerSales.totalCost}</td>
+                <td class="border border-gray-300 p-4">${item.qty}</td>
+                <td class="border border-gray-300 p-4">${item.unitOfMeasurement}</td>
+                <td class="border border-gray-300 p-4">${item.itemDescription}</td>
+                <td class="border border-gray-300 p-4">${item.approvedBudget}</td>
+                <td class="border border-gray-300 p-4">${item.philcopyCorporation.unitPrice}<br>${item.philcopyCorporation.totalCost}</td>
+                <td class="border border-gray-300 p-4">${item.solidBusinessMachineInc.unitPrice}<br>${item.solidBusinessMachineInc.totalCost}</td>
+                <td class="border border-gray-300 p-4">${item.seccComputerSales.unitPrice}<br>${item.seccComputerSales.totalCost}</td>
               </tr>
             `
               )
@@ -83,12 +83,12 @@ export class AoqComponent {
           </tbody>
         </table>
 
-        <div class="mt-4 text-2xl">
+        <div class="mt-4 text-xl">
           <p><strong>RESOLVED,</strong> that based on the above Abstract of Quotations, the RBAC recommends to the Head of Procuring Entity (HOPE) that the contract be awarded in favor of PHILCOPY CORPORATION as the single calculated and responsive bidder/quotation.</p>
           <p><strong>RESOLVED,</strong> this 15th day of 2022 in the City of Cebu.</p>
         </div>
 
-        <div class="mt-4 text-2xl">
+        <div class="mt-4 text-xl">
           <div class="flex flex-row justify-between">
             <p><strong>Purchase Requisition No. 2022-025</strong></p>
             <p><strong>Purchase Order No. 2022-025</strong></p>
@@ -100,7 +100,7 @@ export class AoqComponent {
           </div>
         </div>
 
-        <div class="mt-4 text-2xl">
+        <div class="mt-4 text-xl">
           <p><strong>Recommending Approval:</strong></p>
           ${this.mockData.recommendingApproval
             .map(
@@ -111,7 +111,7 @@ export class AoqComponent {
             .join('')}
         </div>
 
-        <div class="mt-4 text-2xl">
+        <div class="mt-4 text-xl">
           <p><strong>APPROVED:</strong></p>
           <p>${this.mockData.approvedBy}</p>
         </div>
@@ -122,8 +122,8 @@ export class AoqComponent {
 
     html2canvas(content, { scale: 2 }).then((canvas) => {
       const imgData = canvas.toDataURL('image/png');
-      const pdf = new jsPDF('l', 'mm', 'a4'); // Landscape mode
-      const imgWidth = 350; // A4 width in mm (landscape)
+      const pdf = new jsPDF('l', 'mm', 'legal');
+      const imgWidth = 330;
       const imgHeight = (canvas.height * imgWidth) / canvas.width;
 
       const pageWidth = pdf.internal.pageSize.getWidth(); // Get the page width (297mm for A4 landscape)

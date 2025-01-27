@@ -12,6 +12,8 @@ import { RisComponent } from './ris/ris.component';
 import { SemiExpendableComponent } from './semi-expendable/semi-expendable.component';
 import { AoqComponent } from './aoq/aoq.component';
 import { BudgetUtilizationComponent } from './budget-utilization/budget-utilization.component';
+import { RfqComponent } from './rfq/rfq.component';
+import { BACResolutionComponent } from './bac-resolution/bac-resolution.component';
 
 export const SharedRoutes: Routes = [
   {
@@ -41,8 +43,8 @@ export const SharedRoutes: Routes = [
         path: 'delivery-receipts',
         component: DeliveryReceiptsComponent,
         data: {breadcrumb:'Delivery Receipts'}
-      },
-       {
+      }, 
+       {  //delete from here
         path: 'approvals',
         component: ApprovalsComponent,
         data: {breadcrumb:'Approvals'}
@@ -86,6 +88,16 @@ export const SharedRoutes: Routes = [
         path: 'budget-utilization',
         component: BudgetUtilizationComponent,
         data: {breadcrumb:'Budget Utilization Report Template'}
+      },
+      {
+        path: 'rfq',
+        component: RfqComponent,
+        data: {breadcrumb:'Request for Quotation Template'}
+      },
+      {
+        path: 'bac-resolution',
+        component: BACResolutionComponent,
+        data: {breadcrumb:'BAC Resolution Template'}
       },
     ],
   },

@@ -58,7 +58,7 @@ export class BudgetUtilizationComponent {
   exportPdf() {
     const content = document.createElement('div');
     content.innerHTML = `
-      <div class="p-10 bg-white shadow-md rounded-lg" style="width: 297mm; height: 210mm;">
+      <div class="p-10 ml-5 bg-white shadow-md rounded-lg" style="width: 380mm; height: 250mm;">
         <h1 class="text-4xl font-bold mb-4 flex justify-center">${this.mockData.title}</h1>
         <h2 class="text-3xl font-bold mb-4 flex justify-center">${this.mockData.subtitle}</h2>
         <h3 class="text-2xl font-bold mb-4 flex justify-center">${this.mockData.reportTitle}</h3>
