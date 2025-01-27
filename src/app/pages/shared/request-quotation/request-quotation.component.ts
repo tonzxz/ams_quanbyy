@@ -1,11 +1,10 @@
-import { Component, Input, OnInit } from '@angular/core';
+import { Component, Input, OnInit, OnChanges, SimpleChanges } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ButtonModule } from 'primeng/button';
 import { FormsModule } from '@angular/forms';
 import jsPDF from 'jspdf';
 import html2canvas from 'html2canvas';
 import { RequisitionService, Requisition } from 'src/app/services/requisition.service';
-import { ApprovalSequenceService } from 'src/app/services/approval-sequence.service';
 
 @Component({
   selector: 'app-request-quotation',
@@ -13,84 +12,100 @@ import { ApprovalSequenceService } from 'src/app/services/approval-sequence.serv
   imports: [CommonModule, ButtonModule, FormsModule],
   template: `
     <div class="min-h-screen bg-gray-50 py-8 px-4">
-      <div class="max-w-4xl mx-auto bg-white shadow-lg rounded-lg">
+      <div class="max-w-5xl mx-auto bg-white shadow-lg rounded-lg">
         <div class="bg-blue-600 py-4 px-6 rounded-t-lg">
           <h1 class="text-center text-white text-xl font-bold">REQUEST FOR QUOTATION</h1>
-          <h2 class="text-center text-white text-lg">
-            {{ requisition?.title || 'PROCUREMENT OF GOODS AND SERVICES' }}
-          </h2>
+          <h2 class="text-center text-white text-lg">{{ requisition?.title || 'PROCUREMENT OF GOODS AND SERVICES' }}</h2>
         </div>
 
         <div class="p-6">
-          <div *ngIf="requisition" class="preview-section">
-            <h1 class="text-2xl font-bold mb-4 flex justify-center">Request for Quotation</h1>
+          <!-- Requisition Header -->
+          <div class="mb-6">
+          
+          </div>
 
-            <div class="mb-4 text-xl">
-              <div class="flex flex-row justify-between">
-                <p><strong>Requisition ID:</strong> {{ requisition.id }}</p>
-                <p><strong>Date:</strong> {{ requisition.dateCreated | date: 'longDate' }}</p>
-              </div>
-              <p><strong>Agency:</strong> CAGAYAN DE ORO STATE COLLEGE</p>
-              <div class="flex flex-row gap-20">
-                <p><strong>Division:</strong> SOEPD</p>
-                <p><strong>Section:</strong> SMEE</p>
-              </div>
-            </div>
+          <!-- Terms and Conditions -->
+          <div class="mb-6">
+            <p>
+              The Anti-Red Tape Authority invites all eligible and PhilGEPS-registered suppliers and consultants to
+              quote the best offer for the items described below, subject to the Terms and Conditions and within the
+              Approved Budget for the Contract (ABC).
+            </p>
+            <p class="mt-2 "> Please refer to the following details:</p>
+            <h3 class="text-md mt-6 font-semibold">Terms and Conditions</h3>
+            <ul class="list-decimal pl-6 mt-6">
+              <li>All entries shall be typed or written in a clear and legible manner.</li>
+              <li>Bids should not exceed the Approved Budget for the Contract (ABC).</li>
+              <li>
+                All prices offered herein are valid, binding, and effective for 30 calendar days upon issuance of this
+                document.
+              </li>
+              <li>Price quotations shall include all applicable government taxes.</li>
+              <li>Required documents proving financial and technical capacity may be requested.</li>
+              <li>Salient provisions of the IRR of RA 9184, including penalties, shall be observed.</li>
+            </ul>
+          </div>
 
-            <h2 class="font-semibold mb-3">Approver Information</h2>
-            <p>BAC Chairman: <strong>{{ approverName }}</strong></p>
-
-            <table class="w-full border-collapse border border-gray-300 text-xl">
+          <!-- Item List -->
+          <div class="mb-6">
+            <h3 class="text-lg font-semibold">Item List</h3>
+            <table class="w-full border-collapse border border-gray-300 text-left">
               <thead>
                 <tr class="bg-gray-200">
-                  <th class="border border-gray-300 p-4">Qty</th>
-                  <th class="border border-gray-300 p-4">Item Description</th>
-                  <th class="border border-gray-300 p-4">Specifications</th>
-                  <th class="border border-gray-300 p-4">ABC</th>
-                  <th class="border border-gray-300 p-4">Total ABC</th>
+                  <th class="border border-gray-300 px-4 py-2">No.</th>
+                  <th class="border border-gray-300 px-4 py-2">Qty</th>
+                  <th class="border border-gray-300 px-4 py-2">Item Description</th>
+                  <th class="border border-gray-300 px-4 py-2">ABC</th>
+                  <th class="border border-gray-300 px-4 py-2">Total Amount</th>
                 </tr>
               </thead>
               <tbody>
-                <tr *ngFor="let product of requisition?.products">
-                  <td class="border border-gray-300 p-4">{{ product.quantity }}</td>
-                  <td class="border border-gray-300 p-4">{{ product.name }}</td>
-                  <td class="border border-gray-300 p-4">{{ product.specifications }}</td>
-                  <td class="border border-gray-300 p-4">{{ product.price | currency: 'PHP' }}</td>
-                  <td class="border border-gray-300 p-4">{{ product.quantity * product.price | currency: 'PHP' }}</td>
+                <tr *ngFor="let product of requisition?.products; let i = index">
+                  <td class="border border-gray-300 px-4 py-2">{{ i + 1 }}</td>
+                  <td class="border border-gray-300 px-4 py-2">{{ product.quantity }}</td>
+                  <td class="border border-gray-300 px-4 py-2">{{ product.name }}</td>
+                  <td class="border border-gray-300 px-4 py-2">{{ product.price | currency: 'PHP' }}</td>
+                  <td class="border border-gray-300 px-4 py-2">
+                    {{ product.quantity * product.price | currency: 'PHP' }}
+                  </td>
                 </tr>
               </tbody>
+              <tfoot>
+                <tr>
+                  <td colspan="4" class="text-right font-semibold border border-gray-300 px-4 py-2">Total ABC:</td>
+                  <td class="border border-gray-300 px-4 py-2">{{ totalABC | currency: 'PHP' }}</td>
+                </tr>
+              </tfoot>
             </table>
-
-            <div class="mt-4 text-xl">
-              <p><strong>Total ABC:</strong> {{ totalABC | currency: 'PHP' }}</p>
-            </div>
-
-            <div class="mt-4 text-xl">
-              <p><strong>Purpose:</strong> {{ requisition.description }}</p>
-            </div>
-
-            <div class="flex justify-end mt-8">
-              <p-button label="Export to PDF" (onClick)="exportToPDF()" class="mt-4"></p-button>
-            </div>
           </div>
+
+          <!-- Delivery Details -->
+          <div class="mb-6">
+            <h3 class="text-lg font-semibold">Delivery Details</h3>
+            <p><strong>Purpose:</strong> {{ requisition?.description }}</p>
+          </div>
+
+          
         </div>
       </div>
     </div>
   `,
 })
-export class RequestQuotationComponent implements OnInit {
+export class RequestQuotationComponent implements OnInit, OnChanges {
   @Input() requisitionId!: string;
   requisition: Requisition | undefined;
-  approverName: string = '';
   totalABC: number = 0;
 
-  constructor(
-    private requisitionService: RequisitionService,
-    private approvalSequenceService: ApprovalSequenceService
-  ) {}
+  constructor(private requisitionService: RequisitionService) {}
 
   ngOnInit(): void {
     if (this.requisitionId) {
+      this.loadRequisition();
+    }
+  }
+
+  ngOnChanges(changes: SimpleChanges): void {
+    if (changes['requisitionId'] && changes['requisitionId'].currentValue) {
       this.loadRequisition();
     }
   }
@@ -99,53 +114,66 @@ export class RequestQuotationComponent implements OnInit {
     try {
       this.requisition = await this.requisitionService.getRequisitionById(this.requisitionId);
       if (this.requisition) {
-        this.totalABC = this.requisition.products.reduce((sum, product) => sum + product.quantity * product.price, 0);
-        await this.loadApproverInfo('444');
-      } else {
-        console.error('Requisition not found.');
+        this.totalABC = this.requisition.products.reduce(
+          (sum, product) => sum + product.quantity * product.price,
+          0
+        );
+
+        setTimeout(() => {
+          this.exportToPDF();
+        }, 1500); 
       }
     } catch (error) {
       console.error('Error loading requisition:', error);
     }
   }
 
-  async loadApproverInfo(sequenceId: string) {
-    try {
-      const sequence = await this.approvalSequenceService.getSequenceById(sequenceId).toPromise();
-      if (sequence) {
-        this.approverName = sequence.userFullName;
-      } else {
-        this.approverName = 'Unknown';
-      }
-    } catch (error) {
-      console.error('Error loading approver info:', error);
-      this.approverName = 'Unknown';
-    }
-  }
+
 
   exportToPDF() {
-    const content = document.querySelector('.preview-section') as HTMLElement;
+  const content = document.querySelector('.min-h-screen') as HTMLElement;
+  const downloadButton = document.querySelector('.p-button-success') as HTMLElement;
 
-    html2canvas(content).then((canvas) => {
-      const imgData = canvas.toDataURL('image/png');
-      const pdf = new jsPDF('p', 'mm', 'a4');
-      const imgWidth = 210;
-      const pageHeight = 295;
-      const imgHeight = (canvas.height * imgWidth) / canvas.width;
-      let heightLeft = imgHeight;
-      let position = 0;
+  // Hide the download button
+  if (downloadButton) {
+    downloadButton.style.display = 'none';
+  }
 
+  html2canvas(content).then((canvas) => {
+    const imgData = canvas.toDataURL('image/png');
+    const pdf = new jsPDF('p', 'mm', 'a4');
+    const imgWidth = 210;
+    const pageHeight = 295;
+    const imgHeight = (canvas.height * imgWidth) / canvas.width;
+    let heightLeft = imgHeight;
+    let position = 0;
+
+    pdf.addImage(imgData, 'PNG', 0, position, imgWidth, imgHeight);
+    heightLeft -= pageHeight;
+
+    while (heightLeft >= 0) {
+      position = heightLeft - imgHeight;
+      pdf.addPage();
       pdf.addImage(imgData, 'PNG', 0, position, imgWidth, imgHeight);
       heightLeft -= pageHeight;
+    }
 
-      while (heightLeft >= 0) {
-        position = heightLeft - imgHeight;
-        pdf.addPage();
-        pdf.addImage(imgData, 'PNG', 0, position, imgWidth, imgHeight);
-        heightLeft -= pageHeight;
-      }
+    // Convert the PDF to a Blob and trigger a download programmatically
+    const pdfBlob = pdf.output('blob');
+    const link = document.createElement('a');
+    link.href = URL.createObjectURL(pdfBlob);
+    link.download = 'request-for-quotation.pdf';
+    link.click();
 
-      pdf.save('request-for-quotation.pdf');
-    });
-  }
+    // Cleanup
+    URL.revokeObjectURL(link.href);
+
+    // Show the download button again
+    if (downloadButton) {
+      downloadButton.style.display = '';
+    }
+  });
+}
+
+
 }

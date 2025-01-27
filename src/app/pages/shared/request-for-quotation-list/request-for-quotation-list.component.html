@@ -67,6 +67,8 @@
           <th>Description</th>
           <th>Requested By</th>
           <th>Date Requested</th>
+          <th>Documents</th>
+
           <!-- <th>Status</th> -->
           @if(activeStep == 1 || currentUser?.role =='end-user'){
           <th>Actions</th>
@@ -90,6 +92,20 @@
           @if(activeStep == 3){
             <td>{{ getSupplierName(rfq.supplier)}}</td>
           }
+     
+          <td>
+  <div class="flex">
+    <p-button
+      pTooltip="View Request for Quotation"
+      (click)="openRFQDocument(getPR(rfq.purchase_order)?.id)"
+      [outlined]="true"
+      rounded
+      size="small"
+      icon="pi pi-file-pdf"
+    ></p-button>
+  </div>
+</td>
+
           <!-- <td>{{ rfq.status }}</td> -->
 
           @if(activeStep == 1 || currentUser?.role =='end-user'){
@@ -354,5 +370,22 @@
   </form>
 </p-dialog>
 
+
+
+<p-dialog
+  header="Request for Quotation"
+  [(visible)]="isModalVisible"
+  [modal]="true"
+  [closable]="true"
+  [style]="{ width: '55vw' }"
+  [contentStyle]="{ height: 'auto' }"
+>
+  <app-request-quotation [requisitionId]="selectedRequisitionId"></app-request-quotation>
+</p-dialog>
+
+
+
 <p-toast position="bottom-right" />
 <p-confirmpopup />
+
+
