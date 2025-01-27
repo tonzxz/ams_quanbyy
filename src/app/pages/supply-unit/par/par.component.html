@@ -1,8 +1,8 @@
 <div class="p-fluid">
-    <!-- Table of Sample PAR Reports -->
+    <!-- Table of PAR Reports -->
     <p-card header="Property Acknowledgment Receipt (PAR) Reports" styleClass="p-shadow-3 mb-4">
         <div class="flex flex-row items-center justify-between">
-            <p class="">Review Property Acknowledgment Receipts here.</p>
+            <p>Review Property Acknowledgment Receipts here.</p>
             <div class="p-field" style="text-align: right; margin-top: 1rem">
                 <p-button
                     label="Create PAR"
@@ -13,13 +13,15 @@
                 ></p-button>
             </div>
         </div>
-        <p-table [value]="samplePARs">
+        <p-table [value]="parReports" [paginator]="true" [rows]="5">
             <ng-template pTemplate="header">
                 <tr>
                     <th>PAR No.</th>
                     <th>Entity Name</th>
                     <th>Fund Cluster</th>
                     <th>Date</th>
+                    <th>Received By</th>
+                    <th>Actions</th>
                 </tr>
             </ng-template>
             <ng-template pTemplate="body" let-par>
@@ -27,22 +29,35 @@
                     <td>{{ par.parNo }}</td>
                     <td>{{ par.entityName }}</td>
                     <td>{{ par.fundCluster }}</td>
-                    <td>{{ par.date }}</td>
+                    <td>{{ par.date | date: 'mediumDate' }}</td>
+                    <td>{{ par.receivedBy }}</td>
+                    <td>
+                        <div class="flex gap-2">
+                            <p-button icon="pi pi-pencil" 
+                                    (click)="editPAR(par)"
+                                    styleClass="p-button-rounded p-button-text p-button-primary">
+                            </p-button>
+                            <p-button icon="pi pi-trash" 
+                                    (click)="deletePAR(par)"
+                                    styleClass="p-button-rounded p-button-text p-button-danger">
+                            </p-button>
+                        </div>
+                    </td>
                 </tr>
             </ng-template>
         </p-table>
     </p-card>
-  
+
     <!-- Dialog for PAR Form -->
     <p-dialog
-        header="Create Property Acknowledgment Receipt (PAR)"
+        header="{{ editingIndex === -1 ? 'Create' : 'Edit' }} Property Acknowledgment Receipt (PAR)"
         [(visible)]="displayDialog"
         [modal]="true"
         [style]="{ width: '50vw' }"
         [draggable]="false"
         [resizable]="false"
         >
-        <form [formGroup]="parForm" class="p-4">
+        <form [formGroup]="parForm" class="p-4" (ngSubmit)="savePAR()">
             <!-- Entity Name -->
             <div class="mb-4">
                 <label for="entityName" class="block text-sm font-medium text-gray-700">Entity Name</label>
@@ -78,58 +93,6 @@
                     pInputText
                     formControlName="parNo"
                     placeholder="Enter PAR No."
-                    class="w-full mt-1 p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                />
-            </div>
-
-            <!-- Quantity -->
-            <div class="mb-4">
-                <label for="quantity" class="block text-sm font-medium text-gray-700">Quantity</label>
-                <input
-                    id="quantity"
-                    type="number"
-                    pInputText
-                    formControlName="quantity"
-                    placeholder="Enter Quantity"
-                    class="w-full mt-1 p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                />
-            </div>
-
-            <!-- Unit -->
-            <div class="mb-4">
-                <label for="unit" class="block text-sm font-medium text-gray-700">Unit</label>
-                <input
-                    id="unit"
-                    type="text"
-                    pInputText
-                    formControlName="unit"
-                    placeholder="Enter Unit"
-                    class="w-full mt-1 p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                />
-            </div>
-
-            <!-- Description -->
-            <div class="mb-4">
-                <label for="description" class="block text-sm font-medium text-gray-700">Description</label>
-                <input
-                    id="description"
-                    type="text"
-                    pInputText
-                    formControlName="description"
-                    placeholder="Enter Description"
-                    class="w-full mt-1 p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                />
-            </div>
-
-            <!-- Property No. -->
-            <div class="mb-4">
-                <label for="propertyNo" class="block text-sm font-medium text-gray-700">Property No.</label>
-                <input
-                    id="propertyNo"
-                    type="text"
-                    pInputText
-                    formControlName="propertyNo"
-                    placeholder="Enter Property No."
                     class="w-full mt-1 p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                 />
             </div>
@@ -173,13 +136,23 @@
                 />
             </div>
 
-            <!-- Export to PDF Button -->
-            <div class="flex justify-end mt-6">
+            <!-- Save and Cancel Buttons -->
+            <div class="flex justify-end mt-6 gap-2">
                 <p-button
                     label="Export to PDF"
                     (onClick)="exportPdf()"
                     [disabled]="parForm.invalid"
                     styleClass="p-button-warning"
+                ></p-button>
+                <p-button
+                    label="Cancel"
+                    (onClick)="displayDialog = false"
+                    styleClass="p-button-secondary"
+                ></p-button>
+                <p-button
+                    label="Save"
+                    type="submit"
+                    styleClass="p-button-success"
                 ></p-button>
             </div>
         </form>

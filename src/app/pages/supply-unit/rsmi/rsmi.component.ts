@@ -6,77 +6,73 @@ import { DialogModule } from 'primeng/dialog';
 import jsPDF from 'jspdf';
 import html2canvas from 'html2canvas';
 import { CardModule } from 'primeng/card';
+import { ChipModule } from 'primeng/chip';
 import { ReactiveFormsModule } from '@angular/forms';
+import { CommonModule } from '@angular/common';
 
 @Component({
   selector: 'app-rsmi',
   standalone: true,
-  imports: [ButtonModule, TableModule, DialogModule, CardModule, ReactiveFormsModule],
+  imports: [ButtonModule, TableModule, DialogModule, CardModule, ReactiveFormsModule, ChipModule, CommonModule],
   templateUrl: './rsmi.component.html',
   styleUrls: ['./rsmi.component.scss'],
 })
 export class RsmiComponent {
   rsmiForm: FormGroup;
   displayDialog: boolean = false;
-  sampleRSMIs = [
+  editingIndex: number = -1;
+
+  // Realistic mock data
+  rsmiReports = [
     {
-      entityName: 'Sample Entity 1',
-      serialNo: '123456',
-      fundCluster: 'Fund Cluster A',
-      date: '2023-10-15',
+      entityName: 'Department of Public Works',
+      serialNo: 'RSMI-2023-001',
+      fundCluster: 'General Fund',
+      date: new Date('2023-10-15'),
+      attachments: ['works_supplies.pdf', 'receipt_001.pdf']
     },
     {
-      entityName: 'Sample Entity 2',
-      serialNo: '654321',
-      fundCluster: 'Fund Cluster B',
-      date: '2023-10-20',
+      entityName: 'Health Services Division',
+      serialNo: 'RSMI-2023-002',
+      fundCluster: 'Emergency Funds',
+      date: new Date('2023-10-18'),
+      attachments: ['medical_supplies_order.pdf']
     },
+    {
+      entityName: 'Education Department',
+      serialNo: 'RSMI-2023-003',
+      fundCluster: 'Education Budget',
+      date: new Date('2023-10-20'),
+      attachments: ['school_supplies.pdf', 'delivery_confirmation.pdf']
+    }
   ];
 
-  // Add mockData property
   mockData = {
     items: [
       {
-        risNo: 'RIS001',
-        responsibilityCenterCode: 'RC001',
-        stockNo: 'STK001',
-        item: 'Printer Paper',
-        unit: 'Ream',
+        risNo: 'RIS-001',
+        responsibilityCenterCode: 'RC-101',
+        stockNo: 'STK-001',
+        item: 'Office Supplies',
+        unit: 'SET',
         quantityIssued: 10,
-        unitCost: 50.0,
-        amount: 500.0,
-      },
-      {
-        risNo: 'RIS002',
-        responsibilityCenterCode: 'RC002',
-        stockNo: 'STK002',
-        item: 'Ink Cartridge',
-        unit: 'Piece',
-        quantityIssued: 5,
-        unitCost: 200.0,
-        amount: 1000.0,
-      },
+        unitCost: 100,
+        amount: 1000
+      }
     ],
     recapitulation: [
       {
-        stockNo: 'STK001',
+        stockNo: 'STK-001',
         quantity: 10,
-        unitCost: 50.0,
-        totalCost: 500.0,
-        uacsObjectCode: 'UACS001',
-      },
-      {
-        stockNo: 'STK002',
-        quantity: 5,
-        unitCost: 200.0,
-        totalCost: 1000.0,
-        uacsObjectCode: 'UACS002',
-      },
+        unitCost: 100,
+        totalCost: 1000,
+        uacsObjectCode: 'UAC-001'
+      }
     ],
     postedBy: 'John Doe',
     supplyCustodian: 'Jane Smith',
-    accountingStaff: 'Alice Johnson',
-    dateSigned: '2023-10-15',
+    accountingStaff: 'Mike Johnson',
+    dateSigned: '2023-10-25'
   };
 
   constructor(private fb: FormBuilder) {
@@ -90,6 +86,45 @@ export class RsmiComponent {
 
   showDialog() {
     this.displayDialog = true;
+    this.editingIndex = -1;
+  }
+
+  editReport(report: any) {
+    this.editingIndex = this.rsmiReports.indexOf(report);
+    this.rsmiForm.patchValue({
+      ...report,
+      date: report.date.toISOString().split('T')[0]
+    });
+    this.displayDialog = true;
+  }
+
+  deleteReport(report: any) {
+    const index = this.rsmiReports.indexOf(report);
+    if (index !== -1) {
+      this.rsmiReports.splice(index, 1);
+    }
+  }
+
+  addRSMI() {
+    if (this.rsmiForm.invalid) {
+      alert('Please fill out all required fields.');
+      return;
+    }
+
+    const newReport = {
+      ...this.rsmiForm.value,
+      date: new Date(this.rsmiForm.value.date),
+      attachments: ['new_attachment.pdf'] // Simulated attachment
+    };
+
+    if (this.editingIndex === -1) {
+      this.rsmiReports.push(newReport);
+    } else {
+      this.rsmiReports[this.editingIndex] = newReport;
+    }
+
+    this.displayDialog = false;
+    this.rsmiForm.reset();
   }
 
   exportPdf() {

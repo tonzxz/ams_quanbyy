@@ -3,58 +3,51 @@ import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { ButtonModule } from 'primeng/button';
 import { TableModule } from 'primeng/table';
 import { DialogModule } from 'primeng/dialog';
-import jsPDF from 'jspdf';
-import html2canvas from 'html2canvas';
 import { CardModule } from 'primeng/card';
 import { ReactiveFormsModule } from '@angular/forms';
+import jsPDF from 'jspdf';
+import html2canvas from 'html2canvas';
+import { CommonModule } from '@angular/common';
 
 @Component({
   selector: 'app-ics',
   standalone: true,
-  imports: [ButtonModule, TableModule, DialogModule, CardModule, ReactiveFormsModule],
+  imports: [ButtonModule, TableModule, DialogModule, CardModule, ReactiveFormsModule, CommonModule],
   templateUrl: './ics.component.html',
   styleUrls: ['./ics.component.scss'],
 })
 export class IcsComponent {
   icsForm: FormGroup;
   displayDialog: boolean = false;
-  sampleICSs = [
+  editingIndex: number = -1;
+
+  // Realistic mock data
+  icsReports = [
     {
       icsNo: 'ICS-2023-001',
-      entityName: 'DepEd Central Office',
+      entityName: 'Department of Education - Central Office',
       fundCluster: 'FC-1001',
-      date: '2023-10-15'
+      date: new Date('2023-10-15'),
+      inventoryItemNo: 'INV-IT-001',
+      quantity: 5,
+      unit: 'Units',
+      unitCost: 45000,
+      description: 'Laptop Computer (Serial: XPS-12345)',
+      estimatedUsefulLife: '5 years'
     },
     {
       icsNo: 'ICS-2023-002',
-      entityName: 'DepEd Regional Office',
+      entityName: 'Department of Education - Regional Office',
       fundCluster: 'FC-2001',
-      date: '2023-10-20'
+      date: new Date('2023-10-20'),
+      inventoryItemNo: 'INV-IT-002',
+      quantity: 10,
+      unit: 'Pieces',
+      unitCost: 3500,
+      description: 'Office Chairs (Brand: Ergomech)',
+      estimatedUsefulLife: '7 years'
     }
   ];
-
-  mockData = {
-    items: [
-      {
-        description: 'Laptop Computer (Serial: XPS-12345)',
-        quantity: 5,
-        unit: 'Units',
-        unitCost: 45000,
-        totalCost: 225000,
-        inventoryItemNo: 'INV-IT-001',
-        estimatedUsefulLife: '5 years'
-      },
-      {
-        description: 'Office Chairs (Brand: Ergomech)',
-        quantity: 10,
-        unit: 'Pieces',
-        unitCost: 3500,
-        totalCost: 35000,
-        inventoryItemNo: 'INV-IT-002',
-        estimatedUsefulLife: '7 years'
-      }
-    ]
-  };
 
   constructor(private fb: FormBuilder) {
     this.icsForm = this.fb.group({
@@ -73,11 +66,50 @@ export class IcsComponent {
 
   showDialog() {
     this.displayDialog = true;
+    this.editingIndex = -1;
+    this.icsForm.reset();
+  }
+
+  editICS(ics: any) {
+    this.editingIndex = this.icsReports.indexOf(ics);
+    this.icsForm.patchValue({
+      ...ics,
+      date: ics.date.toISOString().split('T')[0]
+    });
+    this.displayDialog = true;
+  }
+
+  deleteICS(ics: any) {
+    const index = this.icsReports.indexOf(ics);
+    if (index !== -1) {
+      this.icsReports.splice(index, 1);
+    }
+  }
+
+  saveICS() {
+    if (this.icsForm.invalid) {
+      alert('Please fill out all required fields.');
+      return;
+    }
+
+    const newICS = {
+      ...this.icsForm.value,
+      date: new Date(this.icsForm.value.date)
+    };
+
+    if (this.editingIndex === -1) {
+      this.icsReports.push(newICS);
+    } else {
+      this.icsReports[this.editingIndex] = newICS;
+    }
+
+    this.displayDialog = false;
+    this.icsForm.reset();
   }
 
   exportPdf() {
     if (this.icsForm.invalid) {
-      alert('Please fill out all required fields.');
+      alert('Please fill out all required fields before exporting to PDF.');
       return;
     }
 
@@ -125,17 +157,6 @@ export class IcsComponent {
               <td class="p-3 border text-right">₱${totalCost.toLocaleString()}</td>
               <td class="p-3 border">${formValues.estimatedUsefulLife}</td>
             </tr>
-            ${this.mockData.items.map(item => `
-              <tr>
-                <td class="p-3 border">${item.description}</td>
-                <td class="p-3 border">${item.inventoryItemNo}</td>
-                <td class="p-3 border text-right">${item.quantity}</td>
-                <td class="p-3 border">${item.unit}</td>
-                <td class="p-3 border text-right">₱${item.unitCost.toLocaleString()}</td>
-                <td class="p-3 border text-right">₱${item.totalCost.toLocaleString()}</td>
-                <td class="p-3 border">${item.estimatedUsefulLife}</td>
-              </tr>
-            `).join('')}
           </tbody>
         </table>
 
