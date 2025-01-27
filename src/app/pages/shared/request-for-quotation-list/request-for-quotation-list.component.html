@@ -2,15 +2,18 @@
   <mat-card-content>
     @if(currentUser?.role == 'bac'){
     <mat-card-title class="select-none font-light">Request for Quotations</mat-card-title>
+    }@else if(currentUser?.role == 'end-user'){
+      <mat-card-title class="select-none font-light">Canvasing</mat-card-title>
     }@else{
-    <mat-card-title class="select-none font-light">Canvasing</mat-card-title>
-
+      <mat-card-title class="select-none font-light">Budget Utilization Report</mat-card-title>
     }
     <div class="flex justify-between items-center">
       @if(currentUser?.role == 'bac'){
       <p>View and manage RFQs and supplier bidding prices in this section.</p>
-      }@else{
+      }@else if(currentUser?.role == 'end-user'){
       <p>Canvas RFQs and supplier bidding prices in this section.</p>
+    }@else{
+      <p>Generate budget utilization report for RFQs in this section.</p>
       }
       <p-iconfield fluid class="w-full max-w-72">
         <p-inputicon styleClass="pi pi-search" />
@@ -68,7 +71,7 @@
           <th>Requested By</th>
           <th>Date Requested</th>
           <!-- <th>Status</th> -->
-          @if(activeStep == 3){
+          @if(currentUser?.role == 'accounting'){
             <th>Qualified Supplier</th>
           }
           @if(activeStep == 1 || currentUser?.role =='end-user' || activeStep == 3){
@@ -87,14 +90,37 @@
           <td>{{ getPR(rfq.purchase_order)?.description}}</td>
           <td>{{ getPR(rfq.purchase_order)?.createdByUserName}}</td>
           <td>{{ getPR(rfq.purchase_order)?.dateCreated}}</td>
-          @if(activeStep == 3){
+          @if(currentUser?.role == 'accounting'){
             <td>{{ getSupplierName(rfq.supplier)}}</td>
-            <td>
-              <p-button
-              pTooltip="Click to view abstract of quotation"
-              size="small" icon="pi pi-building-columns" (click)="generateAOQ(rfq.id)" severity="secondary"
-                    [outlined]="true" rounded />
-            </td>
+          }
+          @if(activeStep == 3){
+          <td>
+           <div class="flex gap-4">
+            @if(currentUser?.role == 'accounting'){
+              <p-button (click)="openUploadBudget(rfq)" pTooltip="Upload Budget Utilization Report" size="small" icon="pi pi-upload"
+              severity="secondary" [outlined]="true" rounded />
+            }
+            <p-button pTooltip="Click to view BAC resolution" size="small" icon="pi pi-building-columns"
+            (click)="generateBACResolution(rfq.id)" severity="warn" [outlined]="true" rounded />
+            @if(!rfq.awarding){
+              <p-button pTooltip="Click to forward BAC Resolution" size="small" icon="pi pi-arrow-right"
+            (click)="openSignatureDialog(rfq)" severity="success" [outlined]="true" rounded />
+            }@else if(rfq.awarding == 'pending'){
+              @if(currentUser?.role=='bac'){
+                <p-button [disabled]="true" pTooltip="Waiting for Budget Utilization Report" size="small" icon="pi pi-spinner-dotted"
+                severity="secondary" [outlined]="true" rounded />
+              }@else{
+                <p-button (click)="openSignatureDialog(rfq)" pTooltip="Submit Budget Utilization Report" size="small" icon="pi pi-arrow-right"
+                severity="success" [outlined]="true" rounded />
+              }
+            }@else if(rfq.awarding == 'awarded'){
+              <p-button (click)="generateBudgetReport(rfq.id)"  pTooltip="Click to view Budget Utilization Report" size="small" icon="pi pi-receipt"
+              severity="warn" [outlined]="true" rounded />
+            }
+           </div>
+            
+              
+          </td>
           }
           <!-- <td>{{ rfq.status }}</td> -->
 
@@ -102,34 +128,26 @@
           <td class="w-16">
             <div class="flex gap-4">
               @if(currentUser?.role == 'bac'){
-                <!-- <div class="flex"> -->
-                  <!-- </div> -->
-                  <!-- <p-buttongroup> -->
-                <p-button pTooltip="Click to add new supplier" (click)="openSupplierModal(rfq)" [outlined]="true"
-                rounded
-                size="small"  icon="pi pi-user-plus" />
-                <p-button
-                  pTooltip="Click to View Request for Quotation"
-                  (click)="openRFQDocument(getPR(rfq.purchase_order)?.id)"
-                  [outlined]="true"
-                  rounded
-                  size="small"
-                  icon="pi pi-file-pdf"
-                />
-                <p-button pTooltip="Click to delete RFQ" (click)="confirmDeleteRFQ($event,rfq.id)" severity="danger"
-                  rounded
-                  [outlined]="true" size="small" icon="pi pi-trash" />
-                <p-button [disabled]="rfq.suppliers.length <=0"  pTooltip="Click to submit for canvasing"
-                severity="success" outlined
-                  rounded
-                  (click)="confirmSubmitToCanvasing($event,rfq)" size="small"  icon="pi pi-arrow-right" />
+              <!-- <div class="flex"> -->
+              <!-- </div> -->
+              <!-- <p-buttongroup> -->
+              <p-button severity="secondary" pTooltip="Click to add new supplier" (click)="openSupplierModal(rfq)" [outlined]="true" rounded
+                size="small" icon="pi pi-user-plus" />
+              <p-button severity="secondary" pTooltip="Click to View Request for Quotation"
+                (click)="openRFQDocument(getPR(rfq.purchase_order)?.id)" [outlined]="true" rounded size="small"
+                icon="pi pi-file-pdf" />
+              <p-button pTooltip="Click to delete RFQ" (click)="confirmDeleteRFQ($event,rfq.id)" severity="danger"
+                rounded [outlined]="true" size="small" icon="pi pi-trash" />
+              <p-button [disabled]="rfq.suppliers.length <=0" pTooltip="Click to submit for canvasing"
+                severity="success" outlined rounded (click)="confirmSubmitToCanvasing($event,rfq)" size="small"
+                icon="pi pi-arrow-right" />
               <!-- </p-buttongroup> -->
               }@else{
               <!-- <p-buttongroup> -->
-                <p-button pTooltip="Click to reject RFQ" (click)="openReject(rfq)" severity="danger" [outlined]="true"
-                  size="small" label="Reject" icon="pi pi-times" />
-                <p-button pTooltip="Click to approve RFQ" (click)="openAwardModal(rfq)" severity="success"
-                  size="small" [outlined]="true" label="Approve" icon="pi pi-check" />
+              <p-button pTooltip="Click to reject RFQ" (click)="openReject(rfq)" severity="danger" [outlined]="true"
+                size="small" label="Reject" icon="pi pi-times" />
+              <p-button pTooltip="Click to approve RFQ" (click)="openAwardModal(rfq)" severity="success" size="small"
+                [outlined]="true" label="Approve" icon="pi pi-check" />
               <!-- </p-buttongroup> -->
               }
             </div>
@@ -140,50 +158,62 @@
 
 
 
-      @if(activeStep == 1 || currentUser?.role == 'end-user'){
-        <ng-template #body let-rfq let-rowIndex="rowIndex">
-          @for(item of rfq.suppliers;track item.supplier_id){
-          <tr class="hover:cursor-pointer">
-            <td [attr.colspan]="activeStep == 1 || currentUser?.role =='end-user' ? 9 : 8">
-              <div class="flex items-center justify-between">
-                <div class="flex items-center gap-5 ml-4">
-                  <p-button disabled="true" size="small" icon="pi pi-user" (click)="null" severity="secondary"
-                    [outlined]="true" rounded />
-                  <span class="font-bold">{{ item.supplierName}} </span>
-                  <p-divider layout="vertical" />
-                    <span>Bid Price: {{item.biddingPrice ? (item.biddingPrice | currency:'PHP'): 'Pending'}}</span>
-                </div>
-  
-                @if(activeStep == 1 || currentUser?.role =='end-user'){
-  
-                <div class="flex gap-4 ">
-                  @if(currentUser?.role == 'bac'){
-                  <p-button size="small" pTooltip="Click to upload supplier bid docs" icon="pi pi-upload" (click)="openUploadSupplier(item)" 
-                    [outlined]="true" rounded />
-  
-                  <p-button size="small" pTooltip="Click to enter supplier bid price" icon="pi pi-money-bill" (click)="openBidModal(rfq, item.supplierId)" 
-                    [outlined]="true" rounded />
-  
-                  <p-button size="small" pTooltip="Click to finalize canvasing" icon="pi pi-trash" (click)="confirmDeleteSupplier($event, rfq,item.supplierId)"
-                    severity="danger" [outlined]="true" rounded />
-                  }@else{
-                  <p-button outlined="true" severity="secondary" pTooltip="Click to print bid docs" (click)="null"
-                    size="small" label="Bid Document" icon="pi pi-print" />
+      @if((activeStep == 1 || currentUser?.role == 'end-user' || activeStep == 3) && currentUser?.role !='accounting'){
+      <ng-template #body let-rfq let-rowIndex="rowIndex">
+        @for(item of rfq.suppliers;track item.supplierId){
+        <tr class="hover:cursor-pointer">
+          <td [attr.colspan]="activeStep == 1 || currentUser?.role =='end-user' || activeStep == 3 ? 9 : 8">
+            <div class="flex items-center justify-between">
+              <div class="flex items-center gap-5 mx-4">
+                <p-button disabled="true" size="small" icon="pi pi-user" (click)="null" [severity]="(activeStep == 3 ) ?( item.supplierId == rfq.supplier ? 'success' : 'danger'):  'secondary'"
+                  [outlined]="true" rounded />
+                <span class="font-bold">{{ item.supplierName}} </span>
+                <p-divider layout="vertical" />
+                <span>Bid Price: {{item.biddingPrice ? (item.biddingPrice | currency:'PHP'): 'Pending'}}</span>
+              </div>
+
+              @if(activeStep == 1 || currentUser?.role =='end-user' || activeStep ==3){
+
+              <div class="flex gap-4 mr-4">
+                @if(currentUser?.role == 'bac' && activeStep == 1){
+                <p-button severity="secondary" size="small" pTooltip="Click to upload supplier bid docs" icon="pi pi-upload"
+                  (click)="openUploadSupplier(item)" [outlined]="true" rounded />
+
+                <p-button severity="secondary" size="small" pTooltip="Click to enter supplier bid price" icon="pi pi-money-bill"
+                  (click)="openBidModal(rfq, item.supplierId)" [outlined]="true" rounded />
+
+                <p-button size="small" pTooltip="Click to finalize canvasing" icon="pi pi-trash"
+                  (click)="confirmDeleteSupplier($event, rfq,item.supplierId)" severity="danger" [outlined]="true"
+                  rounded />
+                }@else if(currentUser?.role =='end-user'){
+                <p-button outlined="true" severity="secondary" pTooltip="Click to print bid docs" (click)="null"
+                  size="small" label="Bid Document" icon="pi pi-print" />
+                }@else{
+                @if(item.supplierId == rfq.supplier){
+                  @if(rfq.awarding == 'awarded'){
+                    <p-button outlined="true" severity="warn" pTooltip="Click to print notice of award"
+                  (click)="null" size="small" icon="pi pi-trophy" rounded />
                   }
-                </div>
-  
+                  <p-button outlined="true" severity="success" pTooltip="Click to print abstract of quotation"
+                    (click)="generateAOQ(rfq.id)" size="small" icon="pi pi-receipt" rounded />
+                }@else{
+                <p-button [disabled]="true" outlined="true" severity="danger" size="small" icon="pi pi-times" rounded />
+                }
                 }
               </div>
-            </td>
-  
-          </tr>
-          }
-        </ng-template>
-  
+
+              }
+            </div>
+          </td>
+
+        </tr>
+        }
+      </ng-template>
+
       }
       <ng-template #emptymessage>
         <tr>
-          <td colspan="7">
+          <td [attr.colspan]="activeStep == 1 || currentUser?.role =='end-user' || activeStep == 3 ? 9 : 8">
             <div class="flex flex-col w-full items-center justify-center mb-8">
               <div class="overflow-hidden h-52 w-52 mr-8 ">
                 <app-lottie-animation animation="box" class="w-60 h-60"></app-lottie-animation>
@@ -368,34 +398,25 @@
 
     <div class="flex justify-end gap-6 mt-2">
       <p-button size="small" label="Cancel" icon="pi pi-times" severity="secondary" (click)="showAwardModal=false" />
-      <p-button size="small" label="Add" icon="pi pi-plus" (click)="confirmApprove(this.selectedRFQ!)" [disabled]="!award_form.valid" />
+      <p-button size="small" label="Add" icon="pi pi-plus" (click)="confirmApprove(this.selectedRFQ!)"
+        [disabled]="!award_form.valid" />
     </div>
   </form>
 </p-dialog>
 
-
-
-<p-dialog
-  [(visible)]="showAOQModal"
-  [modal]="true"
-  [closable]="true"
-  [style]="{ width: '55vw', height: '90vh' }"
-  header="Abstract of Quotation"
->
-  <app-aoq
-    *ngIf="selectedRFQId"
-    [rfqId]="selectedRFQId"
-  ></app-aoq>
+<p-dialog [(visible)]="showBudgetReport" [modal]="true" [closable]="true" [style]="{ width: '55vw', height: '90vh' }"
+  header="Budget Utilization Report">
+  <app-bur *ngIf="selectedRFQBudgetId" [rfqId]="selectedRFQBudgetId"></app-bur>
 </p-dialog>
 
-<p-dialog
-  header="Request for Quotation"
-  [(visible)]="isModalVisible"
-  [modal]="true"
-  [closable]="true"
-  [style]="{ width: '55vw' }"
-  [contentStyle]="{ height: 'auto' }"
->
+
+<p-dialog [(visible)]="showAOQModal" [modal]="true" [closable]="true" [style]="{ width: '55vw', height: '90vh' }"
+  header="Abstract of Quotation">
+  <app-aoq *ngIf="selectedRFQId" [rfqId]="selectedRFQId"></app-aoq>
+</p-dialog>
+
+<p-dialog header="Request for Quotation" [(visible)]="isModalVisible" [modal]="true" [closable]="true"
+  [style]="{ width: '55vw' }" [contentStyle]="{ height: 'auto' }">
   <app-request-quotation [requisitionId]="selectedRequisitionId"></app-request-quotation>
 </p-dialog>
 
@@ -410,11 +431,11 @@
   <small class="p-text-secondary block mb-6">(Please fill out all form fields)</small>
 
   <form [formGroup]="bid_form">
-   
+
     <div class="flex items-center gap-4 mb-6">
       <label for="bid" class="font-semibold w-32">Bid Amount</label>
-      <p-inputnumber placeholder="Enter supplier bid" size="small" class="flex-1" formControlName="bid" inputId="currency-us" mode="currency"
-        currency="PHP" locale="en-PH" fluid></p-inputnumber>
+      <p-inputnumber placeholder="Enter supplier bid" size="small" class="flex-1" formControlName="bid"
+        inputId="currency-us" mode="currency" currency="PHP" locale="en-PH" fluid></p-inputnumber>
     </div>
 
 
@@ -425,8 +446,111 @@
   </form>
 </p-dialog>
 
+<p-dialog
+  header="Forward {{currentUser?.role == 'accounting'?'Budget Urilization Report':'BAC Resolution'}}"
+  [(visible)]="displaySignatureDialog"
+  [modal]="true"
+  [style]="{ width: '90vw', maxWidth: '600px' }"
+  [resizable]="false"
+>
+  <div class="flex flex-col gap-4">
+    <p class="text-sm text-gray-600">Please provide your signature before approving the request.</p>
+
+    <!-- Signature Section -->
+    <div class="p-4 bg-white border border-gray-300 rounded-lg shadow-md">
+      <h4 class="text-sm font-medium text-gray-700 mb-2">Signature</h4>
+      <canvas
+        #signatureCanvas
+        width="500"
+        height="150"
+        class="border border-gray-300 rounded-lg w-full"
+      ></canvas>
+      <div class="flex justify-end mt-2">
+        <button
+          pButton
+          label="Clear Signature"
+          icon="pi pi-refresh"
+          class="p-button-secondary"
+          [outlined]="true"
+          size="small"
+          (click)="clearSignature()"
+        ></button>
+      </div>
+    </div>
+
+  </div>
+
+  <ng-template pTemplate="footer">
+    <div class="flex justify-between gap-4">
+      <button
+        pButton
+        label="Cancel"
+        icon="pi pi-times"
+        class="p-button-danger"
+        [outlined]="true"
+        size="small"
+        (click)="closeSignatureDialog()"
+      ></button>
+      <button
+        pButton
+        label="Submit Approval"
+        icon="pi pi-check"
+        class="p-button-success"
+        [outlined]="true"
+        size="small"
+        (click)="submitApproval()"
+      ></button>
+    </div>
+  </ng-template>
+</p-dialog>
+
+<p-dialog [(visible)]="showUploadBudget" [modal]="true" [style]="{ width: '30rem' }">
+  <ng-template #header>
+    <div class="py-0 inline-flex items-center justify-center gap-3">
+      <i class="pi pi-receipt text-lg"></i>
+      <span class="font-bold text-lg whitespace-nowrap">Upload Budget Utilization Report</span>
+    </div>
+  </ng-template>
+  <span class="text-surface-500 dark:text-surface-400 block mb-4">Upload Budget Utilization Report for BAC Resolution.</span>
+  <form [formGroup]="budget_upload_form">
+
+    <div class="flex items-center justify-center gap-4 mb-2 w-full">
+      <div class="card w-full">
+        <p-fileupload fluid #fileUpload name="upload" class="w-full" url="/" [multiple]="true"
+          (onSelect)="onSelectedFiles($event)" (onRemove)="onSelectedFiles($event)" accept="image/*"
+          maxFileSize="10000000" mode="advanced">
+          <ng-template #header let-files let-chooseCallback="chooseCallback" let-clearCallback="clearCallback">
+            <div class="flex gap-3 w-full">
+              <p-button fluid class="flex-1" size="small" (onClick)="chooseCallback()" severity="secondary"
+                icon="pi pi-plus" label="Choose" [outlined]="true"></p-button>
+              <p-button fluid class="flex-1" size="small" (onClick)="clearCallback()" icon="pi pi-times" label="Clear"
+                [outlined]="true" severity="danger" [disabled]="!files || files.length === 0"></p-button>
+            </div>
+          </ng-template>
+
+          <ng-template #content>
+            <div *ngIf="files.length <= 0" class="text-gray-500 flex flex-col gap-6 items-center py-8">
+              <i class="pi pi-cloud-upload !text-3xl "></i>
+              <span>Drag and drop files to here to upload.</span>
+            </div>
+          </ng-template>
+        </p-fileupload>
+      </div>
+    </div>
+  </form>
+  <ng-template #footer>
+    <p-button size="small" label="Cancel" [text]="true" icon="pi pi-times" severity="secondary"
+      (click)="showUploadBudget = false" />
+    <p-button size="small" label="Upload" icon="pi pi-upload" [disabled]="!files.length"
+      (click)="showUploadBudget = false" />
+  </ng-template>
+</p-dialog>
+
+<p-dialog [(visible)]="showBACResolution" [modal]="true" [closable]="true" [style]="{ width: '55vw', height: '90vh' }"
+  header="BAC Resolution">
+  <app-bac-resolution *ngIf="selectedRFQResoId" [rfqId]="selectedRFQResoId"></app-bac-resolution>
+</p-dialog>
+
 
 <p-toast position="bottom-right" />
 <p-confirmpopup />
-
-

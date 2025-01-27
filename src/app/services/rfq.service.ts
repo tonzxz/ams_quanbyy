@@ -15,6 +15,7 @@ export const rfqSchema = z.object({
     biddingPrice: z.number().min(0, "Bidding price must be a positive number").optional()  // The bidding price
   })),
   supplier: z.string().optional(),
+  awarding: z.enum(['pending','awarded']).optional(),
 });
 
 export type RFQ = z.infer<typeof rfqSchema>;

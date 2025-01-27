@@ -155,7 +155,7 @@ export class BudgetUtilizationComponent implements OnChanges {
   }
 
   exportPdf() {
-    const content = document.querySelector('.p-10') as HTMLElement;
+    const content = document.querySelector('.app-bur') as HTMLElement;
 
     html2canvas(content, { scale: 2 }).then((canvas) => {
       const imgData = canvas.toDataURL('image/png');

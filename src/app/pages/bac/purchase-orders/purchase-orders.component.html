@@ -1,0 +1,298 @@
+<p-tabView>
+  <!-- First tab - Purchase Orders -->
+  <p-tabPanel header="Purchase Orders">
+    <mat-card class="cardWithShadow">
+      <mat-card-content>
+        <mat-card-title>Purchase Orders</mat-card-title>
+        <mat-card-subtitle class="text-sm text-gray-500">
+          View and Manage Purchase Orders in this section.
+        </mat-card-subtitle>
+
+        <div class="flex justify-between items-center mt-4">
+          <p-button
+            icon="pi pi-file"
+            label="Create Purchase Order"
+            severity="primary"
+            outlined="true"
+            size="small"
+            (click)="openCreatePurchaseOrderModal()"
+          ></p-button>
+          <div class="relative w-[300px]">
+            <i class="pi pi-search absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500"></i>
+            <input
+              pInputText
+              type="text"
+              #searchInput
+              (input)="dt.filterGlobal(searchInput.value, 'contains')"
+              placeholder="Search RFQs"
+              style="text-indent: 1.5rem;"
+              class="w-full border border-gray-300 rounded-md py-2 pl-10 pr-3 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 placeholder:ml-6"
+            />
+          </div>
+        </div>
+
+        <p-table
+          #dt
+          [value]="approvedRfqs"
+          [rows]="5"
+          [paginator]="true"
+          [rowsPerPageOptions]="[5, 10, 20]"
+          responsiveLayout="scroll"
+          styleClass="p-datatable-sm mt-4"
+        >
+          <ng-template pTemplate="header">
+            <tr>
+              <th>RFQ Number</th>
+              <th>Title</th>
+              <th>Description</th>
+              <th>Total Estimated Value</th>
+              <th>Requested By</th>
+              <th>Date Requested</th>
+              <th>Qualified Supplier</th>
+              <th>Notice of Award</th>
+            </tr>
+          </ng-template>
+
+          <ng-template pTemplate="body" let-rfq>
+            <tr>
+              <td>{{ rfq.id }}</td>
+              <td>{{ rfq.title }}</td>
+              <td>{{ rfq.description }}</td>
+              <td>{{ rfq.totalEstimatedValue | currency }}</td>
+              <td>{{ rfq.requestedBy }}</td>
+              <td>{{ rfq.dateRequested | date: 'short' }}</td>
+              <td>{{ rfq.qualifiedSupplier }}</td>
+              <td>
+                <button
+                  pButton
+                  icon="pi pi-eye"
+                  outlined="true"
+                  class="p-button-rounded p-button-info p-button-sm"
+                  (click)="viewNoticeOfAward(rfq.noticeOfAward)"
+                  pTooltip="View Notice of Award"
+                  [disabled]="!rfq.noticeOfAward"
+                ></button>
+              </td>
+            </tr>
+          </ng-template>
+
+          <ng-template pTemplate="emptymessage">
+            <tr>
+              <td colspan="8">
+                <div class="flex flex-col w-full items-center justify-center py-8">
+                  <span>No approved RFQs found.</span>
+                </div>
+              </td>
+            </tr>
+          </ng-template>
+        </p-table>
+      </mat-card-content>
+    </mat-card>
+  </p-tabPanel>
+
+  <!-- Second tab - Notice to Proceed -->
+ <!-- Update only the Notice to Proceed tab content in your p-tabView -->
+<p-tabPanel header="Notice to Proceed">
+    <mat-card class="cardWithShadow">
+      <mat-card-content>
+        <mat-card-title>Notice to Proceed</mat-card-title>
+        <mat-card-subtitle class="text-sm text-gray-500">
+          Generate Notice to Proceed for Purchase Orders.
+        </mat-card-subtitle>
+
+         <div class="flex justify-between items-center mt-4">
+          <p-button
+            icon="pi pi-file"
+            label="Create Notice To Proceed"
+            severity="primary"
+            outlined="true"
+            size="small"
+            (click)="openNTPModal()"
+          ></p-button>
+
+        <div class="relative w-[300px] ">
+          <i class="pi pi-search absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500"></i>
+          <input
+            pInputText
+            type="text"
+            #searchNTP
+            (input)="dtNTP.filterGlobal(searchNTP.value, 'contains')"
+            placeholder="Search Purchase Orders"
+            style="text-indent: 1.5rem;"
+            class="w-full border border-gray-300 rounded-md py-2 pl-10 pr-3 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 placeholder:ml-6"
+          />
+        </div>
+        </div>
+
+        <p-table
+          #dtNTP
+          [value]="rfqsWithPO"
+          [rows]="5"
+          [paginator]="true"
+          [rowsPerPageOptions]="[5, 10, 20]"
+          responsiveLayout="scroll"
+          styleClass="p-datatable-sm mt-4"
+        >
+          <ng-template pTemplate="header">
+            <tr>
+              <th>Purchase Order ID</th>
+              <th>Title</th>
+              <th>Description</th>
+              <th>Total Value</th>
+              <th>Requested By</th>
+              <th>Date Requested</th>
+              <th>Purchase Request</th>
+            </tr>
+          </ng-template>
+
+          <ng-template pTemplate="body" let-rfq>
+            <tr>
+              <td>{{ rfq.purchaseOrderId }}</td>
+              <td>{{ rfq.title }}</td>
+              <td>{{ rfq.description }}</td>
+              <td>{{ rfq.totalEstimatedValue | currency }}</td>
+              <td>{{ rfq.requestedBy }}</td>
+              <td>{{ rfq.dateRequested | date: 'short' }}</td>
+              <td>
+                <button
+                  pButton
+                  icon="pi pi-eye"
+                  outlined="true"
+                  class="p-button-rounded p-button-info p-button-sm"
+                  (click)="viewPurchaseRequest(rfq.purchaseRequestAttachment)"
+                  pTooltip="View Purchase Request"
+                  [disabled]="!rfq.purchaseRequestAttachment"
+                ></button>
+              </td>
+              
+            </tr>
+          </ng-template>
+
+          <ng-template pTemplate="emptymessage">
+            <tr>
+              <td colspan="8">
+                <div class="flex flex-col w-full items-center justify-center py-8">
+                  <span>No Purchase Orders found.</span>
+                </div>
+              </td>
+            </tr>
+          </ng-template>
+        </p-table>
+      </mat-card-content>
+    </mat-card>
+  </p-tabPanel>
+</p-tabView>
+
+<!-- Purchase Order Modal -->
+<p-dialog 
+  [(visible)]="isCreateModalVisible"
+  [modal]="true" 
+  [position]="'center'"
+  [style]="{ width: '25rem' }"
+>
+  <ng-template pTemplate="header">
+    <div class="py-0 inline-flex items-center justify-center gap-3">
+      <i class="pi pi-file-edit text-lg"></i>
+      <span class="font-bold text-lg whitespace-nowrap">Create Purchase Order</span>
+    </div>
+  </ng-template>
+
+  <span class="p-text-secondary block">Create New Purchase Order</span>
+  <small class="p-text-secondary block mb-6">(Please select an RFQ to proceed)</small>
+
+  <div class="flex items-center gap-4 mb-24">
+    <label for="rfqDropdown" class="font-semibold w-32">Select RFQ</label>
+    <p-dropdown
+      id="rfqDropdown"
+      [options]="approvedRfqs"
+      [(ngModel)]="selectedRfq"
+      optionLabel="title"
+      [filter]="true"
+      placeholder="Select an RFQ"
+      [showClear]="true"
+      class="flex-auto"
+      [appendTo]="'body'"
+    >
+      <ng-template let-rfq pTemplate="item">
+        <div class="flex items-center gap-2">
+          <div>{{ rfq.title }}</div>
+        </div>
+      </ng-template>
+    </p-dropdown>
+  </div>
+
+  <div class="flex justify-end gap-6 mt-2">
+    <p-button 
+      size="small" 
+      label="Cancel" 
+      icon="pi pi-times" 
+      severity="secondary" 
+      (click)="onCancelCreatePurchaseOrder()"
+    />
+    <p-button 
+      size="small" 
+      label="Create" 
+      icon="pi pi-check"
+      (click)="createPurchaseOrder()" 
+      [disabled]="!selectedRfq"
+    />
+  </div>
+</p-dialog>
+
+
+
+<!-- Notice to Proceed Modal -->
+<p-dialog 
+  [(visible)]="isNTPModalVisible"
+  [modal]="true" 
+  [position]="'center'"
+  [style]="{ width: '25rem' }"
+>
+  <ng-template pTemplate="header">
+    <div class="py-0 inline-flex items-center justify-center gap-3">
+      <i class="pi pi-file-edit text-lg"></i>
+      <span class="font-bold text-lg whitespace-nowrap">Create Notice to Proceed</span>
+    </div>
+  </ng-template>
+
+  <span class="p-text-secondary block">Create Notice to Proceed</span>
+  <small class="p-text-secondary block mb-6">(Please select a Purchase Order to proceed)</small>
+
+  <div class="flex items-center gap-4 mb-24">
+    <label for="poDropdown" class="font-semibold w-32">Select PO</label>
+    <p-dropdown
+      id="poDropdown"
+      [options]="rfqsWithPO"
+      [(ngModel)]="selectedPO"
+      optionLabel="purchaseOrderId"
+      [filter]="true"
+      placeholder="Select Purchase Order"
+      [showClear]="true"
+      class="flex-auto"
+      [appendTo]="'body'"
+    >
+      <ng-template let-po pTemplate="item">
+        <div class="flex items-center gap-2">
+          <div>{{ po.purchaseOrderId }} - {{ po.title }}</div>
+        </div>
+      </ng-template>
+    </p-dropdown>
+  </div>
+
+  <div class="flex justify-end gap-6 mt-2">
+    <p-button 
+      size="small" 
+      label="Cancel" 
+      icon="pi pi-times" 
+      severity="secondary" 
+      (click)="onCancelNTP()"
+    />
+    <p-button 
+      size="small" 
+      label="Create" 
+      icon="pi pi-check"
+      (click)="createNTP()" 
+      [disabled]="!selectedPO"
+    />
+  </div>
+</p-dialog>
