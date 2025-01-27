@@ -144,7 +144,7 @@
         <ng-template #body let-rfq let-rowIndex="rowIndex">
           @for(item of rfq.suppliers;track item.supplier_id){
           <tr class="hover:cursor-pointer">
-            <td [attr.colspan]="activeStep == 1 || currentUser?.role =='end-user' ? 8 : 7">
+            <td [attr.colspan]="activeStep == 1 || currentUser?.role =='end-user' ? 9 : 8">
               <div class="flex items-center justify-between">
                 <div class="flex items-center gap-5 ml-4">
                   <p-button disabled="true" size="small" icon="pi pi-user" (click)="null" severity="secondary"
