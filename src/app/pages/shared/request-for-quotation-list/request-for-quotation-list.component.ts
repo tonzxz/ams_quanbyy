@@ -34,13 +34,14 @@ import { Requisition, RequisitionService } from 'src/app/services/requisition.se
 import { ApprovalSequenceService } from 'src/app/services/approval-sequence.service';
 import { firstValueFrom } from 'rxjs';
 import { NotificationService } from 'src/app/services/notifications.service';
+import { RequestQuotationComponent } from '../request-quotation/request-quotation.component';
 
 @Component({
   selector: 'app-rfq',
   standalone: true,
   imports: [MaterialModule, CommonModule, StepperModule, TableModule, ButtonModule, ButtonGroupModule, TabsModule, OverlayBadgeModule, BadgeModule,
     InputTextModule, FormsModule, SelectModule, FileUploadModule, DatePickerModule, InputNumberModule, ToastModule, ReactiveFormsModule, TextareaModule, LottieAnimationComponent,
-    FluidModule, TooltipModule, DialogModule, ConfirmPopupModule, IconFieldModule,InputIconModule, DividerModule],
+    FluidModule, TooltipModule, DialogModule, ConfirmPopupModule, IconFieldModule,InputIconModule, DividerModule, RequestQuotationComponent],
   providers: [MessageService, ConfirmationService],
   templateUrl: './request-for-quotation-list.component.html',
   styleUrls: ['./request-for-quotation-list.component.scss']
@@ -126,6 +127,21 @@ export class RequestForQuotationListComponent implements OnInit {
     this.selectedRFQ = rfq;
     this.showSupplierModal = true;
   }
+
+  isModalVisible = false; // Controls modal visibility
+
+  selectedRequisitionId: string = '';
+
+  openRFQDocument(requisitionId?: string): void {
+    console.log('parotmo', requisitionId)
+  if (requisitionId) {
+    this.selectedRequisitionId = requisitionId; // Ensure it's valid
+    this.isModalVisible = true;
+  } else {
+    console.error('Requisition ID is null or undefined');
+  }
+}
+
 
   openAwardModal(rfq:RFQ) {
     this.award_form.reset();
@@ -462,4 +478,6 @@ export class RequestForQuotationListComponent implements OnInit {
       this.filterByStatus('new');
     }
   }
+
+  
 }
