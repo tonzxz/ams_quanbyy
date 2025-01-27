@@ -593,12 +593,13 @@ export class RequestForQuotationListComponent implements OnInit {
       const users = await firstValueFrom(this.userService.getAllUsers());
       for (let user of users) {
         if (user.role == 'bac' || user.role == 'accounting' || user.role =='end-user') {
-          this.notifService.addNotification(
-            `RFQ No. ${this.selectedRFQ!.id} budget utilization report has been submitted.`,
-            'info',
-            user.id
-          )
+          
           if(this.currentUser?.role == 'accounting'){
+            this.notifService.addNotification(
+              `RFQ No. ${this.selectedRFQ!.id} budget utilization report has been submitted.`,
+              'info',
+              user.id
+            )
             if(user.role =='bac'){
               this.notifService.addNotification(
                 `RFQ No. ${this.selectedRFQ!.id} notice of award can now be distributed.`,
@@ -606,6 +607,12 @@ export class RequestForQuotationListComponent implements OnInit {
                 user.id
               )
             }
+          }else{
+            this.notifService.addNotification(
+              `RFQ No. ${this.selectedRFQ!.id} BAC Resolution has been forwarded.`,
+              'info',
+              user.id
+            )
           }
         }
       }
