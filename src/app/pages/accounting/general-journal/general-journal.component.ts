@@ -196,7 +196,7 @@ export class GeneralJournalComponent implements OnInit {
     
     doc.setFontSize(14);
     doc.setFont('helvetica', 'bold');
-    const ledgerText = 'GENERAL LEDGER';
+    const ledgerText = 'GENERAL JOURNAL';
     const ledgerWidth = doc.getTextWidth(ledgerText);
     const ledgerCenterX = (doc.internal.pageSize.width - ledgerWidth) / 2;
     doc.text(ledgerText, ledgerCenterX, 20);

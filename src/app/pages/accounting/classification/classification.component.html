@@ -1,0 +1,259 @@
+<mat-card class="cardWithShadow">
+    <mat-card-content>
+      <mat-card-title>Verified Delivery Receipts</mat-card-title>
+      <mat-card-subtitle class="mat-body-1 mb-10 !flex justify-between items-center">
+        <span> Review and manage verified delivery receipts in this section. </span>
+        <div class="flex gap-3">
+          <p-iconfield fluid class="w-full max-w-72">
+            <p-inputicon styleClass="pi pi-search" />
+            <input
+              fluid
+              class="w-full"
+              pSize="small"
+              [(ngModel)]="searchValue"
+              (input)="dt.filterGlobal(searchValue, 'contains')"
+              type="text"
+              pInputText
+              placeholder="Search"
+            />
+          </p-iconfield>
+        </div>
+      </mat-card-subtitle>
+  
+      <!-- Delivery Receipt Table -->
+      <p-table
+        #dt
+        [value]="verifiedReceipts"
+        [paginator]="true"
+        [rows]="5"
+        [rowsPerPageOptions]="[5, 10, 20]"
+        [globalFilterFields]="['receiptNumber', 'supplierName']"
+        [tableStyle]="{ 'min-width': '50rem' }"
+      >
+        <ng-template #header>
+          <tr>
+            <th>Receipt Number</th>
+            <th>Supplier Name</th>
+            <th>Delivery Date</th>
+            <th>Total Amount</th>
+            <th style="width: 5rem"></th>
+          </tr>
+        </ng-template>
+  
+        <ng-template #body let-receipt>
+          <tr>
+            <td>{{ receipt.receipt_number }}</td>
+            <td>{{ receipt.supplier_name }}</td>
+            <td>{{ receipt.delivery_date | date: 'mediumDate' }}</td>
+            <td>{{ receipt.total_amount | currency: 'PHP' }}</td>
+            <td>
+              <div class="flex gap-3">
+                <p-button
+                  severity="secondary"
+                  pTooltip="Click to view details"
+                  [outlined]="true"
+                  size="small"
+                  icon="pi pi-eye"
+                  rounded
+                  (click)="viewReceiptDetails(receipt)"
+                ></p-button>
+                <p-button
+                  severity="danger"
+                  pTooltip="Export to PDF"
+                  [outlined]="true"
+                  size="small"
+                  icon="pi pi-file-pdf"
+                  rounded
+                  (click)="exportPdf(receipt)"
+                ></p-button>
+                <p-button
+                  severity="success"
+                  pTooltip="Submit for Journal Entry"
+                  [outlined]="true"
+                  size="small"
+                  icon="pi pi-check"
+                  rounded
+                  (click)="openSubmitForm(receipt)"
+                ></p-button>
+              </div>
+            </td>
+          </tr>
+        </ng-template>
+  
+        <ng-template #emptymessage>
+          <tr>
+            <td colspan="5">
+              <div class="flex flex-col w-full items-center justify-center mb-8">
+                <div class="overflow-hidden h-52 w-52 mr-8">
+                  <app-lottie-animation animation="box" class="w-60 h-60"></app-lottie-animation>
+                </div>
+                <span>No verified delivery receipts found.</span>
+              </div>
+            </td>
+          </tr>
+        </ng-template>
+      </p-table>
+    </mat-card-content>
+  </mat-card>
+  
+  <!-- View Receipt Details Modal -->
+  <p-dialog [(visible)]="showReceiptDetailsModal" [modal]="true" [style]="{ width: '30rem' }">
+    <ng-template #header>
+      <h3>Delivery Receipt Details</h3>
+    </ng-template>
+    <div *ngIf="selectedReceipt">
+      <p><strong>Receipt Number:</strong> {{ selectedReceipt.receipt_number }}</p>
+      <p><strong>Supplier Name:</strong> {{ selectedReceipt.supplier_name }}</p>
+      <p><strong>Delivery Date:</strong> {{ selectedReceipt.delivery_date | date: 'mediumDate' }}</p>
+      <p><strong>Total Amount:</strong> {{ selectedReceipt.total_amount | currency: 'PHP' }}</p>
+    </div>
+  </p-dialog>
+  
+  <!-- Submit Form Modal -->
+<p-dialog [(visible)]="showSubmitFormModal" [modal]="true" [style]="{ width: '50rem' }">
+    <ng-template #header>
+      <h3>Submit for Journal Entry Voucher (JEV)</h3>
+    </ng-template>
+    <div *ngIf="selectedReceipt">
+      <!-- Delivery Receipt Details -->
+      <div class="mb-6 border-b pb-4">
+        <h4 class="font-bold mb-3">Delivery Receipt Details</h4>
+        <p><strong>Receipt Number:</strong> {{ selectedReceipt.receipt_number }}</p>
+        <p><strong>Supplier Name:</strong> {{ selectedReceipt.supplier_name }}</p>
+        <p><strong>Delivery Date:</strong> {{ selectedReceipt.delivery_date | date: 'mediumDate' }}</p>
+        <p><strong>Total Amount:</strong> {{ selectedReceipt.total_amount | currency: 'PHP' }}</p>
+      </div>
+  
+      <!-- Debit/Credit Entry Form -->
+      <form (ngSubmit)="addEntry()">
+        <div class="flex flex-col gap-4 mb-6">
+          <h4 class="font-bold">Add Debit/Credit Entry</h4>
+          <div class="grid grid-cols-4 gap-4 items-center">
+            <!-- Account Type -->
+            <div class="col-span-1">
+              <label for="accountType" class="block text-sm font-medium">Account Type</label>
+              <p-dropdown
+                id="accountType"
+                [(ngModel)]="newEntry.accountType"
+                name="accountType"
+                [options]="accountTypes"
+                optionLabel="label"
+                optionValue="value"
+                placeholder="Select Type"
+                required
+              ></p-dropdown>
+            </div>
+  
+            <!-- Account Code -->
+            <div class="col-span-1">
+              <label for="accountCode" class="block text-sm font-medium">Account Code</label>
+              <input
+                id="accountCode"
+                type="text"
+                [(ngModel)]="newEntry.accountCode"
+                name="accountCode"
+                pInputText
+                placeholder="Enter Code"
+                required
+              />
+            </div>
+  
+            <!-- Amount -->
+            <div class="col-span-1">
+              <label for="amount" class="block text-sm font-medium">Amount</label>
+              <input
+                id="amount"
+                type="number"
+                [(ngModel)]="newEntry.amount"
+                name="amount"
+                pInputText
+                placeholder="Enter Amount"
+                required
+              />
+            </div>
+  
+            <!-- Add Entry Button -->
+            <div class="col-span-1 flex justify-end items-center">
+              <p-button
+                type="submit"
+                label="Add Entry"
+                severity="primary"
+                icon="pi pi-plus"
+              ></p-button>
+            </div>
+          </div>
+        </div>
+      </form>
+  
+      <!-- Debit and Credit Table -->
+      <div class="mb-6">
+        <h4 class="font-bold mb-3">Balance Confirmation</h4>
+        <p-table [value]="entries" [tableStyle]="{ 'min-width': '50rem' }">
+          <ng-template #header>
+            <tr>
+              <th>Account Type</th>
+              <th>Account Code</th>
+              <th>Amount</th>
+              <th>Action</th>
+            </tr>
+          </ng-template>
+          <ng-template #body let-entry>
+            <tr>
+              <td>{{ entry.accountType === 'debit' ? 'Debit' : 'Credit' }}</td>
+              <td>{{ entry.accountCode }}</td>
+              <td>{{ entry.amount | currency: 'PHP' }}</td>
+              <td>
+                <p-button
+                  severity="danger"
+                  icon="pi pi-trash"
+                  size="small"
+                  pTooltip="Remove Entry"
+                  (click)="removeEntry(entry)"
+                ></p-button>
+              </td>
+            </tr>
+          </ng-template>
+          <ng-template #footer>
+            <tr>
+              <td colspan="2" class="font-bold text-right">Total Debits:</td>
+              <td class="font-bold">{{ totalDebits | currency: 'PHP' }}</td>
+              <td></td>
+            </tr>
+            <tr>
+              <td colspan="2" class="font-bold text-right">Total Credits:</td>
+              <td class="font-bold">{{ totalCredits | currency: 'PHP' }}</td>
+              <td></td>
+            </tr>
+          </ng-template>
+        </p-table>
+      </div>
+  
+      <!-- Error Message if Unbalanced -->
+      <div *ngIf="!isBalanced" class="text-sm text-red-600 mb-4">
+        Debits and credits must balance before submission.
+      </div>
+  
+      <!-- Confirm and Cancel Buttons -->
+      <div class="flex justify-end gap-3">
+        <p-button
+          type="button"
+          label="Cancel"
+          severity="secondary"
+          icon="pi pi-times"
+          (click)="showSubmitFormModal = false"
+        ></p-button>
+        <p-button
+          type="button"
+          label="Confirm Submission"
+          severity="success"
+          icon="pi pi-check"
+          [disabled]="!isBalanced"
+          (click)="confirmSubmission()"
+        ></p-button>
+      </div>
+    </div>
+  </p-dialog>
+  
+  
+  <p-toast position="bottom-right" />
+  <p-confirmpopup />

@@ -223,6 +223,12 @@ export const navItems: NavItem[] = [
     requiredRoles: ['accounting'],
   },
   {
+    displayName: 'Classification',
+    iconName: 'solar:ticket-sale-broken',
+    route: '/accounting/classification',
+    requiredRoles: [ 'accounting'],
+  },
+  {
     displayName: 'Voucher Review',
     iconName: 'solar:ticket-sale-broken',
     route: '/accounting/voucher-review',

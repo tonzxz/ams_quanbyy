@@ -1,3 +1,4 @@
+//src\app\services\delivery-receipt.service.ts
 import { Injectable } from '@angular/core';
 import { z } from 'zod';
 import { Stock, StocksService } from './stocks.service';
@@ -167,14 +168,15 @@ export class DeliveryReceiptService {
     return this.receiptData;
   }
 
-  async addReceipt(receipt: DeliveryReceipt) {
-    const id = (Math.random().toString(36) + Math.random().toString(36) + Date.now().toString(36)).substring(2, 34);
-    this.receiptData.push({
-      id: id,
-      ...receipt
-    });
-    localStorage.setItem('deliveryReceipts', JSON.stringify(this.receiptData));
-  }
+  // delivery-receipt.service.ts
+async addReceipt(receipt: DeliveryReceipt) {
+  const id = (Math.random().toString(36) + Math.random().toString(36) + Date.now().toString(36)).substring(2, 34);
+  this.receiptData.push({
+    id: id,
+    ...receipt
+  });
+  localStorage.setItem('deliveryReceipts', JSON.stringify(this.receiptData));
+}
 
   async editReceipt(receipt: DeliveryReceipt) {
     const receiptIndex = this.receiptData.findIndex(item => item.id == receipt.id);
@@ -260,4 +262,15 @@ export class DeliveryReceiptService {
     this.receiptData = this.receiptData.filter(item => item.id !== id);
     localStorage.setItem('deliveryReceipts', JSON.stringify(this.receiptData));
   }
+
+  async getVerifiedReceipts(): Promise<DeliveryReceipt[]> {
+    const local_receipts = localStorage.getItem('deliveryReceipts');
+    if (local_receipts) {
+      this.receiptData = JSON.parse(local_receipts) as DeliveryReceipt[];
+    }
+    return this.receiptData.filter(receipt => receipt.status === 'verified');
+  }
+
+  
+  
 }
