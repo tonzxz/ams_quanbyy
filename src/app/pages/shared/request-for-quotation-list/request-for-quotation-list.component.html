@@ -447,7 +447,7 @@
 </p-dialog>
 
 <p-dialog
-  header="Forward BAC Resolution"
+  header="Forward {{currentUser?.role == 'accounting'?'Budget Urilization Report':'BAC Resolution'}}"
   [(visible)]="displaySignatureDialog"
   [modal]="true"
   [style]="{ width: '90vw', maxWidth: '600px' }"
