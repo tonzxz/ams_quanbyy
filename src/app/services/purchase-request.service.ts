@@ -19,7 +19,8 @@ export const purchaseRequestSchema = z.object({
  })),
  requestedBy: z.string(),
  approvedBy: z.string(),
- signature: z.string().optional()
+ signature: z.string().optional(),
+ status: z.enum(['pending', 'approved', 'rejected']).optional(),
 });
 
 export type PurchaseRequest = z.infer<typeof purchaseRequestSchema>;
@@ -29,6 +30,79 @@ export type PurchaseRequest = z.infer<typeof purchaseRequestSchema>;
 })
 export class PurchaseRequestService {
  
+  private purchaseRequests: PurchaseRequest[] = [
+    {
+      id: 'PR-001',
+      prNo: 'PR123',
+      date: new Date('2023-10-01'),
+      agency: 'Agency 1',
+      department: 'Department 1',
+      office: 'Office 1',
+      items: [
+        {
+          qty: 10,
+          unit: 'pcs',
+          description: 'Item 1',
+          stockNo: 'STK001',
+          unitCost: 100,
+          totalCost: 1000,
+        },
+      ],
+      requestedBy: 'John Doe',
+      approvedBy: 'Jane Doe',
+      status: 'approved', // Example status
+    },
+    {
+      id: 'PR-002',
+      prNo: 'PR124',
+      date: new Date('2023-10-05'),
+      agency: 'Agency 2',
+      department: 'Department 2',
+      office: 'Office 2',
+      items: [
+        {
+          qty: 5,
+          unit: 'pcs',
+          description: 'Item 2',
+          stockNo: 'STK002',
+          unitCost: 200,
+          totalCost: 1000,
+        },
+      ],
+      requestedBy: 'Alice',
+      approvedBy: 'Bob',
+      status: 'pending', // Example status
+    },
+    {
+      id: 'PR-003',
+      prNo: 'PR125',
+      date: new Date('2023-10-10'),
+      agency: 'Agency 3',
+      department: 'Department 3',
+      office: 'Office 3',
+      items: [
+        {
+          qty: 20,
+          unit: 'pcs',
+          description: 'Item 3',
+          stockNo: 'STK003',
+          unitCost: 50,
+          totalCost: 1000,
+        },
+      ],
+      requestedBy: 'Charlie',
+      approvedBy: 'Eve',
+      status: 'approved', // Example status
+    },
+  ];
+
+  constructor() {}
+
+  // Add the getAll method
+  async getAll(): Promise<PurchaseRequest[]> {
+    return this.purchaseRequests; // Return the mock data
+  }
+
  generatePurchaseRequestPdf(data: PurchaseRequest): string {
    const doc = new jsPDF();
    

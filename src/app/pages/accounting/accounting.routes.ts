@@ -7,6 +7,7 @@ import { JournalEntryVoucherComponent } from './journal-entry-voucher/journal-en
 import { GeneralLedgerComponent } from './general-ledger/general-ledger.component';
 import { GeneralJournalComponent } from './general-journal/general-journal.component';
 import { PrApprovalComponent } from './pr-approval/pr-approval.component';
+import { AccountingDashboardComponent } from './accounting-dashboard/accounting-dashboard.component';
 
 export const AccountingRoutes: Routes = [
   {
@@ -16,6 +17,12 @@ export const AccountingRoutes: Routes = [
         path: '',
         redirectTo: '/budget',
         pathMatch: 'full',
+      },
+      {
+        path: 'accounting-dashboard',
+        component: AccountingDashboardComponent,
+        canActivate: [roleGuard],
+        data: { roles: ['accounting', 'superadmin'], breadcrumb: 'Budget Management' } 
       },
       {
         path: 'budget',

@@ -76,13 +76,13 @@ export class HeaderComponent implements OnInit {
       this.greeting = this.getGreeting();
     }, 60000);  // 60000 milliseconds = 1 minute
     this.items = [
-      { icon: 'pi pi-home', route: '/dashboard' },
+      { icon: 'pi pi-home', route: '/' },
       ...this.breadcrumpService.createBreadcrumbs(this.activatedRoute.root)];
     this.router.events
       .pipe(filter(event => event instanceof NavigationEnd))
       .subscribe(() => {
         this.items = [
-          { icon: 'pi pi-home', route: '/dashboard' },
+          { icon: 'pi pi-home', route: '/' },
           ...this.breadcrumpService.createBreadcrumbs(this.activatedRoute.root)];
       });
 

@@ -18,6 +18,8 @@ import {
 } from 'ng-apexcharts';
 import { RFQService } from 'src/app/services/rfq.service';
 import { PurchaseRequestService, PurchaseRequest } from 'src/app/services/purchase-request.service';
+import { BudgetService, BudgetAllocation } from 'src/app/services/budget.service'; // Import BudgetService and BudgetAllocation
+
 
 @Component({
   selector: 'app-dashboard',
@@ -32,15 +34,48 @@ import { PurchaseRequestService, PurchaseRequest } from 'src/app/services/purcha
     FormsModule,
     NgApexchartsModule,
   ],
-  templateUrl: './bac-dashboard.component.html',
-  styleUrls: ['./bac-dashboard.component.scss'],
+  templateUrl: './admin-dashboard.component.html',
+  styleUrls: ['./admin-dashboard.component.scss'],
 })
-export class BacDashboardComponent implements OnInit {
+export class AdminDashboardComponent implements OnInit {
   platformId = inject(PLATFORM_ID);
   lineChartData: any;
 
   // First chart options (RFQ data)
   public lineChartOptions: {
+    series: ApexSeries;
+    chart: ApexChart;
+    xaxis: ApexXAxis;
+    yaxis: ApexYAxis;
+    stroke: ApexStroke;
+    title: ApexTitleSubtitle;
+  } = {
+    series: [],
+    chart: {
+      type: 'line',
+      height: 350,
+    },
+    xaxis: {
+      categories: [],
+      title: {
+        text: '',
+      },
+    },
+    yaxis: {
+      title: {
+        text: '',
+      },
+    },
+    stroke: {
+      curve: 'smooth',
+    },
+    title: {
+      text: '',
+      align: 'left',
+    },
+  };
+
+  public budgetChartOptions: {
     series: ApexSeries;
     chart: ApexChart;
     xaxis: ApexXAxis;
@@ -109,7 +144,8 @@ export class BacDashboardComponent implements OnInit {
 
   constructor(
     private rfqService: RFQService, // Inject RFQService
-    private purchaseRequestService: PurchaseRequestService // Inject PurchaseRequestService
+    private purchaseRequestService: PurchaseRequestService, // Inject PurchaseRequestService
+    private budgetService: BudgetService
   ) {}
 
   async ngOnInit() {
@@ -118,6 +154,8 @@ export class BacDashboardComponent implements OnInit {
     const incomingData = rfqs.map((rfq) => rfq.suppliers[0]?.biddingPrice || 0);
     const categories = rfqs.map((rfq) => rfq.id || 'Unknown RFQ');
   
+    await this.loadBudgetData();
+
     this.lineChartOptions.series = [
       {
         name: 'Incoming',
@@ -185,6 +223,62 @@ export class BacDashboardComponent implements OnInit {
     this.purchaseRequestChartOptions.yaxis = {
       title: {
         text: 'Number of Approved Requests',
+      },
+    };
+  }
+
+  private async loadBudgetData() {
+    const budgets = await this.budgetService.getAllBudgetAllocations().toPromise() || [];
+
+    // Transform budget data into chart data
+    const categories = budgets.map((budget) => budget.departmentId);
+    const totalBudgetData = budgets.map((budget) => budget.totalBudget);
+    const allocatedAmountData = budgets.map((budget) => budget.allocatedAmount);
+    const remainingBalanceData = budgets.map((budget) => budget.remainingBalance);
+
+    // Update the first chart options with budget data
+    this.budgetChartOptions.series = [
+      {
+        name: 'Total Budget',
+        data: totalBudgetData,
+      },
+      {
+        name: 'Allocated Amount',
+        data: allocatedAmountData,
+      },
+      {
+        name: 'Remaining Balance',
+        data: remainingBalanceData,
+      },
+    ];
+
+    this.budgetChartOptions.chart = {
+      type: 'line',
+      height: 330,
+    };
+
+    this.budgetChartOptions.stroke = {
+      curve: 'smooth',
+    };
+
+    this.budgetChartOptions.title = {
+      text: 'Budget Allocation Overview',
+      align: 'left',
+    };
+
+    this.budgetChartOptions.xaxis = {
+      categories: categories,
+      labels:{
+        show: false,
+      },
+      title: {
+        text: 'Department',
+      },
+    };
+
+    this.budgetChartOptions.yaxis = {
+      title: {
+        text: 'Amount (USD)',
       },
     };
   }

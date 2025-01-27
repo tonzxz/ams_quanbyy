@@ -19,7 +19,7 @@ import {
   NgApexchartsModule,
   ApexFill,
 } from 'ng-apexcharts';
-
+import { PurchaseRequestService, PurchaseRequest } from 'src/app/services/purchase-request.service';
 
 @Component({
   selector: 'app-dashboard',
@@ -43,7 +43,7 @@ export class DashboardComponent implements OnInit {
     yaxis: ApexYAxis;
     stroke: ApexStroke;
     title: ApexTitleSubtitle;
-  } = {
+  } = { 
     series: [],
     chart: {
       type: 'line',
@@ -68,8 +68,12 @@ export class DashboardComponent implements OnInit {
       align: 'left'
     }
   };
-  
+
+  constructor(private purchaseRequestService: PurchaseRequestService) {} // Inject the service
+
   ngOnInit() {
+    this.loadChartData();
+
     this.data = {
       labels: ['Pending', 'Approved'],
       datasets: [
@@ -94,40 +98,56 @@ export class DashboardComponent implements OnInit {
         }
       }
     };
-  
+  }
+
+  async loadChartData() {
+    // Fetch purchase requests from the service
+    const purchaseRequests = await this.purchaseRequestService.getAll();
+
+    // Group purchase requests by month
+    const monthlyCounts = this.groupPurchaseRequestsByMonth(purchaseRequests);
+
+    // Update the line chart data
     this.lineChartOptions.series = [
       {
-        name: "Incoming",
-        data: [65, 59, 80, 81, 56, 55, 40]
-      },
-      {
-        name: "Delivered",
-        data: [28, 48, 40, 19, 86, 27, 90]
+        name: "Purchase Requests",
+        data: monthlyCounts
       }
     ];
-  
+
     this.lineChartOptions.chart = {
       type: "line",
       height: 330
     };
-  
+
     this.lineChartOptions.stroke = {
       curve: "smooth"
     };
-  
+
     this.lineChartOptions.title = {
       text: "Total Purchase Requests",
       align: "left"
     };
-  
+
     this.lineChartOptions.xaxis = {
-      categories: ["January", "February", "March", "April", "May", "June", "July"],
+      categories: ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"],
     };
-  
+
     this.lineChartOptions.yaxis = {
       title: {
-        text: ""
+        text: "Number of Requests"
       }
     };
+  }
+
+  groupPurchaseRequestsByMonth(purchaseRequests: any[]): number[] {
+    const monthlyCounts = new Array(12).fill(0); // Initialize an array for 12 months
+
+    purchaseRequests.forEach(request => {
+      const month = new Date(request.date).getMonth(); // Get the month (0-11)
+      monthlyCounts[month]++; // Increment the count for the corresponding month
+    });
+
+    return monthlyCounts;
   }
 }
