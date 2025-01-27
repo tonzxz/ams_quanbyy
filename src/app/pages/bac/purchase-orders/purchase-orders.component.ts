@@ -15,6 +15,7 @@ import { ButtonModule } from 'primeng/button';
 import { TabViewModule } from 'primeng/tabview';
 import { NoaComponent } from '../../shared/noa/noa.component';
 import { PurchaseOrderComponent } from '../../shared/purchase-order/purchase-order.component';
+import { NtpComponent } from '../../shared/ntp/ntp.component';
 
 @Component({
   selector: 'app-purchase-orders',
@@ -33,6 +34,7 @@ import { PurchaseOrderComponent } from '../../shared/purchase-order/purchase-ord
     NoaComponent,
     CommonModule,
     PurchaseOrderComponent,
+    NtpComponent
     
   ],
   templateUrl: './purchase-orders.component.html',
@@ -355,5 +357,8 @@ closePurchaseOrderModal(): void {
   this.isPurchaseOrderModalVisible = false; // Close the modal
 }
 
+  isNTPFakeModalVisible: boolean = false;
+
+  
 
 }

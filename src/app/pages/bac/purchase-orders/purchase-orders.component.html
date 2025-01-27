@@ -211,7 +211,9 @@
                 <th>Total Value</th>
                 <th>Requested By</th>
                 <th>Date Created</th>
+                <th>Attachment</th>
                 <th>Actions</th>
+
               </tr>
             </ng-template>
 
@@ -223,6 +225,16 @@
                 <td>{{ ntp.totalValue | currency }}</td>
                 <td>{{ ntp.requestedBy }}</td>
                 <td>{{ ntp.dateCreated | date: 'short' }}</td>
+                  <td>
+      <p-button
+        icon="pi pi-eye"
+        severity="info"
+        size="small"
+        outlined="true"
+          (click)="isNTPFakeModalVisible = true"
+
+      ></p-button>
+    </td>
                 <td>
                   <p-button
                     icon="pi pi-send"
@@ -389,4 +401,9 @@
     *ngIf="selectedRFQId"
     [rfqId]="selectedRFQId"
   ></app-purchase-order>
+</p-dialog>
+
+
+<p-dialog [(visible)]="isNTPFakeModalVisible" [modal]="true" [style]="{ width: '55vw' }" header="Notice to Proceed">
+  <app-ntp></app-ntp>
 </p-dialog>
