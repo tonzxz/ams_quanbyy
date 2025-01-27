@@ -18,6 +18,7 @@ import {
 } from 'ng-apexcharts';
 import { RFQService } from 'src/app/services/rfq.service';
 import { PurchaseRequestService, PurchaseRequest } from 'src/app/services/purchase-request.service';
+import { BudgetService, BudgetAllocation } from 'src/app/services/budget.service'; // Import BudgetService and BudgetAllocation
 
 @Component({
   selector: 'app-dashboard',
@@ -32,14 +33,14 @@ import { PurchaseRequestService, PurchaseRequest } from 'src/app/services/purcha
     FormsModule,
     NgApexchartsModule,
   ],
-  templateUrl: './bac-dashboard.component.html',
-  styleUrls: ['./bac-dashboard.component.scss'],
+  templateUrl: './accounting-dashboard.component.html',
+  styleUrls: ['./accounting-dashboard.component.scss'],
 })
-export class BacDashboardComponent implements OnInit {
+export class AccountingDashboardComponent implements OnInit {
   platformId = inject(PLATFORM_ID);
   lineChartData: any;
 
-  // First chart options (RFQ data)
+  // First chart options (Budget data)
   public lineChartOptions: {
     series: ApexSeries;
     chart: ApexChart;
@@ -108,16 +109,22 @@ export class BacDashboardComponent implements OnInit {
   };
 
   constructor(
-    private rfqService: RFQService, // Inject RFQService
-    private purchaseRequestService: PurchaseRequestService // Inject PurchaseRequestService
+    private rfqService: RFQService,
+    private purchaseRequestService: PurchaseRequestService,
+    private budgetService: BudgetService // Inject BudgetService
   ) {}
 
   async ngOnInit() {
-    // Fetch and process RFQ data for the first chart
+    await this.loadRFQData();
+    await this.loadPurchaseRequestData();
+    await this.loadBudgetData(); // Load budget data
+  }
+
+  private async loadRFQData() {
     const rfqs = await this.rfqService.getAll();
     const incomingData = rfqs.map((rfq) => rfq.suppliers[0]?.biddingPrice || 0);
     const categories = rfqs.map((rfq) => rfq.id || 'Unknown RFQ');
-  
+
     this.lineChartOptions.series = [
       {
         name: 'Incoming',
@@ -128,67 +135,124 @@ export class BacDashboardComponent implements OnInit {
         data: [28, 48, 40, 19, 86, 27, 90], // Placeholder data
       },
     ];
-  
+
     this.lineChartOptions.chart = {
       type: 'line',
       height: 330,
     };
-  
+
     this.lineChartOptions.stroke = {
       curve: 'smooth',
     };
-  
+
     this.lineChartOptions.title = {
       text: 'Request for Quotations',
       align: 'left',
     };
-  
+
     this.lineChartOptions.xaxis = {
       categories: categories,
     };
-  
+
     this.lineChartOptions.yaxis = {
       title: {
         text: 'Bidding Price',
       },
     };
-  
-    // Fetch and process Purchase Request data for the second chart
+  }
+
+  private async loadPurchaseRequestData() {
     const purchaseRequests = await this.purchaseRequestService.getAll();
     const approvedData = this.transformPurchaseRequestData(purchaseRequests);
-  
+
     this.purchaseRequestChartOptions.series = [
       {
         name: 'Approved Purchase Requests',
         data: approvedData,
       },
     ];
-  
+
     this.purchaseRequestChartOptions.chart = {
       type: 'line',
       height: 330,
     };
-  
+
     this.purchaseRequestChartOptions.stroke = {
       curve: 'smooth',
     };
-  
+
     this.purchaseRequestChartOptions.title = {
       text: 'Approved Purchase Requests Over Time',
       align: 'left',
     };
-  
+
     this.purchaseRequestChartOptions.xaxis = {
       categories: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul'], // Example categories (replace with actual data)
     };
-  
+
     this.purchaseRequestChartOptions.yaxis = {
       title: {
         text: 'Number of Approved Requests',
       },
     };
   }
-  
+
+  private async loadBudgetData() {
+    const budgets = await this.budgetService.getAllBudgetAllocations().toPromise() || [];
+
+    // Transform budget data into chart data
+    const categories = budgets.map((budget) => budget.departmentId);
+    const totalBudgetData = budgets.map((budget) => budget.totalBudget);
+    const allocatedAmountData = budgets.map((budget) => budget.allocatedAmount);
+    const remainingBalanceData = budgets.map((budget) => budget.remainingBalance);
+
+    // Update the first chart options with budget data
+    this.lineChartOptions.series = [
+      {
+        name: 'Total Budget',
+        data: totalBudgetData,
+      },
+      {
+        name: 'Allocated Amount',
+        data: allocatedAmountData,
+      },
+      {
+        name: 'Remaining Balance',
+        data: remainingBalanceData,
+      },
+    ];
+
+    this.lineChartOptions.chart = {
+      type: 'line',
+      height: 330,
+    };
+
+    this.lineChartOptions.stroke = {
+      curve: 'smooth',
+    };
+
+    this.lineChartOptions.title = {
+      text: 'Budget Allocation Overview',
+      align: 'left',
+    };
+
+    this.lineChartOptions.xaxis = {
+      categories: categories,
+      labels:{
+        show: false,
+      },
+      title: {
+        text: 'Department',
+      },
+    };
+
+    this.lineChartOptions.yaxis = {
+      title: {
+        text: 'Amount (USD)',
+      },
+    };
+  }
+
   // Transform Purchase Request data into chart data
   private transformPurchaseRequestData(purchaseRequests: PurchaseRequest[]): number[] {
     // Example: Count approved purchase requests by month

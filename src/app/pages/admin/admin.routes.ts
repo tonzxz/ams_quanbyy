@@ -9,6 +9,7 @@ import { ApprovalSequenceComponent } from './approval-sequence/approval-sequence
 import { PaymentTermsComponent } from './payment-terms/payment-terms.component';
 import { ItemClassificationComponent } from './item-classification/item-classification.component';
 import { EndUserListComponent } from './end-user-list/end-user-list.component';
+import { AdminDashboardComponent } from './admin-dashboard/admin-dashboard.component';
 
 export const AdminRoutes: Routes = [
   {
@@ -18,6 +19,12 @@ export const AdminRoutes: Routes = [
         path: '',
         redirectTo: '/department',
         pathMatch: 'full',
+      },
+      {
+        path: 'admin-dashboard',
+        component: AdminDashboardComponent,
+        canActivate: [roleGuard],
+        data: { roles: ['admin', 'superadmin'], breadcrumb: 'Dashboard' } 
       },
       {
         path: 'department',
