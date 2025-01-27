@@ -115,7 +115,7 @@ export class AoqComponent implements OnInit {
                 <td class="border border-gray-300 p-4">${this.requisitionData?.title}</td>
                 <td class="border border-gray-300 p-4"> ${(product.quantity * product.price).toFixed(2)}</td>
                 <td class="border border-gray-300 p-4">${supplier?.supplierName || 'N/A'}</td>
-                <td class="border border-gray-300 p-4">${supplier?.biddingPrice || 'N/A'}</td>
+                <td class="border border-gray-300 p-4">P${supplier?.biddingPrice || 'N/A'}</td>
               </tr>
             `
               )

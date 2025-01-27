@@ -26,7 +26,7 @@
           <td class="border border-gray-300 p-4">{{ requisitionData?.title }}</td>
           <td class="border border-gray-300 p-4">{{ (product.quantity * product.price) | number: '1.2-2' }}</td>
           <td class="border border-gray-300 p-4">{{ getWinner()?.supplierName || 'N/A' }}</td>
-          <td class="border border-gray-300 p-4">{{ getWinner()?.biddingPrice || 'N/A' }}</td>
+          <td class="border border-gray-300 p-4">P{{getWinner()?.biddingPrice || 'N/A' }}</td>
         </tr>
       </tbody>
     </table>
