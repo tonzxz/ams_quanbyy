@@ -16,6 +16,7 @@ import { RequestForQuotationListComponent } from './request-for-quotation-list/r
 import { RfqComponent } from './rfq/rfq.component';
 import { BACResolutionComponent } from './bac-resolution/bac-resolution.component';
 import { PurchaseOrderComponent } from './purchase-order/purchase-order.component';
+import { NoaComponent } from './noa/noa.component';
 
 export const SharedRoutes: Routes = [
   {
@@ -110,6 +111,11 @@ export const SharedRoutes: Routes = [
         path: 'purchase-order',
         component: PurchaseOrderComponent,
         data: {breadcrumb:'Purchase Order Template'}
+      },
+      {
+        path: 'noa',
+        component: NoaComponent,
+        data: {breadcrumb:'Notice of Award Template'}
       },
     ],
   },
