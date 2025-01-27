@@ -35,13 +35,14 @@ import { ApprovalSequenceService } from 'src/app/services/approval-sequence.serv
 import { firstValueFrom } from 'rxjs';
 import { NotificationService } from 'src/app/services/notifications.service';
 import { RequestQuotationComponent } from '../request-quotation/request-quotation.component';
+import { AoqComponent } from '../aoq/aoq.component';
 
 @Component({
   selector: 'app-rfq',
   standalone: true,
   imports: [MaterialModule, CommonModule, StepperModule, TableModule, ButtonModule, ButtonGroupModule, TabsModule, OverlayBadgeModule, BadgeModule,
     InputTextModule, FormsModule, SelectModule, FileUploadModule, DatePickerModule, InputNumberModule, ToastModule, ReactiveFormsModule, TextareaModule, LottieAnimationComponent,
-    FluidModule, TooltipModule, DialogModule, ConfirmPopupModule, IconFieldModule,InputIconModule, DividerModule, RequestQuotationComponent],
+    FluidModule, TooltipModule, DialogModule, ConfirmPopupModule, IconFieldModule,InputIconModule, DividerModule, RequestQuotationComponent, AoqComponent],
   providers: [MessageService, ConfirmationService],
   templateUrl: './request-for-quotation-list.component.html',
   styleUrls: ['./request-for-quotation-list.component.scss']
@@ -479,5 +480,14 @@ export class RequestForQuotationListComponent implements OnInit {
     }
   }
 
-  
+
+  showAOQModal: boolean = false; // Modal visibility control
+selectedRFQId: string | null = null; // Selected RFQ ID for AOQ
+
+generateAOQ(rfqId: string): void {
+  this.selectedRFQId = rfqId; // Set the RFQ ID to pass to AoqComponent
+  this.showAOQModal = true; // Show the modal
+}
+
+
 }

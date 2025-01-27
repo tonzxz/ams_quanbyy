@@ -67,15 +67,25 @@
           <th>Description</th>
           <th>Requested By</th>
           <th>Date Requested</th>
-          <th>Documents</th>
 
           <!-- <th>Status</th> -->
-          @if(activeStep == 1 || currentUser?.role =='end-user'){
-          <th>Actions</th>
-          }
+         
           @if(activeStep == 3){
             <th>Qualified Supplier</th>
+
           }
+          
+          <th>Documents</th>
+          
+         @if(activeStep == 3){
+            <th>Actions</th>
+
+          }
+          
+           @if(activeStep == 1 || currentUser?.role =='end-user'){
+          <th>Actions</th>
+          }
+
         </tr>
       </ng-template>
 
@@ -91,6 +101,7 @@
           <td>{{ getPR(rfq.purchase_order)?.dateCreated}}</td>
           @if(activeStep == 3){
             <td>{{ getSupplierName(rfq.supplier)}}</td>
+          
           }
      
           <td>
@@ -106,6 +117,21 @@
   </div>
 </td>
 
+@if(activeStep == 3){
+            <td>
+  <p-button
+    [disabled]="rfq.suppliers.length <= 0"
+    pTooltip="Click to Generate Abstract of Quotation"
+    severity="success"
+    outlined
+    rounded
+    (click)="generateAOQ(rfq.id)"
+    size="small"
+    icon="pi pi-arrow-right"
+  ></p-button>
+</td>
+
+          }
           <!-- <td>{{ rfq.status }}</td> -->
 
           @if(activeStep == 1 || currentUser?.role =='end-user'){
@@ -381,6 +407,20 @@
   [contentStyle]="{ height: 'auto' }"
 >
   <app-request-quotation [requisitionId]="selectedRequisitionId"></app-request-quotation>
+</p-dialog>
+
+
+<p-dialog
+  [(visible)]="showAOQModal"
+  [modal]="true"
+  [closable]="true"
+  [style]="{ width: '55vw', height: '90vh' }"
+  header="Abstract of Quotation"
+>
+  <app-aoq
+    *ngIf="selectedRFQId"
+    [rfqId]="selectedRFQId"
+  ></app-aoq>
 </p-dialog>
 
 
