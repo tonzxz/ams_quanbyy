@@ -1,4 +1,4 @@
-
+//src/app/services/requisition.service.ts
 
 import { Injectable } from '@angular/core';
 import { z } from 'zod';
@@ -10,6 +10,8 @@ import { firstValueFrom } from 'rxjs';
 /**
  * Zod schema for an Extended Requisition.
  */
+
+
 export const requisitionSchema = z.object({
   id: z.string().length(6, "ID must be exactly 6 characters").optional(),
   title: z.string().min(1, "Title is required"),
@@ -38,6 +40,8 @@ export const requisitionSchema = z.object({
   budgetUtilizationReportAttachment: z.string().optional(), 
   noticeOfAwardAttachment: z.string().optional(), 
   purchaseOrderAttachment: z.string().optional(), 
+  purchaseOrderId: z.string().length(6, "Purchase Order ID must be exactly 6 characters").optional(),
+  noticeToProceedId: z.string().length(6, "Purchase Order ID must be exactly 6 characters").optional(),
   noticeToProceedAttachment: z.string().optional(), 
   dateCreated: z.coerce.date().optional(), 
  lastModified: z.coerce.date().optional(), 
@@ -595,7 +599,27 @@ async loadUserFullName(requisitionId: string): Promise<string | undefined> {
     console.error('Failed to fetch all approval sequences:', error);
     return [];
   }
-}
+  }
+  
+   async updatePurchaseOrderId(requisitionId: string, purchaseOrderId: string): Promise<void> {
+    const requisition = this.requisitions.find((r) => r.id === requisitionId);
+    if (!requisition) {
+      throw new Error('Requisition not found');
+    }
 
+    requisition.purchaseOrderId = purchaseOrderId;
+    await this.updateRequisition(requisition);
+  }
+
+
+  async updateNoticeToProceedId(requisitionId: string, noticeToProceedId: string): Promise<void> {
+  const requisition = this.requisitions.find((r) => r.id === requisitionId);
+  if (!requisition) {
+    throw new Error('Requisition not found');
+  }
+
+  requisition.noticeToProceedId = noticeToProceedId;
+  await this.updateRequisition(requisition);
+}
 
 }

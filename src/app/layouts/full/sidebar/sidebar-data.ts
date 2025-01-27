@@ -14,8 +14,16 @@ export const navItems: NavItem[] = [
     displayName: 'Approvals',
     iconName: 'solar:widget-add-line-duotone',
     route: '/shared/approvals',
-    requiredRoles: ['end-user', 'bac', 'accounting', 'caf', 'president', 'inspection'],
+    requiredRoles: ['end-user', 'bac', 'acucounting', 'caf', 'president', 'inspection'],
 
+  },
+
+    {
+    displayName: 'Purchase Orders',
+    iconName: 'solar:checklist-minimalistic-line-duotone',
+    route: '/bac/purchase-orders',
+      requiredRoles: ['bac'],
+    
   },
  
   {
@@ -44,28 +52,11 @@ export const navItems: NavItem[] = [
     iconName: 'solar:widget-add-line-duotone',
     route: '/shared/semi-expendable',
   },
+
+ 
+  
   {
-    displayName: 'Abstract of Quotations',
-    iconName: 'solar:widget-add-line-duotone',
-    route: '/shared/aoq',
-  },
-  {
-    displayName: 'Budget Utilization',
-    iconName: 'solar:widget-add-line-duotone',
-    route: '/shared/budget-utilization',
-  },
-  {
-    displayName: 'RFQ',
-    iconName: 'solar:widget-add-line-duotone',
-    route: '/shared/rfq',
-  },
-  {
-    displayName: 'BAC Resolution',
-    iconName: 'solar:widget-add-line-duotone',
-    route: '/shared/bac-resolution',
-  },
-  {
-    displayName: 'Purchase Order',
+    displayName: 'Purchase Order Template',
     iconName: 'solar:widget-add-line-duotone',
     route: '/shared/purchase-order',
   },
@@ -312,19 +303,20 @@ export const navItems: NavItem[] = [
   //   route: '/bac/validate-approved-request',
   //   requiredRoles: ['bac'],
   // },
-   {
-    displayName: 'Approved Purchase Request',
-    iconName: 'solar:checklist-minimalistic-line-duotone',
-    route: '/bac/approved-purchase-requests',
-    requiredRoles: ['bac'],
-  },
+ 
    
     {
     displayName: 'Abstract of Quotations Template',
     iconName: 'solar:checklist-minimalistic-line-duotone',
     route: '/shared/aoq',
-    requiredRoles: ['bac'],
+      requiredRoles: ['bac'],
   },
+    
+   
+    
+   
+    
+    
   // {
   //   displayName: 'Prepare Purchase Orders',
   //   iconName: 'solar:document-add-line-duotone',
