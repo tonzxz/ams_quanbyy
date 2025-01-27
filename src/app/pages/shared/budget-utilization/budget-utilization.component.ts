@@ -47,103 +47,6 @@ export class BudgetUtilizationComponent {
     }
   }
 
-// async populateMockData(rfq: any) {
-//   try {
-//     const requisition = await this.requisitionService.getRequisitionById(rfq.purchase_order || '');
-//     console.log('Requisition:', requisition);
-
-//     const createdByUser = this.userService.getUserById(requisition?.createdByUserId || '');
-//     console.log('Created By User:', createdByUser);
-
-//     if (!createdByUser) {
-//       alert('User not found.');
-//       return;
-//     }
-
-//     // Fetch all offices and departments to find the correct department
-//     const offices = await this.departmentService.getAllOffices();
-//     const office = offices.find((o) => o.id === createdByUser.officeId);
-//     console.log('Office:', office);
-
-//     if (!office) {
-//       alert('Office not found for the user.');
-//       return;
-//     }
-
-//     const departments = await this.departmentService.getAllDepartments();
-//     const department = departments.find((d) => d.id === office.departmentId);
-//     console.log('Department:', department);
-
-//     if (!department) {
-//       alert('Department not found for the office.');
-//       return;
-//     }
-
-//     // Ensure budgets is handled properly to avoid undefined
-//     const budgets = (await this.budgetService.getAllBudgetAllocations().toPromise()) || [];
-//     if (!budgets.length) {
-//       alert('No budgets found.');
-//       return;
-//     }
-
-//     const budget = budgets.find((b) => b.departmentId === department.id);
-//     console.log('Budget:', budget);
-
-//     if (!budget) {
-//       alert('No budget found for this department.');
-//       return;
-//     }
-
-//     this.mockData = {
-//       title: 'ANNEX C',
-//       subtitle: 'LOCAL GOVERNMENT SUPPORT FUND',
-//       reportTitle: 'Report on Fund Utilization and Status of Program/Project Implementation',
-//       quarterEnded: 'For the Quarter Ended ______',
-//       tableHeaders: [
-//         'Fund Source',
-//         'Date of Notice of Authority to Debit Account Issued (NADAI)',
-//         'Type of Program/ Project',
-//         'Name/Title of Program/ Project',
-//         'Specific Location',
-//         'Mechanism/ Mode of Implementation',
-//         'Estimated Number of Beneficiaries',
-//         'Amount',
-//         'Estimated Period of Completion (month and year)',
-//         'Remarks on Program/ Project Status',
-//       ],
-//       tableData: [
-//         {
-//           fundSource: `Budget ID: ${budget?.id || 'N/A'}`,
-//           nadaiDate: requisition?.dateCreated
-//             ? new Date(requisition.dateCreated).toLocaleDateString()
-//             : 'N/A',
-//           programType: 'Infrastructure',
-//           programTitle: requisition?.title || 'N/A',
-//           location: 'Sample Location',
-//           implementationMode: 'Contractor',
-//           beneficiaries: requisition?.products.reduce((sum, product) => sum + product.quantity, 0),
-//           amountReceived: `${budget?.totalBudget || 0}`, // Total budget assigned to the department
-//           amountContracted: `${budget?.allocatedAmount || 0}`, // Amount allocated for specific projects (e.g., supplier contracts)
-//           amountDisbursed: `${budget?.totalBudget - budget?.remainingBalance || 0}`, // Total disbursed amount = totalBudget - remainingBalance
-//           completionPeriod: 'December 2025',
-//           remarks: 'Ongoing',
-//         },
-//       ],
-//       certifiedBy: {
-//         lfc: 'The Local Finance Committee (LFC)',
-//         budgetOfficer: 'Local Budget Officer',
-//         treasurer: 'Local Treasurer',
-//       },
-//       attestedBy: {
-//         chiefExecutive: 'Local Chief Executive',
-//         planningCoordinator: 'Local Planning and Development Coordinator',
-//       },
-//     };
-//   } catch (error) {
-//     console.error('Error populating mock data:', error);
-//     alert('An error occurred while loading data.');
-//   }
-  // }
   
  async populateMockData(rfq: any) {
   try {
@@ -221,8 +124,8 @@ export class BudgetUtilizationComponent {
             : 'N/A',
           programType: 'Infrastructure',
           programTitle: requisition?.title || 'N/A',
-          location: `${office.roomNumber || 'N/A'}, Floor ${office.floor || 'N/A'}, Building ID: ${
-            office.buildingId || 'N/A'
+          location: `${office.roomNumber || 'N/A'}, Floor ${office.floor || 'N/A'}, ${
+            office.name || 'N/A'
           }`,
           implementationMode: 'Contractor',
           beneficiaries: requisition?.products.reduce((sum, product) => sum + product.quantity, 0),
