@@ -2,7 +2,7 @@
     <!-- Table of ICS Reports -->
     <p-card header="Inventory Custodian Slip (ICS) Reports" styleClass="p-shadow-3 mb-4">
         <div class="flex flex-row items-center justify-between">
-            <p class="">Review Inventory Custodian Slips here.</p>
+            <p>Review Inventory Custodian Slips here.</p>
             <div class="p-field" style="text-align: right; margin-top: 1rem">
                 <p-button
                     label="Create ICS"
@@ -13,13 +13,14 @@
                 ></p-button>
             </div>
         </div>
-        <p-table [value]="sampleICSs">
+        <p-table [value]="icsReports" [paginator]="true" [rows]="5">
             <ng-template pTemplate="header">
                 <tr>
                     <th>ICS No.</th>
                     <th>Entity Name</th>
                     <th>Fund Cluster</th>
                     <th>Date</th>
+                    <th>Actions</th>
                 </tr>
             </ng-template>
             <ng-template pTemplate="body" let-ics>
@@ -27,7 +28,19 @@
                     <td>{{ ics.icsNo }}</td>
                     <td>{{ ics.entityName }}</td>
                     <td>{{ ics.fundCluster }}</td>
-                    <td>{{ ics.date }}</td>
+                    <td>{{ ics.date | date: 'mediumDate' }}</td>
+                    <td>
+                        <div class="flex gap-2">
+                            <p-button icon="pi pi-pencil" 
+                                    (click)="editICS(ics)"
+                                    styleClass="p-button-rounded p-button-text p-button-primary">
+                            </p-button>
+                            <p-button icon="pi pi-trash" 
+                                    (click)="deleteICS(ics)"
+                                    styleClass="p-button-rounded p-button-text p-button-danger">
+                            </p-button>
+                        </div>
+                    </td>
                 </tr>
             </ng-template>
         </p-table>
@@ -35,14 +48,14 @@
 
     <!-- Dialog for ICS Form -->
     <p-dialog
-        header="Create Inventory Custodian Slip (ICS)"
+        header="{{ editingIndex === -1 ? 'Create' : 'Edit' }} Inventory Custodian Slip (ICS)"
         [(visible)]="displayDialog"
         [modal]="true"
         [style]="{ width: '60vw' }"
         [draggable]="false"
         [resizable]="false"
         >
-        <form [formGroup]="icsForm" class="p-4 grid grid-cols-2 gap-4">
+        <form [formGroup]="icsForm" class="p-4 grid grid-cols-2 gap-4" (ngSubmit)="saveICS()">
             <!-- Left Column -->
             <div class="col-span-1">
                 <!-- Entity Name -->
@@ -166,18 +179,29 @@
                         formControlName="description"
                         placeholder="Item details including serial number"
                         class="w-full mt-1 p-2 border border-gray-300 rounded-md"
+                        [required]="false"
                         rows="3"
                     ></textarea>
                 </div>
             </div>
 
-            <!-- Export to PDF Button -->
-            <div class="col-span-2 flex justify-end mt-4">
+            <!-- Export to PDF and Save/Cancel Buttons -->
+            <div class="col-span-2 flex justify-end mt-4 gap-2">
                 <p-button
                     label="Export to PDF"
                     (onClick)="exportPdf()"
                     [disabled]="icsForm.invalid"
                     styleClass="p-button-warning"
+                ></p-button>
+                <p-button
+                    label="Cancel"
+                    (onClick)="displayDialog = false"
+                    styleClass="p-button-secondary"
+                ></p-button>
+                <p-button
+                    label="Save"
+                    type="submit"
+                    styleClass="p-button-success"
                 ></p-button>
             </div>
         </form>

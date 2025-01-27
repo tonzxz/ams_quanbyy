@@ -6,63 +6,61 @@ import { DialogModule } from 'primeng/dialog';
 import jsPDF from 'jspdf';
 import html2canvas from 'html2canvas';
 import { CardModule } from 'primeng/card';
+import { CommonModule } from '@angular/common';
 import { ReactiveFormsModule } from '@angular/forms';
 
 @Component({
   selector: 'app-par',
   standalone: true,
-  imports: [ButtonModule, TableModule, DialogModule, CardModule, ReactiveFormsModule],
+  imports: [ButtonModule, TableModule, DialogModule, CardModule, ReactiveFormsModule, CommonModule],
   templateUrl: './par.component.html',
   styleUrls: ['./par.component.scss'],
 })
 export class ParComponent {
   parForm: FormGroup;
   displayDialog: boolean = false;
-  samplePARs = [
-    {
-      parNo: 'PAR001',
-      entityName: 'DepEd-Division of Antipolo City',
-      fundCluster: 'Fund Cluster A',
-      date: '2023-10-15',
-    },
-    {
-      parNo: 'PAR002',
-      entityName: 'DepEd-Division of Antipolo City',
-      fundCluster: 'Fund Cluster B',
-      date: '2023-10-20',
-    },
-  ];
+  editingIndex: number = -1;
 
-  // Mock data for items
   mockData = {
     items: [
-      {
-        quantity: 10,
-        unit: 'Pieces',
-        description: 'Office Chairs',
-        propertyNo: 'PROP001',
-      },
-      {
-        quantity: 5,
-        unit: 'Units',
-        description: 'Printers',
-        propertyNo: 'PROP002',
-      },
-    ],
-    receivedBy: 'John Doe',
-    receivedFrom: 'DR. ROMMEL C. BAUTISTA, CESO V',
-    date: '2023-10-25',
+      { quantity: 1, unit: 'pc', description: 'Office Desk', propertyNo: 'PROP-001' },
+      { quantity: 2, unit: 'units', description: 'Office Chair', propertyNo: 'PROP-002' },
+    ]
   };
+
+  // Realistic mock data
+  parReports = [
+    {
+      parNo: 'PAR-2023-001',
+      entityName: 'Department of Education - Antipolo City',
+      fundCluster: 'General Fund',
+      date: new Date('2023-10-15'),
+      receivedBy: 'John Doe',
+      receivedFrom: 'Jane Smith'
+    },
+    {
+      parNo: 'PAR-2023-002',
+      entityName: 'Department of Public Works - Rizal Province',
+      fundCluster: 'Infrastructure Fund',
+      date: new Date('2023-10-18'),
+      receivedBy: 'Alice Johnson',
+      receivedFrom: 'Bob Williams'
+    },
+    {
+      parNo: 'PAR-2023-003',
+      entityName: 'Health Services Division - Antipolo City',
+      fundCluster: 'Health Emergency Fund',
+      date: new Date('2023-10-20'),
+      receivedBy: 'Charlie Brown',
+      receivedFrom: 'Eve Adams'
+    }
+  ];
 
   constructor(private fb: FormBuilder) {
     this.parForm = this.fb.group({
       entityName: ['', Validators.required],
       fundCluster: ['', Validators.required],
       parNo: ['', Validators.required],
-      quantity: ['', Validators.required],
-      unit: ['', Validators.required],
-      description: ['', Validators.required],
-      propertyNo: ['', Validators.required],
       receivedBy: ['', Validators.required],
       receivedFrom: ['', Validators.required],
       date: ['', Validators.required],
@@ -71,6 +69,45 @@ export class ParComponent {
 
   showDialog() {
     this.displayDialog = true;
+    this.editingIndex = -1;
+    this.parForm.reset();
+  }
+
+  editPAR(par: any) {
+    this.editingIndex = this.parReports.indexOf(par);
+    this.parForm.patchValue({
+      ...par,
+      date: par.date.toISOString().split('T')[0]
+    });
+    this.displayDialog = true;
+  }
+
+  deletePAR(par: any) {
+    const index = this.parReports.indexOf(par);
+    if (index !== -1) {
+      this.parReports.splice(index, 1);
+    }
+  }
+
+  savePAR() {
+    if (this.parForm.invalid) {
+      alert('Please fill out all required fields.');
+      return;
+    }
+
+    const newPAR = {
+      ...this.parForm.value,
+      date: new Date(this.parForm.value.date)
+    };
+
+    if (this.editingIndex === -1) {
+      this.parReports.push(newPAR);
+    } else {
+      this.parReports[this.editingIndex] = newPAR;
+    }
+
+    this.displayDialog = false;
+    this.parForm.reset();
   }
 
   exportPdf() {
