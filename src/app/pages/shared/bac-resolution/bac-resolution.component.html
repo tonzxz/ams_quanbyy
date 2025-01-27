@@ -46,7 +46,7 @@
 
 <p-button label="Export to PDF" (onClick)="exportPdf()" class="mt-4"></p-button> -->
 
-<div class="p-10 ml-5 bg-white shadow-md rounded-lg" style="width: 390mm; height: auto;" *ngIf="mockData">
+<div class="bac-resolution p-10 ml-5 bg-white shadow-md rounded-lg" style="width: 390mm; height: auto;" *ngIf="mockData">
   <h1 class="text-3xl font-bold mb-4 flex justify-center">{{ mockData?.title }}</h1>
   <h2 class="text-2xl font-bold mb-4 flex justify-center">{{ mockData?.subtitle }}</h2>
   <p class="text-xl mb-4"><strong>{{ mockData?.department }}</strong></p>
@@ -91,5 +91,3 @@
     </div>
   </div>
 </div>
-
-<p-button label="Export to PDF" (onClick)="exportPdf()" class="mt-4"></p-button>

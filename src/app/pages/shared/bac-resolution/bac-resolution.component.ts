@@ -101,7 +101,9 @@ export class BACResolutionComponent implements OnChanges {
       const rfq = await this.rfqService.getById(this.rfqId);
       if (rfq) {
         this.populateMockData(rfq);
-        this.exportPdf();
+        setTimeout(()=>{
+          this.exportPdf();
+        },1000)
       }
     }
   }
@@ -141,8 +143,7 @@ export class BACResolutionComponent implements OnChanges {
   }
 
   exportPdf() {
-    const content = document.querySelector('app-bac-resolution') as HTMLElement;
-
+    const content = document.querySelector('.bac-resolution') as HTMLElement;
     html2canvas(content, { scale: 2 }).then((canvas) => {
       const imgData = canvas.toDataURL('image/png');
       const pdf = new jsPDF('p', 'mm', 'letter');
@@ -153,4 +154,5 @@ export class BACResolutionComponent implements OnChanges {
       pdf.save('bac-resolution.pdf');
     });
   }
+  
 }
