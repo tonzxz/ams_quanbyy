@@ -87,6 +87,9 @@ export class RequestForQuotationListComponent implements OnInit {
   award_form = new FormGroup({
     supplier: new FormControl<Supplier | null>(null, [Validators.required])
   });
+  bid_form = new FormGroup({
+    bid: new FormControl(0, [Validators.min(0.001),Validators.required])
+  });
   supplier_upload_form = new FormGroup({
     upload: new FormControl('', [Validators.required])
   });
@@ -129,6 +132,15 @@ export class RequestForQuotationListComponent implements OnInit {
     this.showSupplierModal = true;
   }
 
+  showBidModal:boolean =false;
+
+  openBidModal(rfq: RFQ, supplierId:string) {
+    this.bid_form.reset();
+    this.selectedRFQ = rfq;
+    this.selectedSupplier = this.suppliers.find(s=>s.id == supplierId);
+    this.showBidModal = true;
+  }
+
   isModalVisible = false; // Controls modal visibility
 
   selectedRequisitionId: string = '';
@@ -157,10 +169,10 @@ export class RequestForQuotationListComponent implements OnInit {
 
   selectedSupplier?: Supplier;
 
-  openUploadSupplier(supplier: Supplier) {
+  openUploadSupplier(supplierId: string) {
     this.files = [];
     this.supplier_upload_form.reset();
-    this.selectedSupplier = supplier;
+    this.selectedSupplier = this.suppliers.find(s=>supplierId == s.id);
     this.showUploadSupplier = true;
   }
 
@@ -188,9 +200,23 @@ export class RequestForQuotationListComponent implements OnInit {
 
       }]
     })
-    this.form.reset();
+    this.supplier_form.reset();
     this.showSupplierModal = false;
     this.messageService.add({ severity: 'success', summary: 'Success', detail: `Successfully added supplier on RFQ No. ${this.selectedRFQ!.id}` });
+    await this.fetchItems();
+    this.activeStep = 1;
+  }
+
+  async enterBid() {
+    const bid = this.bid_form.value;
+    const supplierIndex = this.selectedRFQ!.suppliers.findIndex(s=>s.supplierId == this.selectedSupplier?.id)
+    this.selectedRFQ!.suppliers[supplierIndex].biddingPrice = bid.bid!;
+    await this.rfqService.editRFQ({
+      ...this.selectedRFQ!
+    })
+    this.bid_form.reset();
+    this.showBidModal = false;
+    this.messageService.add({ severity: 'success', summary: 'Success', detail: `Successfully added supplier bid on RFQ No. ${this.selectedRFQ!.id}` });
     await this.fetchItems();
     this.activeStep = 1;
   }

@@ -90,7 +90,6 @@
           @if(activeStep == 3){
             <td>{{ getSupplierName(rfq.supplier)}}</td>
             <td>
-         
               <p-button
               pTooltip="Click to view abstract of quotation"
               size="small" icon="pi pi-building-columns" (click)="generateAOQ(rfq.id)" severity="secondary"
@@ -151,15 +150,18 @@
                   <p-button disabled="true" size="small" icon="pi pi-user" (click)="null" severity="secondary"
                     [outlined]="true" rounded />
                   <span class="font-bold">{{ item.supplierName}} </span>
-                  <!-- <p-divider layout="vertical" />
-                                  <span>Bid Price: {{item.biddingPrice ? (item.biddingPrice | currency:'PHP'): 'Pending'}}</span> -->
+                  <p-divider layout="vertical" />
+                    <span>Bid Price: {{item.biddingPrice ? (item.biddingPrice | currency:'PHP'): 'Pending'}}</span>
                 </div>
   
                 @if(activeStep == 1 || currentUser?.role =='end-user'){
   
                 <div class="flex gap-4 ">
                   @if(currentUser?.role == 'bac'){
-                  <p-button size="small" pTooltip="Click to upload supplier bid docs" icon="pi pi-upload" (click)="openUploadSupplier(item)" severity="secondary"
+                  <p-button size="small" pTooltip="Click to upload supplier bid docs" icon="pi pi-upload" (click)="openUploadSupplier(item)" 
+                    [outlined]="true" rounded />
+  
+                  <p-button size="small" pTooltip="Click to enter supplier bid price" icon="pi pi-money-bill" (click)="openBidModal(rfq, item.supplierId)" 
                     [outlined]="true" rounded />
   
                   <p-button size="small" pTooltip="Click to finalize canvasing" icon="pi pi-trash" (click)="confirmDeleteSupplier($event, rfq,item.supplierId)"
@@ -397,6 +399,31 @@
   <app-request-quotation [requisitionId]="selectedRequisitionId"></app-request-quotation>
 </p-dialog>
 
+<p-dialog [modal]="true" [position]="'center'" [(visible)]="showBidModal" [style]="{ width: '25rem' }">
+  <ng-template #header>
+    <div class="py-0 inline-flex items-center justify-center gap-3">
+      <i class="pi pi-warehouse text-lg"></i>
+      <span class="font-bold text-lg whitespace-nowrap">Supplier Bid</span>
+    </div>
+  </ng-template>
+  <span class="p-text-secondary block">Enter supplier bid for RFQ</span>
+  <small class="p-text-secondary block mb-6">(Please fill out all form fields)</small>
+
+  <form [formGroup]="bid_form">
+   
+    <div class="flex items-center gap-4 mb-6">
+      <label for="bid" class="font-semibold w-32">Bid Amount</label>
+      <p-inputnumber placeholder="Enter supplier bid" size="small" class="flex-1" formControlName="bid" inputId="currency-us" mode="currency"
+        currency="PHP" locale="en-PH" fluid></p-inputnumber>
+    </div>
+
+
+    <div class="flex justify-end gap-6 mt-2">
+      <p-button size="small" label="Cancel" icon="pi pi-times" severity="secondary" (click)="showBidModal=false" />
+      <p-button size="small" label="Add" icon="pi pi-plus" (click)="enterBid()" [disabled]="!bid_form.valid" />
+    </div>
+  </form>
+</p-dialog>
 
 
 <p-toast position="bottom-right" />
