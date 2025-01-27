@@ -104,15 +104,45 @@ export class JournalEntryVoucherComponent {
   exportPdf(entry: DetailedJournalEntry) {
     const doc = new jsPDF();
   
+    // Set page margins
+    const margin = 20; 
+    const pageWidth = doc.internal.pageSize.getWidth();
+    const pageHeight = doc.internal.pageSize.getHeight();
+    
     // Header Section
     doc.setFontSize(16).setFont('helvetica', 'bold');
-    doc.text('Journal Entry Voucher', 105, 20, { align: 'center' });
+    doc.text('QUANBY SOLUTIONS INC', pageWidth / 2, margin - 5, { align: 'center' });
+    doc.setFontSize(8).setFont('helvetica', 'normal');
+    doc.text('4th Flr. Dosc Bldg., Brgy. 37-Bitano, Legazpi City, Albay', pageWidth / 2, margin + 0, { align: 'center' });
+    doc.text('VAT Reg. TIN: 625-263-719-00000', pageWidth / 2, margin + 5, { align: 'center' });
   
-    doc.setFontSize(10).setFont('helvetica', 'normal');
-    doc.text(`Voucher No: ${entry.voucherNo}`, 20, 30);
-    doc.text(`Date: ${new Date(entry.date).toLocaleDateString()}`, 20, 36);
-    doc.text(`Supplier Name: ${entry.supplierName}`, 20, 42);
-    doc.text(`Total Amount: PHP ${entry.totalAmountDue.toFixed(2)}`, 20, 48);
+    // Horizontal Line below Header
+    doc.setDrawColor(200, 200, 200); 
+    doc.setLineWidth(0.5);
+    doc.line(margin, margin + 15, pageWidth - margin, margin + 15);
+  
+    // Title Section
+    doc.setFontSize(18).setFont('helvetica', 'bold');
+    doc.text('Journal Entry Voucher', pageWidth / 2, margin + 25, { align: 'center' });
+  
+    // Voucher Details Section
+    doc.setFontSize(10);
+    const detailsStartY = margin + 35;
+    doc.setFont('helvetica', 'bold');
+    doc.text('Voucher Number:', margin, detailsStartY);
+    doc.setFont('helvetica', 'normal');
+    doc.text(`${entry.voucherNo}`, margin + 50, detailsStartY);
+  
+    doc.setFont('helvetica', 'bold');
+    doc.text('Date:', margin, detailsStartY + 7);
+    doc.setFont('helvetica', 'normal');
+    doc.text(`${new Date(entry.date).toLocaleDateString()}`, margin + 50, detailsStartY + 7);
+  
+    // Add Supplier Name
+    doc.setFont('helvetica', 'bold');
+    doc.text('Supplier Name:', margin, detailsStartY + 14);
+    doc.setFont('helvetica', 'normal');
+    doc.text(entry.supplierName, margin + 50, detailsStartY + 14);
   
     // Debit and Credit Table
     const tableData = [
@@ -122,22 +152,43 @@ export class JournalEntryVoucherComponent {
     ];
   
     (doc as any).autoTable({
-      startY: 60,
+      startY: detailsStartY + 25,
       head: [tableData.shift()],
       body: tableData,
       theme: 'striped',
       headStyles: { fillColor: [200, 200, 200] },
       bodyStyles: { textColor: [0, 0, 0] },
-      margin: { left: 20, right: 20 },
+      margin: { left: margin, right: margin },
     });
   
-    // Footer Section
-    const pageHeight = doc.internal.pageSize.height;
-    doc.setFontSize(8).setFont('helvetica', 'italic');
-    doc.text('Prepared By: __________________', 20, pageHeight - 30);
-    doc.text('Checked By: __________________', 80, pageHeight - 30);
-    doc.text('Approved By: __________________', 150, pageHeight - 30);
+    // Add Total Amount to the Bottom Right of the Table
+    const totalAmount = entry.totalAmountDue.toFixed(2);
+    const tableEndY = (doc as any).autoTable.previous.finalY + 10;
   
+    doc.setFontSize(10).setFont('helvetica', 'bold');
+    doc.text('Total Amount:', pageWidth - margin - 60, tableEndY);  // Adjust the position for alignment
+    doc.setFontSize(10).setFont('helvetica', 'normal');
+    doc.text(`PHP ${totalAmount}`, pageWidth - margin - 30, tableEndY); // Adjust the position for alignment
+  
+    // Footer Section
+    const finalY = tableEndY + 15;
+    const sectionHeight = 16;
+  
+    doc.setFontSize(9);
+    doc.text('Prepared By:', margin, finalY);
+    doc.text('Name: _____________', margin, finalY + 8); 
+    doc.text('Date:  ______________', margin, finalY + 16); 
+  
+    doc.text('Checked By:', pageWidth / 3, finalY);
+    doc.text('Name: _____________', pageWidth / 3, finalY + 8); 
+    doc.text('Date:  ______________', pageWidth / 3, finalY + 16); 
+  
+    doc.text('Approved By:', (pageWidth * 2) / 3, finalY);
+    doc.text('Name: _____________', (pageWidth * 2) / 3, finalY + 8); 
+    doc.text('Date:  ______________', (pageWidth * 2) / 3, finalY + 16); 
+  
+    // Save the PDF
     doc.save(`Journal_Entry_Voucher_${entry.voucherNo}.pdf`);
   }
+  
 }
