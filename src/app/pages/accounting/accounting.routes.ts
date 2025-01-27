@@ -8,6 +8,7 @@ import { GeneralLedgerComponent } from './general-ledger/general-ledger.componen
 import { GeneralJournalComponent } from './general-journal/general-journal.component';
 import { PrApprovalComponent } from './pr-approval/pr-approval.component';
 import { AccountingDashboardComponent } from './accounting-dashboard/accounting-dashboard.component';
+import { ClassificationComponent } from './classification/classification.component';
 
 export const AccountingRoutes: Routes = [
   {
@@ -60,6 +61,12 @@ export const AccountingRoutes: Routes = [
         component: PrApprovalComponent,
         canActivate: [roleGuard],
         data: { roles: ['accounting', 'superadmin'], breadcrumb: 'Purchase Request Approval' } 
+      },
+      {
+        path: 'classification',
+        component: ClassificationComponent,
+        canActivate: [roleGuard],
+        data: { roles: ['accounting', 'superadmin'], breadcrumb: 'Classification' } 
       },
     
     ],
