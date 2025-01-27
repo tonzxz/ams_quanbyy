@@ -86,8 +86,9 @@
           <td>{{ getPRTotal(rfq.purchase_order) | currency:'PHP' }}</td>
           <td>{{ getPR(rfq.purchase_order)?.description}}</td>
           <td>{{ getPR(rfq.purchase_order)?.createdByUserName}}</td>
+          <td>{{ getPR(rfq.purchase_order)?.dateCreated}}</td>
           @if(activeStep == 3){
-            <td>{{ getPR(rfq.purchase_order)?.dateCreated}}</td>
+            <td>{{ getSupplierName(rfq.supplier)}}</td>
           }
           <!-- <td>{{ rfq.status }}</td> -->
 
