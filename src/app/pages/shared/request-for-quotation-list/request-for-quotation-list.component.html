@@ -1,350 +1,358 @@
 <mat-card class="cardWithShadow">
-    <mat-card-content>
-        @if(currentUser?.role == 'bac'){
-            <mat-card-title class="select-none font-light">Request for Quotations</mat-card-title>
-        }@else{
-            <mat-card-title class="select-none font-light">Canvasing</mat-card-title>
+  <mat-card-content>
+    @if(currentUser?.role == 'bac'){
+    <mat-card-title class="select-none font-light">Request for Quotations</mat-card-title>
+    }@else{
+    <mat-card-title class="select-none font-light">Canvasing</mat-card-title>
 
-        }
-        <div class="flex justify-between items-center">
-            @if(currentUser?.role == 'bac'){
-                <p>View and manage RFQs and supplier bidding prices in this section.</p>
-            }@else{
-                <p>Canvas RFQs and supplier bidding prices in this section.</p>
-            }
-            <p-iconfield fluid class="w-full max-w-72">
-                <p-inputicon styleClass="pi pi-search" />
-                <input fluid class="w-full" pSize="small" [(ngModel)]="searchValue" (input)="dt.filterGlobal(searchValue,'contains')" type="text"
-                    pInputText placeholder="Search" />
-            </p-iconfield>
-        </div>
-        @if(currentUser?.role == 'bac'){
-        <div class="flex justify-between items-center pr-5 mt-3">
-            <p-button pTooltip="Click to add new RFQ" [outlined]="true" size="small" label="Add Request for Quotation"
-            (click)="openRFQModal()" icon="pi pi-plus" />
-        
-            <p-tabs [value]="activeStep">
-                <p-tablist>
-                    <p-tab [value]="1" (click)="switchTab(1)">
-                        <p-overlaybadge badgeSize="small" [value]="countRFQ('new')">
-                            <div class="px-3 flex gap-6">
-                                <i class="pi pi-warehouse"></i>
-                                <span>Pending</span>
-                            </div>
-                        </p-overlaybadge>
-                    </p-tab>
-                    <p-tab [value]="2" (click)="switchTab(2)">
-                        <p-overlaybadge badgeSize="small" [value]="countRFQ('canvasing')">
-                            <div class="px-3 flex gap-6">
-                                <i class="pi pi-box"></i>
-                                <span>For Canvasing</span>
-                            </div>
-                        </p-overlaybadge>
-                    </p-tab>
-                    <p-tab [value]="2" (click)="switchTab(3)">
-                        <p-overlaybadge badgeSize="small" [value]="countRFQ('approved')">
-                            <div class="px-3 flex gap-6">
-                                <i class="pi pi-box"></i>
-                                <span>Approved</span>
-                            </div>
-                        </p-overlaybadge>
-                    </p-tab>
-                </p-tablist>
-            </p-tabs>
+    }
+    <div class="flex justify-between items-center">
+      @if(currentUser?.role == 'bac'){
+      <p>View and manage RFQs and supplier bidding prices in this section.</p>
+      }@else{
+      <p>Canvas RFQs and supplier bidding prices in this section.</p>
+      }
+      <p-iconfield fluid class="w-full max-w-72">
+        <p-inputicon styleClass="pi pi-search" />
+        <input fluid class="w-full" pSize="small" [(ngModel)]="searchValue"
+          (input)="dt.filterGlobal(searchValue,'contains')" type="text" pInputText placeholder="Search" />
+      </p-iconfield>
+    </div>
+    @if(currentUser?.role == 'bac'){
+    <div class="flex justify-between items-center pr-5 mt-3">
+      <p-button pTooltip="Click to add new RFQ" [outlined]="true" size="small" label="Add Request for Quotation"
+        (click)="openRFQModal()" icon="pi pi-plus" />
+
+      <p-tabs [value]="activeStep">
+        <p-tablist>
+          <p-tab [value]="1" (click)="switchTab(1)">
+            <p-overlaybadge badgeSize="small" [value]="countRFQ('new')">
+              <div class="px-3 flex gap-6">
+                <i class="pi pi-warehouse"></i>
+                <span>Pending</span>
+              </div>
+            </p-overlaybadge>
+          </p-tab>
+          <p-tab [value]="2" (click)="switchTab(2)">
+            <p-overlaybadge badgeSize="small" [value]="countRFQ('canvasing')">
+              <div class="px-3 flex gap-6">
+                <i class="pi pi-box"></i>
+                <span>For Canvasing</span>
+              </div>
+            </p-overlaybadge>
+          </p-tab>
+          <p-tab [value]="2" (click)="switchTab(3)">
+            <p-overlaybadge badgeSize="small" [value]="countRFQ('approved')">
+              <div class="px-3 flex gap-6">
+                <i class="pi pi-box"></i>
+                <span>Approved</span>
+              </div>
+            </p-overlaybadge>
+          </p-tab>
+        </p-tablist>
+      </p-tabs>
+    </div>
+    }
+    <p-table #dt dataKey="id" [rowHover]="true" [value]="filteredRFQs" [paginator]="true" [rows]="5"
+      [rowsPerPageOptions]="[5, 10, 20]" rowGroupMode="subheader" groupRowsBy="id" sortField="rfq_number"
+      sortMode="single" [scrollable]="true" scrollHeight="600px" [globalFilterFields]="['id', 'purchase_order']"
+      [tableStyle]="{'min-width': '60rem'}">
+
+      <ng-template #header>
+        <tr>
+          <th pFrozen="left">RFQ Number</th>
+          <th>Title</th>
+          <th>Description</th>
+          <th>Total Estimated Value</th>
+          <th>Description</th>
+          <th>Requested By</th>
+          <th>Date Requested</th>
+          <!-- <th>Status</th> -->
+          @if(activeStep == 1 || currentUser?.role =='end-user'){
+          <th>Actions</th>
+          }
+          @if(activeStep == 3){
+            <th>Qualified Supplier</th>
+          }
+        </tr>
+      </ng-template>
+
+      <ng-template #groupheader let-rfq>
+        <tr class="hover:cursor-pointer" pRowGroupHeader>
+          <td pFrozen="left">
+            {{ rfq.id }}</td>
+          <td>{{ getPR(rfq.purchase_order)?.title}}</td>
+          <td>{{ getPR(rfq.purchase_order)?.description}}</td>
+          <td>{{ getPRTotal(rfq.purchase_order) | currency:'PHP' }}</td>
+          <td>{{ getPR(rfq.purchase_order)?.description}}</td>
+          <td>{{ getPR(rfq.purchase_order)?.createdByUserName}}</td>
+          <td>{{ getPR(rfq.purchase_order)?.dateCreated}}</td>
+          @if(activeStep == 3){
+            <td>{{ getSupplierName(rfq.supplier)}}</td>
+          }
+          <!-- <td>{{ rfq.status }}</td> -->
+
+          @if(activeStep == 1 || currentUser?.role =='end-user'){
+          <td class="w-16">
+            <div class="flex gap-4">
+              @if(currentUser?.role == 'bac'){
+              <!-- <p-buttongroup> -->
+                <p-button pTooltip="Click to add new supplier" (click)="openSupplierModal(rfq)" [outlined]="true"
+                  rounded
+                  size="small"  icon="pi pi-user-plus" />
+                <p-button pTooltip="Click to delete RFQ" (click)="confirmDeleteRFQ($event,rfq.id)" severity="danger"
+                  rounded
+                  [outlined]="true" size="small" icon="pi pi-trash" />
+                <p-button [disabled]="rfq.suppliers.length <=0"  pTooltip="Click to submit for canvasing"
+                severity="success" outlined
+                  rounded
+                  (click)="confirmSubmitToCanvasing($event,rfq)" size="small"  icon="pi pi-arrow-right" />
+              <!-- </p-buttongroup> -->
+              }@else{
+              <!-- <p-buttongroup> -->
+                <p-button pTooltip="Click to reject RFQ" (click)="openReject(rfq)" severity="danger" [outlined]="true"
+                  size="small" label="Reject" icon="pi pi-times" />
+                <p-button pTooltip="Click to approve RFQ" (click)="openAwardModal(rfq)" severity="success"
+                  size="small" [outlined]="true" label="Approve" icon="pi pi-check" />
+              <!-- </p-buttongroup> -->
+              }
             </div>
-        }
-        <p-table #dt dataKey="id" [rowHover]="true" [value]="filteredRFQs"
-            [paginator]="true"
-            [rows]="5"
-            [rowsPerPageOptions]="[5, 10, 20]"
-            rowGroupMode="subheader"
-            groupRowsBy="id"
-            sortField="rfq_number" sortMode="single" [scrollable]="true" scrollHeight="600px"
-            [globalFilterFields]="['id', 'purchase_order']"
-            [tableStyle]="{'min-width': '60rem'}">
+          </td>
+          }
+        </tr>
+      </ng-template>
 
-            <ng-template #header>
-                <tr>
-                    <th pFrozen="left">RFQ Number</th>
-                    <th>Title</th>
-                    <th>Description</th>
-                    <th>Total Estimated Value</th>
-                    <th>Description</th>
-                    <th>Requested By</th>
-                    <th>Date Requested</th>
-                    <!-- <th>Status</th> -->
-                    @if(activeStep == 1 || currentUser?.role =='end-user'){
-                        <th>Actions</th>
-                    }
-                </tr>
-            </ng-template>
 
-            <ng-template #groupheader let-rfq >
-                <tr class="hover:cursor-pointer" pRowGroupHeader>
-                    <td pFrozen="left">
-                      {{ rfq.id }}</td>
-                    <td>{{ getPR(rfq.purchase_order)?.title}}</td>
-                    <td>{{ getPR(rfq.purchase_order)?.description}}</td>
-                    <td>{{ getPRTotal(rfq.purchase_order) | currency:'PHP' }}</td>
-                    <td>{{ getPR(rfq.purchase_order)?.description}}</td>
-                    <td>{{ getPR(rfq.purchase_order)?.createdByUserName}}</td>
-                    <td>{{ getPR(rfq.purchase_order)?.dateCreated}}</td>
-                    <!-- <td>{{ rfq.status }}</td> -->
-      
-                     @if(activeStep == 1 || currentUser?.role =='end-user'){
-                        <td class="w-16">
-                            <div class="flex gap-4">
-                               @if(currentUser?.role == 'bac'){
-                                  <p-buttongroup>
-                                    <p-button pTooltip="Click to add new supplier"
-                                    (click)="openSupplierModal(rfq)" [outlined]="true" size="small"
-                                    label="Supplier" icon="pi pi-plus" />
-                                    <p-button pTooltip="Click to delete RFQ"
-                                        (click)="confirmDeleteRFQ($event,rfq.id)" severity="danger" [outlined]="true" size="small"
-                                        label="Delete" icon="pi pi-trash" />
-                                    <p-button [disabled]="rfq.suppliers.length <=0" pTooltip="Click to submit for canvasing"
-                                        (click)="confirmSubmitToCanvasing($event,rfq)" size="small" label="Submit"
-                                        icon="pi pi-arrow-right" />
-                                </p-buttongroup>
-                               }@else{
-                                <p-buttongroup>
-                                    <p-button pTooltip="Click to reject RFQ"
-                                        (click)="openReject(rfq)" severity="danger" [outlined]="true" size="small"
-                                        label="Reject" icon="pi pi-times" />
-                                    <p-button pTooltip="Click to approve RFQ"
-                                        (click)="confirmApprove($event,rfq)" severity="success" size="small" [outlined]="true" label="Approve"
-                                        icon="pi pi-check" />
-                                </p-buttongroup>
-                               }
-                            </div>
-                        </td>
-                    }
-                </tr>
-            </ng-template>
 
+      @if(activeStep == 1 || currentUser?.role == 'end-user'){
+        <ng-template #body let-rfq let-rowIndex="rowIndex">
+          @for(item of rfq.suppliers;track item.supplier_id){
+          <tr class="hover:cursor-pointer">
+            <td [attr.colspan]="activeStep == 1 || currentUser?.role =='end-user' ? 8 : 7">
+              <div class="flex items-center justify-between">
+                <div class="flex items-center gap-5 ml-4">
+                  <p-button disabled="true" size="small" icon="pi pi-user" (click)="null" severity="secondary"
+                    [outlined]="true" rounded />
+                  <span class="font-bold">{{ item.supplierName}} </span>
+                  <!-- <p-divider layout="vertical" />
+                                  <span>Bid Price: {{item.biddingPrice ? (item.biddingPrice | currency:'PHP'): 'Pending'}}</span> -->
+                </div>
   
-
-            <ng-template #body let-rfq let-rowIndex="rowIndex">
-                @for(item of rfq.suppliers;track item.supplier_id){
-                <tr class="hover:cursor-pointer">
-                    <td [attr.colspan]="activeStep == 1 || currentUser?.role =='end-user' ? 8 : 7">
-                        <div class="flex items-center justify-between">
-                            <div class="flex items-center gap-5 ml-4">
-                                <p-button disabled="true" size="small" icon="pi pi-user" (click)="null" severity="secondary" [outlined]="true"
-                                            rounded />
-                                <span class="font-bold">{{ item.supplierName}} </span>
-                                <!-- <p-divider layout="vertical" />
-                                <span>Bid Price: {{item.biddingPrice ? (item.biddingPrice | currency:'PHP'): 'Pending'}}</span> -->
-                            </div>
-                    
-                            @if(activeStep == 1 || currentUser?.role =='end-user'){
-                                
-                                <div class="flex gap-4 ">
-                                    @if(currentUser?.role == 'bac'){
-                                      <p-button size="small" icon="pi pi-upload" (click)="openUploadSupplier(item)" severity="secondary" [outlined]="true"
-                                          rounded />
-                                          <p-button size="small" icon="pi pi-print" (click)="null" severity="secondary" [outlined]="true"
-                                              rounded />
-                                              <p-button size="small" icon="pi pi-trash" (click)="confirmDeleteSupplier($event, rfq,item.supplierId)" severity="danger" [outlined]="true"
-                                              rounded />
-                                    }@else{
-                                      <p-button outlined="true" severity="secondary"  pTooltip="Click to print bid docs"
-                                        (click)="null" size="small" label="Print Bid Document"
-                                        icon="pi pi-print" />
-                                    }
-                                </div>
-                            
-                            }
-                        </div>
-                    </td>
-         
-                </tr>
+                @if(activeStep == 1 || currentUser?.role =='end-user'){
+  
+                <div class="flex gap-4 ">
+                  @if(currentUser?.role == 'bac'){
+                  <p-button size="small" icon="pi pi-upload" (click)="openUploadSupplier(item)" severity="secondary"
+                    [outlined]="true" rounded />
+  
+                  <p-button size="small" icon="pi pi-trash" (click)="confirmDeleteSupplier($event, rfq,item.supplierId)"
+                    severity="danger" [outlined]="true" rounded />
+                  }@else{
+                  <p-button outlined="true" severity="secondary" pTooltip="Click to print bid docs" (click)="null"
+                    size="small" label="Print Bid Document" icon="pi pi-print" />
+                  }
+                </div>
+  
                 }
-            </ng-template>
+              </div>
+            </td>
+  
+          </tr>
+          }
+        </ng-template>
+  
+      }
+      <ng-template #emptymessage>
+        <tr>
+          <td colspan="7">
+            <div class="flex flex-col w-full items-center justify-center mb-8">
+              <div class="overflow-hidden h-52 w-52 mr-8 ">
+                <app-lottie-animation animation="box" class="w-60 h-60"></app-lottie-animation>
+              </div>
+              <span>No RFQ items found.</span>
+            </div>
+          </td>
+        </tr>
+      </ng-template>
 
-            <ng-template #emptymessage>
-                <tr>
-                    <td colspan="7">
-                        <div class="flex flex-col w-full items-center justify-center mb-8">
-                            <div class="overflow-hidden h-52 w-52 mr-8 ">
-                                <app-lottie-animation animation="box" class="w-60 h-60"></app-lottie-animation>
-                            </div>
-                            <span>No RFQ items found.</span>
-                        </div>
-                    </td>
-                </tr>
-            </ng-template>
+    </p-table>
 
-        </p-table>
-
-    </mat-card-content>
+  </mat-card-content>
 </mat-card>
 
 <!-- RFQ Details Modal -->
 
 <!-- RFQ Stocking Modal -->
-<p-dialog [modal]="true"  [position]="'center'" [(visible)]="showRFQModal"
-    [style]="{ width: '25rem' }">
-    <ng-template #header>
-        <div class="py-0 inline-flex items-center justify-center gap-3">
-            <i class="pi pi-warehouse text-lg"></i>
-            <span class="font-bold text-lg whitespace-nowrap">Add Request for Quotation </span>
-        </div>
-    </ng-template>
-    <span class="p-text-secondary block">Adding New Request for Quotation</span>
-    <small class="p-text-secondary block mb-6">(Please fill out all form fields)</small>
+<p-dialog [modal]="true" [position]="'center'" [(visible)]="showRFQModal" [style]="{ width: '25rem' }">
+  <ng-template #header>
+    <div class="py-0 inline-flex items-center justify-center gap-3">
+      <i class="pi pi-warehouse text-lg"></i>
+      <span class="font-bold text-lg whitespace-nowrap">Add Request for Quotation </span>
+    </div>
+  </ng-template>
+  <span class="p-text-secondary block">Adding New Request for Quotation</span>
+  <small class="p-text-secondary block mb-6">(Please fill out all form fields)</small>
 
-    <form [formGroup]="form">
-        <div class="flex items-center gap-4 mb-24">
-            <label for="purchase_order" class="font-semibold w-32">Select Purchase Request</label>
-            <p-select [options]="requisitions" formControlName="purchase_order" optionLabel="name" [filter]="true"
-              filterBy="id" [showClear]="true" placeholder="Select Purchase Request" class="flex-auto">
-              <ng-template #selectedItem let-selectedOption>
-                <div class="flex items-center gap-2">
-                  <div>{{ selectedOption.id }}</div>
-                </div>
-              </ng-template>
-              <ng-template let-po #item>
-                <div class="flex items-center gap-2">
-                  <div>{{ po.id }}</div>
-                </div>
-              </ng-template>
-            </p-select>
+  <form [formGroup]="form">
+    <div class="flex items-center gap-4 mb-24">
+      <label for="purchase_order" class="font-semibold w-32">Purchase Request</label>
+      <p-select [options]="requisitions" formControlName="purchase_order" optionLabel="name" [filter]="true"
+        filterBy="id" [showClear]="true" placeholder="Select Purchase Request" class="flex-auto">
+        <ng-template #selectedItem let-selectedOption>
+          <div class="flex items-center gap-2">
+            <div>{{ selectedOption.id }}</div>
           </div>
+        </ng-template>
+        <ng-template let-po #item>
+          <div class="flex items-center gap-2">
+            <div>{{ po.id }}</div>
+          </div>
+        </ng-template>
+      </p-select>
+    </div>
 
-        <div class="flex justify-end gap-6 mt-2">
-            <p-button size="small" label="Cancel" icon="pi pi-times" severity="secondary" (click)="showRFQModal=false" />
-            <p-button size="small" label="Add" icon="pi pi-plus"
-                (click)="addRFQ()" [disabled]="!form.valid" />
-        </div>
-    </form>
+    <div class="flex justify-end gap-6 mt-2">
+      <p-button size="small" label="Cancel" icon="pi pi-times" severity="secondary" (click)="showRFQModal=false" />
+      <p-button size="small" label="Add" icon="pi pi-plus" (click)="addRFQ()" [disabled]="!form.valid" />
+    </div>
+  </form>
 </p-dialog>
 
 
-<p-dialog [modal]="true"  [position]="'center'" [(visible)]="showSupplierModal"
-    [style]="{ width: '25rem' }">
-    <ng-template #header>
-        <div class="py-0 inline-flex items-center justify-center gap-3">
-            <i class="pi pi-warehouse text-lg"></i>
-            <span class="font-bold text-lg whitespace-nowrap">Add Supplier</span>
-        </div>
-    </ng-template>
-    <span class="p-text-secondary block">Adding New Supplier for RFQ</span>
-    <small class="p-text-secondary block mb-6">(Please fill out all form fields)</small>
+<p-dialog [modal]="true" [position]="'center'" [(visible)]="showSupplierModal" [style]="{ width: '25rem' }">
+  <ng-template #header>
+    <div class="py-0 inline-flex items-center justify-center gap-3">
+      <i class="pi pi-warehouse text-lg"></i>
+      <span class="font-bold text-lg whitespace-nowrap">Add Supplier</span>
+    </div>
+  </ng-template>
+  <span class="p-text-secondary block">Adding New Supplier for RFQ</span>
+  <small class="p-text-secondary block mb-6">(Please fill out all form fields)</small>
 
-    <form [formGroup]="supplier_form">
-        <div class="flex items-center gap-4 mb-24">
-            <label for="supplier" class="font-semibold w-32">Select Supplier</label>
-            <p-select [options]="getUntakenSuppliers(selectedRFQ!)" formControlName="supplier" optionLabel="name" [filter]="true"
-              filterBy="name" [showClear]="true" placeholder="Select Supplier" class="flex-auto">
-              <ng-template #selectedItem let-selectedOption>
-                <div class="flex items-center gap-2">
-                  <div>{{ selectedOption.name }}</div>
-                </div>
-              </ng-template>
-              <ng-template let-supplier #item>
-                <div class="flex items-center gap-2">
-                  <div>{{ supplier.name}}</div>
-                </div>
-              </ng-template>
-            </p-select>
+  <form [formGroup]="supplier_form">
+    <div class="flex items-center gap-4 mb-24">
+      <label for="supplier" class="font-semibold w-32">Select Supplier</label>
+      <p-select [options]="getUntakenSuppliers(selectedRFQ!)" formControlName="supplier" optionLabel="name"
+        [filter]="true" filterBy="name" [showClear]="true" placeholder="Select Supplier" class="flex-auto">
+        <ng-template #selectedItem let-selectedOption>
+          <div class="flex items-center gap-2">
+            <div>{{ selectedOption.name }}</div>
           </div>
+        </ng-template>
+        <ng-template let-supplier #item>
+          <div class="flex items-center gap-2">
+            <div>{{ supplier.name}}</div>
+          </div>
+        </ng-template>
+      </p-select>
+    </div>
 
-        <div class="flex justify-end gap-6 mt-2">
-            <p-button size="small" label="Cancel" icon="pi pi-times" severity="secondary" (click)="showSupplierModal=false" />
-            <p-button size="small" label="Add" icon="pi pi-plus"
-                (click)="addSupplier()" [disabled]="!supplier_form.valid" />
-        </div>
-    </form>
+    <div class="flex justify-end gap-6 mt-2">
+      <p-button size="small" label="Cancel" icon="pi pi-times" severity="secondary" (click)="showSupplierModal=false" />
+      <p-button size="small" label="Add" icon="pi pi-plus" (click)="addSupplier()" [disabled]="!supplier_form.valid" />
+    </div>
+  </form>
 </p-dialog>
 
 <p-dialog [(visible)]="showUploadSupplier" [modal]="true" [style]="{ width: '30rem' }">
-    <ng-template #header>
-      <div class="py-0 inline-flex items-center justify-center gap-3">
-        <i class="pi pi-receipt text-lg"></i>
-        <span class="font-bold text-lg whitespace-nowrap">Upload Supplier Bid Docs</span>
+  <ng-template #header>
+    <div class="py-0 inline-flex items-center justify-center gap-3">
+      <i class="pi pi-receipt text-lg"></i>
+      <span class="font-bold text-lg whitespace-nowrap">Upload Supplier Bid Docs</span>
+    </div>
+  </ng-template>
+  <span class="text-surface-500 dark:text-surface-400 block mb-4">Upload Bid Response from Supplier.</span>
+  <form [formGroup]="supplier_upload_form">
+
+    <div class="flex items-center justify-center gap-4 mb-2 w-full">
+      <div class="card w-full">
+        <p-fileupload fluid #fileUpload name="upload" class="w-full" url="/" [multiple]="true"
+          (onSelect)="onSelectedFiles($event)" (onRemove)="onSelectedFiles($event)" accept="image/*"
+          maxFileSize="10000000" mode="advanced">
+          <ng-template #header let-files let-chooseCallback="chooseCallback" let-clearCallback="clearCallback">
+            <div class="flex gap-3 w-full">
+              <p-button fluid class="flex-1" size="small" (onClick)="chooseCallback()" severity="secondary"
+                icon="pi pi-plus" label="Choose" [outlined]="true"></p-button>
+              <p-button fluid class="flex-1" size="small" (onClick)="clearCallback()" icon="pi pi-times" label="Clear"
+                [outlined]="true" severity="danger" [disabled]="!files || files.length === 0"></p-button>
+            </div>
+          </ng-template>
+
+          <ng-template #content>
+            <div *ngIf="files.length <= 0" class="text-gray-500 flex flex-col gap-6 items-center py-8">
+              <i class="pi pi-cloud-upload !text-3xl "></i>
+              <span>Drag and drop files to here to upload.</span>
+            </div>
+          </ng-template>
+        </p-fileupload>
       </div>
-    </ng-template>
-    <span class="text-surface-500 dark:text-surface-400 block mb-4">Upload Bid Response from Supplier.</span>
-    <form [formGroup]="supplier_upload_form">
-          
-      <div class="flex items-center justify-center gap-4 mb-2 w-full">
-        <div class="card w-full">
-          <p-fileupload
-            fluid
-            #fileUpload
-            name="upload"
-            class="w-full"
-            url="/"
-            [multiple]="true"
-            (onSelect)="onSelectedFiles($event)"
-            (onRemove)="onSelectedFiles($event)"
-            accept="image/*"
-            maxFileSize="10000000"
-            mode="advanced"
-          >
-            <ng-template #header let-files let-chooseCallback="chooseCallback" let-clearCallback="clearCallback">
-              <div class="flex gap-3 w-full">
-                <p-button
-                  fluid
-                  class="flex-1"
-                  size="small"
-                  (onClick)="chooseCallback()"
-                  severity="secondary"
-                  icon="pi pi-plus"
-                  label="Choose"
-                  [outlined]="true"
-                ></p-button>
-                <p-button
-                  fluid
-                  class="flex-1"
-                  size="small"
-                  (onClick)="clearCallback()"
-                  icon="pi pi-times"
-                  label="Clear"
-                  [outlined]="true"
-                  severity="danger"
-                  [disabled]="!files || files.length === 0"
-                ></p-button>
-              </div>
-            </ng-template>
-    
-            <ng-template #content>
-              <div *ngIf="files.length <= 0" class="text-gray-500 flex flex-col gap-6 items-center py-8">
-                <i class="pi pi-cloud-upload !text-3xl "></i>
-                <span>Drag and drop files to here to upload.</span>
-              </div>
-            </ng-template>
-          </p-fileupload>
-        </div>
-      </div>
-    </form>
-    <ng-template #footer>
-      <p-button size="small" label="Cancel" [text]="true" icon="pi pi-times" severity="secondary" (click)="showUploadSupplier = false" />
-      <p-button size="small" label="Upload" icon="pi pi-upload" [disabled]="!files.length" (click)="showUploadSupplier = false" />
-    </ng-template>
-  </p-dialog>
+    </div>
+  </form>
+  <ng-template #footer>
+    <p-button size="small" label="Cancel" [text]="true" icon="pi pi-times" severity="secondary"
+      (click)="showUploadSupplier = false" />
+    <p-button size="small" label="Upload" icon="pi pi-upload" [disabled]="!files.length"
+      (click)="showUploadSupplier = false" />
+  </ng-template>
+</p-dialog>
 
 <p-dialog [(visible)]="showReject" [modal]="true" [style]="{ width: '30rem' }">
-    <ng-template #header>
-      <div class="py-0 inline-flex items-center justify-center gap-3">
-        <i class="pi pi-receipt text-lg"></i>
-        <span class="font-bold text-lg whitespace-nowrap">Reject RFQ</span>
-      </div>
-    </ng-template>
-    <span class="text-surface-500 dark:text-surface-400 block mb-4">Specify rejection note to be sent to BAC.</span>
-    <form [formGroup]="reject_form">
-      <div class="flex items-center gap-4 mb-2">
-        <label for="notes" class="font-semibold w-32">Reject Notes</label>
-        <textarea placeholder="Enter receipt notes (Optional)" formControlName="notes" pSize="small"
-            name="notes" rows="5" cols="25" pTextarea id="notes" class="flex-auto"
-            autocomplete="off"></textarea>
-      </div>
-    </form>
-    <ng-template #footer>
-      <p-button size="small" label="Cancel" [text]="true" icon="pi pi-times" severity="secondary" (click)="showReject = false" />
-      <p-button size="small" label="Reject" severity="danger" icon="pi pi-times" [disabled]="!reject_form.valid" (click)="rejectRFQ(selectedRFQ!)" />
-    </ng-template>
-  </p-dialog>
+  <ng-template #header>
+    <div class="py-0 inline-flex items-center justify-center gap-3">
+      <i class="pi pi-receipt text-lg"></i>
+      <span class="font-bold text-lg whitespace-nowrap">Reject RFQ</span>
+    </div>
+  </ng-template>
+  <span class="text-surface-500 dark:text-surface-400 block mb-4">Specify rejection note to be sent to BAC.</span>
+  <form [formGroup]="reject_form">
+    <div class="flex items-center gap-4 mb-2">
+      <label for="notes" class="font-semibold w-32">Reject Notes</label>
+      <textarea placeholder="Enter receipt notes (Optional)" formControlName="notes" pSize="small" name="notes" rows="5"
+        cols="25" pTextarea id="notes" class="flex-auto" autocomplete="off"></textarea>
+    </div>
+  </form>
+  <ng-template #footer>
+    <p-button size="small" label="Cancel" [text]="true" icon="pi pi-times" severity="secondary"
+      (click)="showReject = false" />
+    <p-button size="small" label="Reject" severity="danger" icon="pi pi-times" [disabled]="!reject_form.valid"
+      (click)="rejectRFQ(selectedRFQ!)" />
+  </ng-template>
+</p-dialog>
+
+<p-dialog [modal]="true" [position]="'center'" [(visible)]="showAwardModal" [style]="{ width: '25rem' }">
+  <ng-template #header>
+    <div class="py-0 inline-flex items-center justify-center gap-3">
+      <i class="pi pi-warehouse text-lg"></i>
+      <span class="font-bold text-lg whitespace-nowrap">Final Canvasing</span>
+    </div>
+  </ng-template>
+  <span class="p-text-secondary block">Select Qualified Supplier for RFQ</span>
+  <small class="p-text-secondary block mb-6">(Please fill out all form fields)</small>
+
+  <form [formGroup]="award_form">
+    <div class="flex items-center gap-4 mb-24">
+      <label for="supplier" class="font-semibold w-32">Select Supplier</label>
+      <p-select [options]="getTakenSuppliers(selectedRFQ!)" formControlName="supplier" optionLabel="name"
+        [filter]="true" filterBy="name" [showClear]="true" placeholder="Select Supplier" class="flex-auto">
+        <ng-template #selectedItem let-selectedOption>
+          <div class="flex items-center gap-2">
+            <div>{{ selectedOption.name }}</div>
+          </div>
+        </ng-template>
+        <ng-template let-supplier #item>
+          <div class="flex items-center gap-2">
+            <div>{{ supplier.name}}</div>
+          </div>
+        </ng-template>
+      </p-select>
+    </div>
+
+    <div class="flex justify-end gap-6 mt-2">
+      <p-button size="small" label="Cancel" icon="pi pi-times" severity="secondary" (click)="showAwardModal=false" />
+      <p-button size="small" label="Add" icon="pi pi-plus" (click)="confirmApprove(this.selectedRFQ!)" [disabled]="!award_form.valid" />
+    </div>
+  </form>
+</p-dialog>
+
 <p-toast position="bottom-right" />
 <p-confirmpopup />
