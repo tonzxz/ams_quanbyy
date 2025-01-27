@@ -28,6 +28,12 @@ import { SelectModule } from 'primeng/select';
 import { Department, DepartmentService } from 'src/app/services/departments.service';
 import { Requisition, RequisitionService } from 'src/app/services/requisition.service';
 import { UserService } from 'src/app/services/user.service';
+import jsPDF from 'jspdf';
+import 'jspdf-autotable';
+import autoTable from 'jspdf-autotable';
+import { UserOptions } from 'jspdf-autotable';
+
+
 @Component({
   selector: 'app-delivery-receipts',
   standalone: true,
@@ -302,5 +308,111 @@ export class DeliveryReceiptsComponent implements OnInit {
         return req.approvalSequenceDetails && (req.approvalSequenceDetails?.roleCode === 'supply' || req.approvalSequenceDetails?.roleCode === 'inspection')
       });
     this.filterByStatus('unverified');
+  }
+
+  generatePDF(receipt: DeliveryReceipt) {
+    const doc = new jsPDF();
+    const pageWidth = doc.internal.pageSize.width;
+    const pageHeight = doc.internal.pageSize.height;
+    const margin = 20; // Define margin for the header
+  
+    // Header
+    doc.setFontSize(16);
+    doc.setTextColor(40, 40, 40);
+    doc.setFont('helvetica', 'bold');
+    doc.text('QUANBY SOLUTIONS INC', pageWidth / 2, margin - 5, { align: 'center' });
+  
+    doc.setFont('helvetica', 'normal');
+    doc.setFontSize(8);
+    doc.text('4th Flr. Dosc Bldg., Brgy. 37-Bitano, Legazpi City, Albay', pageWidth / 2, margin + 0, { align: 'center' });
+    doc.text('VAT Reg. TIN: 625-263-719-00000', pageWidth / 2, margin + 5, { align: 'center' });
+  
+    // Horizontal Line below Header
+    doc.setDrawColor(200, 200, 200); // Light gray line
+    doc.setLineWidth(0.5);
+    doc.line(margin, margin + 15, pageWidth - margin, margin + 15);
+  
+    // Title
+    doc.setFontSize(16);
+    doc.text('DELIVERY RECEIPT', pageWidth / 2, margin + 30, { align: 'center' }); // Centered title
+  
+    // Header information
+    doc.setFontSize(12);
+    doc.text(`Delivered to: ${receipt.department_name}`, margin, margin + 50);
+    doc.text(`Date: ${new Date(receipt.delivery_date).toLocaleDateString()}`, pageWidth - margin - 60, margin + 50);
+  
+    doc.text(`TIN: ${receipt.supplier_name}`, margin, margin + 60);
+    doc.text(`Terms: N/A`, pageWidth - margin - 60, margin + 60);
+  
+    doc.text(`Address: ${receipt.department_name}`, margin, margin + 70);
+  
+    // Table Headers
+    const startY = margin + 80; // Adjusted Y position
+    const rowHeight = 8; // Reduced row height
+    const numberOfRows = 10; // Reduced number of rows
+  
+    // Column widths (auto-resize based on page width and margins)
+    const col1Width = 30; // QTY (fixed width)
+    const col2Width = 40; // UNIT (fixed width)
+    const col3Width = pageWidth - 2 * margin - col1Width - col2Width; // ARTICLES (dynamic width)
+  
+    // Draw table header
+    doc.setFontSize(12);
+    doc.setFont('helvetica', 'bold');
+  
+    // Draw header cells
+    doc.rect(margin, startY, col1Width, rowHeight);
+    doc.rect(margin + col1Width, startY, col2Width, rowHeight);
+    doc.rect(margin + col1Width + col2Width, startY, col3Width, rowHeight);
+  
+    // Header text
+    doc.text('QTY', margin + 5, startY + 6); // Adjusted text position
+    doc.text('UNIT', margin + col1Width + 5, startY + 6); // Adjusted text position
+    doc.text('ARTICLES', margin + col1Width + col2Width + 5, startY + 6); // Adjusted text position
+  
+    // Draw table rows
+    doc.setFont('helvetica', 'normal');
+    for (let i = 0; i < numberOfRows; i++) {
+      const y = startY + (i + 1) * rowHeight;
+  
+      // Draw row cells
+      doc.rect(margin, y, col1Width, rowHeight);
+      doc.rect(margin + col1Width, y, col2Width, rowHeight);
+      doc.rect(margin + col1Width + col2Width, y, col3Width, rowHeight);
+  
+      // Add notes to the "ARTICLES" column in the first row
+      if (i === 0 && receipt.notes) {
+        // Split the notes into lines if they are too long
+        const notesLines = doc.splitTextToSize(receipt.notes, col3Width - 10); // Split text to fit column width
+  
+        // Add each line of notes to the cell
+        notesLines.forEach((line: string, lineIndex: number) => {
+          doc.text(
+            line,
+            margin + col1Width + col2Width + 5, // X position (left padding)
+            y + 6 + lineIndex * 5 // Y position (top padding + line spacing)
+          );
+        });
+      }
+    }
+  
+    // Signature line and text at the bottom right
+    const signatureLineLength = 80; // Length of the underline
+    const signatureY = pageHeight - margin - 20; // Positioned at the bottom with margin
+    const signatureX = pageWidth - margin - signatureLineLength; // Aligned to the right
+  
+    // Draw underline
+    doc.line(signatureX, signatureY, signatureX + signatureLineLength, signatureY);
+  
+    // Center the text relative to the underline
+    const text = "Customer's signature over printed name";
+    const textWidth = doc.getTextWidth(text);
+    const textX = signatureX + (signatureLineLength - textWidth) / 2; // Center text horizontally
+  
+    doc.setFontSize(10);
+    doc.text(text, textX, signatureY + 5); // Text below the line
+  
+    // Save PDF
+    doc.save(`delivery-receipt-${receipt.receipt_number}.pdf`);
   }
 }

@@ -77,7 +77,15 @@
           <td>{{ receipt.notes || 'No notes written.' }}</td>
           <td>
             @if(receipt.status !='processing'){
-            <div class="flex gap-3">
+              <div class="flex gap-3">
+                <p-button 
+                  severity="secondary" 
+                  pTooltip="Export as PDF" 
+                  [outlined]="true"
+                  (click)="generatePDF(receipt)"
+                  size="small" 
+                  icon="pi pi-file-pdf" 
+                  rounded />
               @if(receipt.status != 'verified'){
               <p-button severity="secondary" pTooltip="Click to edit receipt" (click)="openEditReceiptModal(receipt)"
                 [outlined]="true" size="small" icon="pi pi-pencil" rounded />
