@@ -6,7 +6,7 @@ import { RequisitionService, Requisition } from 'src/app/services/requisition.se
 import { MatCardModule } from '@angular/material/card';
 import { InputNumberModule } from 'primeng/inputnumber';
 import { ButtonModule } from 'primeng/button';
-import { SelectModule } from 'primeng/select';
+import { DropdownModule } from 'primeng/dropdown';
 import { TableModule } from 'primeng/table';
 import { TabsModule } from 'primeng/tabs';
 import { DialogModule } from 'primeng/dialog';
@@ -20,7 +20,7 @@ import { DialogModule } from 'primeng/dialog';
     MatCardModule,
     InputNumberModule,
     ButtonModule,
-    SelectModule,
+    DropdownModule,
     TableModule,
     TabsModule,
     DialogModule
@@ -51,22 +51,16 @@ export class RequisitionAndIssueSlipComponent implements OnInit {
 
     this.requisitionForm = this.fb.group({
       title: ['', Validators.required],
-      purpose: ['', Validators.required]
+      purpose: ['', Validators.required],
+      item: [null, Validators.required],
+      quantity: [null, [Validators.required, Validators.min(1)]]
     });
   }
 
-async ngOnInit() {
-  // Fetch products from stocks service
-  this.items = await this.stocksService.getAll();
-  // Fetch all requisitions for the logged-in user
-  this.userRequisitions = await this.requisitionService.getAllRequisitions();
-
-  // Update `selectedRequisitionItems` when a requisition is selected
- 
-}
-
-
-
+  async ngOnInit() {
+    this.items = await this.stocksService.getAll();
+    this.userRequisitions = await this.requisitionService.getAllRequisitions();
+  }
 
   switchTab(tab: string): void {
     this.activeTab = tab;
@@ -99,31 +93,28 @@ async ngOnInit() {
     this.requisitionForm.reset();
   }
 
-async submitRequisition(): Promise<void> {
-  if (this.requisitionForm.valid) {
-    const requisition = {
-      title: this.requisitionForm.value.title,
-      purpose: this.requisitionForm.value.purpose,
-      status: 'Pending', // Explicitly ensure the string matches the type
-      classifiedItemId: 'defaultClassifiedItemId', // Replace with actual logic
-      group: 'defaultGroup', // Replace with actual logic
-      products: [], // Initialize with an empty array for now
-      currentApprovalLevel: 1, // Start from the first approval level
-      approvalStatus: 'Pending' as 'Pending', // Explicitly cast to the expected type
-      approvalHistory: [], // Initialize as an empty array
-      createdByUserId: 'currentUserId', // Replace with the actual user ID
-      createdByUserName: 'currentUserName', // Replace with the actual user name
-    };
+  async submitRequisition(): Promise<void> {
+    if (this.requisitionForm.valid) {
+      const requisition = {
+        title: this.requisitionForm.value.title,
+        purpose: this.requisitionForm.value.purpose,
+        item: this.requisitionForm.value.item,
+        quantity: this.requisitionForm.value.quantity,
+        status: 'Pending',
+        classifiedItemId: 'defaultClassifiedItemId',
+        group: 'defaultGroup',
+        products: [],
+        currentApprovalLevel: 1,
+        approvalStatus: 'Pending',
+        approvalHistory: [],
+        createdByUserId: 'currentUserId',
+        createdByUserName: 'currentUserName',
+      };
 
-    // Call the service to add the requisition
-    const requisitionId = await this.requisitionService.addRequisition(requisition);
-    console.log('Requisition Created:', requisition);
-    
-    // Refresh the user's requisitions
-    this.userRequisitions = await this.requisitionService.getAllRequisitions();
-    this.closeRequisitionDialog();
+      console.log('Requisition Created:', requisition);
+      
+      this.userRequisitions = await this.requisitionService.getAllRequisitions();
+      this.closeRequisitionDialog();
+    }
   }
-}
-
-
 }

@@ -105,11 +105,13 @@ export const navItems: NavItem[] = [
   // End User Section
   
   {
-    displayName: 'Requisition',
+    displayName: 'Requisition and Issue Slip',
     iconName: 'solar:documents-broken',
     route: '/enduser/requisition',
     requiredRoles: ['end-user'],
   },
+
+   
 
    {
     displayName: 'Issuance',
@@ -250,7 +252,7 @@ export const navItems: NavItem[] = [
     requiredRoles: ['accounting'],
   },
 
-  
+
   {
     displayName: 'Classification',
     iconName: 'solar:ticket-sale-broken',

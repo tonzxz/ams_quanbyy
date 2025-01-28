@@ -6,6 +6,7 @@ import { RequisitionComponent } from './requisition/requisition.component';
 import { ReceivingComponent } from './receiving/receiving.component';
 import { CanvassingComponent } from './canvassing/canvassing.component';
 import { RequisitionAndIssueSlipComponent } from './requisition-and-issue-slip/requisition-and-issue-slip.component';
+import { RequisitionsComponent } from './requisitions/requisitions.component';
 
 export const enduserRoutes: Routes = [
   {
@@ -34,6 +35,13 @@ export const enduserRoutes: Routes = [
         path: 'requisition',
         component: RequisitionComponent,
         data: { breadcrumb: 'Requisition', roles: ['end-user'] },
+        canActivate: [roleGuard],
+      },
+
+       {
+        path: 'requisitions',
+        component: RequisitionsComponent,
+        data: { breadcrumb: 'Requisitions', roles: ['end-user'] },
         canActivate: [roleGuard],
       },
       {

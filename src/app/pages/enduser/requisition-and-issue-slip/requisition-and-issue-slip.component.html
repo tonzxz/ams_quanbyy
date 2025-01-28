@@ -21,18 +21,18 @@
       <!-- Tab Content -->
       <ng-container *ngIf="activeTab === 'create'">
         <h3 class="font-semibold mb-4">Create Issuance</h3>
-        <form [formGroup]="issuanceForm" (submit)="submitIssuance()">
+        <form [formGroup]="issuanceForm" (ngSubmit)="submitIssuance()">
           <div class="flex flex-col gap-4">
             <div class="flex items-center gap-4">
               <label for="item" class="font-semibold w-32">Item</label>
-              <p-select [options]="items" formControlName="item" optionLabel="name" [showClear]="true" placeholder="Select an item">
-              </p-select>
+              <p-dropdown [options]="items" formControlName="item" optionLabel="name" [showClear]="true" placeholder="Select an item">
+              </p-dropdown>
             </div>
 
             <div class="flex items-center gap-4">
               <label for="quantity" class="font-semibold w-32">Quantity</label>
-              <p-inputnumber formControlName="quantity" [showButtons]="true" min="1" placeholder="Enter quantity">
-              </p-inputnumber>
+              <p-inputNumber formControlName="quantity" [showButtons]="true" min="1" placeholder="Enter quantity">
+              </p-inputNumber>
             </div>
 
             <div class="flex items-center gap-4">
@@ -90,14 +90,14 @@
 
       <div class="flex items-center gap-4">
         <label for="item" class="font-semibold w-32">Item</label>
-        <p-select [options]="items" formControlName="item" optionLabel="name" [showClear]="true" placeholder="Select an item">
-        </p-select>
+        <p-dropdown [options]="items" formControlName="item" optionLabel="name" [showClear]="true" placeholder="Select an item">
+        </p-dropdown>
       </div>
 
       <div class="flex items-center gap-4">
         <label for="quantity" class="font-semibold w-32">Quantity</label>
-        <p-inputnumber formControlName="quantity" [showButtons]="true" min="1" placeholder="Enter quantity">
-        </p-inputnumber>
+        <p-inputNumber formControlName="quantity" [showButtons]="true" min="1" placeholder="Enter quantity">
+        </p-inputNumber>
       </div>
     </div>
 

@@ -27,9 +27,6 @@ import { ApprovalSequenceService } from 'src/app/services/approval-sequence.serv
 import { NotificationService } from 'src/app/services/notifications.service';
 import { PurchaseReqComponent } from '../../shared/purchase-req/purchase-req.component';
 import { TimelineModule } from 'primeng/timeline';
-import { Stock, StocksService } from 'src/app/services/stocks.service';
-import { InputNumberModule } from 'primeng/inputnumber';
-import { DropdownModule } from 'primeng/dropdown';
 
 interface SelectedProduct {
  id: string;
@@ -41,9 +38,9 @@ interface SelectedProduct {
 }
 
 @Component({
- selector: 'app-requisition',
- templateUrl: './requisition.component.html',
- styleUrls: ['./requisition.component.scss'],
+ selector: 'app-requisitions',
+ templateUrl: './requisitions.component.html',
+ styleUrls: ['./requisitions.component.scss'],
  standalone: true,
  imports: [
    CommonModule,
@@ -62,14 +59,11 @@ interface SelectedProduct {
    TextareaModule,
    MultiSelectModule,
    PurchaseReqComponent,
-   TimelineModule,
-   InputNumberModule,
-   TimelineModule,
-   DropdownModule
+   TimelineModule
  ],
  providers: [ConfirmationService, MessageService],
 })
-export class RequisitionComponent implements OnInit {
+export class RequisitionsComponent implements OnInit {
  requisitionForm: FormGroup;
  groups: Group[] = [];
  allProducts: Product[] = [];
@@ -104,12 +98,9 @@ export class RequisitionComponent implements OnInit {
    private userService: UserService,
    private purchaseRequestService: PurchaseRequestService,
    private approvalSequenceService: ApprovalSequenceService,
-   public sanitizer: DomSanitizer,
-   private stocksService: StocksService
+   public sanitizer: DomSanitizer
  ) {
    this.requisitionForm = this.initializeForm();
-     this.issueSlipForm = this.initializeIssueSlipForm();
-
  }
 
  async ngOnInit() {
@@ -117,9 +108,7 @@ export class RequisitionComponent implements OnInit {
    await Promise.all([
      this.loadGroups(),
      this.loadRequisitions(),  
-     this.loadAllProducts(),
-         this.loadStocks() 
-
+     this.loadAllProducts()
    ]);
  }
 
@@ -130,23 +119,6 @@ export class RequisitionComponent implements OnInit {
      status: ['Pending']
    });
  }
-  
- private initializeIssueSlipForm(): FormGroup {
-  return this.formBuilder.group({
-    title: [null, Validators.required],
-    description: [''],
-    requestedBy: [{value: '', disabled: true}, Validators.required], // Make it disabled
-  });
-}
-
-onRequisitionSelect(event: any): void {
-  const selectedRequisition = event.value;
-  if (selectedRequisition) {
-    this.issueSlipForm.patchValue({
-      requestedBy: selectedRequisition.createdByUserName || 'Unknown'
-    });
-  }
-}
 
  private async loadAllProducts(): Promise<void> {
    try {
@@ -718,144 +690,6 @@ viewPurchaseRequest(requisitionId: string): void {
   this.displayPurchaseRequestModal = true;
 }
   
-  
-  stocks: Stock[] = [];
-selectedStocks: Stock[] = [];
-issueSlipForm: FormGroup;
-displayIssueSlipPreview = false;
-selectedIssueSlipPdf: SafeResourceUrl | null = null;
 
-  // Add this method to load stocks
-private async loadStocks(): Promise<void> {
-  try {
-    this.stocks = await this.stocksService.getAll();
-  } catch (error) {
-    this.handleError(error, 'Error loading stocks');
-  }
-}
 
-  
-  // Update your Stock interface methods in requisition.component.ts
-isStockSelected(stock: Stock): boolean {
-  return this.selectedStocks.some(s => s.id === stock.id);
-}
-
-getSelectedStock(stock: Stock): Stock | undefined {
-  return this.selectedStocks.find(s => s.id === stock.id);
-}
-
-addSelectedStock(stock: Stock): void {
-  if (!this.isStockSelected(stock)) {
-    this.selectedStocks.push({ ...stock, quantity: 1 });
-  }
-}
-
-removeSelectedStock(stock: Stock): void {
-  this.selectedStocks = this.selectedStocks.filter(s => s.id !== stock.id);
-}
-
-saveIssueSlip(): void {
-  this.submitted = true;
-  
-  if (this.issueSlipForm.valid && this.selectedStocks.length > 0) {
-    try {
-      const pdfDataUrl = this.generateIssueSlipPdf();
-      this.selectedIssueSlipPdf = this.sanitizer.bypassSecurityTrustResourceUrl(pdfDataUrl);
-      this.displayIssueSlipPreview = true;
-    } catch (error) {
-      this.handleError(error, 'Error generating issue slip');
-    }
-  } else {
-    this.messageService.add({
-      severity: 'error',
-      summary: 'Validation Error',
-      detail: 'Please complete all required fields and select at least one item.'
-    });
-  }
-}
-
-confirmIssueSlip(): void {
-  // Here you would typically save the issue slip to your backend
-  this.messageService.add({
-    severity: 'success',
-    summary: 'Success',
-    detail: 'Issue slip has been generated successfully'
-  });
-  this.displayIssueSlipPreview = false;
-  this.selectedIssueSlipPdf = null;
-  this.selectedStocks = [];
-  this.issueSlipForm.reset();
-}
-
-calculateTotal(): number {
-  return this.selectedStocks.reduce((sum, stock) => sum + (stock.price * stock.quantity), 0);
-}
-
-private generateIssueSlipPdf(): string {
-  const doc = new jsPDF({
-    orientation: 'portrait',
-    unit: 'pt',
-    format: 'a4'
-  });
-
-  const pageWidth = doc.internal.pageSize.getWidth();
-  const margin = 40;
-
-  // Header
-  doc.setFontSize(16);
-  doc.text('ISSUE SLIP', pageWidth / 2, 40, { align: 'center' });
-
-  // Form Details
-  doc.setFontSize(12);
-  doc.text(`Date: ${new Date().toLocaleDateString()}`, margin, 80);
-  doc.text(`Department: ${this.issueSlipForm.get('department')?.value}`, margin, 100);
-  doc.text(`Requested By: ${this.issueSlipForm.get('requestedBy')?.value}`, margin, 120);
-
-  // Table Header
-  const startY = 160;
-  const headers = ['Item', 'Description', 'Quantity', 'Unit Price', 'Total'];
-  const colWidths = [120, 180, 80, 80, 80];
-  
-  let y = startY;
-  
-  // Draw Headers
-  let x = margin;
-  headers.forEach((header, i) => {
-    doc.rect(x, y, colWidths[i], 25);
-    doc.text(header, x + 5, y + 17);
-    x += colWidths[i];
-  });
-
-  // Draw Rows
-  y += 25;
-  this.selectedStocks.forEach((stock) => {
-    x = margin;
-    const row = [
-      stock.name,
-      stock.description || '',
-      stock.quantity.toString(),
-      stock.price.toString(),
-      (stock.quantity * stock.price).toString()
-    ];
-
-    row.forEach((text, i) => {
-      doc.rect(x, y, colWidths[i], 25);
-      doc.text(text, x + 5, y + 17);
-      x += colWidths[i];
-    });
-
-    y += 25;
-  });
-
-  // Total
-  const total = this.calculateTotal();
-  doc.text(`Total Amount: ₱${total.toFixed(2)}`, pageWidth - margin - 100, y + 30);
-
-  // Signatures
-  y += 60;
-  doc.text('Prepared by: _________________', margin, y);
-  doc.text('Approved by: _________________', pageWidth - margin - 180, y);
-
-  return doc.output('datauristring');
-}
 }
