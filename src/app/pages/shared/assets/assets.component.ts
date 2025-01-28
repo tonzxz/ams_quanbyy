@@ -40,7 +40,7 @@ export class AssetsComponent implements OnInit {
     this.filteredAssets.set(this.assets.filter(asset=>
         asset.name.toLowerCase().includes(this.search) ||
         asset.ticker.toLowerCase().includes(this.search) || 
-        asset.dr_id.toLowerCase().includes(this.search) ||
+        asset.dr_id?.toLowerCase().includes(this.search) ||
         asset.id?.toLocaleLowerCase().includes(this.search)
     ))
   }

@@ -247,6 +247,7 @@ private loadDummyData(): void {
     }
   ];
 
+ 
   // Dummy Offices
   const dummyOffices: Office[] = [
     {
@@ -343,7 +344,13 @@ private loadDummyData(): void {
   this.buildings = dummyBuildings;
   this.offices = dummyOffices;
   this.saveToLocalStorage();
+  
 }
+
+async getOfficeDepartment(id:string){
+  return this.offices.find(o=>o.id ==id)?.departmentId;
+}
+
 
   // CRUD methods for departments
   async getAllDepartments(): Promise<Department[]> {

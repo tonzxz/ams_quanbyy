@@ -11,6 +11,7 @@ export const navItems: NavItem[] = [
     route: '/admin/admin-dashboard',
     requiredRoles: ['superadmin', 'admin', 'bac', 'enduser', 'accounting','inspection'],
   },
+  
   // {
   //   displayName: 'Dashboard',
   //   iconName: 'solar:widget-add-line-duotone',
@@ -54,7 +55,6 @@ export const navItems: NavItem[] = [
 
   },
 
-  
  
   {
     displayName: 'Request for Quotation',
@@ -69,6 +69,11 @@ export const navItems: NavItem[] = [
     route: '/bac/purchase-orders',
       requiredRoles: ['bac','superadmin'],
     
+  },
+  {
+    displayName: 'HTML',
+    iconName: 'solar:widget-add-line-duotone',
+    route: '/shared/editable',
   },
   // {
   //   displayName: 'Disbursement Template',
@@ -131,6 +136,12 @@ export const navItems: NavItem[] = [
     iconName: 'solar:documents-broken',
     route: '/enduser/receiving',
     requiredRoles: ['end-user'],
+  },
+  {
+    displayName: 'Special Receiving',
+    iconName: 'solar:documents-broken',
+    route: '/enduser/special-receiving',
+    requiredRoles: ['end-user','supply'],
   },
 
   
