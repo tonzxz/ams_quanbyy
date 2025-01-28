@@ -88,10 +88,10 @@
   pTooltip="View Purchase Request"
 ></button>
           </td>
-          @if(currentUser?.role != 'end-user' || (currentUser?.role =='end-user' && req.approvalSequenceDetails?.roleCode =='end-user') ){
+          @if(currentUser?.role != 'end-user' || (req.approvalSequenceDetails?.roleCode  == currentUser?.role ) ){
             <td>
               <div class="flex gap-2">
-                @if(currentUser?.role != 'supply'){
+                @if(currentUser?.role != 'supply' || req.approvalSequenceDetails?.roleCode  == currentUser?.role ){
                   <!-- Approve Button -->
 <button
   pButton
@@ -112,6 +112,10 @@
                   <span>Pending</span>
                 }
               </div>
+            </td>
+          }@else{
+            <td>
+              <div class="flex gap-2"><span>Processing...</span></div>
             </td>
           }
         </tr>
