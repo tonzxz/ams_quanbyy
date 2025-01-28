@@ -7,6 +7,7 @@ import { IcsComponent } from './ics/ics.component';
 import { ParComponent } from './par/par.component';
 import { CompileReportsComponent } from './compile-reports/compile-reports.component';
 import { SupplyDashboardComponent } from './supply-dashboard/supply-dashboard.component';
+import { DeliveryComponent } from './delivery/delivery.component';
 
 
 export const SupplyUnitRoutes: Routes = [
@@ -59,6 +60,12 @@ export const SupplyUnitRoutes: Routes = [
         component: CompileReportsComponent,
         canActivate: [roleGuard],
         data: { roles: ['supply', 'superadmin'], breadcrumb: 'Generate ICS' } // specify roles here
+      },
+       {
+        path: 'delivery',
+        component: DeliveryComponent,
+        canActivate: [roleGuard],
+        data: { roles: ['supply', 'superadmin'], breadcrumb: 'Delivery' } // specify roles here
       },
     ],
   },
