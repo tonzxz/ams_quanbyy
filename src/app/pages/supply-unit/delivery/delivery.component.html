@@ -1,0 +1,107 @@
+<mat-card class="cardWithShadow">
+    <mat-card-content>
+        <mat-card-title class="select-none font-light">Delivery Management</mat-card-title>
+        <div class="flex justify-between items-center">
+            <p>Manage and deliver stocked items in this section.</p>
+            <p-iconfield fluid class="w-full max-w-72">
+                <p-inputicon styleClass="pi pi-search" />
+                <input fluid class="w-full" pSize="small" [(ngModel)]="searchValue" (input)="dt.filterGlobal(searchValue,'contains')" type="text"
+                    pInputText placeholder="Search" />
+            </p-iconfield>
+        </div>
+
+        <p-table #dt dataKey="deliveryReceipt.id" [rowHover]="true" [value]="drItems"
+            [paginator]="true"
+            [rows]="5"
+            [rowsPerPageOptions]="[5, 10, 20]"
+            sortField="deliveryReceipt.supplier_name" sortMode="single" [scrollable]="true" scrollHeight="600px"
+            rowGroupMode="subheader" groupRowsBy="deliveryReceipt.receipt_number"
+            [globalFilterFields]="['deliveryReceipt.supplier_name','deliveryReceipt.receipt_number']"
+            [tableStyle]="{'min-width': '60rem'}">
+
+            <ng-template #header>
+                <tr>
+                    <th pFrozen="left">Name</th>
+                    <th>Ticker</th>
+                    <th>Storage</th>
+                    <th>Type</th>
+                    <th>Price</th>
+                    <th>Quantity</th>
+                    <th>Date Added</th>
+                    <th>Description</th>
+                    <th>Action</th>
+                </tr>
+            </ng-template>
+
+        <ng-template #groupheader let-po>
+    <tr class="hover:cursor-pointer" pRowGroupHeader>
+        <td [attr.colspan]="9">
+            <div class="flex items-center justify-between">
+                <div class="flex items-center gap-5">
+                    <img [alt]="po.deliveryReceipt.supplier_name" src="assets/images/products/dash-prd-4.jpg"
+                        width="32" class="rounded-full" style="vertical-align: middle" />
+                    <span class="font-bold">{{ po.deliveryReceipt.supplier_name}} </span>
+                    <p-divider layout="vertical" />
+                    <span>Receipt No. {{po.deliveryReceipt.receipt_number.toUpperCase()}}</span>
+                </div>
+                <p-button icon="pi pi-arrow-right" class="p-button-outlined" outlined="true" (click)="deliverToEndUser(po.deliveryReceipt)">
+                </p-button>
+            </div>
+        </td>
+    </tr>
+</ng-template>
+
+
+            <ng-template #groupfooter let-po>
+                <tr class="hover:cursor-pointer">
+                    <td [attr.colspan]="9" class="text-left pr-12">
+                        <div class="flex items-center">
+                            <div class="flex gap-2"><span class="font-semibold">Total Price: </span>
+                                <span>{{ calculateItemPriceTotal(po.deliveryReceipt.id) | currency:'PHP' }}</span>
+                            </div>
+                            <p-divider layout="vertical" />
+                            <div class="flex gap-2"><span class="font-semibold">Total Items: </span>
+                                <span>{{ calculateItemTotal(po.deliveryReceipt.id) }}</span>
+                            </div>
+                        </div>
+                    </td>
+                </tr>
+            </ng-template>
+
+            <ng-template #body let-po>
+                @for(item of po.items; track item.id){
+                <tr class="hover:cursor-pointer">
+                    <td pFrozen="left">
+                        <i class="pi pi-box mr-2"></i> {{ item.name }}
+                    </td>
+                    <td>{{ item.ticker }}</td>
+                    <td>{{ item.storage_name }}</td>
+                    <td>{{ item.product_name }}</td>
+                    <td>{{ item.price | currency:'PHP' }}</td>
+                    <td>{{ item.quantity | number }}</td>
+                    <td>{{ item.dateAdded | date: 'yyyy-MM-dd' }}</td>
+                    <td>{{ item.description || 'No description set.' }}</td>
+                   
+                </tr>
+                }
+            </ng-template>
+
+            <ng-template #emptymessage>
+                <tr>
+                    <td colspan="9">
+                        <div class="flex flex-col w-full items-center justify-center mb-8">
+                            <div class="overflow-hidden h-52 w-52 mr-8">
+                                <app-lottie-animation animation="box" class="w-60 h-60"></app-lottie-animation>
+                            </div>
+                            <span>No delivery receipt items found.</span>
+                        </div>
+                    </td>
+                </tr>
+            </ng-template>
+
+        </p-table>
+    </mat-card-content>
+</mat-card>
+
+<p-toast position="bottom-right"></p-toast>
+<p-confirm-popup></p-confirm-popup>

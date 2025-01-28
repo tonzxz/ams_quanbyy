@@ -71,7 +71,7 @@ export class PurchaseRequestComponent {
   activeTabHeader: string = 'Pending Requests';
   tabHeaders: string[] = ['Pending Requests', 'Validated Requests', 'Rejected Requests'];
 
-  purchaseRequests: PurchaseRequest[] = [ 
+  pendingRequests: PurchaseRequest[] = [ 
     { code: 'PR001', name: 'John Doe', department: 'IT', item: 'Laptop', quantity: 1, date: '2023-01-01' },
     { code: 'PR002', name: 'Jane Smith', department: 'HR', item: 'Office Chair', quantity: 5, date: '2023-01-02' },
     { code: 'PR003', name: 'Alice Johnson', department: 'Finance', item: 'Calculator', quantity: 10, date: '2023-01-03' },
@@ -84,7 +84,16 @@ export class PurchaseRequestComponent {
     { code: 'PR010', name: 'Hank Irving', department: 'Sales', item: 'Whiteboard', quantity: 2, date: '2023-01-10' }
   ];
 
-  filteredRequests: PurchaseRequest[] = [...this.purchaseRequests];
+  validatedRequests: PurchaseRequest[] = [];
+  rejectedRequests: PurchaseRequest[] = [];
+
+  filteredPendingRequests: PurchaseRequest[] = [];
+  filteredValidatedRequests: PurchaseRequest[] = [];
+  filteredRejectedRequests: PurchaseRequest[] = [];
+
+  ngOnInit() {
+    this.filterRequests(); // Initialize data on load
+  }
 
   departments: Department[] = [
     { name: 'IT', value: 'IT' },
@@ -95,6 +104,68 @@ export class PurchaseRequestComponent {
   ];
 
   constructor(private messageService: MessageService, private confirmationService: ConfirmationService) {}
+
+  filterRequests() {
+    // Filter each tab's data separately
+    this.filteredPendingRequests = this.filterArray(this.pendingRequests);
+    this.filteredValidatedRequests = this.filterArray(this.validatedRequests);
+    this.filteredRejectedRequests = this.filterArray(this.rejectedRequests);
+  }
+
+  private filterArray(sourceArray: PurchaseRequest[]): PurchaseRequest[] {
+    return sourceArray.filter(request => 
+      (this.searchQuery === '' || 
+        request.code.toLowerCase().includes(this.searchQuery.toLowerCase()) ||
+        request.name.toLowerCase().includes(this.searchQuery.toLowerCase()) ||
+        request.department.toLowerCase().includes(this.searchQuery.toLowerCase()) ||
+        request.item.toLowerCase().includes(this.searchQuery.toLowerCase()) ||
+        request.date.toLowerCase().includes(this.searchQuery.toLowerCase())) &&
+      (this.selectedDepartment === null || request.department === this.selectedDepartment)
+    );
+  }
+
+  onTabChange(event: any) {
+    this.activeTabIndex = event.index;
+    this.activeTabHeader = this.tabHeaders[this.activeTabIndex];
+    this.filterRequests();
+  }
+
+  acceptRequest(request: PurchaseRequest) {
+    const index = this.pendingRequests.findIndex(r => r.code === request.code);
+    if (index > -1) {
+      const [acceptedRequest] = this.pendingRequests.splice(index, 1);
+      this.validatedRequests.push(acceptedRequest);
+      this.filterRequests();
+    }
+  }
+
+  rejectRequest(request: PurchaseRequest) {
+    const index = this.pendingRequests.findIndex(r => r.code === request.code);
+    if (index > -1) {
+      const [rejectedRequest] = this.pendingRequests.splice(index, 1);
+      this.rejectedRequests.push(rejectedRequest);
+      this.filterRequests();
+    }
+  }
+
+  revalidateRequest(request: PurchaseRequest) {
+    const index = this.validatedRequests.findIndex(r => r.code === request.code);
+    if (index > -1) {
+      const [movedRequest] = this.validatedRequests.splice(index, 1);
+      this.pendingRequests.push(movedRequest);
+      this.filterRequests();
+    }
+  }
+
+  unrejectRequest(request: PurchaseRequest) {
+    const index = this.rejectedRequests.findIndex(r => r.code === request.code);
+    if (index > -1) {
+      const [movedRequest] = this.rejectedRequests.splice(index, 1);
+      this.pendingRequests.push(movedRequest);
+      this.filterRequests();
+    }
+  }
+
 
   onRowSelect(event: any) {
     this.selectedRequest = event.data;
@@ -132,42 +203,31 @@ export class PurchaseRequestComponent {
     });
   }
 
-  acceptRequest(request: any) {
-    // Logic to accept the purchase request
-    this.hideModal();
+  getRequestStatus(request: PurchaseRequest): string {
+    if (this.validatedRequests.includes(request)) return 'validated';
+    if (this.rejectedRequests.includes(request)) return 'rejected';
+    return 'pending';
   }
 
-  rejectRequest(request: any) {
-    // Logic to reject the purchase request
-    this.hideModal();
-  }
-
-  filterRequests() {
-    this.filteredRequests = this.purchaseRequests.filter(request =>
-      (this.searchQuery === '' || 
-        request.code.toLowerCase().includes(this.searchQuery.toLowerCase()) ||
-        request.name.toLowerCase().includes(this.searchQuery.toLowerCase()) ||
-        request.department.toLowerCase().includes(this.searchQuery.toLowerCase()) ||
-        request.item.toLowerCase().includes(this.searchQuery.toLowerCase()) ||
-        request.date.toLowerCase().includes(this.searchQuery.toLowerCase())) &&
-      (this.selectedDepartment === null || request.department === this.selectedDepartment)
-    );
+  isRequestPending(request: any): boolean {
+    return this.pendingRequests.includes(request);
   }
 
   resetFilters() {
     this.searchQuery = '';
     this.selectedDepartment = null;
-    this.filteredRequests = [...this.purchaseRequests];
-  }
-
-  onTabChange(event: any) {
-    console.log('Tab changed:', event);
-    this.activeTabIndex = event.index;
-    this.activeTabHeader = this.tabHeaders[this.activeTabIndex];
-    console.log('Active Tab Index:', this.activeTabIndex);
-    console.log('Active Tab Header:', this.activeTabHeader);
+    this.filteredPendingRequests = [...this.getSourceArray()];
   }
   
+  private getSourceArray(): PurchaseRequest[] {
+    switch (this.activeTabIndex) {
+      case 0: return this.pendingRequests;
+      case 1: return this.validatedRequests;
+      case 2: return this.rejectedRequests;
+      default: return [];
+    }
+  }
+
   generateReport(header: string) {
     console.log('Generating report for:', header);
     const doc = new jsPDF();
@@ -183,22 +243,21 @@ export class PurchaseRequestComponent {
   
     // Add table
     const headers = [['PR#', 'Requestor', 'Department', 'Item', 'Quantity', 'Date']];
-    const data = this.filteredRequests.map(request => [
-      request.code,
-      request.name,
-      request.department,
-      request.item,
-      request.quantity.toString(),
-      request.date
+    const requests = this.getSourceArray().map(req => [
+      req.code,
+      req.name,
+      req.department,
+      req.item,
+      req.quantity,
+      req.date,
     ]);
-  
+    
     (doc as any).autoTable({
-      head: headers,
-      body: data,
-      startY: 40
+      head: [['PR#', 'Requestor', 'Department', 'Item', 'Quantity', 'Date']],
+      body: requests,
     });
-  
-    // Save the PDF
-    doc.save(`${header.toLowerCase().replace(/ /g, '_')}_report.pdf`);
+    
+    doc.save(`PurchaseRequests_${header}.pdf`);
+    
   }
 }

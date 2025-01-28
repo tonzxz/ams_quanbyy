@@ -1,9 +1,9 @@
-# HTML (issue-slip.component.html)
 <p-card header="Issue Slips" class="mb-4">
   <p class="text-sm text-gray-600 mb-4">
     Manage and approve issue slips below.
   </p>
 
+  <!-- Table to display issue slips -->
   <p-table 
     [value]="requisitions" 
     [paginator]="true" 
@@ -32,7 +32,8 @@
           <span class="px-2 py-1 rounded-full text-xs font-medium"
                 [ngClass]="{
                   'bg-yellow-100 text-yellow-800': requisition.issueSlipStatus === 'pending',
-                  'bg-green-100 text-green-800': requisition.issueSlipStatus === 'completed'
+                  'bg-green-100 text-green-800': requisition.issueSlipStatus === 'completed',
+                  'bg-red-100 text-red-800': requisition.issueSlipStatus === 'rejected'
                 }">
             {{requisition.issueSlipStatus}}
           </span>
@@ -40,6 +41,7 @@
         <td>{{requisition.issuedStocks?.length || 0}} items</td>
         <td>
           <div class="flex gap-2">
+            <!-- View Issue Slip Button -->
             <button 
               pButton 
               icon="pi pi-eye" 
@@ -48,14 +50,25 @@
               pTooltip="View Issue Slip">
             </button>
             
-            <!-- <button 
+            <!-- Approve Issue Slip Button (Visible for Accounting Users) -->
+            <button 
               *ngIf="isAccountingUser && requisition.issueSlipStatus === 'pending'"
               pButton 
               icon="pi pi-check" 
               class="p-button-rounded p-button-success p-button-sm"
               (click)="approveIssueSlip(requisition)"
               pTooltip="Approve Issue Slip">
-            </button> -->
+            </button>
+
+            <!-- Reject Issue Slip Button (Visible for Accounting Users) -->
+            <button 
+              *ngIf="isAccountingUser && requisition.issueSlipStatus === 'pending'"
+              pButton 
+              icon="pi pi-times" 
+              class="p-button-rounded p-button-danger p-button-sm"
+              (click)="rejectIssueSlip(requisition)"
+              pTooltip="Reject Issue Slip">
+            </button>
           </div>
         </td>
       </tr>
@@ -70,7 +83,7 @@
   </p-table>
 </p-card>
 
-<!-- Preview Dialog -->
+<!-- Preview Dialog for Issue Slip -->
 <p-dialog
   header="Issue Slip Preview"
   [(visible)]="displayPreviewDialog"
@@ -79,6 +92,7 @@
   [resizable]="false"
 >
   <div class="mb-4">
+    <!-- PDF Preview -->
     <iframe
       *ngIf="pdfPreviewUrl"
       [src]="pdfPreviewUrl"
@@ -98,5 +112,6 @@
   </ng-template>
 </p-dialog>
 
+<!-- Toast and Confirm Dialog -->
 <p-toast position="bottom-right"></p-toast>
 <p-confirmDialog [style]="{width: '450px'}"></p-confirmDialog>

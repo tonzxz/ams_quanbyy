@@ -9,38 +9,38 @@ export const navItems: NavItem[] = [
     displayName: 'Dashboard',
     iconName: 'solar:widget-add-line-duotone',
     route: '/admin/admin-dashboard',
-    requiredRoles: ['superadmin', 'admin'],
+    requiredRoles: ['superadmin', 'admin', 'bac', 'enduser', 'accounting','inspection'],
   },
-  {
-    displayName: 'Dashboard',
-    iconName: 'solar:widget-add-line-duotone',
-    route: '/enduser/dashboard',
-    requiredRoles: ['end-user'],
-  },
-  {
-    displayName: 'Dashboard',
-    iconName: 'solar:widget-add-line-duotone',
-    route: '/inspection/inspection-dashboard',
-    requiredRoles: ['inspection'],
-  },
-  {
-    displayName: 'Dashboard',
-    iconName: 'solar:documents-broken',
-    route: '/supply-management/supply-dashboard',
-    requiredRoles: ['supply'],
-  },
-  {
-    displayName: 'Dashboard',
-    iconName: 'solar:widget-add-line-duotone',
-    route: '/accounting/accounting-dashboard',
-    requiredRoles: ['accounting'],
-  },
-  {
-    displayName: 'Dashboard',
-    iconName: 'solar:checklist-minimalistic-line-duotone',
-    route: '/bac/bac-dashboard',
-    requiredRoles: ['bac'],
-  },
+  // {
+  //   displayName: 'Dashboard',
+  //   iconName: 'solar:widget-add-line-duotone',
+  //   route: '/enduser/dashboard',
+  //   requiredRoles: ['end-user'],
+  // },
+  // {
+  //   displayName: 'Dashboard',
+  //   iconName: 'solar:widget-add-line-duotone',
+  //   route: '/inspection/inspection-dashboard',
+  //   requiredRoles: ['inspection'],
+  // },
+  // {
+  //   displayName: 'Dashboard',
+  //   iconName: 'solar:documents-broken',
+  //   route: '/supply-management/supply-dashboard',
+  //   requiredRoles: ['supply'],
+  // },
+  // {
+  //   displayName: 'Dashboard',
+  //   iconName: 'solar:widget-add-line-duotone',
+  //   route: '/accounting/accounting-dashboard',
+  //   requiredRoles: ['accounting'],
+  // },
+  // {
+  //   displayName: 'Dashboard',
+  //   iconName: 'solar:checklist-minimalistic-line-duotone',
+  //   route: '/bac/bac-dashboard',
+  //   requiredRoles: ['bac'],
+  // },
   // {
   //   displayName: 'Dashboard',
   //   iconName: 'solar:widget-add-line-duotone',
@@ -127,6 +127,8 @@ export const navItems: NavItem[] = [
     requiredRoles: ['end-user'],
   },
 
+  
+
   // Inspection Section
   {
     navCap: 'Inspection',
@@ -162,6 +164,12 @@ export const navItems: NavItem[] = [
     displayName: 'Supply Stocking',
     iconName: 'solar:inbox-archive-outline',
     route: '/supply-management/stocking',
+    requiredRoles: ['supply'],
+  },
+  {
+    displayName: 'Delivery',
+    iconName: 'solar:inbox-archive-outline',
+    route: '/supply-management/delivery',
     requiredRoles: ['supply'],
   },
   // {
