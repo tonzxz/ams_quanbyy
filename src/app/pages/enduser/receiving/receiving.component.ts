@@ -53,7 +53,6 @@ const jsPDFWithAutoTable = jsPDF as unknown as { new (): jsPDFWithAutoTable };
   providers: [MessageService, ConfirmationService]
 })
 
-
 export class ReceivingComponent implements OnInit {
   level7Requisitions: Requisition[] = [];
   displaySignatureDialog: boolean = false;
