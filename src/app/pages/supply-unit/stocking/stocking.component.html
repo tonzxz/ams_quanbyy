@@ -49,15 +49,15 @@
                     <th>Quantity</th>
                     <th>Date Added</th>
                     <th>Description</th>
-                    @if(drItems.length > 0 && !drItems[0].deliveryReceipt.stocked){
-                        <th></th>
-                    }
+                    <!-- @if( stockTab==1){ -->
+                        <th>Actions</th>
+                    <!-- } -->
                 </tr>
             </ng-template>
 
             <ng-template #groupheader let-po>
                 <tr class="hover:cursor-pointer" pRowGroupHeader>
-                    <td [attr.colspan]="!po.deliveryReceipt.stocked?9:8">
+                    <td [attr.colspan]="9">
                         <div class="flex items-center justify-between">
                             <div class="flex items-center gap-5">
                                 <img [alt]="po.deliveryReceipt.supplier_name" src="assets/images/products/dash-prd-4.jpg"
@@ -66,7 +66,7 @@
                                 <p-divider layout="vertical" />
                                 <span>Receipt No. {{po.deliveryReceipt.receipt_number.toUpperCase()}}</span>
                             </div>
-                            @if(!po.deliveryReceipt.stocked){
+                            @if(stockTab==1){
                             <p-buttongroup>
                                 <p-button pTooltip="Click to add new stock"
                                     (click)="openAddStockModal(po.deliveryReceipt)" [outlined]="true" size="small"
@@ -88,7 +88,7 @@
 
             <ng-template #groupfooter let-po>
                 <tr class="hover:cursor-pointer">
-                    <td [attr.colspan]="!po.deliveryReceipt.stocked?9:8" class="text-left pr-12 ">
+                    <td [attr.colspan]="9" class="text-left pr-12 ">
                         <div class="flex items-center">
                             <div class="flex gap-2"><span class="font-semibold">Total Price: </span> <span>
                                     {{calculateItemPriceTotal(po.deliveryReceipt.id) | currency:'PHP' }}</span></div>
@@ -113,15 +113,26 @@
                     <td>{{ item.quantity | number }}</td>
                     <td>{{ item.dateAdded | date: 'yyyy-MM-dd' }}</td>
                     <td>{{ item.description || 'No description set.' }}</td>
-                    @if(!po.deliveryReceipt.stocked){
-                    <td class="w-16">
-                        <div class="flex gap-4 ">
-                            <p-button size="small" icon="pi pi-pencil"
-                                (click)="openEditStockModal(po.deliveryReceipt, item)" [outlined]="true" rounded />
-                            <p-button size="small" icon="pi pi-trash" (click)="confirmDeleteStock($event, item.id)" severity="danger" [outlined]="true"
-                                rounded />
-                        </div>
-                    </td>
+                    @if(stockTab==1){
+                        <td class="w-16">
+                            <div class="flex gap-4 ">
+                                <p-button size="small" icon="pi pi-pencil"
+                                    (click)="openEditStockModal(po.deliveryReceipt, item)" [outlined]="true" rounded />
+                                <p-button size="small" icon="pi pi-trash" (click)="confirmDeleteStock($event, item.id)" severity="danger" [outlined]="true"
+                                    rounded />
+                            </div>
+                        </td>
+                    }
+                    @if(stockTab ==0){
+                        <td class="w-16">
+                            <div class="flex gap-4 ">
+                                <p-button pTooltip="Print QR" size="small"  icon="pi pi-qrcode"
+                                    (click)="generateQR(item)" [outlined]="true" rounded />
+                                <p-button pTooltip="Print QR Batch" size="small" icon="pi pi-objects-column" (click)="generateQRBatch(item)" [outlined]="true"
+                                    rounded />
+                            </div>
+                        </td>
+                        
                     }
                 </tr>
                 }
@@ -281,6 +292,8 @@
         </div>
     </form>
 </p-dialog>
+
+
 
 <p-toast position="bottom-right" />
 <p-confirmpopup />
