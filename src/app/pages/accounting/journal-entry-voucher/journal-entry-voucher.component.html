@@ -81,12 +81,13 @@
                 (click)="exportPdf(entry)"
               ></p-button>
               <p-button
-                severity="info"
+                severity="primary"
                 pTooltip="Generate Journal & Ledger Entries"
                 [outlined]="true"
                 size="small"
                 icon="pi pi-sync"
                 rounded
+                [disabled]="entry.status !== 'recorded' || accountingService.isVoucherProcessed(entry.voucherNo)"
                 (click)="generateAccountingEntries(entry)"
               ></p-button>
             </div>

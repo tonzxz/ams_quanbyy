@@ -215,8 +215,17 @@ export class GeneralLedgerComponent implements OnInit {
   ) {}
 
   ngOnInit() {
-    this.accountingService.getLedgerAccounts().subscribe(accounts => {
-      this.ledgerAccounts = accounts;
+    this.accountingService.getLedgerAccounts().subscribe({
+      next: (accounts) => {
+        this.ledgerAccounts = accounts;
+      },
+      error: (error) => {
+        this.messageService.add({
+          severity: 'error',
+          summary: 'Error',
+          detail: 'Failed to load ledger accounts'
+        });
+      }
     });
   }
 
@@ -242,74 +251,112 @@ export class GeneralLedgerComponent implements OnInit {
 
   exportToPDF(account: LedgerAccount) {
     const doc = new jsPDF();
-
-    // Header
-    doc.setFontSize(10);
+  
+    // Add Appendix 5 to the top-right corner
+    doc.setFontSize(10); // Smaller font size
     doc.text('Appendix 5', doc.internal.pageSize.width - 20, 10, { align: 'right' });
-    
+  
+    // Add GENERAL LEDGER title at the center and make it bold
     doc.setFontSize(14);
-    doc.setFont('helvetica', 'bold');
-    const title = 'GENERAL LEDGER';
-    const titleWidth = doc.getTextWidth(title);
-    const titleX = (doc.internal.pageSize.width - titleWidth) / 2;
-    doc.text(title, titleX, 20);
-    
-    // Entity information
-    doc.setFontSize(10);
+    doc.setFont('helvetica', 'bold'); // Make text bold
+    const textWidth = doc.getTextWidth('GENERAL LEDGER');
+    const centerX = (doc.internal.pageSize.width - textWidth) / 2; // Center horizontally
+    doc.text('GENERAL LEDGER', centerX, 20);
+  
+    // Reset font to normal
     doc.setFont('helvetica', 'normal');
-    doc.text('Entity Name: QUANBY SOLUTIONS INC.', 20, 30);
-    doc.text('Fund Cluster: ________________', doc.internal.pageSize.width - 80, 30);
-    
-    // Account information
-    doc.text(`Account Title: ${account.accountName}`, 20, 40);
-    doc.text(`Account Code: ${account.accountCode}`, doc.internal.pageSize.width - 80, 40);
-    
-    // Table data
-    const tableData = account.transactions.map(t => [
-      t.date.toLocaleDateString(),
-      t.description,
-      '', // Reference placeholder
-      t.debit || '',
-      t.credit || '',
-      t.balance
+  
+    // Add Entity Name, Fund Cluster, Account Title, and UACS Object Code
+    doc.setFontSize(10);
+  
+    // Define positions for the fields
+    const startX = 10; // Starting X position
+    const startY = 30; // Starting Y position
+    const lineHeight = 10; // Vertical spacing between lines
+    const columnWidth = 90; // Width of each column
+  
+    // First row: Entity Name and Fund Cluster
+    doc.text(`Entity Name: ${account.accountName}`, startX, startY);
+    doc.text(`Fund Cluster: [Fund Cluster Value]`, startX + columnWidth, startY);
+  
+    // Second row: Account Title and UACS Object Code
+    doc.text(`Account Title: ${account.accountName}`, startX, startY + lineHeight);
+    doc.text(`UACS Object Code: [UACS Object Code Value]`, startX + columnWidth, startY + lineHeight);
+  
+    // Define the table headers and data
+    const columns = ['Date', 'Particulars', 'Ref', 'Amount', 'Debit', 'Credit', 'Balance'];
+  
+    // Get the first 25 transactions (or fewer if there are not enough)
+    const transactions = account.transactions.slice(0, 25);
+  
+    // Create rows for the table
+    const rows = transactions.map(transaction => [
+      transaction.date.toLocaleDateString(),
+      transaction.description,
+      '[Ref Value]', // Replace with actual reference if available
+      '', // Empty value for Amount (merged across Debit, Credit, Balance)
+      transaction.debit,
+      transaction.credit,
+      account.balance,
     ]);
-
-    // Table configuration
+  
+    // Add empty rows if there are fewer than 25 transactions
+    while (rows.length < 25) {
+      rows.push(['', '', '', '', '', '', '']);
+    }
+  
+    // Add a row for totals
+    rows.push([
+      '',
+      '',
+      'TOTALS',
+      '', // Empty for Amount
+      account.debitTotal,
+      account.creditTotal,
+      account.balance,
+    ]);
+  
+    // Generate the table with black borders and no background color
     (doc as any).autoTable({
-      startY: 50,
+      startY: startY + 2 * lineHeight, // Start table immediately below the fields
       head: [
-        ['Date', 'Particulars', 'Ref', 'Debit', 'Credit', 'Balance'],
+        ['Date', 'Particulars', 'Ref', { content: 'Amount', colSpan: 3, align: 'center' }],
+        ['', '', '', 'Debit', 'Credit', 'Balance'], // Labels for Debit, Credit, and Balance under Amount
       ],
-      body: tableData,
-      foot: [[
-        'Total', '', '',
-        account.debitTotal.toFixed(2),
-        account.creditTotal.toFixed(2),
-        account.balance.toFixed(2)
-      ]],
-      theme: 'grid',
-      styles: {
-        fontSize: 8,
-        cellPadding: 2,
+      body: rows,
+      theme: 'plain', // Use plain theme for no background color
+      styles: { 
+        fontSize: 9,
+        font: 'helvetica', // Use Helvetica font
+        lineColor: [0, 0, 0], // Black border lines
+        lineWidth: 0.1, // Thin border lines
+        cellPadding: 1,
       },
       headStyles: {
-        fillColor: [255, 255, 255],
-        textColor: [0, 0, 0],
-        fontStyle: 'bold',
-        lineWidth: 0.1
+        fillColor: false, 
+        textColor: [0, 0, 0], 
+        lineColor: [0, 0, 0], 
+        lineWidth: 0.1, 
+        halign: 'center', 
       },
-      footStyles: {
-        fontStyle: 'bold'
-      }
+      bodyStyles: {
+        fillColor: false, 
+        textColor: [0, 0, 0], 
+        lineColor: [0, 0, 0], 
+        lineWidth: 0.1, 
+      },
+      columnStyles: {
+        0: { halign: 'center' }, 
+        1: { halign: 'left' },   
+        2: { halign: 'center' }, 
+        3: { halign: 'center' }, 
+        4: { halign: 'right' },  
+        5: { halign: 'right' },  
+        6: { halign: 'right' },  
+      },
     });
-
-    // Add signature lines
-    const finalY = (doc as any).lastAutoTable.finalY + 20;
-    doc.text('Prepared by:', 20, finalY);
-    doc.text('Reviewed by:', doc.internal.pageSize.width / 2 - 20, finalY);
-    doc.text('Approved by:', doc.internal.pageSize.width - 60, finalY);
-
+  
     // Save the PDF
-    doc.save(`Ledger_${account.accountCode}_${account.accountName}.pdf`);
-  }
+    doc.save(`${account.accountName}_general_ledger.pdf`);
+}
 }

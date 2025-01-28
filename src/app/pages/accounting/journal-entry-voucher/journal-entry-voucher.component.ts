@@ -60,7 +60,7 @@ export class JournalEntryVoucherComponent {
     private disbursementVoucherService: DisbursementVoucherService,
     private deliveryReceiptService: DeliveryReceiptService,
     private messageService: MessageService,
-    private accountingService: AccountingService
+    public accountingService: AccountingService 
   ) {}
 
   ngOnInit(): void {
@@ -158,10 +158,33 @@ export class JournalEntryVoucherComponent {
       startY: detailsStartY + 25,
       head: [tableData.shift()],
       body: tableData,
-      theme: 'striped',
-      headStyles: { fillColor: [200, 200, 200] },
-      bodyStyles: { textColor: [0, 0, 0] },
-      margin: { left: margin, right: margin },
+      theme: 'plain', // Use plain theme for no background color
+      styles: { 
+        fontSize: 9,
+        font: 'helvetica',
+        lineColor: [0, 0, 0], // Black border lines
+        lineWidth: 0.1,
+        cellPadding: 1,
+      },
+      headStyles: {
+        fillColor: false, // No fill color
+        textColor: [0, 0, 0],
+        lineColor: [0, 0, 0],
+        lineWidth: 0.1,
+        halign: 'center',
+      },
+      bodyStyles: {
+        fillColor: false, // No fill color
+        textColor: [0, 0, 0],
+        lineColor: [0, 0, 0],
+        lineWidth: 0.1,
+      },
+      columnStyles: {
+        0: { halign: 'center' }, 
+        1: { halign: 'left' },   
+        2: { halign: 'right' },  
+        3: { halign: 'right' },  
+      },
     });
   
     // Add Total Amount to the Bottom Right of the Table
@@ -169,9 +192,9 @@ export class JournalEntryVoucherComponent {
     const tableEndY = (doc as any).autoTable.previous.finalY + 10;
   
     doc.setFontSize(10).setFont('helvetica', 'bold');
-    doc.text('Total Amount:', pageWidth - margin - 60, tableEndY);  // Adjust the position for alignment
+    doc.text('Total Amount:', pageWidth - margin - 60, tableEndY);  
     doc.setFontSize(10).setFont('helvetica', 'normal');
-    doc.text(`PHP ${totalAmount}`, pageWidth - margin - 30, tableEndY); // Adjust the position for alignment
+    doc.text(`PHP ${totalAmount}`, pageWidth - margin - 30, tableEndY);
   
     // Footer Section
     const finalY = tableEndY + 15;
@@ -192,23 +215,48 @@ export class JournalEntryVoucherComponent {
   
     // Save the PDF
     doc.save(`Journal_Entry_Voucher_${entry.voucherNo}.pdf`);
-  }
+}
 
-  generateAccountingEntries(voucher: ExtendedDisbursementVoucher) {
-    try {
-      this.accountingService.generateAccountingEntries(voucher);
+generateAccountingEntries(voucher: DetailedJournalEntry) {
+  try {
+    // Check if already processed
+    if (this.accountingService.isVoucherProcessed(voucher.voucherNo)) {
       this.messageService.add({
-        severity: 'success',
-        summary: 'Success',
-        detail: 'Journal and ledger entries generated successfully'
+        severity: 'warn',
+        summary: 'Warning',
+        detail: 'This voucher has already been processed'
       });
-    } catch (error) {
-      this.messageService.add({
-        severity: 'error',
-        summary: 'Error',
-        detail: 'Failed to generate entries'
-      });
+      return;
     }
-  
+
+    const journalVoucher = {
+      voucherNo: voucher.voucherNo,
+      totalAmountDue: voucher.totalAmountDue,
+      debitEntries: voucher.debitEntries.map(entry => ({
+        accountCode: entry.accountCode,
+        accountName: entry.accountName,
+        amount: entry.amount
+      })),
+      creditEntries: voucher.creditEntries.map(entry => ({
+        accountCode: entry.accountCode,
+        accountName: entry.accountName,
+        amount: entry.amount
+      }))
+    };
+    
+    this.accountingService.generateAccountingEntries(journalVoucher);
+    
+    this.messageService.add({
+      severity: 'success',
+      summary: 'Success',
+      detail: 'Journal and ledger entries generated successfully'
+    });
+  } catch (error) {
+    this.messageService.add({
+      severity: 'error',
+      summary: 'Error',
+      detail: 'Failed to generate entries: ' + (error as Error).message
+    });
+  }
 }
 }
