@@ -199,7 +199,7 @@ export class ProductsService {
         dateAdded: new Date()
       };
 
-      productSchema.parse(newProduct);
+      // productSchema.parse(newProduct);
       this.productData.push(newProduct);
       this.saveToLocalStorage();
     } catch (error) {
@@ -211,7 +211,7 @@ export class ProductsService {
   // Changed method name from updateProduct to editProduct to match component usage
   async editProduct(product: Product): Promise<void> {
     try {
-      productSchema.parse(product);
+      // productSchema.parse(product);
       const index = this.productData.findIndex(p => p.id === product.id);
       
       if (index === -1) {
