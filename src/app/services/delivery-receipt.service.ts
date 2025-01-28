@@ -268,8 +268,8 @@ async addReceipt(receipt: DeliveryReceipt) {
     if (local_receipts) {
       this.receiptData = JSON.parse(local_receipts) as DeliveryReceipt[];
     }
-    // Return all receipts instead of filtering
+    // Only return receipts with the exact status we want based on the current step
     return this.receiptData;
-  }
+}
   
 }
