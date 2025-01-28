@@ -138,34 +138,38 @@ export class StockingComponent {
       const rows = Math.floor(maxHeight / qrSize); // Number of QR codes per column
       for (let i = 0; i < remainingQR; i++) {
         const id = `${item.ticker}-${new Date().getFullYear()}-${Math.floor(Math.random() * 1000000)}`;
-
+      
         // Generate QR code as a base64 image
         toDataURL(id, { width: qrSize, errorCorrectionLevel: 'M' }, (err: any, url: string) => {
           if (err) {
             console.error('Error generating QR code:', err);
             return;
           }
-
+      
           // Add the QR code image to the PDF
           pdf.addImage(url, 'PNG', xOffset, yOffset, qrSize, qrSize); // Position and size
+      
+          // Calculate the width of the text and adjust xOffset for centering
           const textWidth = pdf.getTextWidth(id); // Get width of the text
           const textXOffset = xOffset + (qrSize - textWidth) / 2; // Center the text beneath the QR code
           const fontSize = 8; // Font size for the text
-
+      
+          // Set font size for the text
+          pdf.setFontSize(fontSize); 
+      
           // Add text beneath the QR code, centered
-          pdf.setFontSize(fontSize); // Set the font size
           pdf.text(id, textXOffset, yOffset + qrSize + textOffset); 
-
+      
           // Update xOffset for the next QR code
           xOffset += qrSize + 10; // Add a little space between QR codes horizontally
-
+      
           // If the QR code goes beyond the width of the page, move to the next row
           if (xOffset + qrSize > maxWidth) {
             xOffset = 10; // Reset xOffset to the start of the page
             yOffset += qrSize + 10; // Move to the next row
-            yOffset += qrSize + textOffset + fontSize + 10; 
+            yOffset += qrSize + textOffset + fontSize + 10; // Ensure space for the next QR and text
           }
-
+      
           // Check if we need to add a new page for the QR codes
           if (yOffset + qrSize > maxHeight) {
             pdf.addPage(); // Add new page if the QR codes exceed the page height
@@ -174,6 +178,7 @@ export class StockingComponent {
           }
         });
       }
+      
 
   
       pdf.save(`${item.ticker}-qr-codes.pdf`);
@@ -182,6 +187,9 @@ export class StockingComponent {
   
     async fetchItems(){
       this.currentUser =  this.userService.getUser();
+      if(this.currentUser?.role == 'superadmin'){
+        this.currentUser!.role = 'supply';
+      }
       // Fetch the purchase orders with items
       this.allDRItems = await this.deliveryReceiptService.getAllDRItems();
       this.inventories = await this.inventoryService.getAllLocations();

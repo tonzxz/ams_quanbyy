@@ -137,6 +137,8 @@
                         @if(currentUser?.role=='supply'){
                             <td class="w-16">
                                 <div class="flex gap-4 ">
+                                    <p-button size="small" icon="pi pi-pencil"
+                                    (click)="openEditStockModal(po.deliveryReceipt, item)" [outlined]="true" rounded />
                                     <p-button pTooltip="Print QR" size="small"  icon="pi pi-qrcode"
                                         (click)="generateQR(item)" [outlined]="true" rounded />
                                     <p-button pTooltip="Print QR Batch" size="small" icon="pi pi-objects-column" (click)="generateQRBatch(item)" [outlined]="true"
@@ -245,9 +247,9 @@
         </div>
 
         <div class="flex items-center gap-4 mb-2">
-            <label for="ticker" class="font-semibold w-24">Item Ticker</label>
+            <label for="ticker" class="font-semibold w-24">Code</label>
             <div class="flex-auto flex-col flex">
-                <input placeholder="Enter item ticker" formControlName="ticker" pSize="small" pInputText id="ticker"
+                <input placeholder="Enter item property code" formControlName="ticker" pSize="small" pInputText id="ticker"
                     class="flex-auto uppercase placeholder:normal-case" autocomplete="off" />
                 @if(stockForm.get('ticker')?.hasError('required') && stockForm.get('ticker')?.touched){
                 <small class="self-end text-red-500 mt-2">Item Ticker is required</small>
