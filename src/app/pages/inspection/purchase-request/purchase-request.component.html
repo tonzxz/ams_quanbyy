@@ -33,7 +33,6 @@
                         <th>Requestor</th>
                         <th>Department</th>
                         <th>Item</th>
-                        <th>Image</th>
                         <th>Quantity</th>
                         <th>Date</th>
                         <th>Actions</th>
@@ -41,18 +40,12 @@
                 </ng-template>
                 <ng-template pTemplate="body" let-request>
                     <tr pSelectableRow>
-                        <td>{{ request.code }}</td>
-                        <td>{{ request.name }}</td>
+                        <td>{{ request.prNo }}</td>
+                        <td>{{ request.requestedBy }}</td>
                         <td>{{ request.department }}</td>
-                        <td>{{ request.item }}</td>
-                        <td>
-                            <img
-                                [src]="'https://primefaces.org/cdn/primeng/images/demo/product/'"
-                                [alt]="request.item"
-                                class="w-24 rounded"
-                            >
-                        <td>{{ request.quantity }}</td>
-                        <td>{{ request.date }}</td>
+                        <td>{{ request.items[0]?.description }}</td>
+                        <td>{{ request.items[0]?.qty }}</td>
+                        <td>{{ request.date | date }}</td>
                         <td class="">
                             <button pButton pTooltip="Accept Purchase Request" showDelay="600" hideDelay="300" type="button" [outlined]="true" icon="pi pi-check" [rounded]="true" size="small" class="p-button-success mr-2" (click)="confirmAcceptRequest(request)"></button>
                             <button pButton pTooltip="Reject Purchase Request" showDelay="600" hideDelay="300" type="button" [outlined]="true" icon="pi pi-times" [rounded]="true" size="small" class="p-button-danger" (click)="confirmRejectRequest(request)"></button>
@@ -70,7 +63,6 @@
                         <th>Requestor</th>
                         <th>Department</th>
                         <th>Item</th>
-                        <th>Image</th>
                         <th>Quantity</th>
                         <th>Date</th>
                         <th>Actions</th>
@@ -78,18 +70,12 @@
                 </ng-template>
                 <ng-template pTemplate="body" let-request>
                     <tr pSelectableRow>
-                        <td>{{ request.code }}</td>
-                        <td>{{ request.name }}</td>
+                        <td>{{ request.prNo }}</td>
+                        <td>{{ request.requestedBy }}</td>
                         <td>{{ request.department }}</td>
-                        <td>{{ request.item }}</td>
-                        <td>
-                            <img
-                                [src]="'https://primefaces.org/cdn/primeng/images/demo/product/'"
-                                [alt]="request.item"
-                                class="w-24 rounded"
-                            >
-                        <td>{{ request.quantity }}</td>
-                        <td>{{ request.date }}</td>
+                        <td>{{ request.items[0]?.description }}</td>
+                        <td>{{ request.items[0]?.qty }}</td>
+                        <td>{{ request.date | date }}</td>
                         <td class="">
                             <button 
                                 pButton 
@@ -115,7 +101,6 @@
                         <th>Requestor</th>
                         <th>Department</th>
                         <th>Item</th>
-                        <th>Image</th>
                         <th>Quantity</th>
                         <th>Date</th>
                         <th>Actions</th>
@@ -123,18 +108,12 @@
                 </ng-template>
                 <ng-template pTemplate="body" let-request>
                     <tr pSelectableRow>
-                        <td>{{ request.code }}</td>
-                        <td>{{ request.name }}</td>
+                        <td>{{ request.prNo }}</td>
+                        <td>{{ request.requestedBy }}</td>
                         <td>{{ request.department }}</td>
-                        <td>{{ request.item }}</td>
-                        <td>
-                            <img
-                                [src]="'https://primefaces.org/cdn/primeng/images/demo/product/'"
-                                [alt]="request.item"
-                                class="w-24 rounded"
-                            >
-                        <td>{{ request.quantity }}</td>
-                        <td>{{ request.date }}</td>
+                        <td>{{ request.items[0]?.description }}</td>
+                        <td>{{ request.items[0]?.qty }}</td>
+                        <td>{{ request.date | date }}</td>
                         <td class="">
                             <button 
                                 pButton 
@@ -201,7 +180,7 @@
         <span class="ml-7">Lorem ipsum dolor sit amet, consectetur adipiscing elit.</span>
     </div>
     <ng-template #footer>
-        <button *ngIf="isRequestPending(selectedRequest)" 
+        <button *ngIf="selectedRequest && isRequestPending(selectedRequest)" 
                 pButton pTooltip="Accept Purchase Request" 
                 label="Accept" 
                 type="button" 
@@ -209,7 +188,7 @@
                 size="small" 
                 class="p-button-success mr-2" 
                 (click)="confirmAcceptRequest(selectedRequest)"></button>
-        <button *ngIf="isRequestPending(selectedRequest)" 
+        <button *ngIf="selectedRequest && isRequestPending(selectedRequest)" 
                 pButton pTooltip="Reject Purchase Request" 
                 label="Reject" 
                 type="button" 
