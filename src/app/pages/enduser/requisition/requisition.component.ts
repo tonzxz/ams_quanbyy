@@ -750,81 +750,110 @@ removeSelectedStock(stock: Stock): void {
 
   
 async saveIssueSlip(): Promise<void> {
-  if (this.issueSlipForm.valid && this.selectedStocks.length > 0) {
-    try {
-      const selectedRequisition = this.issueSlipForm.get('title')?.value;
-      
-      // Generate Issue Slip ID
-      const issueSlipId = 'IS' + Math.random().toString(36).substr(2, 4).toUpperCase();
-      
-      // Create issued stocks data
-      const issuedStocks = this.selectedStocks.map(stock => ({
-        id: stock.id,
-        name: stock.name,
-        quantity: stock.quantity,
-        price: stock.price,
-        status: 'pending' as const,
-        dateIssued: new Date()
-      }));
+  console.log("Checking form validity:", this.issueSlipForm.valid);
+  console.log("Checking selected stocks:", this.selectedStocks.length);
 
-      // We need to maintain all the existing requisition fields
-      const updatedRequisition: Requisition = {
-        ...selectedRequisition,
-        issueSlipId: issueSlipId,
-        issuedStocks: issuedStocks,
-        issueSlipStatus: 'pending',
-        lastModified: new Date(),
-        // Ensure we keep all required fields
-        title: selectedRequisition.title,
-        status: selectedRequisition.status,
-        group: selectedRequisition.group,
-        products: selectedRequisition.products,
-        classifiedItemId: selectedRequisition.classifiedItemId,
-        // Keep all optional fields
-        description: selectedRequisition.description,
-        selectedGroups: selectedRequisition.selectedGroups,
-        productQuantities: selectedRequisition.productQuantities,
-        productSpecifications: selectedRequisition.productSpecifications,
-        ppmpAttachment: selectedRequisition.ppmpAttachment,
-        purchaseRequestAttachment: selectedRequisition.purchaseRequestAttachment,
-        createdByUserId: selectedRequisition.createdByUserId,
-        createdByUserName: selectedRequisition.createdByUserName,
-        approvalSequenceId: selectedRequisition.approvalSequenceId,
-        currentApprovalLevel: selectedRequisition.currentApprovalLevel,
-        approvalStatus: selectedRequisition.approvalStatus,
-        approvalHistory: selectedRequisition.approvalHistory,
-      };
-
-      // Save to backend
-      await this.requisitionService.updateRequisition(updatedRequisition);
-
-      // Show success message
-      this.messageService.add({
-        severity: 'success',
-        summary: 'Success',
-        detail: 'Issue slip has been generated successfully'
-      });
-
-      // Reset form and selections
-      this.resetIssueSlipForm();
-      await this.loadRequisitions();
-      
-      // Show PDF preview
-      const pdfDataUrl = this.generateIssueSlipPdf();
-      this.selectedIssueSlipPdf = this.sanitizer.bypassSecurityTrustResourceUrl(pdfDataUrl);
-      this.displayIssueSlipPreview = true;
-
-    } catch (error) {
-      this.handleError(error, 'Error generating issue slip');
-    }
-  } else {
+  if (!this.issueSlipForm.valid) {
     this.messageService.add({
       severity: 'error',
       summary: 'Validation Error',
-      detail: 'Please complete all required fields and select at least one item.'
+      detail: 'Please complete all required fields in the form.'
     });
+    return;
+  }
+
+  if (this.selectedStocks.length === 0) {
+    this.messageService.add({
+      severity: 'error',
+      summary: 'Validation Error',
+      detail: 'Please select at least one stock item.'
+    });
+    return;
+  }
+
+  try {
+    const selectedRequisition = this.issueSlipForm.get('title')?.value;
+
+    if (!selectedRequisition) {
+      this.messageService.add({
+        severity: 'error',
+        summary: 'Error',
+        detail: 'No requisition selected. Please try again.'
+      });
+      return;
+    }
+
+    console.log("Selected Requisition:", selectedRequisition);
+
+    // Generate Issue Slip ID
+    const issueSlipId = 'IS' + Math.random().toString(36).substr(2, 4).toUpperCase();
+
+    // Ensure issuedStocks status has correct casing
+    const issuedStocks = this.selectedStocks.map(stock => ({
+      id: stock.id,
+      name: stock.name,
+      quantity: stock.quantity,
+      price: stock.price,
+      status: 'Pending' as 'Pending' | 'Approved' | 'Rejected', // Fix: Ensure proper enum casing
+      dateIssued: new Date()
+    }));
+
+    // Ensure issueSlipStatus is always lowercase
+    const issueSlipStatus: 'pending' | 'completed' | 'rejected' = 'pending';
+
+    // Ensure all required fields are maintained in the requisition
+    const updatedRequisition: Requisition = {
+      ...selectedRequisition,
+      issueSlipId: issueSlipId,
+      issuedStocks: issuedStocks,
+      issueSlipStatus, // Fix: Ensure lowercase enum value
+      lastModified: new Date(),
+      // Ensure all required fields are included
+      title: selectedRequisition.title,
+      status: selectedRequisition.status,
+      group: selectedRequisition.group,
+      products: selectedRequisition.products,
+      classifiedItemId: selectedRequisition.classifiedItemId,
+      description: selectedRequisition.description,
+      selectedGroups: selectedRequisition.selectedGroups,
+      productQuantities: selectedRequisition.productQuantities,
+      productSpecifications: selectedRequisition.productSpecifications,
+      ppmpAttachment: selectedRequisition.ppmpAttachment,
+      purchaseRequestAttachment: selectedRequisition.purchaseRequestAttachment,
+      createdByUserId: selectedRequisition.createdByUserId,
+      createdByUserName: selectedRequisition.createdByUserName,
+      approvalSequenceId: selectedRequisition.approvalSequenceId,
+      currentApprovalLevel: selectedRequisition.currentApprovalLevel,
+      approvalStatus: selectedRequisition.approvalStatus,
+      approvalHistory: selectedRequisition.approvalHistory,
+    };
+
+    console.log("Updated Requisition:", updatedRequisition);
+
+    // Save updated requisition
+    await this.requisitionService.updateRequisition(updatedRequisition);
+
+    this.messageService.add({
+      severity: 'success',
+      summary: 'Success',
+      detail: 'Issue slip has been generated successfully'
+    });
+
+    // Reset form and selections
+    this.resetIssueSlipForm();
+    await this.loadRequisitions();
+
+    // Show PDF preview
+    const pdfDataUrl = this.generateIssueSlipPdf();
+    this.selectedIssueSlipPdf = this.sanitizer.bypassSecurityTrustResourceUrl(pdfDataUrl);
+    this.displayIssueSlipPreview = true;
+
+  } catch (error) {
+    console.error("Error in saveIssueSlip:", error);
+    this.handleError(error, 'Error generating issue slip');
   }
 }
+
 
 private resetIssueSlipForm(): void {
   this.issueSlipForm.reset();

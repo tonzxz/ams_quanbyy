@@ -16,7 +16,7 @@ export const stockSchema = z.object({
   dateAdded: z.date().optional(), // Optional date of stock addition
   description: z.string().max(500, "Description cannot exceed 500 characters").optional(), // Optional stock description
   qrs: z.array(z.string()).optional(),
-  status:z.string().optional(),
+  status:z.enum(['pending','delivered','Approved','Rejected','Pending']).optional(),
 });
 
 export type Stock = z.infer<typeof stockSchema>;
