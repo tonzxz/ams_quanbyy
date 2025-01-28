@@ -88,7 +88,7 @@
   pTooltip="View Purchase Request"
 ></button>
           </td>
-          @if(currentUser?.role != 'end-user'){
+          @if(currentUser?.role != 'end-user' || (currentUser?.role =='end-user' && req.approvalSequenceDetails?.roleCode =='end-user') ){
             <td>
               <div class="flex gap-2">
                 @if(currentUser?.role != 'supply'){
