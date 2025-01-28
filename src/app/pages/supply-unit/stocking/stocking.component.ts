@@ -27,7 +27,8 @@ import { DeliveryReceipt, DeliveryReceiptItems, DeliveryReceiptService } from 's
 import { SelectModule } from 'primeng/select';
 import { InventoryLocation, InventoryService } from 'src/app/services/inventory.service';
 import { Product, ProductsService } from 'src/app/services/products.service';
-
+import {toDataURL} from 'qrcode';
+import {jsPDF} from 'jspdf';
 @Component({
   selector: 'app-stocking',
   standalone: true,
@@ -68,6 +69,112 @@ export class StockingComponent {
   
     generateRandomNumber(min: number, max: number): number {
       return Math.floor(Math.random() * (max - min + 1)) + min;
+    }
+
+    generateQR(item:Stock){
+      const pdf = new jsPDF();
+      let yOffset = 10; // Vertical offset for positioning the QR codes on the PDF
+      let xOffset = 10; // Starting position for QR code (horizontal)
+      const qrSize = 40; // Size of the QR codes in the PDF
+      const maxWidth = 210; // A4 page width in mm (ISO 216 standard)
+      const maxHeight = 297; // A4 page height in mm (ISO 216 standard)
+      const textOffset = 5; // Space between the QR code and the text
+      const id = `${item.ticker}-${new Date().getFullYear()}-${Math.floor(Math.random() * 1000000)}`;
+
+        // Generate QR code as a base64 image
+        toDataURL(id, { width: qrSize, errorCorrectionLevel: 'M' }, (err: any, url: string) => {
+          if (err) {
+            console.error('Error generating QR code:', err);
+            return;
+          }
+
+          // Add the QR code image to the PDF
+          pdf.addImage(url, 'PNG', xOffset, yOffset, qrSize, qrSize); // Position and size
+          const textWidth = pdf.getTextWidth(id); // Get width of the text
+          const textXOffset = xOffset + (qrSize - textWidth) / 2; // Center the text beneath the QR code
+          const fontSize = 8; // Font size for the text
+
+          // Add text beneath the QR code, centered
+          pdf.setFontSize(fontSize); // Set the font size
+          pdf.text(id, textXOffset, yOffset + qrSize + textOffset); 
+
+          // Update xOffset for the next QR code
+          xOffset += qrSize + 10; // Add a little space between QR codes horizontally
+
+          // If the QR code goes beyond the width of the page, move to the next row
+          if (xOffset + qrSize > maxWidth) {
+            xOffset = 10; // Reset xOffset to the start of the page
+            yOffset += qrSize + 10; // Move to the next row
+            yOffset += qrSize + textOffset + fontSize + 10; 
+          }
+
+
+          // Check if we need to add a new page for the QR codes
+          if (yOffset + qrSize > maxHeight) {
+            pdf.addPage(); // Add new page if the QR codes exceed the page height
+            xOffset = 10; // Reset xOffset for new page
+            yOffset = 10; // Reset yOffset for new page
+          }
+        });
+
+        pdf.save(`${id}-qr-codes.pdf`);
+    }
+
+    generateQRBatch(item:Stock) {
+
+      const remainingQR = item.quantity - (item.qrs?.length ?? 0) ;
+      
+      const pdf = new jsPDF();
+      const textOffset = 5; 
+      let yOffset = 10; // Vertical offset for positioning the QR codes on the PDF
+      let xOffset = 10; // Starting position for QR code (horizontal)
+      const qrSize = 40; // Size of the QR codes in the PDF
+      const maxWidth = 210; // A4 page width in mm (ISO 216 standard)
+      const maxHeight = 297; // A4 page height in mm (ISO 216 standard)
+      const cols = Math.floor(maxWidth / qrSize); // Number of QR codes per row
+      const rows = Math.floor(maxHeight / qrSize); // Number of QR codes per column
+      for (let i = 0; i < remainingQR; i++) {
+        const id = `${item.ticker}-${new Date().getFullYear()}-${Math.floor(Math.random() * 1000000)}`;
+
+        // Generate QR code as a base64 image
+        toDataURL(id, { width: qrSize, errorCorrectionLevel: 'M' }, (err: any, url: string) => {
+          if (err) {
+            console.error('Error generating QR code:', err);
+            return;
+          }
+
+          // Add the QR code image to the PDF
+          pdf.addImage(url, 'PNG', xOffset, yOffset, qrSize, qrSize); // Position and size
+          const textWidth = pdf.getTextWidth(id); // Get width of the text
+          const textXOffset = xOffset + (qrSize - textWidth) / 2; // Center the text beneath the QR code
+          const fontSize = 8; // Font size for the text
+
+          // Add text beneath the QR code, centered
+          pdf.setFontSize(fontSize); // Set the font size
+          pdf.text(id, textXOffset, yOffset + qrSize + textOffset); 
+
+          // Update xOffset for the next QR code
+          xOffset += qrSize + 10; // Add a little space between QR codes horizontally
+
+          // If the QR code goes beyond the width of the page, move to the next row
+          if (xOffset + qrSize > maxWidth) {
+            xOffset = 10; // Reset xOffset to the start of the page
+            yOffset += qrSize + 10; // Move to the next row
+            yOffset += qrSize + textOffset + fontSize + 10; 
+          }
+
+          // Check if we need to add a new page for the QR codes
+          if (yOffset + qrSize > maxHeight) {
+            pdf.addPage(); // Add new page if the QR codes exceed the page height
+            xOffset = 10; // Reset xOffset for new page
+            yOffset = 10; // Reset yOffset for new page
+          }
+        });
+      }
+
+  
+      pdf.save(`${item.ticker}-qr-codes.pdf`);
+      
     }
   
     async fetchItems(){

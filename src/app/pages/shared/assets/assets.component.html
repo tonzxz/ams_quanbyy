@@ -43,10 +43,13 @@
                             <div class="flex flex-col md:!flex-row justify-between md:!items-center flex-1 gap-6 ">
                                 <div class="flex flex-row md:!flex-col justify-between items-start gap-2 m-10">
                                     <div>
-                                        <i class="pi pi-id-card "></i>
-                                        <span class="font-medium text-surface-500 dark:text-surface-400 text-sm ml-2">{{ item.dr_id.toUpperCase() }}</span>
+                                        <i class="pi pi-id-card mr-2"></i>
+                                        <span class="font-medium text-surface-500 dark:text-surface-400 text-sm">{{ item.dr_id.toUpperCase() }}</span>
                                         <div class="text-lg font-semibold">{{ item.name }}</div>
                                         <small class="font-medium">{{ item.ticker }}</small>
+                                        <div>
+                                                <small class="font-medium"><i class="pi pi-barcode mr-2"></i>{{ item.id }}</small>
+                                        </div>
                                     </div>
                                     <div class="bg-surface-100 py-1" style="border-radius: 30px">
                                         <div
@@ -98,6 +101,9 @@
                                             <span class="font-medium text-surface-500 dark:text-surface-400 text-sm ml-2">{{ item.dr_id.toUpperCase() }}</span>
                                             <div class="text-2xl font-bold">{{ item.name }}</div>
                                             <small class="font-medium">{{ item.ticker }}</small>
+                                            <div>
+                                                <small class="font-medium"><i class="pi pi-barcode mr-2"></i>{{ item.id }}</small>
+                                            </div>
                                         </div>
                                         <div class="bg-surface-100 py-1" style="border-radius: 30px">
                                             <div
