@@ -286,6 +286,12 @@ export const navItems: NavItem[] = [
     route: '/accounting/general-journal',
     requiredRoles: [ 'accounting'],
   },
+  {
+    displayName: 'Final Verification',
+    iconName: 'solar:ticket-sale-broken',
+    route: '/accounting/final-verification',
+    requiredRoles: [ 'accounting'],
+  },
 
   // Admin Section
   // {
