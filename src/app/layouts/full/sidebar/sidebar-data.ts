@@ -127,6 +127,8 @@ export const navItems: NavItem[] = [
     requiredRoles: ['end-user'],
   },
 
+  
+
   // Inspection Section
   {
     navCap: 'Inspection',
@@ -162,6 +164,12 @@ export const navItems: NavItem[] = [
     displayName: 'Supply Stocking',
     iconName: 'solar:inbox-archive-outline',
     route: '/supply-management/stocking',
+    requiredRoles: ['supply'],
+  },
+  {
+    displayName: 'Delivery',
+    iconName: 'solar:inbox-archive-outline',
+    route: '/supply-management/delivery',
     requiredRoles: ['supply'],
   },
   // {

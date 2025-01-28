@@ -50,11 +50,11 @@ export const requisitionSchema = z.object({
       name: z.string(),
       quantity: z.number().min(1, "Quantity must be at least 1"),
       price: z.number().min(0, "Price cannot be negative"),
-      status: z.enum(['pending', 'issued']).default('pending'),
+      status: z.enum(['Pending', 'Approved', 'Rejected']).optional(),
       dateIssued: z.date().optional(),
     })
   ).optional(),
-  issueSlipStatus: z.enum(['pending', 'completed']).optional(),
+  issueSlipStatus: z.enum(['pending', 'completed', 'rejected']).optional(),
   dateCreated: z.coerce.date().optional(),
   lastModified: z.coerce.date().optional(),
   signature: z.string().optional(),
