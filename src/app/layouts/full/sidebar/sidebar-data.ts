@@ -358,7 +358,7 @@ export const navItems: NavItem[] = [
     requiredRoles: ['admin', 'superadmin'],
   },
   {
-    displayName: 'Inventory',
+    displayName: 'Inventory Count',
     iconName: 'solar:widget-add-line-duotone',
     route: '/admin/inventory',
     requiredRoles: ['admin', 'superadmin'],
