@@ -10,6 +10,7 @@ import { PrApprovalComponent } from './pr-approval/pr-approval.component';
 import { AccountingDashboardComponent } from './accounting-dashboard/accounting-dashboard.component';
 import { ClassificationComponent } from './classification/classification.component';
 import { RisAccountingComponent } from './ris-accounting/ris-accounting.component';
+import { IssueSlipComponent } from './issue-slip/issue-slip.component';
 import { FinalVerificationComponent } from './final-verification/final-verification.component';
 
 export const AccountingRoutes: Routes = [
@@ -73,6 +74,13 @@ export const AccountingRoutes: Routes = [
       {
         path: 'ris-accounting',
         component: RisAccountingComponent,
+        canActivate: [roleGuard],
+        data: { roles: ['accounting', 'superadmin'], breadcrumb: 'Requisition and Issue Slips' } 
+      },
+
+        {
+        path: 'issue-slip',
+        component: IssueSlipComponent,
         canActivate: [roleGuard],
         data: { roles: ['accounting', 'superadmin'], breadcrumb: 'Requisition and Issue Slips' } 
       },
