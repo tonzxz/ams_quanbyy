@@ -1,300 +1,319 @@
-import { CommonModule } from '@angular/common';
+// general-journal.component.ts
 import { Component, OnInit } from '@angular/core';
-import { FormArray, FormBuilder, FormGroup, Validators } from '@angular/forms';
-import { ConfirmationService, MessageService } from 'primeng/api';
-import { ButtonModule } from 'primeng/button';
-import { CalendarModule } from 'primeng/calendar';
-import { ConfirmPopupModule } from 'primeng/confirmpopup';
-import { DialogModule } from 'primeng/dialog';
-import { DropdownModule } from 'primeng/dropdown';
-import { InputTextModule } from 'primeng/inputtext';
-import { TableModule } from 'primeng/table';
-import { MaterialModule } from 'src/app/material.module';
+import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { ReactiveFormsModule } from '@angular/forms';
-import { IconFieldModule } from 'primeng/iconfield';
-import { LottieAnimationComponent } from "../../ui-components/lottie-animation/lottie-animation.component";
-import { InputIconModule } from 'primeng/inputicon';
+import { MessageService } from 'primeng/api';
+import { ButtonModule } from 'primeng/button';
+import { TableModule } from 'primeng/table';
+import { DialogModule } from 'primeng/dialog';
 import { ToastModule } from 'primeng/toast';
-import { jsPDF } from 'jspdf';
+import { MaterialModule } from 'src/app/material.module';
+import { IconFieldModule } from 'primeng/iconfield';
+import { InputTextModule } from 'primeng/inputtext';
+import { TooltipModule } from 'primeng/tooltip';
+import { AccountingService, GeneralJournalEntry } from 'src/app/services/accounting.service';
+import { LottieAnimationComponent } from '../../ui-components/lottie-animation/lottie-animation.component';
+import { InputIcon } from 'primeng/inputicon';
+import jsPDF from 'jspdf';
 import 'jspdf-autotable';
-
-interface JournalEntry {
-  entryNo: string;
-  date: Date;
-  description: string;
-  debitTotal: number;
-  creditTotal: number;
-  transactions: { account: string; debit: number; credit: number }[];
-}
-
-interface Account {
-  code: string;
-  name: string;
-}
 
 @Component({
   selector: 'app-general-journal',
   standalone: true,
   imports: [
-    ToastModule,
-    InputIconModule,
-    ReactiveFormsModule,
-    FormsModule,
     CommonModule,
-    TableModule,
-    ButtonModule,
-    InputTextModule,
-    DialogModule,
-    CalendarModule,
-    DropdownModule,
-    ConfirmPopupModule,
+    FormsModule,
     MaterialModule,
+    ButtonModule,
+    TableModule,
+    DialogModule,
+    ToastModule,
     IconFieldModule,
-    LottieAnimationComponent
+    InputTextModule,
+    TooltipModule,
+    LottieAnimationComponent,
+    InputIcon
   ],
-  providers: [MessageService, ConfirmationService],
-  templateUrl: './general-journal.component.html',
-  styleUrls: ['./general-journal.component.scss'],
+  providers: [MessageService],
+  template: `
+    <mat-card class="cardWithShadow">
+      <mat-card-content>
+        <mat-card-title>General Journal</mat-card-title>
+        <mat-card-subtitle class="mat-body-1 mb-10 !flex justify-between items-center">
+          <span>Review and manage journal entries.</span>
+          <div class="flex gap-3">
+            <p-iconfield fluid class="w-full max-w-72">
+              <p-inputicon styleClass="pi pi-search" />
+              <input
+                fluid
+                class="w-full"
+                pSize="small"
+                [(ngModel)]="searchValue"
+                (input)="dt.filterGlobal(searchValue, 'contains')"
+                type="text"
+                pInputText
+                placeholder="Search"
+              />
+            </p-iconfield>
+          </div>
+        </mat-card-subtitle>
+
+        <p-table
+          #dt
+          [value]="journalEntries"
+          [paginator]="true"
+          [rows]="5"
+          [rowsPerPageOptions]="[5, 10, 20]"
+          [globalFilterFields]="['entryNo', 'description']"
+          [tableStyle]="{ 'min-width': '50rem' }"
+        >
+          <ng-template pTemplate="header">
+            <tr>
+              <th>Entry No</th>
+              <th>Date</th>
+              <th>Description</th>
+              <th>Account</th>
+              <th>Debit</th>
+              <th>Credit</th>
+              <th style="width: 5rem">Actions</th>
+            </tr>
+          </ng-template>
+          
+          <ng-template pTemplate="body" let-entry>
+            <tr>
+              <td>{{ entry.entryNo }}</td>
+              <td>{{ entry.date | date }}</td>
+              <td>{{ entry.description }}</td>
+              <td>
+                <div *ngFor="let trans of entry.transactions" class="py-1">
+                  {{ trans.accountName }}
+                </div>
+              </td>
+              <td>
+                <div *ngFor="let trans of entry.transactions" class="py-1">
+                  {{ trans.debit > 0 ? (trans.debit | currency:'PHP') : '' }}
+                </div>
+              </td>
+              <td>
+                <div *ngFor="let trans of entry.transactions" class="py-1">
+                  {{ trans.credit > 0 ? (trans.credit | currency:'PHP') : '' }}
+                </div>
+              </td>
+              <td>
+                <div class="flex gap-2">
+                  <p-button
+                    severity="info"
+                    pTooltip="Export to PDF"
+                    [outlined]="true"
+                    size="small"
+                    icon="pi pi-file-pdf"
+                    rounded
+                    (click)="exportToPDF(entry)"
+                  ></p-button>
+                  <p-button
+                    severity="secondary"
+                    pTooltip="View Details"
+                    [outlined]="true"
+                    size="small"
+                    icon="pi pi-eye"
+                    rounded
+                    (click)="viewDetails(entry)"
+                  ></p-button>
+                </div>
+              </td>
+            </tr>
+          </ng-template>
+
+          <ng-template pTemplate="footer">
+            <tr>
+              <td colspan="4" class="text-right font-bold">Totals:</td>
+              <td class="font-bold">{{ getTotalDebits() | currency:'PHP' }}</td>
+              <td class="font-bold">{{ getTotalCredits() | currency:'PHP' }}</td>
+              <td></td>
+            </tr>
+          </ng-template>
+
+          <ng-template pTemplate="emptymessage">
+            <tr>
+              <td colspan="7">
+                <div class="flex flex-col w-full items-center justify-center mb-8">
+                  <div class="overflow-hidden h-52 w-52 mr-8">
+                    <app-lottie-animation animation="box" class="w-60 h-60"></app-lottie-animation>
+                  </div>
+                  <span>No journal entries found.</span>
+                </div>
+              </td>
+            </tr>
+          </ng-template>
+        </p-table>
+      </mat-card-content>
+    </mat-card>
+
+    <!-- Details Dialog -->
+    <p-dialog 
+      [(visible)]="showDetailsDialog" 
+      [modal]="true" 
+      [style]="{width: '50vw'}"
+      [header]="'Journal Entry Details - ' + (selectedEntry?.entryNo || '')"
+    >
+      <div *ngIf="selectedEntry" class="p-4">
+        <div class="grid grid-cols-2 gap-4 mb-4">
+          <div>
+            <p class="font-bold">Entry Number:</p>
+            <p>{{ selectedEntry.entryNo }}</p>
+          </div>
+          <div>
+            <p class="font-bold">Date:</p>
+            <p>{{ selectedEntry.date | date:'mediumDate' }}</p>
+          </div>
+        </div>
+        
+        <div class="mb-4">
+          <p class="font-bold">Description:</p>
+          <p>{{ selectedEntry.description }}</p>
+        </div>
+
+        <div class="mb-4">
+          <p class="font-bold mb-2">Transactions:</p>
+          <table class="w-full border-collapse">
+            <thead>
+              <tr class="bg-gray-100">
+                <th class="border p-2 text-left">Account</th>
+                <th class="border p-2 text-right">Debit</th>
+                <th class="border p-2 text-right">Credit</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let trans of selectedEntry.transactions">
+                <td class="border p-2">{{ trans.accountName }}</td>
+                <td class="border p-2 text-right">
+                  {{ trans.debit > 0 ? (trans.debit | currency:'PHP') : '' }}
+                </td>
+                <td class="border p-2 text-right">
+                  {{ trans.credit > 0 ? (trans.credit | currency:'PHP') : '' }}
+                </td>
+              </tr>
+              <tr class="bg-gray-50">
+                <td class="border p-2 font-bold">Totals</td>
+                <td class="border p-2 text-right font-bold">
+                  {{ selectedEntry.debitTotal | currency:'PHP' }}
+                </td>
+                <td class="border p-2 text-right font-bold">
+                  {{ selectedEntry.creditTotal | currency:'PHP' }}
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </p-dialog>
+
+    <p-toast position="bottom-right" />
+  `
 })
 export class GeneralJournalComponent implements OnInit {
-  journalEntries: JournalEntry[] = [];
-  filteredJournalEntries: JournalEntry[] = [];
+  journalEntries: GeneralJournalEntry[] = [];
   searchValue: string = '';
-  showAddEntryModal: boolean = false;
-  selectedEntry?: JournalEntry;
-  isEditing: boolean = false;
-  accounts: Account[] = [
-    { code: '1001', name: 'Cash' },
-    { code: '2001', name: 'Accounts Payable' },
-    { code: '3001', name: 'Sales Revenue' },
-  ];
-
-  journalEntryForm: FormGroup;
+  showDetailsDialog: boolean = false;
+  selectedEntry?: GeneralJournalEntry;
 
   constructor(
-    private fb: FormBuilder,
-    private messageService: MessageService,
-    private confirmationService: ConfirmationService
-  ) {
-    this.journalEntryForm = this.fb.group({
-      date: ['', Validators.required],
-      description: ['', Validators.required],
-      transactions: this.fb.array([this.createTransaction()], Validators.required),
+    private accountingService: AccountingService,
+    private messageService: MessageService
+  ) {}
+
+  ngOnInit() {
+    this.accountingService.getJournalEntries().subscribe(entries => {
+      this.journalEntries = entries;
     });
   }
 
-  ngOnInit(): void {
-    this.fetchJournalEntries();
+  getTotalDebits(): number {
+    return this.journalEntries.reduce((sum, entry) => 
+      sum + entry.debitTotal, 0);
   }
 
-  fetchJournalEntries() {
-    // Mock data for demonstration
-    this.journalEntries = [
-      {
-        entryNo: 'JE-001',
-        date: new Date(),
-        description: 'Office Supplies Purchase',
-        debitTotal: 5000,
-        creditTotal: 5000,
-        transactions: [
-          { account: '1001', debit: 5000, credit: 0 },
-          { account: '2001', debit: 0, credit: 5000 },
-        ],
-      },
-    ];
-    this.filteredJournalEntries = this.journalEntries;
+  getTotalCredits(): number {
+    return this.journalEntries.reduce((sum, entry) => 
+      sum + entry.creditTotal, 0);
   }
 
-  get transactions() {
-    return this.journalEntryForm.get('transactions') as FormArray;
-  }
-
-  createTransaction(): FormGroup {
-    return this.fb.group({
-      account: ['', Validators.required],
-      debit: [0, Validators.min(0)],
-      credit: [0, Validators.min(0)],
-    });
-  }
-
-  addTransaction() {
-    this.transactions.push(this.createTransaction());
-  }
-
-  removeTransaction(index: number) {
-    this.transactions.removeAt(index);
-  }
-
-  saveEntry() {
-    if (this.journalEntryForm.invalid) {
-      this.messageService.add({ severity: 'error', summary: 'Error', detail: 'Please fill all required fields.' });
-      return;
-    }
-
-    const formValue = this.journalEntryForm.value;
-    if (this.isEditing && this.selectedEntry) {
-      // Update existing entry
-      this.selectedEntry.date = formValue.date;
-      this.selectedEntry.description = formValue.description;
-      this.selectedEntry.transactions = formValue.transactions;
-      this.selectedEntry.debitTotal = formValue.transactions.reduce((sum: number, t: any) => sum + t.debit, 0);
-      this.selectedEntry.creditTotal = formValue.transactions.reduce((sum: number, t: any) => sum + t.credit, 0);
-    } else {
-      // Create new entry
-      const newEntry: JournalEntry = {
-        entryNo: `JE-${this.journalEntries.length + 1}`,
-        date: formValue.date,
-        description: formValue.description,
-        debitTotal: formValue.transactions.reduce((sum: number, t: any) => sum + t.debit, 0),
-        creditTotal: formValue.transactions.reduce((sum: number, t: any) => sum + t.credit, 0),
-        transactions: formValue.transactions,
-      };
-
-      this.journalEntries.push(newEntry);
-    }
-
-    this.filteredJournalEntries = this.journalEntries;
-    this.showAddEntryModal = false;
-    this.messageService.add({ severity: 'success', summary: 'Success', detail: 'Journal entry saved.' });
-  }
-
-  editEntry(entry: JournalEntry) {
-    this.isEditing = true;
+  viewDetails(entry: GeneralJournalEntry) {
     this.selectedEntry = entry;
-    this.journalEntryForm.patchValue({
-      date: entry.date,
-      description: entry.description,
-    });
-
-    this.transactions.clear();
-    entry.transactions.forEach((transaction) => {
-      this.transactions.push(this.fb.group(transaction));
-    });
-
-    this.showAddEntryModal = true;
+    this.showDetailsDialog = true;
   }
 
-  confirmDeleteEntry(event: Event, entryNo: string) {
-    this.confirmationService.confirm({
-      target: event.target as EventTarget,
-      message: 'Are you sure you want to delete this journal entry?',
-      icon: 'pi pi-exclamation-triangle',
-      accept: () => {
-        this.journalEntries = this.journalEntries.filter((entry) => entry.entryNo !== entryNo);
-        this.filteredJournalEntries = this.journalEntries;
-        this.messageService.add({ severity: 'success', summary: 'Success', detail: 'Journal entry deleted.' });
-      },
-    });
-  }
-
-  exportToPDF(entry: JournalEntry) {
+  exportToPDF(entry: GeneralJournalEntry) {
     const doc = new jsPDF();
-    
+
+    // Header
     doc.setFontSize(10);
     doc.text('Appendix 1', doc.internal.pageSize.width - 20, 10, { align: 'right' });
     
     doc.setFontSize(14);
     doc.setFont('helvetica', 'bold');
-    const ledgerText = 'GENERAL JOURNAL';
-    const ledgerWidth = doc.getTextWidth(ledgerText);
-    const ledgerCenterX = (doc.internal.pageSize.width - ledgerWidth) / 2;
-    doc.text(ledgerText, ledgerCenterX, 20);
-   
-    doc.setFontSize(10);
-    const monthText = 'Month: ___________________';
-    const monthWidth = doc.getTextWidth(monthText);
-    const monthCenterX = (doc.internal.pageSize.width - monthWidth) / 2;
-    doc.text(monthText, monthCenterX, 30);
+    const title = 'GENERAL JOURNAL';
+    const titleWidth = doc.getTextWidth(title);
+    const titleX = (doc.internal.pageSize.width - titleWidth) / 2;
+    doc.text(title, titleX, 20);
     
-    doc.text('Entity Name: _________________________', 10, 40);
-    doc.text('Fund Cluster: _________________________', 10, 50);
-    doc.text('Sheet No.: _________________________', doc.internal.pageSize.width - 100, 50); 
-   
-    const columns = ['Date', 'JEV No.', 'Particulars', 'UACS Objects Code', 'P', { content: 'Amount', colSpan: 2 }];
-    const subColumns = ['', '', '', '', '', 'Debit', 'Credit'];
-
-    const rows = entry.transactions.map(transaction => [
-        entry.date.toLocaleDateString(),
-        entry.entryNo,
-        entry.description,
-        transaction.account,
-        '', 
-        transaction.debit,
-        transaction.credit,
+    // Entity information
+    doc.setFontSize(10);
+    doc.setFont('helvetica', 'normal');
+    doc.text('Entity Name: QUANBY SOLUTIONS INC.', 20, 30);
+    doc.text('Fund Cluster: ________________', doc.internal.pageSize.width - 80, 30);
+    
+    // Current month and year
+    const month = entry.date.toLocaleString('default', { month: 'long' });
+    const year = entry.date.getFullYear();
+    doc.text(`Month: ${month} ${year}`, 20, 40);
+    
+    // Table data
+    const tableData = entry.transactions.map(t => [
+      entry.date.toLocaleDateString(),
+      entry.entryNo,
+      t.accountName,
+      t.accountCode,
+      '', // Placeholder for reference
+      t.debit || '',
+      t.credit || ''
     ]);
 
-    while (rows.length < 20) {
-        rows.push(['', '', '', '', '', '', '']); 
-    }
-   
-    rows.push([
-        '',
-        '',
-        '',
-        'Totals',
-        '',
+    // Table configuration
+    (doc as any).autoTable({
+      startY: 50,
+      head: [
+        ['Date', 'JEV No.', 'Particulars', 'UACS Object Code', 'Ref', 'Debit', 'Credit'],
+      ],
+      body: tableData,
+      foot: [[
+        '', '', 'Total', '', '',
         entry.debitTotal.toFixed(2),
-        entry.creditTotal.toFixed(2),
-    ]);
-  
-    const tableOptions = {
-        startY: 60,
-        head: [columns, subColumns],
-        body: rows,
-        theme: 'plain',
-        styles: {
-            fontSize: 9,
-            font: 'helvetica',
-            lineColor: [0, 0, 0],
-            lineWidth: 0.1,
-        },
-        headStyles: {
-            fillColor: false,
-            textColor: [0, 0, 0],
-            lineColor: [0, 0, 0],
-            lineWidth: 0.1,
-            halign: 'center', 
-        },
-        bodyStyles: {
-            fillColor: false,
-            textColor: [0, 0, 0],
-            lineColor: [0, 0, 0],
-            lineWidth: 0.1,
-        },
-        columnStyles: {
-            5: { halign: 'center' }, 
-            6: { halign: 'center' }, 
-        },
-    };
-    
-    (doc as any).autoTable(tableOptions);
-    const finalY = (doc as any).lastAutoTable.finalY;
-   
-    doc.setFontSize(10);
-    const certifiedText = 'CERTIFIED CORRECT:';
-    const certifiedWidth = doc.getTextWidth(certifiedText);
-    const certifiedCenterX = (doc.internal.pageSize.width - certifiedWidth) / 2;
-    doc.text(certifiedText, certifiedCenterX, finalY + 5);
-   
-    const signatureY = doc.internal.pageSize.height - 25; 
- 
-    const lineStartX = doc.internal.pageSize.width - 100;
-    const lineEndX = doc.internal.pageSize.width - 20;
-    const lineY = signatureY - 5;
-    doc.line(lineStartX, lineY, lineEndX, lineY); 
-    
-    const signatureText = '(Signature over Printed Name)';
-    const signatureWidth = doc.getTextWidth(signatureText);
-    const signatureCenterX = (lineStartX + lineEndX - signatureWidth) / 2;
-    doc.text(signatureText, signatureCenterX, signatureY);
- 
-    const chiefAccountantText = 'Chief Accountant/Head of\nAccounting Division/Unit';
-    const chiefAccountantWidth = doc.getTextWidth(chiefAccountantText.split('\n')[0]); 
-    const chiefAccountantCenterX = (lineStartX + lineEndX - chiefAccountantWidth) / 2; 
-    doc.text(chiefAccountantText, chiefAccountantCenterX, signatureY + 5);
-    
-    doc.save(`${entry.entryNo}_general_ledger.pdf`);
-}
+        entry.creditTotal.toFixed(2)
+      ]],
+      theme: 'grid',
+      styles: {
+        fontSize: 8,
+        cellPadding: 2,
+      },
+      headStyles: {
+        fillColor: [255, 255, 255],
+        textColor: [0, 0, 0],
+        fontStyle: 'bold',
+        lineWidth: 0.1
+      },
+      footStyles: {
+        fontStyle: 'bold'
+      }
+    });
 
+    // Add signature lines
+    const finalY = (doc as any).lastAutoTable.finalY + 20;
+    doc.text('Prepared by:', 20, finalY);
+    doc.text('Reviewed by:', doc.internal.pageSize.width / 2 - 20, finalY);
+    doc.text('Approved by:', doc.internal.pageSize.width - 60, finalY);
+
+    // Save the PDF
+    doc.save(`Journal_Entry_${entry.entryNo}.pdf`);
+  }
 }
