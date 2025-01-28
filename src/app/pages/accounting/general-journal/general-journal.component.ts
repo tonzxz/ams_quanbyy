@@ -249,71 +249,120 @@ export class GeneralJournalComponent implements OnInit {
     // Header
     doc.setFontSize(10);
     doc.text('Appendix 1', doc.internal.pageSize.width - 20, 10, { align: 'right' });
-    
+
+    // Title
     doc.setFontSize(14);
     doc.setFont('helvetica', 'bold');
-    const title = 'GENERAL JOURNAL';
-    const titleWidth = doc.getTextWidth(title);
-    const titleX = (doc.internal.pageSize.width - titleWidth) / 2;
-    doc.text(title, titleX, 20);
-    
-    // Entity information
+    const ledgerText = 'GENERAL JOURNAL';
+    const ledgerWidth = doc.getTextWidth(ledgerText);
+    const ledgerCenterX = (doc.internal.pageSize.width - ledgerWidth) / 2;
+    doc.text(ledgerText, ledgerCenterX, 20);
+
+    // Month Placeholder
     doc.setFontSize(10);
-    doc.setFont('helvetica', 'normal');
-    doc.text('Entity Name: QUANBY SOLUTIONS INC.', 20, 30);
-    doc.text('Fund Cluster: ________________', doc.internal.pageSize.width - 80, 30);
-    
-    // Current month and year
-    const month = entry.date.toLocaleString('default', { month: 'long' });
-    const year = entry.date.getFullYear();
-    doc.text(`Month: ${month} ${year}`, 20, 40);
-    
-    // Table data
-    const tableData = entry.transactions.map(t => [
-      entry.date.toLocaleDateString(),
-      entry.entryNo,
-      t.accountName,
-      t.accountCode,
-      '', // Placeholder for reference
-      t.debit || '',
-      t.credit || ''
+    const monthText = 'Month: ___________________';
+    const monthWidth = doc.getTextWidth(monthText);
+    const monthCenterX = (doc.internal.pageSize.width - monthWidth) / 2;
+    doc.text(monthText, monthCenterX, 30);
+
+    // Entity Information
+    doc.text('Entity Name: _________________________', 10, 40);
+    doc.text('Fund Cluster: _________________________', 10, 50);
+    doc.text('Sheet No.: _________________________', doc.internal.pageSize.width - 100, 50);
+
+    // Table Headers
+    const columns = ['Date', 'JEV No.', 'Particulars', 'UACS Objects Code', 'P', { content: 'Amount', colSpan: 2 }];
+    const subColumns = ['', '', '', '', '', 'Debit', 'Credit'];
+
+    // Table Body
+    const rows = entry.transactions.map(transaction => [
+        entry.date.toLocaleDateString(),
+        entry.entryNo,
+        entry.description,
+        transaction.accountCode,
+        '',
+        transaction.debit,
+        transaction.credit,
     ]);
 
-    // Table configuration
-    (doc as any).autoTable({
-      startY: 50,
-      head: [
-        ['Date', 'JEV No.', 'Particulars', 'UACS Object Code', 'Ref', 'Debit', 'Credit'],
-      ],
-      body: tableData,
-      foot: [[
-        '', '', 'Total', '', '',
+    // Fill empty rows to maintain table height
+    while (rows.length < 20) {
+        rows.push(['', '', '', '', '', '', '']);
+    }
+
+    // Add Totals Row
+    rows.push([
+        '',
+        '',
+        '',
+        'Totals',
+        '',
         entry.debitTotal.toFixed(2),
-        entry.creditTotal.toFixed(2)
-      ]],
-      theme: 'grid',
-      styles: {
-        fontSize: 8,
-        cellPadding: 2,
-      },
-      headStyles: {
-        fillColor: [255, 255, 255],
-        textColor: [0, 0, 0],
-        fontStyle: 'bold',
-        lineWidth: 0.1
-      },
-      footStyles: {
-        fontStyle: 'bold'
-      }
-    });
+        entry.creditTotal.toFixed(2),
+    ]);
 
-    // Add signature lines
-    const finalY = (doc as any).lastAutoTable.finalY + 20;
-    doc.text('Prepared by:', 20, finalY);
-    doc.text('Reviewed by:', doc.internal.pageSize.width / 2 - 20, finalY);
-    doc.text('Approved by:', doc.internal.pageSize.width - 60, finalY);
+    // Table Options
+    const tableOptions = {
+        startY: 60,
+        head: [columns, subColumns],
+        body: rows,
+        theme: 'plain',
+        styles: {
+            fontSize: 9,
+            font: 'helvetica',
+            lineColor: [0, 0, 0],
+            lineWidth: 0.1,
+        },
+        headStyles: {
+            fillColor: false,
+            textColor: [0, 0, 0],
+            lineColor: [0, 0, 0],
+            lineWidth: 0.1,
+            halign: 'center',
+        },
+        bodyStyles: {
+            fillColor: false,
+            textColor: [0, 0, 0],
+            lineColor: [0, 0, 0],
+            lineWidth: 0.1,
+        },
+        columnStyles: {
+            5: { halign: 'center' },
+            6: { halign: 'center' },
+        },
+    };
 
-    // Save the PDF
-    doc.save(`Journal_Entry_${entry.entryNo}.pdf`);
-  }
+    // Add Table
+    (doc as any).autoTable(tableOptions);
+    const finalY = (doc as any).lastAutoTable.finalY;
+
+    // Certification Text
+    doc.setFontSize(10);
+    const certifiedText = 'CERTIFIED CORRECT:';
+    const certifiedWidth = doc.getTextWidth(certifiedText);
+    const certifiedCenterX = (doc.internal.pageSize.width - certifiedWidth) / 2;
+    doc.text(certifiedText, certifiedCenterX, finalY + 5);
+
+    // Signature Line
+    const signatureY = doc.internal.pageSize.height - 25;
+    const lineStartX = doc.internal.pageSize.width - 100;
+    const lineEndX = doc.internal.pageSize.width - 20;
+    const lineY = signatureY - 5;
+    doc.line(lineStartX, lineY, lineEndX, lineY);
+
+    // Signature Text
+    const signatureText = '(Signature over Printed Name)';
+    const signatureWidth = doc.getTextWidth(signatureText);
+    const signatureCenterX = (lineStartX + lineEndX - signatureWidth) / 2;
+    doc.text(signatureText, signatureCenterX, signatureY);
+
+    // Chief Accountant Text
+    const chiefAccountantText = 'Chief Accountant/Head of\nAccounting Division/Unit';
+    const chiefAccountantWidth = doc.getTextWidth(chiefAccountantText.split('\n')[0]);
+    const chiefAccountantCenterX = (lineStartX + lineEndX - chiefAccountantWidth) / 2;
+    doc.text(chiefAccountantText, chiefAccountantCenterX, signatureY + 5);
+
+    // Save PDF
+    doc.save(`${entry.entryNo}_general_ledger.pdf`);
+}
 }

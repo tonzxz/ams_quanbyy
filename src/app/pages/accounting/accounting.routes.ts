@@ -9,6 +9,7 @@ import { GeneralJournalComponent } from './general-journal/general-journal.compo
 import { PrApprovalComponent } from './pr-approval/pr-approval.component';
 import { AccountingDashboardComponent } from './accounting-dashboard/accounting-dashboard.component';
 import { ClassificationComponent } from './classification/classification.component';
+import { RisAccountingComponent } from './ris-accounting/ris-accounting.component';
 
 export const AccountingRoutes: Routes = [
   {
@@ -67,6 +68,12 @@ export const AccountingRoutes: Routes = [
         component: ClassificationComponent,
         canActivate: [roleGuard],
         data: { roles: ['accounting', 'superadmin'], breadcrumb: 'Classification' } 
+      },
+      {
+        path: 'ris-accounting',
+        component: RisAccountingComponent,
+        canActivate: [roleGuard],
+        data: { roles: ['accounting', 'superadmin'], breadcrumb: 'Requisition and Issue Slips' } 
       },
     
     ],
