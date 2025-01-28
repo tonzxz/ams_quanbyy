@@ -1,3 +1,4 @@
+// classification.component.ts
 import { Component, OnInit } from '@angular/core';
 import { MatCardModule } from '@angular/material/card';
 import { DeliveryReceipt, DeliveryReceiptService } from 'src/app/services/delivery-receipt.service';
@@ -8,6 +9,8 @@ import { ButtonModule } from 'primeng/button';
 import { TableModule } from 'primeng/table';
 import { DialogModule } from 'primeng/dialog';
 import { FormsModule } from '@angular/forms';
+import { StepsModule } from 'primeng/steps';
+import { MenuItem } from 'primeng/api';
 import jsPDF from 'jspdf';
 import { InputTextModule } from 'primeng/inputtext';
 import { InputIconModule } from 'primeng/inputicon';
@@ -21,6 +24,13 @@ interface JournalEntry {
   accountType: 'debit' | 'credit';
   accountCode: string;
   amount: number;
+  classification: string;
+}
+
+enum ReceiptStatus {
+  Unverified = 'unverified',
+  Processing = 'processing',
+  Verified = 'verified'
 }
 
 @Component({
@@ -40,11 +50,11 @@ interface JournalEntry {
     LottieAnimationComponent,
     ToastModule,
     ConfirmPopupModule,
-    DropdownModule
+    DropdownModule,
+    StepsModule
   ],
   providers: [MessageService, ConfirmationService],
   templateUrl: './classification.component.html',
-  styleUrls: ['./classification.component.scss'],
 })
 export class ClassificationComponent implements OnInit {
   verifiedReceipts: DeliveryReceipt[] = [];
@@ -52,16 +62,26 @@ export class ClassificationComponent implements OnInit {
   showReceiptDetailsModal: boolean = false;
   showSubmitFormModal: boolean = false;
   selectedReceipt?: DeliveryReceipt;
+  steps: MenuItem[] = [];
+  currentStep: number = 0;
 
   // Form-related properties
   accountTypes = [
     { label: 'Debit', value: 'debit' },
     { label: 'Credit', value: 'credit' },
   ];
+
+  classifications = [
+    { label: 'Supplies - Stock Card', value: 'supplies' },
+    { label: 'Semi-Expendable - Property Card', value: 'semi_expendable' },
+    { label: 'PPE - Property Card', value: 'ppe' }
+  ];
+
   newEntry: JournalEntry = {
     accountType: 'debit',
     accountCode: '',
     amount: 0,
+    classification: ''
   };
   entries: JournalEntry[] = [];
 
@@ -71,7 +91,9 @@ export class ClassificationComponent implements OnInit {
   ) {}
 
   async ngOnInit() {
+    this.initializeSteps();
     try {
+      // Get all receipts
       this.verifiedReceipts = await this.deliveryReceiptService.getVerifiedReceipts();
     } catch (error) {
       this.messageService.add({
@@ -82,9 +104,37 @@ export class ClassificationComponent implements OnInit {
     }
   }
 
+  initializeSteps() {
+    this.steps = [
+      {
+        label: 'Unverified',
+        command: () => {
+          this.currentStep = 0;
+        }
+      },
+      {
+        label: 'Verified',
+        command: () => {
+          this.currentStep = 1;
+        }
+      }
+    ];
+  }
+
+  getFilteredReceipts() {
+    const status = this.currentStep === 0 ? ReceiptStatus.Unverified : ReceiptStatus.Verified;
+    return this.verifiedReceipts.filter(receipt => receipt.status === status);
+  }
+
+
   viewReceiptDetails(receipt: DeliveryReceipt) {
     this.selectedReceipt = receipt;
     this.showReceiptDetailsModal = true;
+  }
+
+  getClassificationLabel(value: string): string {
+    const classification = this.classifications.find(c => c.value === value);
+    return classification ? classification.label : '';
   }
 
   exportPdf(receipt: DeliveryReceipt) {
@@ -100,7 +150,7 @@ export class ClassificationComponent implements OnInit {
   openSubmitForm(receipt: DeliveryReceipt) {
     this.selectedReceipt = receipt;
     this.showSubmitFormModal = true;
-    this.entries = []; // Reset entries when opening the form
+    this.entries = [];
   }
 
   addEntry() {
@@ -119,12 +169,23 @@ export class ClassificationComponent implements OnInit {
   removeEntry(entry: JournalEntry) {
     this.entries = this.entries.filter((e) => e !== entry);
   }
+
   isEntryValid(entry: JournalEntry): boolean {
-    return entry.accountType !== undefined && entry.accountCode.trim() !== '' && entry.amount > 0;
+    return (
+      entry.accountType !== undefined && 
+      entry.accountCode.trim() !== '' && 
+      entry.amount > 0 &&
+      entry.classification !== ''
+    );
   }
 
   resetNewEntry() {
-    this.newEntry = { accountType: 'debit', accountCode: '', amount: 0 };
+    this.newEntry = {
+      accountType: 'debit',
+      accountCode: '',
+      amount: 0,
+      classification: ''
+    };
   }
 
   get totalDebits(): number {
@@ -143,28 +204,32 @@ export class ClassificationComponent implements OnInit {
     return this.totalDebits === this.totalCredits;
   }
 
-  confirmSubmission() {
-    if (this.isBalanced) {
-      this.submitJournalEntry();
-    } else {
-      this.messageService.add({
-        severity: 'error',
-        summary: 'Error',
-        detail: 'Debits and credits must balance.',
-      });
-    }
-  }
-
   async submitJournalEntry() {
     try {
-      // Replace with actual API call
-      console.log('Submitting journal entry:', this.entries);
-      this.messageService.add({
-        severity: 'success',
-        summary: 'Success',
-        detail: 'Journal entry submitted successfully!',
-      });
-      this.showSubmitFormModal = false;
+      if (this.selectedReceipt) {
+        // Update the receipt status
+        this.selectedReceipt.status = ReceiptStatus.Verified;
+        
+        // Update the receipt in the service
+        await this.deliveryReceiptService.editReceipt(this.selectedReceipt);
+  
+        // Log the entry for debugging
+        console.log('Submitting journal entry:', {
+          receipt: this.selectedReceipt,
+          entries: this.entries
+        });
+  
+        this.messageService.add({
+          severity: 'success',
+          summary: 'Success',
+          detail: 'Journal entry submitted successfully!',
+        });
+  
+        // Refresh the receipts list after submission
+        this.verifiedReceipts = await this.deliveryReceiptService.getVerifiedReceipts();
+        
+        this.showSubmitFormModal = false;
+      }
     } catch (error) {
       this.messageService.add({
         severity: 'error',

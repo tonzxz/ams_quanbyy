@@ -268,9 +268,8 @@ async addReceipt(receipt: DeliveryReceipt) {
     if (local_receipts) {
       this.receiptData = JSON.parse(local_receipts) as DeliveryReceipt[];
     }
-    return this.receiptData.filter(receipt => receipt.status === 'verified');
+    // Return all receipts instead of filtering
+    return this.receiptData;
   }
-
-  
   
 }
