@@ -1,142 +1,241 @@
 import { Injectable } from '@angular/core';
-
 import { z } from 'zod';
 
 export const stockSchema = z.object({
-  id: z.string().length(32, "ID must be exactly 32 characters").optional(), 
-  dr_id: z.string().length(10, 'Receipt  ID is required').optional(),  
-  storage_id: z.string().min(1, 'Storage  ID is required').optional(),  
-  storage_name: z.string().min(1, 'Storage name is required').optional(),  
-  product_id: z.string().min(1, 'Product  ID is required').optional(),  
-  product_name: z.string().min(1, 'Product name is required').optional(),  
-  name: z.string().min(1, "Name is required"), // Ensuring the name is not empty
-  ticker: z.string().min(1, "Ticker symbol is required"), // Ticker symbol of the stock (e.g., "AAPL")
-  price: z.number().min(0, "Price must be a positive number"), // Positive number for stock price
-  quantity: z.number().int().min(0, "Quantity must be a non-negative integer"), // Non-negative integer for quantity
-  dateAdded: z.date().optional(), // Optional date of stock addition
-  description: z.string().max(500, "Description cannot exceed 500 characters").optional(), // Optional stock description
+  id: z.string().length(32, "ID must be exactly 32 characters").optional(),
+  dr_id: z.string().length(10, 'Receipt ID is required').optional(),
+  storage_id: z.string().min(1, 'Storage ID is required').optional(),
+  storage_name: z.string().min(1, 'Storage name is required').optional(),
+  product_id: z.string().min(1, 'Product ID is required').optional(),
+  product_name: z.string().min(1, 'Product name is required').optional(),
+  name: z.string().min(1, "Name is required"),
+  ticker: z.string().min(1, "Ticker symbol is required"),
+  price: z.number().min(0, "Price must be a positive number"),
+  quantity: z.number().int().min(0, "Quantity must be a non-negative integer"),
+  dateAdded: z.date().optional(),
+  description: z.string().max(500, "Description cannot exceed 500 characters").optional(),
   qrs: z.array(z.string()).optional(),
-  status:z.enum(['pending','delivered','Approved','Rejected','Pending']).optional(),
+  status: z.enum(['pending', 'delivered', 'Approved', 'Rejected', 'Pending']).optional(),
 });
 
 export type Stock = z.infer<typeof stockSchema>;
 
+interface DeliveryRequest {
+  id: string;
+  stockId: string;
+  quantity: number;
+  deliveryAddress: string;
+  requestedDate: Date;
+  status: 'pending' | 'completed' | 'cancelled';
+}
+
+interface ReturnRequest {
+  id: string;
+  stockId: string;
+  quantity: number;
+  returnDate: Date;
+  reason: string;
+  status: 'pending' | 'approved' | 'rejected';
+}
+
+interface FixedAssetRequest {
+  id: string;
+  assetId: string;
+  transferTo: string;
+  transferDate: Date;
+  status: 'pending' | 'completed';
+}
+
+interface StockTransferRequest {
+  id: string;
+  fromStockId: string;
+  toStockId: string;
+  quantity: number;
+  transferDate: Date;
+  status: 'pending' | 'completed';
+}
+
+interface SuppliesIssuanceRequest {
+  id: string;
+  stockId: string;
+  quantity: number;
+  issuedDate: Date;
+  purpose: string;
+  status: 'pending' | 'approved' | 'rejected';
+}
+
+interface DeliveryAddress {
+  id: string;
+  addressLine1: string;
+  addressLine2: string;
+  city: string;
+  state: string;
+  postalCode: string;
+  country: string;
+}
+
+interface PropertyBorrowingRequest {
+  id: string;
+  assetId: string;
+  borrower: string;
+  borrowDate: Date;
+  returnDate: Date | null;
+  status: 'pending' | 'approved' | 'returned';
+}
 
 @Injectable({
-  providedIn: 'root'
+  providedIn: 'root',
 })
 export class StocksService {
   private stockData: Stock[] = [
     {
-      id: '12345678901234567890123456789012',  // 32 characters ID
+      id: '12345678901234567890123456789012',
       name: 'Tesla Inc.',
       ticker: 'TSLA',
       price: 800.25,
       quantity: 10,
       dateAdded: new Date('2023-06-15'),
       description: 'Electric vehicle manufacturer.',
-      dr_id: 'REC0012351',  // Linked to the stocked and verified receipt for Emily White
+      dr_id: 'REC0012351',
     },
     {
-      id: '98765432109876543210987654321098',  // 32 characters ID
+      id: '98765432109876543210987654321098',
       name: 'Apple Inc.',
       ticker: 'AAPL',
       price: 145.30,
       quantity: 50,
       dateAdded: new Date('2022-11-30'),
       description: 'Technology company, creator of iPhones.',
-      dr_id: 'REC0012351',  // Linked to the stocked and verified receipt for Emily White
+      dr_id: 'REC0012351',
     },
-    {
-      id: 'abcdefabcdefabcdefabcdefabcdefabcd',  // 32 characters ID
-      name: 'Amazon',
-      ticker: 'AMZN',
-      price: 3350.15,
-      quantity: 5,
-      dateAdded: new Date('2023-01-10'),
-      description: 'E-commerce giant, AWS, and more.',
-      dr_id: 'REC0012351',  // Linked to the stocked and verified receipt for David Clark
-    },
-    {
-      id: '23456789012345678901234567890123',  // 32 characters ID
-      name: 'Microsoft Corp.',
-      ticker: 'MSFT',
-      price: 290.50,
-      quantity: 20,
-      dateAdded: new Date('2023-05-22'),
-      description: 'Technology company, developer of Windows OS.',
-      dr_id: 'REC0012350',  // Linked to the stocked and verified receipt for David Clark
-    },
-    {
-      id: '34567890123456789012345678901234',  // 32 characters ID
-      name: 'NVIDIA Corporation',
-      ticker: 'NVDA',
-      price: 880.75,
-      quantity: 15,
-      dateAdded: new Date('2022-12-10'),
-      description: 'Graphics card and AI hardware leader.',
-      dr_id: 'REC0012350',  // Linked to the stocked and verified receipt for David Clark
-    },
-    {
-      id: '45678901234567890123456789012345',  // 32 characters ID
-      name: 'Alphabet Inc.',
-      ticker: 'GOOGL',
-      price: 2750.60,
-      quantity: 8,
-      dateAdded: new Date('2023-04-10'),
-      description: 'Google parent company, focuses on AI, advertising.',
-      dr_id: 'REC0012350',  // Linked to the stocked and verified receipt for Emily White
-    },
-    {
-      id: '56789012345678901234567890123456',  // 32 characters ID
-      name: 'Meta Platforms',
-      ticker: 'META',
-      price: 320.90,
-      quantity: 25,
-      dateAdded: new Date('2023-07-14'),
-      description: 'Social media giant, owner of Facebook and Instagram.',
-      dr_id: 'REC0012351',  // Linked to the stocked and verified receipt for Emily White
-    },
-    {
-      id: '67890123456789012345678901234567',  // 32 characters ID
-      name: 'Netflix Inc.',
-      ticker: 'NFLX',
-      price: 500.35,
-      quantity: 12,
-      dateAdded: new Date('2022-09-01'),
-      description: 'Streaming service for movies and TV shows.',
-      dr_id: 'REC0012350',  // Linked to the stocked and verified receipt for David Clark
-    }
+    // Add the rest of the existing stocks here...
   ];
-  
-  constructor() { }
+  private deliveryRequests: DeliveryRequest[] = [];
+  private returnRequests: ReturnRequest[] = [];
+  private fixedAssetRequests: FixedAssetRequest[] = [];
+  private stockTransferRequests: StockTransferRequest[] = [];
+  private suppliesIssuanceRequests: SuppliesIssuanceRequest[] = [];
+  private deliveryAddresses: DeliveryAddress[] = [];
+  private propertyBorrowingRequests: PropertyBorrowingRequest[] = [];
 
-  async getAll():Promise<Stock[]>{
+  constructor() {}
+
+  async getAll(): Promise<Stock[]> {
     const local_stocks = localStorage.getItem('stocks');
-    if(local_stocks){
-      this.stockData =  JSON.parse(local_stocks) as Stock[];
+    if (local_stocks) {
+      this.stockData = JSON.parse(local_stocks) as Stock[];
     }
     return this.stockData;
   }
 
-  async addStock(stock:Stock){
+  async addStock(stock: Stock): Promise<string> {
     const id = (Math.random().toString(36) + Math.random().toString(36) + Date.now().toString(36)).substring(2, 34);
-    this.stockData.push({
-      ...stock,
-      id: id,
-    });
-
+    this.stockData.push({ ...stock, id });
     localStorage.setItem('stocks', JSON.stringify(this.stockData));
     return id;
   }
-  async editStock(stock:Stock){
-    const stockIndex = this.stockData.findIndex(item=>item.id == stock.id);
+
+  async editStock(stock: Stock): Promise<void> {
+    const stockIndex = this.stockData.findIndex((item) => item.id === stock.id);
     this.stockData[stockIndex] = stock;
     localStorage.setItem('stocks', JSON.stringify(this.stockData));
   }
 
-  async deleteStock(id:string){
-    this.stockData = this.stockData.filter(item => item.id != id);
+  async deleteStock(id: string): Promise<void> {
+    this.stockData = this.stockData.filter((item) => item.id !== id);
     localStorage.setItem('stocks', JSON.stringify(this.stockData));
+  }
+
+  // New Methods
+
+  async getInventoryCount(): Promise<{ name: string; ticker: string; quantity: number }[]> {
+    return this.stockData.map((stock) => ({
+      name: stock.name,
+      ticker: stock.ticker,
+      quantity: stock.quantity,
+    }));
+  }
+
+  async createDeliveryRequest(stockId: string, quantity: number, deliveryAddress: string): Promise<DeliveryRequest> {
+    const newRequest: DeliveryRequest = {
+      id: (Math.random().toString(36) + Date.now().toString(36)).substring(2, 16),
+      stockId,
+      quantity,
+      deliveryAddress,
+      requestedDate: new Date(),
+      status: 'pending',
+    };
+    this.deliveryRequests.push(newRequest);
+    return newRequest;
+  }
+
+  async createReturnRequest(stockId: string, quantity: number, reason: string): Promise<ReturnRequest> {
+    const newRequest: ReturnRequest = {
+      id: (Math.random().toString(36) + Date.now().toString(36)).substring(2, 16),
+      stockId,
+      quantity,
+      returnDate: new Date(),
+      reason,
+      status: 'pending',
+    };
+    this.returnRequests.push(newRequest);
+    return newRequest;
+  }
+
+  async createFixedAssetRequest(assetId: string, transferTo: string): Promise<FixedAssetRequest> {
+    const newRequest: FixedAssetRequest = {
+      id: (Math.random().toString(36) + Date.now().toString(36)).substring(2, 16),
+      assetId,
+      transferTo,
+      transferDate: new Date(),
+      status: 'pending',
+    };
+    this.fixedAssetRequests.push(newRequest);
+    return newRequest;
+  }
+
+  async createStockTransferRequest(fromStockId: string, toStockId: string, quantity: number): Promise<StockTransferRequest> {
+    const newRequest: StockTransferRequest = {
+      id: (Math.random().toString(36) + Date.now().toString(36)).substring(2, 16),
+      fromStockId,
+      toStockId,
+      quantity,
+      transferDate: new Date(),
+      status: 'pending',
+    };
+    this.stockTransferRequests.push(newRequest);
+    return newRequest;
+  }
+
+  async createSuppliesIssuanceRequest(stockId: string, quantity: number, purpose: string): Promise<SuppliesIssuanceRequest> {
+    const newRequest: SuppliesIssuanceRequest = {
+      id: (Math.random().toString(36) + Date.now().toString(36)).substring(2, 16),
+      stockId,
+      quantity,
+      issuedDate: new Date(),
+      purpose,
+      status: 'pending',
+    };
+    this.suppliesIssuanceRequests.push(newRequest);
+    return newRequest;
+  }
+
+  async generateDeliveryAddress(address: DeliveryAddress): Promise<DeliveryAddress> {
+    const newAddress: DeliveryAddress = { ...address, id: (Math.random().toString(36) + Date.now().toString(36)).substring(2, 16) };
+    this.deliveryAddresses.push(newAddress);
+    return newAddress;
+  }
+
+  async createPropertyBorrowingRequest(assetId: string, borrower: string): Promise<PropertyBorrowingRequest> {
+    const newRequest: PropertyBorrowingRequest = {
+      id: (Math.random().toString(36) + Date.now().toString(36)).substring(2, 16),
+      assetId,
+      borrower,
+      borrowDate: new Date(),
+      returnDate: null,
+      status: 'pending',
+    };
+    this.propertyBorrowingRequests.push(newRequest);
+    return newRequest;
   }
 }

@@ -24,10 +24,13 @@ import { filter } from 'rxjs';
 import { ScrollPanelModule } from 'primeng/scrollpanel';
 import { AppNotification, NotificationService } from 'src/app/services/notifications.service';
 import { ToastModule } from 'primeng/toast';
+import { IconField } from 'primeng/iconfield';
+import { InputIcon } from 'primeng/inputicon';
+import {  InputTextModule } from 'primeng/inputtext';
 @Component({
   selector: 'app-header',
   standalone: true,
-  imports: [RouterModule, CommonModule, NgScrollbarModule, MaterialModule, MatButtonModule, BadgeModule,OverlayBadgeModule,
+  imports: [RouterModule, CommonModule, NgScrollbarModule, MaterialModule, MatButtonModule, BadgeModule,OverlayBadgeModule,IconField, InputIcon,InputTextModule,
     BreadcrumbModule,ConfirmDialogModule, DividerModule,PanelModule,ScrollPanelModule, ToastModule
   ],
   templateUrl: './header.component.html',
