@@ -29,7 +29,7 @@ export const SupplyUnitRoutes: Routes = [
         path: 'stocking',
         component: StockingComponent,
         canActivate: [roleGuard],
-        data: { roles: ['supply', 'superadmin'], breadcrumb: 'Supply Stocking'  } // specify roles here
+        data: { roles: ['supply', 'superadmin','end-user'], breadcrumb: 'Supplies'  } // specify roles here
       },
       {
         path: 'upload-delivery-receipt',

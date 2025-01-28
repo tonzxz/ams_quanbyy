@@ -29,6 +29,7 @@ import { InventoryLocation, InventoryService } from 'src/app/services/inventory.
 import { Product, ProductsService } from 'src/app/services/products.service';
 import {toDataURL} from 'qrcode';
 import {jsPDF} from 'jspdf';
+import { User, UserService } from 'src/app/services/user.service';
 @Component({
   selector: 'app-stocking',
   standalone: true,
@@ -48,6 +49,7 @@ export class StockingComponent {
     inventories: InventoryLocation[];
     allInventories:InventoryLocation[];
     products:Product[];
+    currentUser?:User;
     searchValue:string='';
     stockTab:number=1;
     showReceipt:boolean=false;
@@ -61,6 +63,7 @@ export class StockingComponent {
       private productService:ProductsService,
       private confirmationService: ConfirmationService, 
       private inventoryService: InventoryService,
+      private userService:UserService,
       private deliveryReceiptService: DeliveryReceiptService) {}
   
     ngOnInit() {
@@ -178,17 +181,46 @@ export class StockingComponent {
     }
   
     async fetchItems(){
+      this.currentUser =  this.userService.getUser();
       // Fetch the purchase orders with items
       this.allDRItems = await this.deliveryReceiptService.getAllDRItems();
       this.inventories = await this.inventoryService.getAllLocations();
       this.allInventories = await this.inventoryService.getAllLocations();
       this.products = await this.productService.getAll();
-      this.switchStockTab(1);
+      if(this.currentUser?.role =='supply'){
+        this.switchStockTab(1);
+      }else{
+        this.switchStockTab(0);
+      }
     }
   
+
+    async markItemAsDelivered(item:Stock){
+      await this.stockService.editStock({
+        ...item,
+        status:'delivered'
+      });
+      this.messageService.add({ severity: 'success', summary: 'Success', detail: `Item marked as delivered!` });
+      await this.fetchItems();
+      this.switchStockTab(0);
+    }
+
+    async markItemForDelivery(item:Stock){
+      await this.stockService.editStock({
+        ...item,
+        status:'pending'
+      });
+      this.messageService.add({ severity: 'success', summary: 'Success', detail: `Item marked for delivery!` });
+      await this.fetchItems();
+      this.switchStockTab(0);
+    }
+
     switchStockTab(tab:number){
       if(tab ==0){
         this.drItems =this.allDRItems.filter(dr=>dr.deliveryReceipt.stocked);
+        if(this.currentUser?.role =='end-user'){
+          this.drItems = this.drItems.filter(dr=>dr.items.find(item=>item.status));
+        }
       }else{
         this.drItems =this.allDRItems.filter(dr=>!dr.deliveryReceipt.stocked);
       }

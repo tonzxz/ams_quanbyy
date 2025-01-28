@@ -1,8 +1,16 @@
 <mat-card class="cardWithShadow">
     <mat-card-content>
-        <mat-card-title class="select-none font-light">Supply Stocking</mat-card-title>
+        @if(currentUser?.role == 'supply'){
+            <mat-card-title class="select-none font-light">Supply Stocking</mat-card-title>
+        }@else{
+            <mat-card-title class="select-none font-light">Delivery</mat-card-title>
+        }
         <div class="flex justify-between items-center">
-            <p>View and manage delivery receipt items in this section.</p>
+            @if(currentUser?.role == 'supply'){
+                <p>View and manage delivery receipt items in this section.</p>
+            }@else{
+                <p>View and check delivery items in this section.</p>
+            }
             <p-iconfield fluid class="w-full max-w-72">
                 <p-inputicon styleClass="pi pi-search" />
                 <input fluid class="w-full" pSize="small" [(ngModel)]="searchValue" (input)="dt.filterGlobal(searchValue,'contains')" type="text"
@@ -10,26 +18,28 @@
                 <!-- <p-inputicon styleClass="pi pi-spinner pi-spin" /> -->
             </p-iconfield>
         </div>
-        <p-tabs [value]="stockTab">
-            <p-tablist>
-                <p-tab [value]="1" (click)="switchStockTab(1)">
-                    <p-overlaybadge badgeSize="small" [value]="countUnstocked()">
-                        <div class="px-3 flex gap-6">
-                            <i class="pi pi-warehouse"></i>
-                            <span>To Stock</span>
-                        </div>
-                    </p-overlaybadge>
-                </p-tab>
-                <p-tab [value]="0" (click)="switchStockTab(0)">
-                    <p-overlaybadge badgeSize="small" [value]="countStocked()">
-                        <div class="px-3 flex gap-6">
-                            <i class="pi pi-box"></i>
-                            <span>In Stock</span>
-                        </div>
-                    </p-overlaybadge>
-                </p-tab>
-            </p-tablist>
-        </p-tabs>
+        @if(currentUser?.role == 'supply'){
+            <p-tabs [value]="stockTab">
+                <p-tablist>
+                    <p-tab [value]="1" (click)="switchStockTab(1)">
+                        <p-overlaybadge badgeSize="small" [value]="countUnstocked()">
+                            <div class="px-3 flex gap-6">
+                                <i class="pi pi-warehouse"></i>
+                                <span>To Stock</span>
+                            </div>
+                        </p-overlaybadge>
+                    </p-tab>
+                    <p-tab [value]="0" (click)="switchStockTab(0)">
+                        <p-overlaybadge badgeSize="small" [value]="countStocked()">
+                            <div class="px-3 flex gap-6">
+                                <i class="pi pi-box"></i>
+                                <span>In Stock</span>
+                            </div>
+                        </p-overlaybadge>
+                    </p-tab>
+                </p-tablist>
+            </p-tabs>
+        }
         <p-table #dt dataKey="deliveryReceipt.id" [rowHover]="true" [value]="drItems"
             [paginator]="true"
             [rows]="5"
@@ -102,39 +112,68 @@
 
             <ng-template #body let-po let-rowIndex="rowIndex">
                 @for(item of po.items;track item.id){
-                <tr class="hover:cursor-pointer">
-                    <td pFrozen="left"> 
-                        <i class="pi pi-box mr-2"></i>
-                        {{ item.name }}</td>
-                    <td>{{ item.ticker }}</td>
-                    <td>{{ item.storage_name }}</td>
-                    <td>{{ item.product_name }}</td>
-                    <td>{{ item.price | currency:'PHP' }}</td>
-                    <td>{{ item.quantity | number }}</td>
-                    <td>{{ item.dateAdded | date: 'yyyy-MM-dd' }}</td>
-                    <td>{{ item.description || 'No description set.' }}</td>
-                    @if(stockTab==1){
-                        <td class="w-16">
-                            <div class="flex gap-4 ">
-                                <p-button size="small" icon="pi pi-pencil"
-                                    (click)="openEditStockModal(po.deliveryReceipt, item)" [outlined]="true" rounded />
-                                <p-button size="small" icon="pi pi-trash" (click)="confirmDeleteStock($event, item.id)" severity="danger" [outlined]="true"
-                                    rounded />
-                            </div>
-                        </td>
+                    @if(item.status == 'pending' || item.status =='delivered' || currentUser?.role == 'supply'){
+                        <tr class="hover:cursor-pointer">
+                            <td pFrozen="left"> 
+                                <i class="pi pi-box mr-2"></i>
+                                {{ item.name }}</td>
+                            <td>{{ item.ticker }}</td>
+                            <td>{{ item.storage_name }}</td>
+                            <td>{{ item.product_name }}</td>
+                            <td>{{ item.price | currency:'PHP' }}</td>
+                            <td>{{ item.quantity | number }}</td>
+                            <td>{{ item.dateAdded | date: 'yyyy-MM-dd' }}</td>
+                            <td>{{ item.description || 'No description set.' }}</td>
+                            @if(stockTab==1){
+                                <td class="w-16">
+                                    <div class="flex gap-4 ">
+                                        <p-button size="small" icon="pi pi-pencil"
+                                            (click)="openEditStockModal(po.deliveryReceipt, item)" [outlined]="true" rounded />
+                                        <p-button size="small" icon="pi pi-trash" (click)="confirmDeleteStock($event, item.id)" severity="danger" [outlined]="true"
+                                            rounded />
+                                    </div>
+                                </td>
+                            }
+                            @if(stockTab ==0){
+                                @if(currentUser?.role=='supply'){
+                                    <td class="w-16">
+                                        <div class="flex gap-4 ">
+                                            <p-button pTooltip="Print QR" size="small"  icon="pi pi-qrcode"
+                                                (click)="generateQR(item)" [outlined]="true" rounded />
+                                            <p-button pTooltip="Print QR Batch" size="small" icon="pi pi-objects-column" (click)="generateQRBatch(item)" [outlined]="true"
+                                                rounded />
+        
+                                            @if(item.status=='delivered'){
+                                                <p-button severity="success" pTooltip="Delivered" size="small"  icon="pi pi-check"
+                                                    [disabled]="true" [outlined]="true" rounded />
+                                            }@else if(item.status=='pending'){
+                                                <p-button severity="warn" pTooltip="Under Delivery" size="small"  icon="pi pi-truck"
+                                                    [disabled]="true" [outlined]="true" rounded />
+                                            }@else{
+                                                <p-button (click)="markItemForDelivery(item)" pTooltip="Click to delivery item" size="small"  icon="pi pi-arrow-right"
+                                                [outlined]="true" rounded />
+                                            }
+                                        </div>
+                                      
+                                    </td>
+                                }@else{
+                                    <td class="w-16">
+                                        @if(item.status =='delivered'){
+                                            <div class="flex gap-4 ">
+                                                <p-button severity="secondary" pTooltip="Delivered" size="small"  icon="pi pi-box"
+                                                    [disabled]="true" [outlined]="true" rounded />
+                                            </div>
+                                        }@else if(item.status=='pending'){
+                                            <div class="flex gap-4 ">
+                                                <p-button severity="success" pTooltip="Click to mark as delivered" size="small"  icon="pi pi-check"
+                                                    (click)="markItemAsDelivered(item)" [outlined]="true" rounded />
+                                            </div>
+                                        }
+                                    </td>
+                                }
+                            }
+                        </tr>
                     }
-                    @if(stockTab ==0){
-                        <td class="w-16">
-                            <div class="flex gap-4 ">
-                                <p-button pTooltip="Print QR" size="small"  icon="pi pi-qrcode"
-                                    (click)="generateQR(item)" [outlined]="true" rounded />
-                                <p-button pTooltip="Print QR Batch" size="small" icon="pi pi-objects-column" (click)="generateQRBatch(item)" [outlined]="true"
-                                    rounded />
-                            </div>
-                        </td>
-                        
-                    }
-                </tr>
                 }
             </ng-template>
             <ng-template #emptymessage>

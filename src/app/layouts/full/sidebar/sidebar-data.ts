@@ -121,6 +121,12 @@ export const navItems: NavItem[] = [
     requiredRoles: ['end-user'],
   },
   {
+    displayName: 'Delivery',
+    iconName: 'solar:inbox-archive-outline',
+    route: '/supply-management/stocking',
+    requiredRoles: ['end-user'],
+  },
+  {
     displayName: 'Receiving',
     iconName: 'solar:documents-broken',
     route: '/enduser/receiving',
