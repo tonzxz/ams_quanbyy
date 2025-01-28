@@ -17,9 +17,11 @@ import { MessageService } from 'primeng/api';
 import { ConfirmationService } from 'primeng/api';
 import jsPDF from 'jspdf';
 import 'jspdf-autotable';
+import html2pdf from 'html2pdf.js'; // Correct import
 
 interface jsPDFWithAutoTable extends jsPDF {
   autoTable: (options: any) => void;
+  lastAutoTable: { finalY: number };
 }
 
 const jsPDFWithAutoTable = jsPDF as unknown as { new (): jsPDFWithAutoTable };
@@ -109,8 +111,6 @@ export class ReceivingComponent {
         { name: 'Rake', quantity: 20, condition: 'New' }
       ]
     },
-
-    // Add more orders as needed
   ];
 
   deliveredOrders = [
@@ -181,10 +181,83 @@ export class ReceivingComponent {
   }
 
   markAsReceived(order: any) {
-    this.selectedOrder = order;
+    const index = this.pendingOrders.findIndex(o => o.prNumber === order.prNumber);
+    if (index !== -1) {
+      const movedOrder = { ...this.pendingOrders[index], status: 'Delivered' };
+      this.pendingOrders.splice(index, 1);
+      this.deliveredOrders.push(movedOrder);
+      this.messageService.add({severity:'success', summary: 'Success', detail: 'Order marked as received'});
+      this.exportRaafPDF(movedOrder); // Auto-generate PDF
+    }
     this.displayModal = false;
-    this.messageService.add({severity:'success', summary: 'Success', detail: 'Order marked as received'});
   }
+
+  exportRaafPDF(order: any) {
+    const doc = new jsPDFWithAutoTable();
+    const dateReceived = new Date().toLocaleDateString();
+    
+    // Company Header
+    doc.setFontSize(16);
+    doc.setTextColor(40);
+    doc.text('XYZ Corporation', 10, 15);
+    doc.setFontSize(10);
+    doc.text('123 Business Street, Metro City, Country', 10, 20);
+    doc.text('Tel: (123) 456-7890 | Email: info@xyzcorp.com', 10, 25);
+  
+    // Document Title
+    doc.setFontSize(14);
+    doc.text('RECEIPT AND ACKNOWLEDGMENT FORM', 10, 35);
+  
+    // Order Details
+    doc.setFontSize(10);
+    doc.text(`PR Number: ${order.prNumber}`, 10, 45);
+    doc.text(`Date Ordered: ${order.dateOrdered}`, 10, 50);
+    doc.text(`Date Received: ${dateReceived}`, 10, 55);
+    doc.text(`Item Category: ${order.itemCategory}`, 10, 60);
+  
+    // Items Table
+    const items = order.items.map((item: any) => [
+      item.name,
+      item.quantity,
+      item.condition
+    ]);
+  
+    doc.autoTable({
+      startY: 65,
+      head: [['Item Description', 'Quantity', 'Condition']],
+      body: items,
+      theme: 'grid',
+      styles: { fontSize: 9 },
+      headStyles: { fillColor: [41, 128, 185], textColor: 255 },
+      columnStyles: {
+        0: { cellWidth: 80 },
+        1: { cellWidth: 40 },
+        2: { cellWidth: 40 }
+      }
+    });
+  
+    // Signature Section
+    const finalY = doc.lastAutoTable.finalY + 15;
+    doc.setFontSize(10);
+    doc.text('Received in good order and condition by:', 10, finalY);
+    doc.text('__________________________________________', 10, finalY + 10);
+    doc.text('Signature over Printed Name/Date', 10, finalY + 16);
+  
+    doc.text('Acknowledged by:', 120, finalY);
+    doc.text('__________________________________________', 120, finalY + 10);
+    doc.text('Authorized Representative/Date', 120, finalY + 16);
+  
+    // Footer Note
+    doc.setFontSize(8);
+    doc.setTextColor(100);
+    doc.text('Note: This document serves as official acknowledgment of goods received.', 
+      10, doc.internal.pageSize.height - 10);
+  
+    // Save PDF
+    const fileName = `Reciept_and_Acknowledgment_Form_${order.prNumber}.pdf`;
+    doc.save(fileName);
+  }
+  
 
   markAsNotReceived(order: any) {
     // Logic to mark the order as not received
@@ -236,7 +309,7 @@ export class ReceivingComponent {
       theme: 'grid',
       styles: { fontSize: 10 }
     });
- 
+
     doc.save(fileName);
   }
 }
