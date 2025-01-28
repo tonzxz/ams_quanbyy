@@ -28,7 +28,7 @@ interface JournalEntry {
 }
 
 enum ReceiptStatus {
-  Unverified = 'unverified',
+  Unverified = 'unverified',  
   Processing = 'processing',
   Verified = 'verified'
 }
@@ -93,8 +93,8 @@ export class ClassificationComponent implements OnInit {
   async ngOnInit() {
     this.initializeSteps();
     try {
-      // Get all receipts
       this.verifiedReceipts = await this.deliveryReceiptService.getVerifiedReceipts();
+      console.log('Loaded receipts:', this.verifiedReceipts); // Add this line
     } catch (error) {
       this.messageService.add({
         severity: 'error',
@@ -122,9 +122,10 @@ export class ClassificationComponent implements OnInit {
   }
 
   getFilteredReceipts() {
+    // This ensures we only get receipts with the exact status we want
     const status = this.currentStep === 0 ? ReceiptStatus.Unverified : ReceiptStatus.Verified;
     return this.verifiedReceipts.filter(receipt => receipt.status === status);
-  }
+}
 
 
   viewReceiptDetails(receipt: DeliveryReceipt) {

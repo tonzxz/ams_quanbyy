@@ -54,19 +54,21 @@ export const navItems: NavItem[] = [
 
   },
 
-    {
-    displayName: 'Purchase Orders',
-    iconName: 'solar:checklist-minimalistic-line-duotone',
-    route: '/bac/purchase-orders',
-      requiredRoles: ['bac'],
-    
-  },
+  
  
   {
     displayName: 'Request for Quotation',
     iconName: 'solar:widget-add-line-duotone',
     route: '/shared/rfq-list',
     requiredRoles: ['bac'],
+  },
+
+    {
+    displayName: 'Purchase Orders',
+    iconName: 'solar:checklist-minimalistic-line-duotone',
+    route: '/bac/purchase-orders',
+      requiredRoles: ['bac'],
+    
   },
   // {
   //   displayName: 'Disbursement Template',
@@ -111,14 +113,6 @@ export const navItems: NavItem[] = [
     requiredRoles: ['end-user'],
   },
 
-   
-
-   {
-    displayName: 'Issuance',
-    iconName: 'solar:documents-broken',
-    route: '/enduser/requisition-and-issue-slip',
-    requiredRoles: ['end-user'],
-  },
 
   {
     displayName: 'Canvasing',
@@ -132,6 +126,8 @@ export const navItems: NavItem[] = [
     route: '/enduser/receiving',
     requiredRoles: ['end-user'],
   },
+
+  
 
   // Inspection Section
   {
@@ -170,6 +166,12 @@ export const navItems: NavItem[] = [
     route: '/supply-management/stocking',
     requiredRoles: ['supply'],
   },
+  {
+    displayName: 'Delivery',
+    iconName: 'solar:inbox-archive-outline',
+    route: '/supply-management/delivery',
+    requiredRoles: ['supply'],
+  },
   // {
   //   displayName: 'Delivered Items',
   //   iconName: 'fluent:check-24-regular',
@@ -186,13 +188,13 @@ export const navItems: NavItem[] = [
   {
     navCap: 'Views',
     divider: true,
-    requiredRoles: ['supply', 'admin', 'superadmin'],
+    requiredRoles: ['supply', 'superadmin', 'bac', 'president', 'end-user', 'inspection'],
   },
   {
     displayName: 'Inventory',
     iconName: 'solar:box-broken',
     route: '/shared/inventory',
-    requiredRoles: ['supply', 'superadmin'],
+    requiredRoles: ['supply', 'superadmin', 'bac', 'president', 'end-user', 'inspection'],
   },
 
   {
@@ -238,12 +240,21 @@ export const navItems: NavItem[] = [
     route: '/accounting/budget',
     requiredRoles: ['accounting'],
   },
-   {
+
+  {
     displayName: 'Purchase Request Approval',
     iconName: 'solar:widget-add-line-duotone',
     route: '/accounting/pr-approval',
     requiredRoles: ['accounting'],
   },
+
+   {
+    displayName: 'Issue Slip',
+    iconName: 'solar:widget-add-line-duotone',
+    route: '/accounting/issue-slip',
+    requiredRoles: ['accounting'],
+  },
+   
 
   {
     displayName: 'Budget Utilization Report',
@@ -283,6 +294,12 @@ export const navItems: NavItem[] = [
     displayName: 'General Journal',
     iconName: 'solar:ticket-sale-broken',
     route: '/accounting/general-journal',
+    requiredRoles: [ 'accounting'],
+  },
+  {
+    displayName: 'Final Verification',
+    iconName: 'solar:ticket-sale-broken',
+    route: '/accounting/final-verification',
     requiredRoles: [ 'accounting'],
   },
 

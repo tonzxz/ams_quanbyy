@@ -230,28 +230,8 @@
       <div *ngIf="!isBalanced" class="text-sm text-red-600 mb-6 font-medium">
         ⚠️ Debits and credits must balance before submission.
       </div>
-  
-      <!-- Confirm and Cancel Buttons -->
-      <div class="flex justify-end gap-4">
-        <p-button
-          type="button"
-          label="Cancel"
-          severity="secondary"
-          icon="pi pi-times"
-          (click)="showSubmitFormModal = false"
-        ></p-button>
-        <p-button
-          type="button"
-          label="Confirm Submission"
-          severity="success"
-          icon="pi pi-check"
-          [disabled]="!isBalanced"
-          (click)="submitJournalEntry()"
-        ></p-button>
-      </div>
-    </div>
 
-    <!-- Balance Confirmation Table -->
+      <!-- Balance Confirmation Table -->
 <div class="mb-8">
     <h4 class="font-bold mb-4 text-lg">Balance Confirmation</h4>
     <p-table [value]="entries" [tableStyle]="{ 'min-width': '50rem' }">
@@ -304,6 +284,26 @@
       </ng-template>
     </p-table>
   </div>
+  
+      <!-- Confirm and Cancel Buttons -->
+      <div class="flex justify-end gap-4">
+        <p-button
+          type="button"
+          label="Cancel"
+          severity="secondary"
+          icon="pi pi-times"
+          (click)="showSubmitFormModal = false"
+        ></p-button>
+        <p-button
+          type="button"
+          label="Confirm Submission"
+          severity="success"
+          icon="pi pi-check"
+          [disabled]="!isBalanced"
+          (click)="submitJournalEntry()"
+        ></p-button>
+      </div>
+    </div>
   </p-dialog>
   
   <p-toast position="bottom-right" />
