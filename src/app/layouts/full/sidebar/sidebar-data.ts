@@ -233,18 +233,20 @@ export const navItems: NavItem[] = [
     requiredRoles: ['accounting'],
   },
 
+  {
+    displayName: 'Purchase Request Approval',
+    iconName: 'solar:widget-add-line-duotone',
+    route: '/accounting/pr-approval',
+    requiredRoles: ['accounting'],
+  },
+
    {
     displayName: 'Issue Slip',
     iconName: 'solar:widget-add-line-duotone',
     route: '/accounting/issue-slip',
     requiredRoles: ['accounting'],
   },
-   {
-    displayName: 'Purchase Request Approval',
-    iconName: 'solar:widget-add-line-duotone',
-    route: '/accounting/pr-approval',
-    requiredRoles: ['accounting'],
-  },
+   
 
   {
     displayName: 'Budget Utilization Report',
