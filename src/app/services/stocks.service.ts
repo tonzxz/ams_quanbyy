@@ -122,10 +122,12 @@ export class StocksService {
   async addStock(stock:Stock){
     const id = (Math.random().toString(36) + Math.random().toString(36) + Date.now().toString(36)).substring(2, 34);
     this.stockData.push({
+      ...stock,
       id: id,
-      ...stock
     });
+
     localStorage.setItem('stocks', JSON.stringify(this.stockData));
+    return id;
   }
   async editStock(stock:Stock){
     const stockIndex = this.stockData.findIndex(item=>item.id == stock.id);

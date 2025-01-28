@@ -19,6 +19,7 @@ import { PurchaseOrderComponent } from './purchase-order/purchase-order.componen
 import { NoaComponent } from './noa/noa.component';
 import { NtpComponent } from './ntp/ntp.component';
 import { EditableComponent } from './editable/editable.component';
+import { StockTransferComponent } from './stock-transfer/stock-transfer.component';
 
 export const SharedRoutes: Routes = [
   {
@@ -74,6 +75,12 @@ export const SharedRoutes: Routes = [
         path: 'editable',
         component: EditableComponent,
         data: {breadcrumb:'View'}
+      },
+
+      {
+        path: 'stock-transfer',
+        component: StockTransferComponent,
+        data: {breadcrumb:'Stock Transfer'}
       },
       {
         path: 'stock-card',

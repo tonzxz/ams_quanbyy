@@ -8,8 +8,8 @@
                     <div class="flex justify-end gap-3">
                         <p-iconfield fluid class="w-full max-w-72">
                             <p-inputicon styleClass="pi pi-search" />
-                            <input fluid class="w-full" pSize="small" [(ngModel)]="search"  (input)="filterBySearch()"  type="text"
-                                pInputText placeholder="Search" />
+                            <input fluid class="w-full" pSize="small" [(ngModel)]="search" (input)="filterBySearch()"
+                                type="text" pInputText placeholder="Search" />
                             <!-- <p-inputicon styleClass="pi pi-spinner pi-spin" /> -->
                         </p-iconfield>
                         <p-selectbutton [(ngModel)]="layout" [options]="options" [allowEmpty]="false">
@@ -22,41 +22,33 @@
                 </ng-template>
                 <ng-template #list let-items>
                     <div *ngFor="let item of items; let first = first">
-                        <div
-                            class="flex flex-col sm:!flex-row sm:!items-center p-6 gap-4"
-                            [ngClass]="{ 'border-t border-surface-200 dark:border-surface-700': !first }"
-                        >
+                        <div class="flex flex-col sm:!flex-row sm:!items-center p-6 gap-4"
+                            [ngClass]="{ 'border-t border-surface-200 dark:border-surface-700': !first }">
                             <div class="md:w-40 relative">
-                                <img
-                                    class="block xl:block mx-auto rounded w-full"
-                                    [src]="'assets/images/blog/blog-img3.jpg'"
-                                    [alt]="item.name"
-                                />
-                                <p-tag
-                                [value]="item.quantity == 0 ? 'Out of Stock' : 'In Stock'" [severity]=" item.quantity == 0 ? 'danger' : 'success'"
-                                    class="absolute"
-                                    styleClass="dark:!bg-surface-900"
-                                    [style.left.px]="4"
-                                    [style.top.px]="4"
-                                />
+                                <img class="block xl:block mx-auto rounded w-full"
+                                    [src]="'assets/images/blog/blog-img3.jpg'" [alt]="item.name" />
+                                <p-tag [value]="item.quantity == 0 ? 'Out of Stock' : 'In Stock'"
+                                    [severity]=" item.quantity == 0 ? 'danger' : 'success'" class="absolute"
+                                    styleClass="dark:!bg-surface-900" [style.left.px]="4" [style.top.px]="4" />
                             </div>
                             <div class="flex flex-col md:!flex-row justify-between md:!items-center flex-1 gap-6 ">
                                 <div class="flex flex-row md:!flex-col justify-between items-start gap-2 m-10">
                                     <div>
                                         <i class="pi pi-id-card mr-2"></i>
-                                        <span class="font-medium text-surface-500 dark:text-surface-400 text-sm">{{ item.dr_id?.toUpperCase() }}</span>
+                                        <span class="font-medium text-surface-500 dark:text-surface-400 text-sm">{{
+                                            item.dr_id?.toUpperCase() }}</span>
                                         <div class="text-lg font-semibold">{{ item.name }}</div>
                                         <small class="font-medium">{{ item.ticker }}</small>
                                         <div>
-                                                <small class="font-medium"><i class="pi pi-barcode mr-2"></i>{{ item.id }}</small>
+                                            <small class="font-medium"><i class="pi pi-barcode mr-2"></i>{{ item.id
+                                                }}</small>
                                         </div>
                                     </div>
                                     <div class="bg-surface-100 py-1" style="border-radius: 30px">
-                                        <div
-                                            class="bg-surface-0 flex items-center gap-6 justify-center py-1 px-2"
-                                            style="border-radius: 30px; box-shadow: 0px 1px 2px 0px rgba(0, 0, 0, 0.04), 0px 1px 2px 0px rgba(0, 0, 0, 0.06)"
-                                        >
-                                            <span class="text-surface-900 font-medium text-sm">{{ item.quantity }} stocks</span>
+                                        <div class="bg-surface-0 flex items-center gap-6 justify-center py-1 px-2"
+                                            style="border-radius: 30px; box-shadow: 0px 1px 2px 0px rgba(0, 0, 0, 0.04), 0px 1px 2px 0px rgba(0, 0, 0, 0.06)">
+                                            <span class="text-surface-900 font-medium text-sm">{{ item.quantity }}
+                                                stocks</span>
                                             <i class="pi pi-box text-black"></i>
                                         </div>
                                     </div>
@@ -64,14 +56,11 @@
                                 <div class="flex flex-col md:items-end gap-8">
                                     <span class="text-xl font-semibold">{{ item.price | currency: 'PHP' }}</span>
                                     <div class="flex flex-row-reverse md:flex-row gap-2">
-                                        <button pButton severity="secondary" icon="pi pi-info-circle" [outlined]="true"></button>
-                                        <button
-                                            [outlined]="true"
-                                            pButton
-                                            icon="pi pi-sitemap"
-                                            label="View Supplies"
-                                            class="flex-auto md:flex-initial whitespace-nowrap"
-                                        ></button>
+                                        <button pButton severity="secondary" icon="pi pi-info-circle"
+                                            [outlined]="true"></button>
+                                        <button [outlined]="true" pButton (click)="openTransferModal(item)"
+                                            icon="pi pi-sitemap" label="Transfer Stock"
+                                            class="flex-auto md:flex-initial whitespace-nowrap"></button>
                                     </div>
                                 </div>
                             </div>
@@ -86,31 +75,32 @@
                                 class="p-12 border border-surface-200 dark:border-surface-700 bg-surface-0 dark:bg-surface-900 rounded flex flex-col">
                                 <div class="bg-surface-50 flex justify-center rounded p-4">
                                     <div class="relative mx-auto">
-                                        <img class="rounded w-full"
-                                            [src]="'assets/images/blog/blog-img3.jpg'"
+                                        <img class="rounded w-full" [src]="'assets/images/blog/blog-img3.jpg'"
                                             [alt]="item.name" style="max-width: 300px" />
-                                        <p-tag [value]="item.quantity == 0 ? 'Out of Stock' : 'In Stock'" [severity]=" item.quantity == 0 ? 'danger' : 'success'"
-                                            class="absolute" styleClass="dark:!bg-surface-900" [style.left.px]="4"
-                                            [style.top.px]="4" />
+                                        <p-tag [value]="item.quantity == 0 ? 'Out of Stock' : 'In Stock'"
+                                            [severity]=" item.quantity == 0 ? 'danger' : 'success'" class="absolute"
+                                            styleClass="dark:!bg-surface-900" [style.left.px]="4" [style.top.px]="4" />
                                     </div>
                                 </div>
                                 <div class="pt-3 px-2">
                                     <div class="flex flex-row justify-between products-start gap-2">
                                         <div>
                                             <i class="pi pi-id-card "></i>
-                                            <span class="font-medium text-surface-500 dark:text-surface-400 text-sm ml-2">{{ item.dr_id?.toUpperCase() }}</span>
+                                            <span
+                                                class="font-medium text-surface-500 dark:text-surface-400 text-sm ml-2">{{
+                                                item.dr_id?.toUpperCase() }}</span>
                                             <div class="text-2xl font-bold">{{ item.name }}</div>
                                             <small class="font-medium">{{ item.ticker }}</small>
                                             <div>
-                                                <small class="font-medium"><i class="pi pi-barcode mr-2"></i>{{ item.id }}</small>
+                                                <small class="font-medium"><i class="pi pi-barcode mr-2"></i>{{ item.id
+                                                    }}</small>
                                             </div>
                                         </div>
                                         <div class="bg-surface-100 py-1" style="border-radius: 30px">
-                                            <div
-                                                class="bg-surface-0 flex items-center gap-6 justify-center py-1 px-2"
-                                                style="border-radius: 30px; box-shadow: 0px 1px 2px 0px rgba(0, 0, 0, 0.04), 0px 1px 2px 0px rgba(0, 0, 0, 0.06)"
-                                            >
-                                                <span class="text-surface-900 font-lg text-sm">{{ item.quantity }} stocks</span>
+                                            <div class="bg-surface-0 flex items-center gap-6 justify-center py-1 px-2"
+                                                style="border-radius: 30px; box-shadow: 0px 1px 2px 0px rgba(0, 0, 0, 0.04), 0px 1px 2px 0px rgba(0, 0, 0, 0.06)">
+                                                <span class="text-surface-900 font-lg text-sm">{{ item.quantity }}
+                                                    stocks</span>
                                                 <i class="pi pi-box text-black"></i>
                                             </div>
                                         </div>
@@ -119,9 +109,10 @@
                                         <span class="text-lg font-semibold">{{ item.price | currency: 'PHP'
                                             }}</span>
                                         <div class="flex gap-2">
-                                            <button pButton icon="pi pi-sitemap" label="View Supplies"
-                                                class="flex-auto whitespace-nowrap"></button>
-                                            <button pButton class="flex-auto" severity="secondary" label="View Details" icon="pi pi-info-circle" outlined></button>
+                                            <button (click)="openTransferModal(item)" pButton icon="pi pi-sitemap"
+                                                label="Transfer Stock" class="flex-auto whitespace-nowrap"></button>
+                                            <button pButton class="flex-auto" severity="secondary" label="View Details"
+                                                icon="pi pi-info-circle" outlined></button>
                                         </div>
                                     </div>
                                 </div>
@@ -141,3 +132,48 @@
         </div>
     </mat-card-content>
 </mat-card>
+
+<p-dialog [modal]="true" [position]="'center'" [(visible)]="showTransferModal" [style]="{ width: '25rem' }">
+    <ng-template #header>
+        <div class="py-0 inline-flex items-center justify-center gap-3">
+            <i class="pi pi-warehouse text-lg"></i>
+            <span class="font-bold text-lg whitespace-nowrap">Transfer Stocks</span>
+        </div>
+    </ng-template>
+    <span class="p-text-secondary block">Enter amount and location to transfer stock</span>
+    <small class="p-text-secondary block mb-6">(Please fill out all form fields)</small>
+
+    <form [formGroup]="form">
+
+        <div class="flex items-center gap-4 mb-2">
+            <label for="bid" class="font-semibold w-32">Transfer To</label>
+            <p-select [options]="filterInventory()" formControlName="location" optionLabel="name" [filter]="true"
+                filterBy="name" [showClear]="true" placeholder="Select storage location" class="flex-auto">
+                <ng-template #selectedItem let-selectedOption>
+                    <div class="flex items-center gap-2">
+                        <div>{{ selectedOption.name }}</div>
+                    </div>
+                </ng-template>
+                <ng-template let-inventory #item>
+                    <div class="flex items-center gap-2">
+                        <div>{{ inventory.name }}</div>
+                    </div>
+                </ng-template>
+            </p-select>
+        </div>
+        <div class="flex items-center gap-4 mb-24">
+            <label for="bid" class="font-semibold w-32">Amount</label>
+            <p-inputnumber placeholder="Enter amount to transfer" size="small" class="flex-1" formControlName="amount"
+                inputId="currency-us" mode="decimal"  fluid></p-inputnumber>
+        </div>
+
+
+        <div class="flex justify-end gap-6 mt-2">
+            <p-button size="small" label="Cancel" icon="pi pi-times" severity="secondary"
+                (click)="showTransferModal=false" />
+            <p-button size="small" label="Add" icon="pi pi-plus" (click)="transfer()" [disabled]="!form.valid" />
+        </div>
+    </form>
+</p-dialog>
+
+<p-toast position="bottom-right" />

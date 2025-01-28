@@ -273,6 +273,10 @@ private loadDummyData() {
     this.saveToLocalStorage();
   }
 
+   getOfficeOfLocation(id:string){
+    return this.locations.find(i=>i.id == id)?.officeId;
+  }
+
   async getLocationsOnDepartment(id?:string): Promise<InventoryLocation[]>{
     const offices = await this.departmentService.getAllOffices();
     const officeList = offices.reduce((acc,curr)=> {

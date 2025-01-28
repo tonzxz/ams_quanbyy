@@ -184,6 +184,12 @@ export const navItems: NavItem[] = [
     requiredRoles: ['supply','superadmin'],
   },
   {
+    displayName: 'Stock Transfer',
+    iconName: 'solar:documents-broken',
+    route: '/shared/stock-transfer',
+    requiredRoles: ['supply'],
+  },
+  {
     displayName: 'Delivery',
     iconName: 'solar:inbox-archive-outline',
     route: '/supply-management/delivery',
