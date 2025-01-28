@@ -73,16 +73,16 @@ export const navItems: NavItem[] = [
   //   iconName: 'solar:widget-add-line-duotone',
   //   route: '/shared/disbursement',
   // },
-  // {
-  //   displayName: 'Stock-Card Template',
-  //   iconName: 'solar:widget-add-line-duotone',
-  //   route: '/shared/stock-card',
-  // },
-  // {
-  //   displayName: 'Requisition and Issue Slip',
-  //   iconName: 'solar:widget-add-line-duotone',
-  //   route: '/shared/ris',
-  // },
+  {
+    displayName: 'Stock-Card Template',
+    iconName: 'solar:widget-add-line-duotone',
+    route: '/shared/stock-card',
+  },
+  {
+    displayName: 'Requisition and Issue Slip',
+    iconName: 'solar:widget-add-line-duotone',
+    route: '/shared/ris',
+  },
   // {
   //   displayName: 'Semi-Expendable',
   //   iconName: 'solar:widget-add-line-duotone',
@@ -91,11 +91,11 @@ export const navItems: NavItem[] = [
 
  
   
-  {
-    displayName: 'Notice to Proceed',
-    iconName: 'solar:widget-add-line-duotone',
-    route: '/shared/ntp',
-  },
+  // {
+  //   displayName: 'Notice to Proceed',
+  //   iconName: 'solar:widget-add-line-duotone',
+  //   route: '/shared/ntp',
+  // },
   // {
   //   displayName: 'Purchase Request',
   //   iconName: 'solar:widget-add-line-duotone',
@@ -110,6 +110,14 @@ export const navItems: NavItem[] = [
     route: '/enduser/requisition',
     requiredRoles: ['end-user'],
   },
+
+   {
+    displayName: 'Issuance',
+    iconName: 'solar:documents-broken',
+    route: '/enduser/requisition-and-issue-slip',
+    requiredRoles: ['end-user'],
+  },
+
   {
     displayName: 'Canvasing',
     iconName: 'solar:documents-broken',
@@ -160,17 +168,29 @@ export const navItems: NavItem[] = [
     route: '/supply-management/stocking',
     requiredRoles: ['supply'],
   },
-  {
-    displayName: 'Delivered Items',
-    iconName: 'fluent:check-24-regular',
-    route: '/shared/delivered-items',
-    requiredRoles: ['supply'],
-  },
+  // {
+  //   displayName: 'Delivered Items',
+  //   iconName: 'fluent:check-24-regular',
+  //   route: '/shared/delivered-items',
+  //   requiredRoles: ['supply'],
+  // },
   {
     displayName: 'Disbursement Vouchers',
     iconName: 'solar:ticket-sale-broken',
     route: '/shared/disbursement-vouchers',
     requiredRoles: ['supply'],
+  },
+
+  {
+    navCap: 'Views',
+    divider: true,
+    requiredRoles: ['supply', 'admin', 'superadmin'],
+  },
+  {
+    displayName: 'Inventory',
+    iconName: 'solar:box-broken',
+    route: '/shared/inventory',
+    requiredRoles: ['supply', 'superadmin'],
   },
 
   {
@@ -222,6 +242,15 @@ export const navItems: NavItem[] = [
     route: '/accounting/pr-approval',
     requiredRoles: ['accounting'],
   },
+
+  {
+    displayName: 'Budget Utilization Report',
+    iconName: 'solar:widget-add-line-duotone',
+    route: '/shared/rfq-list',
+    requiredRoles: ['accounting'],
+  },
+
+  
   {
     displayName: 'Classification',
     iconName: 'solar:ticket-sale-broken',
@@ -240,6 +269,8 @@ export const navItems: NavItem[] = [
     route: '/accounting/journal-entry-voucher',
     requiredRoles: [ 'accounting'],
   },
+  
+
   {
     displayName: 'General Ledger',
     iconName: 'solar:ticket-sale-broken',
@@ -315,17 +346,7 @@ export const navItems: NavItem[] = [
   },
 
   // Views Section
-  {
-    navCap: 'Views',
-    divider: true,
-    requiredRoles: ['supply', 'admin', 'superadmin'],
-  },
-  {
-    displayName: 'Inventory',
-    iconName: 'solar:box-broken',
-    route: '/shared/inventory',
-    requiredRoles: ['supply', 'superadmin'],
-  },
+  
 
   // BAC Section
   {
@@ -444,3 +465,4 @@ export const navItems: NavItem[] = [
   //   iconName: 'solar:planet-3-line-duotone',
   //   route: '/extra/sample-page',
   // },
+
