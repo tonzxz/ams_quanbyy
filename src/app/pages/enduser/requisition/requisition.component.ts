@@ -139,14 +139,6 @@ export class RequisitionComponent implements OnInit {
   });
 }
 
-onRequisitionSelect(event: any): void {
-  const selectedRequisition = event.value;
-  if (selectedRequisition) {
-    this.issueSlipForm.patchValue({
-      requestedBy: selectedRequisition.createdByUserName || 'Unknown'
-    });
-  }
-}
 
  private async loadAllProducts(): Promise<void> {
    try {
@@ -754,14 +746,74 @@ removeSelectedStock(stock: Stock): void {
   this.selectedStocks = this.selectedStocks.filter(s => s.id !== stock.id);
 }
 
-saveIssueSlip(): void {
-  this.submitted = true;
+// Add/update these methods in your RequisitionComponent class
+
   
+async saveIssueSlip(): Promise<void> {
   if (this.issueSlipForm.valid && this.selectedStocks.length > 0) {
     try {
+      const selectedRequisition = this.issueSlipForm.get('title')?.value;
+      
+      // Generate Issue Slip ID
+      const issueSlipId = 'IS' + Math.random().toString(36).substr(2, 4).toUpperCase();
+      
+      // Create issued stocks data
+      const issuedStocks = this.selectedStocks.map(stock => ({
+        id: stock.id,
+        name: stock.name,
+        quantity: stock.quantity,
+        price: stock.price,
+        status: 'pending' as const,
+        dateIssued: new Date()
+      }));
+
+      // We need to maintain all the existing requisition fields
+      const updatedRequisition: Requisition = {
+        ...selectedRequisition,
+        issueSlipId: issueSlipId,
+        issuedStocks: issuedStocks,
+        issueSlipStatus: 'pending',
+        lastModified: new Date(),
+        // Ensure we keep all required fields
+        title: selectedRequisition.title,
+        status: selectedRequisition.status,
+        group: selectedRequisition.group,
+        products: selectedRequisition.products,
+        classifiedItemId: selectedRequisition.classifiedItemId,
+        // Keep all optional fields
+        description: selectedRequisition.description,
+        selectedGroups: selectedRequisition.selectedGroups,
+        productQuantities: selectedRequisition.productQuantities,
+        productSpecifications: selectedRequisition.productSpecifications,
+        ppmpAttachment: selectedRequisition.ppmpAttachment,
+        purchaseRequestAttachment: selectedRequisition.purchaseRequestAttachment,
+        createdByUserId: selectedRequisition.createdByUserId,
+        createdByUserName: selectedRequisition.createdByUserName,
+        approvalSequenceId: selectedRequisition.approvalSequenceId,
+        currentApprovalLevel: selectedRequisition.currentApprovalLevel,
+        approvalStatus: selectedRequisition.approvalStatus,
+        approvalHistory: selectedRequisition.approvalHistory,
+      };
+
+      // Save to backend
+      await this.requisitionService.updateRequisition(updatedRequisition);
+
+      // Show success message
+      this.messageService.add({
+        severity: 'success',
+        summary: 'Success',
+        detail: 'Issue slip has been generated successfully'
+      });
+
+      // Reset form and selections
+      this.resetIssueSlipForm();
+      await this.loadRequisitions();
+      
+      // Show PDF preview
       const pdfDataUrl = this.generateIssueSlipPdf();
       this.selectedIssueSlipPdf = this.sanitizer.bypassSecurityTrustResourceUrl(pdfDataUrl);
       this.displayIssueSlipPreview = true;
+
     } catch (error) {
       this.handleError(error, 'Error generating issue slip');
     }
@@ -774,21 +826,10 @@ saveIssueSlip(): void {
   }
 }
 
-confirmIssueSlip(): void {
-  // Here you would typically save the issue slip to your backend
-  this.messageService.add({
-    severity: 'success',
-    summary: 'Success',
-    detail: 'Issue slip has been generated successfully'
-  });
-  this.displayIssueSlipPreview = false;
-  this.selectedIssueSlipPdf = null;
-  this.selectedStocks = [];
+private resetIssueSlipForm(): void {
   this.issueSlipForm.reset();
-}
-
-calculateTotal(): number {
-  return this.selectedStocks.reduce((sum, stock) => sum + (stock.price * stock.quantity), 0);
+  this.selectedStocks = [];
+  this.submitted = false;
 }
 
 private generateIssueSlipPdf(): string {
@@ -807,9 +848,10 @@ private generateIssueSlipPdf(): string {
 
   // Form Details
   doc.setFontSize(12);
+  const selectedRequisition = this.issueSlipForm.get('title')?.value;
   doc.text(`Date: ${new Date().toLocaleDateString()}`, margin, 80);
-  doc.text(`Department: ${this.issueSlipForm.get('department')?.value}`, margin, 100);
-  doc.text(`Requested By: ${this.issueSlipForm.get('requestedBy')?.value}`, margin, 120);
+  doc.text(`Requisition: ${selectedRequisition?.title || ''}`, margin, 100);
+  doc.text(`Requested By: ${selectedRequisition?.createdByUserName || ''}`, margin, 120);
 
   // Table Header
   const startY = 160;
@@ -834,8 +876,8 @@ private generateIssueSlipPdf(): string {
       stock.name,
       stock.description || '',
       stock.quantity.toString(),
-      stock.price.toString(),
-      (stock.quantity * stock.price).toString()
+      '₱' + stock.price.toFixed(2),
+      '₱' + (stock.quantity * stock.price).toFixed(2)
     ];
 
     row.forEach((text, i) => {
@@ -856,6 +898,34 @@ private generateIssueSlipPdf(): string {
   doc.text('Prepared by: _________________', margin, y);
   doc.text('Approved by: _________________', pageWidth - margin - 180, y);
 
+  // Serial Number
+  doc.setFontSize(8);
+  doc.text(`IS${Math.random().toString(36).substr(2, 4).toUpperCase()}`, margin, y + 40);
+
   return doc.output('datauristring');
 }
+
+confirmIssueSlip(): void {
+  this.displayIssueSlipPreview = false;
+  this.selectedIssueSlipPdf = null;
+  this.activeTabIndex = 1; // Switch to Pending Requisitions tab
+}
+
+// Update the onRequisitionSelect method
+onRequisitionSelect(event: any): void {
+  const selectedRequisition = event.value;
+  if (selectedRequisition) {
+    this.issueSlipForm.patchValue({
+      requestedBy: selectedRequisition.createdByUserName || 'Unknown',
+      description: `Issue slip for requisition: ${selectedRequisition.title}`
+    });
+  }
+}
+
+
+calculateTotal(): number {
+  return this.selectedStocks.reduce((sum, stock) => sum + (stock.price * stock.quantity), 0);
+}
+
+
 }

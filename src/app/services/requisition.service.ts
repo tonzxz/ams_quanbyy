@@ -10,8 +10,6 @@ import { firstValueFrom } from 'rxjs';
 /**
  * Zod schema for an Extended Requisition.
  */
-
-
 export const requisitionSchema = z.object({
   id: z.string().length(6, "ID must be exactly 6 characters").optional(),
   title: z.string().min(1, "Title is required"),
@@ -26,7 +24,7 @@ export const requisitionSchema = z.object({
       quantity: z.number().min(1, "Quantity must be at least 1"),
       specifications: z.string().optional(),
       price: z.number().min(0, "Price cannot be negative"),
-      status:  z.enum(['pending', 'delivered', 'received']).optional(),
+      status: z.enum(['pending', 'delivered', 'received']).optional(),
     })
   ),
   selectedGroups: z.array(z.string()).optional(),
@@ -34,22 +32,36 @@ export const requisitionSchema = z.object({
   productSpecifications: z.record(z.string(), z.string()).optional(),
   ppmpAttachment: z.string().optional(),
   purchaseRequestAttachment: z.string().optional(),
-  rfqAttachment: z.string().optional(), 
-  rfqFromSuppliersAttachment: z.array(z.string()).optional(), 
-  abstractOfQuotationAttachment: z.string().optional(), 
-  budgetUtilizationReportAttachment: z.string().optional(), 
-  noticeOfAwardAttachment: z.string().optional(), 
-  purchaseOrderAttachment: z.string().optional(), 
+  rfqAttachment: z.string().optional(),
+  rfqFromSuppliersAttachment: z.array(z.string()).optional(),
+  abstractOfQuotationAttachment: z.string().optional(),
+  budgetUtilizationReportAttachment: z.string().optional(),
+  noticeOfAwardAttachment: z.string().optional(),
+  purchaseOrderAttachment: z.string().optional(),
   purchaseOrderId: z.string().length(6, "Purchase Order ID must be exactly 6 characters").optional(),
   noticeToProceedId: z.string().length(6, "Purchase Order ID must be exactly 6 characters").optional(),
-  noticeToProceedAttachment: z.string().optional(), 
-  dateCreated: z.coerce.date().optional(), 
- lastModified: z.coerce.date().optional(), 
+  noticeToProceedAttachment: z.string().optional(),
+  // Add issue slip related fields
+  issueSlipAttachment: z.string().optional(),
+  issueSlipId: z.string().length(6, "Issue Slip ID must be exactly 6 characters").optional(),
+  issuedStocks: z.array(
+    z.object({
+      id: z.string(),
+      name: z.string(),
+      quantity: z.number().min(1, "Quantity must be at least 1"),
+      price: z.number().min(0, "Price cannot be negative"),
+      status: z.enum(['pending', 'issued']).default('pending'),
+      dateIssued: z.date().optional(),
+    })
+  ).optional(),
+  issueSlipStatus: z.enum(['pending', 'completed']).optional(),
+  dateCreated: z.coerce.date().optional(),
+  lastModified: z.coerce.date().optional(),
   signature: z.string().optional(),
   createdByUserId: z.string().optional(),
   createdByUserName: z.string().optional(),
   approvalSequenceId: z.string().min(1, "Approval Sequence ID is required").optional(),
-  currentApprovalLevel: z.number().min(1).default(1), // Default to level 1
+  currentApprovalLevel: z.number().min(1).default(1),
   approvalStatus: z.enum(['Pending', 'Approved', 'Rejected']).default('Pending'),
   approvalHistory: z.array(
     z.object({
@@ -58,9 +70,7 @@ export const requisitionSchema = z.object({
       timestamp: z.date().default(() => new Date()),
       comments: z.string().optional(),
       approversName: z.string().optional(),
-      signature: z.string().optional(), 
-
-
+      signature: z.string().optional(),
     })
   ).optional(),
 });
@@ -370,7 +380,7 @@ private loadDummyData(): void {
 //   }
   // }
   
-  async updateRequisition(requisition: Requisition): Promise<void> {
+async updateRequisition(requisition: Requisition): Promise<void> {
   try {
     // Convert timestamps to Date objects in approvalHistory
     if (requisition.approvalHistory) {
@@ -380,14 +390,39 @@ private loadDummyData(): void {
       }));
     }
 
+    // Convert issued stocks dates if they exist
+    if (requisition.issuedStocks) {
+      requisition.issuedStocks = requisition.issuedStocks.map(stock => ({
+        ...stock,
+        dateIssued: new Date(stock.dateIssued || new Date()), // Ensure Date format
+      }));
+    }
+
+    // Add lastModified timestamp
+    requisition.lastModified = new Date();
+
     // Validate the requisition
     requisitionSchema.parse(requisition);
 
-    // Update and save to storage
+    // Get existing requisition
     const index = this.requisitions.findIndex(req => req.id === requisition.id);
     if (index !== -1) {
-      this.requisitions[index] = requisition;
+      // Merge with existing data to preserve other fields
+      this.requisitions[index] = {
+        ...this.requisitions[index],
+        ...requisition,
+        // Keep existing attachments if not provided in update
+        ppmpAttachment: requisition.ppmpAttachment || this.requisitions[index].ppmpAttachment,
+        purchaseRequestAttachment: requisition.purchaseRequestAttachment || this.requisitions[index].purchaseRequestAttachment,
+        // Keep existing arrays if not provided in update
+        products: requisition.products || this.requisitions[index].products,
+        selectedGroups: requisition.selectedGroups || this.requisitions[index].selectedGroups,
+        approvalHistory: requisition.approvalHistory || this.requisitions[index].approvalHistory,
+        issuedStocks: requisition.issuedStocks || this.requisitions[index].issuedStocks,
+      };
       this.saveToLocalStorage();
+    } else {
+      throw new Error('Requisition not found');
     }
   } catch (error) {
     console.error('Error updating requisition:', error);
