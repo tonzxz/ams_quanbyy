@@ -80,6 +80,15 @@
                 rounded
                 (click)="exportPdf(entry)"
               ></p-button>
+              <p-button
+                severity="info"
+                pTooltip="Generate Journal & Ledger Entries"
+                [outlined]="true"
+                size="small"
+                icon="pi pi-sync"
+                rounded
+                (click)="generateAccountingEntries(entry)"
+              ></p-button>
             </div>
           </td>
         </tr>

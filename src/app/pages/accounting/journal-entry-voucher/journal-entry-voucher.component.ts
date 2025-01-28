@@ -16,8 +16,9 @@ import { FormsModule } from '@angular/forms';
 import { ConfirmPopupModule } from 'primeng/confirmpopup';
 import jsPDF from 'jspdf';
 import 'jspdf-autotable';
-import { DisbursementVoucherService, DisbursementVoucher } from 'src/app/services/disbursement-voucher.service';
+import { DisbursementVoucherService, DisbursementVoucher, ExtendedDisbursementVoucher } from 'src/app/services/disbursement-voucher.service';
 import { DeliveryReceiptService, DeliveryReceipt } from 'src/app/services/delivery-receipt.service';
+import { AccountingService } from 'src/app/services/accounting.service';
 
 interface DetailedJournalEntry extends DisbursementVoucher {
   debitEntries: { accountCode: string; accountName: string; amount: number }[];
@@ -58,13 +59,15 @@ export class JournalEntryVoucherComponent {
   constructor(
     private disbursementVoucherService: DisbursementVoucherService,
     private deliveryReceiptService: DeliveryReceiptService,
-    private messageService: MessageService
+    private messageService: MessageService,
+    private accountingService: AccountingService
   ) {}
 
   ngOnInit(): void {
     this.fetchJournalEntries();
   }
 
+  
   async fetchJournalEntries() {
     try {
       const allVouchers = await this.disbursementVoucherService.getAll();
@@ -190,5 +193,22 @@ export class JournalEntryVoucherComponent {
     // Save the PDF
     doc.save(`Journal_Entry_Voucher_${entry.voucherNo}.pdf`);
   }
+
+  generateAccountingEntries(voucher: ExtendedDisbursementVoucher) {
+    try {
+      this.accountingService.generateAccountingEntries(voucher);
+      this.messageService.add({
+        severity: 'success',
+        summary: 'Success',
+        detail: 'Journal and ledger entries generated successfully'
+      });
+    } catch (error) {
+      this.messageService.add({
+        severity: 'error',
+        summary: 'Error',
+        detail: 'Failed to generate entries'
+      });
+    }
   
+}
 }
