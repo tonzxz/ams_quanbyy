@@ -26,7 +26,7 @@
     </div>
     <p-tabView [(activeIndex)]="activeTabIndex" (onTabChange)="onTabChange($event)">
         <p-tabPanel header="Pending Requests">
-            <p-table [value]="filteredRequests" class="mt-5" [paginator]="true" [rows]="8" [tableStyle]="{ 'min-width': '50rem' }" selectionMode="single" (onRowSelect)="onRowSelect($event)">
+            <p-table [value]="filteredPendingRequests" class="mt-5" [paginator]="true" [rows]="8" [tableStyle]="{ 'min-width': '50rem' }" selectionMode="single" (onRowSelect)="onRowSelect($event)">
                 <ng-template pTemplate="header">
                     <tr>
                         <th>PR#</th>
@@ -63,7 +63,7 @@
         </p-tabPanel>
 
         <p-tabPanel header="Validated Requests">
-            <p-table class="mt-5" [paginator]="true" [rows]="8" [value]="filteredRequests" [tableStyle]="{ 'min-width': '50rem' }" selectionMode="single" (onRowSelect)="onRowSelect($event)">
+            <p-table class="mt-5" [paginator]="true" [rows]="8" [value]="filteredValidatedRequests" [tableStyle]="{ 'min-width': '50rem' }" selectionMode="single" (onRowSelect)="onRowSelect($event)">
                 <ng-template pTemplate="header">
                     <tr>
                         <th>PR#</th>
@@ -108,7 +108,7 @@
         </p-tabPanel>
 
         <p-tabPanel header="Rejected Requests">
-            <p-table class="mt-5" [paginator]="true" [rows]="8" [value]="filteredRequests" [tableStyle]="{ 'min-width': '50rem' }" selectionMode="single" (onRowSelect)="onRowSelect($event)">
+            <p-table class="mt-5" [paginator]="true" [rows]="8" [value]="filteredRejectedRequests" [tableStyle]="{ 'min-width': '50rem' }" selectionMode="single" (onRowSelect)="onRowSelect($event)">
                 <ng-template pTemplate="header">
                     <tr>
                         <th>PR#</th>

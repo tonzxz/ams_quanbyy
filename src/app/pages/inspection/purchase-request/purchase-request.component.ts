@@ -86,7 +86,14 @@ export class PurchaseRequestComponent {
 
   validatedRequests: PurchaseRequest[] = [];
   rejectedRequests: PurchaseRequest[] = [];
-  filteredRequests: PurchaseRequest[] = [];
+
+  filteredPendingRequests: PurchaseRequest[] = [];
+  filteredValidatedRequests: PurchaseRequest[] = [];
+  filteredRejectedRequests: PurchaseRequest[] = [];
+
+  ngOnInit() {
+    this.filterRequests(); // Initialize data on load
+  }
 
   departments: Department[] = [
     { name: 'IT', value: 'IT' },
@@ -99,8 +106,14 @@ export class PurchaseRequestComponent {
   constructor(private messageService: MessageService, private confirmationService: ConfirmationService) {}
 
   filterRequests() {
-    const sourceArray = this.getSourceArray();
-    this.filteredRequests = sourceArray.filter(request =>
+    // Filter each tab's data separately
+    this.filteredPendingRequests = this.filterArray(this.pendingRequests);
+    this.filteredValidatedRequests = this.filterArray(this.validatedRequests);
+    this.filteredRejectedRequests = this.filterArray(this.rejectedRequests);
+  }
+
+  private filterArray(sourceArray: PurchaseRequest[]): PurchaseRequest[] {
+    return sourceArray.filter(request => 
       (this.searchQuery === '' || 
         request.code.toLowerCase().includes(this.searchQuery.toLowerCase()) ||
         request.name.toLowerCase().includes(this.searchQuery.toLowerCase()) ||
@@ -141,11 +154,6 @@ export class PurchaseRequestComponent {
       const [movedRequest] = this.validatedRequests.splice(index, 1);
       this.pendingRequests.push(movedRequest);
       this.filterRequests();
-      this.messageService.add({
-        severity: 'success',
-        summary: 'Moved to Pending',
-        detail: 'Request has been moved back to pending'
-      });
     }
   }
 
@@ -155,11 +163,6 @@ export class PurchaseRequestComponent {
       const [movedRequest] = this.rejectedRequests.splice(index, 1);
       this.pendingRequests.push(movedRequest);
       this.filterRequests();
-      this.messageService.add({
-        severity: 'success',
-        summary: 'Moved to Pending',
-        detail: 'Request has been moved back to pending'
-      });
     }
   }
 
@@ -213,7 +216,7 @@ export class PurchaseRequestComponent {
   resetFilters() {
     this.searchQuery = '';
     this.selectedDepartment = null;
-    this.filteredRequests = [...this.getSourceArray()];
+    this.filteredPendingRequests = [...this.getSourceArray()];
   }
   
   private getSourceArray(): PurchaseRequest[] {
