@@ -112,68 +112,69 @@
 
             <ng-template #body let-po let-rowIndex="rowIndex">
                 @for(item of po.items;track item.id){
-                    @if(item.status == 'pending' || item.status =='delivered' || currentUser?.role == 'supply'){
-                        <tr class="hover:cursor-pointer">
-                            <td pFrozen="left"> 
-                                <i class="pi pi-box mr-2"></i>
-                                {{ item.name }}</td>
-                            <td>{{ item.ticker }}</td>
-                            <td>{{ item.storage_name }}</td>
-                            <td>{{ item.product_name }}</td>
-                            <td>{{ item.price | currency:'PHP' }}</td>
-                            <td>{{ item.quantity | number }}</td>
-                            <td>{{ item.dateAdded | date: 'yyyy-MM-dd' }}</td>
-                            <td>{{ item.description || 'No description set.' }}</td>
-                            @if(stockTab==1){
-                                <td class="w-16">
-                                    <div class="flex gap-4 ">
-                                        <p-button size="small" icon="pi pi-pencil"
-                                            (click)="openEditStockModal(po.deliveryReceipt, item)" [outlined]="true" rounded />
-                                        <p-button size="small" icon="pi pi-trash" (click)="confirmDeleteStock($event, item.id)" severity="danger" [outlined]="true"
-                                            rounded />
-                                    </div>
-                                </td>
-                            }
-                            @if(stockTab ==0){
-                                @if(currentUser?.role=='supply'){
-                                    <td class="w-16">
-                                        <div class="flex gap-4 ">
-                                            <p-button pTooltip="Print QR" size="small"  icon="pi pi-qrcode"
-                                                (click)="generateQR(item)" [outlined]="true" rounded />
-                                            <p-button pTooltip="Print QR Batch" size="small" icon="pi pi-objects-column" (click)="generateQRBatch(item)" [outlined]="true"
-                                                rounded />
-        
-                                            @if(item.status=='delivered'){
-                                                <p-button severity="success" pTooltip="Delivered" size="small"  icon="pi pi-check"
-                                                    [disabled]="true" [outlined]="true" rounded />
-                                            }@else if(item.status=='pending'){
-                                                <p-button severity="warn" pTooltip="Under Delivery" size="small"  icon="pi pi-truck"
-                                                    [disabled]="true" [outlined]="true" rounded />
-                                            }@else{
-                                                <p-button (click)="markItemForDelivery(item)" pTooltip="Click to delivery item" size="small"  icon="pi pi-arrow-right"
-                                                [outlined]="true" rounded />
-                                            }
-                                        </div>
-                                      
-                                    </td>
-                                }@else{
-                                    <td class="w-16">
-                                        @if(item.status =='delivered'){
-                                            <div class="flex gap-4 ">
-                                                <p-button severity="secondary" pTooltip="Delivered" size="small"  icon="pi pi-box"
-                                                    [disabled]="true" [outlined]="true" rounded />
-                                            </div>
-                                        }@else if(item.status=='pending'){
-                                            <div class="flex gap-4 ">
-                                                <p-button severity="success" pTooltip="Click to mark as delivered" size="small"  icon="pi pi-check"
-                                                    (click)="markItemAsDelivered(item)" [outlined]="true" rounded />
-                                            </div>
-                                        }
-                                    </td>
-                                }
-                            }
-                        </tr>
+                <tr class="hover:cursor-pointer">
+                    <td pFrozen="left"> 
+                        <i class="pi pi-box mr-2"></i>
+                        {{ item.name }}</td>
+                    <td>{{ item.ticker }}</td>
+                    <td>{{ item.storage_name }}</td>
+                    <td>{{ item.product_name }}</td>
+                    <td>{{ item.price | currency:'PHP' }}</td>
+                    <td>{{ item.quantity | number }}</td>
+                    <td>{{ item.dateAdded | date: 'yyyy-MM-dd' }}</td>
+                    <td>{{ item.description || 'No description set.' }}</td>
+                    @if(stockTab==1){
+                        <td class="w-16">
+                            <div class="flex gap-4 ">
+                                <p-button size="small" icon="pi pi-pencil"
+                                    (click)="openEditStockModal(po.deliveryReceipt, item)" [outlined]="true" rounded />
+                                <p-button size="small" icon="pi pi-trash" (click)="confirmDeleteStock($event, item.id)" severity="danger" [outlined]="true"
+                                    rounded />
+                            </div>
+                        </td>
                     }
+                    @if(stockTab ==0){
+                        @if(currentUser?.role=='supply'){
+                            <td class="w-16">
+                                <div class="flex gap-4 ">
+                                    <p-button pTooltip="Print QR" size="small"  icon="pi pi-qrcode"
+                                        (click)="generateQR(item)" [outlined]="true" rounded />
+                                    <p-button pTooltip="Print QR Batch" size="small" icon="pi pi-objects-column" (click)="generateQRBatch(item)" [outlined]="true"
+                                        rounded />
+
+                                    @if(item.status=='delivered'){
+                                        <p-button severity="success" pTooltip="Delivered" size="small"  icon="pi pi-check"
+                                            [disabled]="true" [outlined]="true" rounded />
+                                    }@else if(item.status=='pending'){
+                                        <p-button severity="warn" pTooltip="Under Delivery" size="small"  icon="pi pi-truck"
+                                            [disabled]="true" [outlined]="true" rounded />
+                                    }@else{
+                                        <p-button (click)="markItemForDelivery(item)" pTooltip="Click to delivery item" size="small"  icon="pi pi-arrow-right"
+                                        [outlined]="true" rounded />
+                                    }
+                                </div>
+                              
+                            </td>
+                        }@else{
+                            <td class="w-16">
+                                @if(item.status =='delivered'){
+                                    <div class="flex gap-4 ">
+                                        <p-button severity="secondary" pTooltip="Delivered" size="small"  icon="pi pi-box"
+                                            [disabled]="true" [outlined]="true" rounded />
+                                    </div>
+                                }@else if(item.status=='pending'){
+                                    <div class="flex gap-4 ">
+                                        <p-button severity="success" pTooltip="Click to mark as delivered" size="small"  icon="pi pi-check"
+                                            (click)="markItemAsDelivered(item)" [outlined]="true" rounded />
+                                    </div>
+                                }@else{
+                                    <p-button [disabled]="true" everity="secondary" pTooltip="Still in warehowse" size="small"  icon="pi pi-warehouse"
+                                    [outlined]="true" rounded />
+                                }
+                            </td>
+                        }
+                    }
+                </tr>
                 }
             </ng-template>
             <ng-template #emptymessage>
