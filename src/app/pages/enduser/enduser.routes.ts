@@ -5,8 +5,6 @@ import { ViewPlanComponent } from './view-plan/view-plan.component';
 import { RequisitionComponent } from './requisition/requisition.component';
 import { ReceivingComponent } from './receiving/receiving.component';
 import { CanvassingComponent } from './canvassing/canvassing.component';
-import { RequisitionAndIssueSlipComponent } from './requisition-and-issue-slip/requisition-and-issue-slip.component';
-import { RequisitionsComponent } from './requisitions/requisitions.component';
 
 export const enduserRoutes: Routes = [
   {
@@ -38,12 +36,7 @@ export const enduserRoutes: Routes = [
         canActivate: [roleGuard],
       },
 
-       {
-        path: 'requisitions',
-        component: RequisitionsComponent,
-        data: { breadcrumb: 'Requisitions', roles: ['end-user'] },
-        canActivate: [roleGuard],
-      },
+      
       {
         path: 'receiving',
         component: ReceivingComponent,
@@ -57,12 +50,7 @@ export const enduserRoutes: Routes = [
         data: { breadcrumb: 'Canvassing', roles: ['end-user'] },
         canActivate: [roleGuard],
       },
-         {
-        path: 'requisition-and-issue-slip',
-        component: RequisitionAndIssueSlipComponent,
-        data: { breadcrumb: 'Requisition and Issue Slip', roles: ['end-user'] },
-        canActivate: [roleGuard],
-      },
+    
     ],
   },
 ];
