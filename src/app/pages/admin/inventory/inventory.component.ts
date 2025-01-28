@@ -18,6 +18,7 @@ import { InventoryService, Inventory, InventoryLocation } from 'src/app/services
 import { DepartmentService, Office } from 'src/app/services/departments.service';
 import { ItemClassificationService, ItemClassification } from 'src/app/services/item-classification.service';
 import { MaterialModule } from 'src/app/material.module';
+import { StocksService, Stock } from 'src/app/services/stocks.service';
 
 @Component({
   selector: 'app-inventory',
@@ -74,10 +75,12 @@ export class InventoryComponent implements OnInit {
     private classificationService: ItemClassificationService,
     private formBuilder: FormBuilder,
     private confirmationService: ConfirmationService,
-    private messageService: MessageService
+    private messageService: MessageService,
+    private stockService:StocksService,
   ) {}
 
   async ngOnInit() {
+    this.stocks = await this.stockService.getAll();
     this.initializeInventoryForm();
     this.initializeLocationForm();
 
@@ -232,6 +235,17 @@ export class InventoryComponent implements OnInit {
   async loadLocations() {
     this.locationLoading = true;
     this.locations = await this.inventoryService.getAllLocations();
+    for(let i = 0; i<  this.locations.length; i++){
+      this.locations[i].capacity = this.stocks.reduce((acc,curr)=>
+      {
+        if(curr.storage_id == this.locations[i].id){
+          return acc + curr.quantity ;
+        }else{
+          return acc;
+        }
+      },0
+      );
+    }
     this.locationLoading = false;
   }
 
@@ -255,6 +269,10 @@ export class InventoryComponent implements OnInit {
       capacity: loc.capacity
     });
   }
+
+
+  stocks : Stock[]= [];
+
 
   async deleteLocation(loc: InventoryLocation) {
     this.confirmationService.confirm({
@@ -306,7 +324,7 @@ export class InventoryComponent implements OnInit {
       }
     }
   }
-
+  
   // Provide label for office in table (if you want to display it in table)
   getOfficeLabel(officeId: string) {
     const found = this.offices.find(o => o.id === officeId);
