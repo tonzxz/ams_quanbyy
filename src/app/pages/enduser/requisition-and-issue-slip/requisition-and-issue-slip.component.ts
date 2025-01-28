@@ -1,130 +1,129 @@
 import { Component, OnInit } from '@angular/core';
-import { FormBuilder, FormGroup, FormsModule, ReactiveFormsModule, Validators } from '@angular/forms';
-import { StocksService, Stock } from 'src/app/services/stocks.service';
-import { MessageService } from 'primeng/api';
+import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { CommonModule } from '@angular/common';
-import { TabViewModule } from 'primeng/tabview';
-import { CardModule } from 'primeng/card';
-import { Dropdown, DropdownModule } from 'primeng/dropdown';
+import { StocksService, Stock } from 'src/app/services/stocks.service';
+import { RequisitionService, Requisition } from 'src/app/services/requisition.service';
+import { MatCardModule } from '@angular/material/card';
+import { InputNumberModule } from 'primeng/inputnumber';
 import { ButtonModule } from 'primeng/button';
+import { SelectModule } from 'primeng/select';
 import { TableModule } from 'primeng/table';
+import { TabsModule } from 'primeng/tabs';
+import { DialogModule } from 'primeng/dialog';
 
 @Component({
   selector: 'app-requisition-and-issue-slip',
   standalone: true,
+  imports: [
+    CommonModule,
+    ReactiveFormsModule,
+    MatCardModule,
+    InputNumberModule,
+    ButtonModule,
+    SelectModule,
+    TableModule,
+    TabsModule,
+    DialogModule
+  ],
   templateUrl: './requisition-and-issue-slip.component.html',
-  styleUrls: ['./requisition-and-issue-slip.component.scss'],
-  providers: [MessageService],
-  imports: [CommonModule, TabViewModule, CardModule, FormsModule, DropdownModule,ButtonModule, TableModule, ReactiveFormsModule ]
+  styleUrls: ['./requisition-and-issue-slip.component.scss']
 })
 export class RequisitionAndIssueSlipComponent implements OnInit {
+  activeTab: string = 'create';
+  issuanceForm: FormGroup;
   requisitionForm: FormGroup;
-  products: Stock[] = [];
-  issuedItems: Stock[] = [];
-  selectedProduct: Stock | null = null;
-  loading = false;
-  submitted = false;
-  activeTabIndex = 0;
+  items: Stock[] = [];
+  userRequisitions: Requisition[] = [];
+  selectedRequisitionItems: Stock[] = [];
+  pendingIssuances = [
+    { requisition: { title: 'Office Supplies Request' }, item: { name: 'Paper' }, quantity: 10, purpose: 'Office work', status: 'Waiting for Approval' },
+    { requisition: { title: 'Electronics Request' }, item: { name: 'Laptop' }, quantity: 2, purpose: 'Work', status: 'Waiting for Approval' }
+  ];
+  showRequisitionDialog: boolean = false;
 
-  constructor(
-    private formBuilder: FormBuilder,
-    private stocksService: StocksService,
-    private messageService: MessageService
-  ) {
-    this.requisitionForm = this.formBuilder.group({
-      quantity: ['', [Validators.required, Validators.min(1)]],
+  constructor(private fb: FormBuilder, private stocksService: StocksService, private requisitionService: RequisitionService) {
+    this.issuanceForm = this.fb.group({
+      requisition: [null, Validators.required],
+      item: [null, Validators.required],
+      quantity: [null, [Validators.required, Validators.min(1)]],
+      purpose: ['', Validators.required]
+    });
+
+    this.requisitionForm = this.fb.group({
+      title: ['', Validators.required],
+      purpose: ['', Validators.required]
     });
   }
 
-  async ngOnInit() {
-    await this.loadProducts();
-    this.loadIssuedItems();
+async ngOnInit() {
+  // Fetch products from stocks service
+  this.items = await this.stocksService.getAll();
+  // Fetch all requisitions for the logged-in user
+  this.userRequisitions = await this.requisitionService.getAllRequisitions();
+
+  // Update `selectedRequisitionItems` when a requisition is selected
+ 
+}
+
+
+
+
+  switchTab(tab: string): void {
+    this.activeTab = tab;
   }
 
- private async loadProducts(): Promise<void> {
-  try {
-    this.products = await this.stocksService.getAll();
-    console.log('Products:', this.products); // Debugging
-  } catch (error) {
-    console.error('Error loading products:', error);
+  submitIssuance(): void {
+    if (this.issuanceForm.valid) {
+      const issuance = {
+        requisition: this.issuanceForm.value.requisition,
+        item: this.issuanceForm.value.item,
+        quantity: this.issuanceForm.value.quantity,
+        purpose: this.issuanceForm.value.purpose,
+        status: 'Waiting for Approval'
+      };
+      this.pendingIssuances.push(issuance);
+      this.issuanceForm.reset();
+    }
+  }
+
+  cancelIssuance(): void {
+    this.issuanceForm.reset();
+  }
+
+  openRequisitionDialog(): void {
+    this.showRequisitionDialog = true;
+  }
+
+  closeRequisitionDialog(): void {
+    this.showRequisitionDialog = false;
+    this.requisitionForm.reset();
+  }
+
+async submitRequisition(): Promise<void> {
+  if (this.requisitionForm.valid) {
+    const requisition = {
+      title: this.requisitionForm.value.title,
+      purpose: this.requisitionForm.value.purpose,
+      status: 'Pending', // Explicitly ensure the string matches the type
+      classifiedItemId: 'defaultClassifiedItemId', // Replace with actual logic
+      group: 'defaultGroup', // Replace with actual logic
+      products: [], // Initialize with an empty array for now
+      currentApprovalLevel: 1, // Start from the first approval level
+      approvalStatus: 'Pending' as 'Pending', // Explicitly cast to the expected type
+      approvalHistory: [], // Initialize as an empty array
+      createdByUserId: 'currentUserId', // Replace with the actual user ID
+      createdByUserName: 'currentUserName', // Replace with the actual user name
+    };
+
+    // Call the service to add the requisition
+    const requisitionId = await this.requisitionService.addRequisition(requisition);
+    console.log('Requisition Created:', requisition);
+    
+    // Refresh the user's requisitions
+    this.userRequisitions = await this.requisitionService.getAllRequisitions();
+    this.closeRequisitionDialog();
   }
 }
 
-  private loadIssuedItems(): void {
-    const issuedItems = localStorage.getItem('issuedItems');
-    this.issuedItems = issuedItems ? JSON.parse(issuedItems) : [];
-  }
 
-  async submitRequisition(): Promise<void> {
-    this.submitted = true;
-
-    if (!this.selectedProduct || this.requisitionForm.invalid) {
-      this.messageService.add({
-        severity: 'error',
-        summary: 'Validation Error',
-        detail: 'Please select a product and enter a valid quantity.',
-      });
-      return;
-    }
-
-    try {
-      this.loading = true;
-
-      const quantity = this.requisitionForm.get('quantity')?.value;
-
-      if (quantity > this.selectedProduct.quantity) {
-        this.messageService.add({
-          severity: 'error',
-          summary: 'Insufficient Stock',
-          detail: 'Requested quantity exceeds available stock.',
-        });
-        return;
-      }
-
-      // Update product stock
-      const updatedProduct = {
-        ...this.selectedProduct,
-        quantity: this.selectedProduct.quantity - quantity,
-      };
-      await this.stocksService.editStock(updatedProduct);
-
-      // Add to issued items
-      const issuedItem = {
-        ...updatedProduct,
-        quantity,
-        dateAdded: new Date(),
-      };
-      this.issuedItems.push(issuedItem);
-      localStorage.setItem('issuedItems', JSON.stringify(this.issuedItems));
-
-      this.messageService.add({
-        severity: 'success',
-        summary: 'Success',
-        detail: 'Requisition submitted successfully.',
-      });
-
-      this.resetForm();
-      await this.loadProducts();
-    } catch (error) {
-      console.error('Error submitting requisition:', error);
-    } finally {
-      this.loading = false;
-    }
-  }
-
-  removeIssuedItem(id: string): void {
-    this.issuedItems = this.issuedItems.filter((item) => item.id !== id);
-    localStorage.setItem('issuedItems', JSON.stringify(this.issuedItems));
-    this.messageService.add({
-      severity: 'success',
-      summary: 'Item Removed',
-      detail: 'Issued item has been removed.',
-    });
-  }
-
-  resetForm(): void {
-    this.requisitionForm.reset();
-    this.selectedProduct = null;
-    this.submitted = false;
-  }
 }

@@ -1,90 +1,109 @@
-<p-card header="Requisition and Issue Slip" class="mb-4">
-  <p class="text-sm text-gray-600 mb-4">
-    Manage and track your requisitions and issued slips below.
-  </p>
+<mat-card class="cardWithShadow">
+  <mat-card-content>
+    <mat-card-title class="select-none font-light">Requisition and Issue Slip</mat-card-title>
+    <div class="flex justify-between items-center">
+      <p>Manage item issuance and requisition from supply in this section.</p>
+      <p-button label="Create Requisition" (click)="openRequisitionDialog()"></p-button>
+    </div>
 
-  <p-tabView [(activeIndex)]="activeTabIndex">
-    <!-- Requisition Tab -->
-    <p-tabPanel header="Requisition">
-      <form [formGroup]="requisitionForm" class="p-fluid" novalidate>
-        <div class="grid formgrid gap-y-4">
-          <!-- Product Selection -->
-          <div class="field col-12 md:col-6">
-            <label for="product" class="font-semibold text-gray-800 mb-2">Select Product</label>
-         <p-dropdown
-  [options]="products"
-  optionLabel="name"
-  [(ngModel)]="selectedProduct"
-  placeholder="Select a product"
-  [showClear]="true"
-  class="w-full"
-></p-dropdown>
+    <p-tabs>
+      <p-tablist>
+        <p-tab [value]="'create'" (click)="switchTab('create')">
+          <span>Create Issuance</span>
+        </p-tab>
+        <p-tab [value]="'pending'" (click)="switchTab('pending')">
+          <span>Pending Issuances</span>
+        </p-tab>
+      </p-tablist>
+    </p-tabs>
 
-            <small
-              class="text-red-500"
-              *ngIf="submitted && !selectedProduct"
-            >Product is required</small>
+    <div class="mt-4">
+      <!-- Tab Content -->
+      <ng-container *ngIf="activeTab === 'create'">
+        <h3 class="font-semibold mb-4">Create Issuance</h3>
+        <form [formGroup]="issuanceForm" (submit)="submitIssuance()">
+          <div class="flex flex-col gap-4">
+            <div class="flex items-center gap-4">
+              <label for="item" class="font-semibold w-32">Item</label>
+              <p-select [options]="items" formControlName="item" optionLabel="name" [showClear]="true" placeholder="Select an item">
+              </p-select>
+            </div>
+
+            <div class="flex items-center gap-4">
+              <label for="quantity" class="font-semibold w-32">Quantity</label>
+              <p-inputnumber formControlName="quantity" [showButtons]="true" min="1" placeholder="Enter quantity">
+              </p-inputnumber>
+            </div>
+
+            <div class="flex items-center gap-4">
+              <label for="purpose" class="font-semibold w-32">Purpose</label>
+              <textarea formControlName="purpose" placeholder="Enter purpose" rows="3" class="flex-auto">
+              </textarea>
+            </div>
           </div>
 
-          <!-- Quantity -->
-          <div class="field col-12 md:col-6">
-            <label for="quantity" class="font-semibold text-gray-800 mb-2">Quantity</label>
-            <input
-              id="quantity"
-              type="number"
-              pInputText
-              formControlName="quantity"
-              placeholder="Enter quantity"
-              class="w-full"
-            />
-            <small
-              class="text-red-500"
-              *ngIf="submitted && requisitionForm.get('quantity')?.errors?.['required']"
-            >Quantity is required</small>
+          <div class="flex justify-end gap-4 mt-4">
+            <p-button type="button" label="Cancel" class="p-button-secondary" (click)="cancelIssuance()"></p-button>
+            <p-button type="submit" label="Submit" [disabled]="!issuanceForm.valid"></p-button>
           </div>
-        </div>
+        </form>
+      </ng-container>
 
-        <!-- Submit Button -->
-        <div class="flex justify-end mt-6">
-          <p-button
-            label="Submit Requisition"
-            icon="pi pi-check"
-            (onClick)="submitRequisition()"
-            [loading]="loading"
-          ></p-button>
-        </div>
-      </form>
-    </p-tabPanel>
+      <ng-container *ngIf="activeTab === 'pending'">
+        <h3 class="font-semibold mb-4">Pending Issuances</h3>
+        <p-table [value]="pendingIssuances" [paginator]="true" [rows]="5" [rowsPerPageOptions]="[5, 10, 20]">
+          <ng-template pTemplate="header">
+            <tr>
+              <th>Item</th>
+              <th>Quantity</th>
+              <th>Purpose</th>
+              <th>Status</th>
+            </tr>
+          </ng-template>
+          <ng-template pTemplate="body" let-issuance>
+            <tr>
+              <td>{{ issuance.item.name }}</td>
+              <td>{{ issuance.quantity }}</td>
+              <td>{{ issuance.purpose }}</td>
+              <td>{{ issuance.status }}</td>
+            </tr>
+          </ng-template>
+        </p-table>
+      </ng-container>
+    </div>
+  </mat-card-content>
+</mat-card>
 
-    <!-- Issuance Tab -->
-    <p-tabPanel header="Issued Items">
-      <p-table [value]="issuedItems" [rows]="10" [paginator]="true" [rowsPerPageOptions]="[5, 10, 20]">
-        <ng-template pTemplate="header">
-          <tr>
-            <th>Product Name</th>
-            <th>Quantity</th>
-            <th>Date Issued</th>
-            <th>Actions</th>
-          </tr>
-        </ng-template>
-        <ng-template pTemplate="body" let-item>
-          <tr>
-            <td>{{ item.product_name }}</td>
-            <td>{{ item.quantity }}</td>
-            <td>{{ item.dateAdded | date: 'short' }}</td>
-            <td>
-              <p-button
-                icon="pi pi-trash"
-                label="Remove"
-                severity="danger"
-                [outlined]="true"
-                size="small"
-                (onClick)="removeIssuedItem(item.id)"
-              ></p-button>
-            </td>
-          </tr>
-        </ng-template>
-      </p-table>
-    </p-tabPanel>
-  </p-tabView>
-</p-card>
+<p-dialog header="Create Requisition" [(visible)]="showRequisitionDialog" [modal]="true" [style]="{ width: '40vw' }">
+  <form [formGroup]="requisitionForm" (ngSubmit)="submitRequisition()">
+    <div class="flex flex-col gap-4">
+      <div class="flex items-center gap-4">
+        <label for="title" class="font-semibold w-32">Title</label>
+        <input formControlName="title" type="text" placeholder="Enter title" pInputText class="flex-auto" />
+      </div>
+
+      <div class="flex items-center gap-4">
+        <label for="purpose" class="font-semibold w-32">Purpose</label>
+        <textarea formControlName="purpose" placeholder="Enter purpose" rows="3" class="flex-auto">
+        </textarea>
+      </div>
+
+      <div class="flex items-center gap-4">
+        <label for="item" class="font-semibold w-32">Item</label>
+        <p-select [options]="items" formControlName="item" optionLabel="name" [showClear]="true" placeholder="Select an item">
+        </p-select>
+      </div>
+
+      <div class="flex items-center gap-4">
+        <label for="quantity" class="font-semibold w-32">Quantity</label>
+        <p-inputnumber formControlName="quantity" [showButtons]="true" min="1" placeholder="Enter quantity">
+        </p-inputnumber>
+      </div>
+    </div>
+
+    <div class="flex justify-end gap-4 mt-4">
+      <p-button type="button" label="Cancel" class="p-button-secondary" (click)="closeRequisitionDialog()"></p-button>
+      <p-button type="submit" label="Create" [disabled]="!requisitionForm.valid"></p-button>
+    </div>
+  </form>
+</p-dialog>
