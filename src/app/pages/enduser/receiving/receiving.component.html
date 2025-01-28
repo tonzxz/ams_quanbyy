@@ -84,6 +84,34 @@
           (click)="submitApproval()"
         ></button>
       </div>
-    </div>
-  </p-dialog>
+    </div>  </p-dialog>
+
 </p-card>
+
+
+<div id="pdf-content" style="display: none;">
+    <h1>Receipt and Acknowledgment Form</h1>
+    <p><strong>PR Number:</strong> {{selectedOrder?.prNumber}}</p>
+    <p><strong>Item Category:</strong> {{selectedOrder?.itemCategory}}</p>
+    <p><strong>Date Ordered:</strong> {{selectedOrder?.dateOrdered}}</p>
+    <p><strong>Status:</strong> {{selectedOrder?.status}}</p>
+    <h2>Items</h2>
+    <table>
+        <thead>
+            <tr>
+                <th>Item</th>
+                <th>Quantity</th>
+                <th>Condition</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr *ngFor="let item of selectedOrder?.items">
+                <td>{{item.name}}</td>
+                <td>{{item.quantity}}</td>
+                <td>{{item.condition}}</td>
+            </tr>
+        </tbody>
+    </table>
+    <p><strong>Acknowledgment:</strong> I hereby acknowledge the receipt of the above items in good condition.</p>
+    <p><strong>Signature:</strong> ___________________________</p>
+</div>

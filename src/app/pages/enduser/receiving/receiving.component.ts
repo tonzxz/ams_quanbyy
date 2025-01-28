@@ -19,6 +19,15 @@ import { ConfirmationService } from 'primeng/api';
 import { Requisition, RequisitionService } from 'src/app/services/requisition.service';
 import jsPDF from 'jspdf';
 import { UserService } from 'src/app/services/user.service';
+import 'jspdf-autotable';
+import html2pdf from 'html2pdf.js'; // Correct import
+
+interface jsPDFWithAutoTable extends jsPDF {
+  autoTable: (options: any) => void;
+  lastAutoTable: { finalY: number };
+}
+
+const jsPDFWithAutoTable = jsPDF as unknown as { new (): jsPDFWithAutoTable };
 
 @Component({
   selector: 'app-receiving',

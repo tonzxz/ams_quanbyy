@@ -13,12 +13,12 @@ export const deliveryReceiptSchema = z.object({
   supplier_id: z.string().length(32, "Supplier ID must be exactly 32 characters"),
   department_id: z.string().length(32, "Supplier ID must be exactly 32 characters").optional(),
   department_name: z.string().min(1, "Department name is required").optional(),
-  supplier_name: z.string().min(1, "Customer name is required"), // Ensuring customer name is not empty
-  delivery_date: z.date(), // Date when the delivery was made
-  supporting_documents: z.array(z.string()).optional(), // Array of image links as plain strings
-  total_amount: z.number().min(0, "Total amount must be a positive number"), // Total amount of the delivery receipt
-  notes: z.string().max(500, "Notes cannot exceed 500 characters").optional(), // Optional notes for the receipt
-  status: z.enum(['unverified','processing','verified']),
+  supplier_name: z.string().min(1, "Customer name is required"),
+  delivery_date: z.date(),
+  supporting_documents: z.array(z.string()).optional(),
+  total_amount: z.number().min(0, "Total amount must be a positive number"),
+  notes: z.string().max(500, "Notes cannot exceed 500 characters").optional(),
+  status: z.enum(['unverified', 'processing', 'verified', 'completed']), // Add 'completed' status
   purchase_order: z.string().optional(),
   stocked: z.boolean(),
   receipts: z.array(z.string()),
@@ -178,13 +178,13 @@ async addReceipt(receipt: DeliveryReceipt) {
   localStorage.setItem('deliveryReceipts', JSON.stringify(this.receiptData));
 }
 
-  async editReceipt(receipt: DeliveryReceipt) {
-    const receiptIndex = this.receiptData.findIndex(item => item.id == receipt.id);
-    if (receiptIndex !== -1) {
-      this.receiptData[receiptIndex] = receipt;
-      localStorage.setItem('deliveryReceipts', JSON.stringify(this.receiptData));
-    }
+async editReceipt(receipt: DeliveryReceipt) {
+  const receiptIndex = this.receiptData.findIndex(item => item.id == receipt.id);
+  if (receiptIndex !== -1) {
+    this.receiptData[receiptIndex] = receipt;
+    localStorage.setItem('deliveryReceipts', JSON.stringify(this.receiptData));
   }
+}
 
   async moveForInspection(id: string) {
     const receiptIndex = this.receiptData.findIndex(item => item.id == id);
