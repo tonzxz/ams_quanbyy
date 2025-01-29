@@ -8,257 +8,162 @@
     <p-tabView>
       <!-- TAB 1: USER MANAGEMENT -->
       <p-tabPanel header="User Management">
-        <mat-card-title>User Management</mat-card-title>
-        <mat-card-subtitle class="text-sm text-gray-500">
-          View and manage users in this section.
-        </mat-card-subtitle>
+  <mat-card-title>User Management</mat-card-title>
+  <mat-card-subtitle class="text-sm text-gray-500">
+    View and manage users in this section.
+  </mat-card-subtitle>
 
-        <!-- Header: Add User + Search -->
-        <div class="flex justify-between items-center mt-4">
-          <p-button
-            pTooltip="Add User"
-            (click)="openNewUserDialog()"
-            [outlined]="true"
-            size="small"
-            label="Add User"
-            icon="pi pi-plus"
-          ></p-button>
+  <!-- Header: Add User + Search -->
+  <div class="flex justify-between items-center mt-4">
+    <p-button
+      pTooltip="Add User"
+      (click)="openNewUserDialog()"
+      [outlined]="true"
+      size="small"
+      label="Add User"
+      icon="pi pi-plus"
+    ></p-button>
 
-          <!-- Search Box -->
-          <div class="relative w-[300px]">
-            <i
-              class="pi pi-search absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500"
-            ></i>
-            <input
-              pInputText
-              type="text"
-              #userSearchInput
-              (input)="userTable.filterGlobal(userSearchInput.value, 'contains')"
-              placeholder="Search Name"
-              style="text-indent: 1.5rem;"
-              class="w-full border border-gray-300 rounded-md py-2 pl-10 pr-3 text-sm
-                     focus:outline-none focus:ring-2 focus:ring-blue-500 placeholder:ml-6"
-            />
-          </div>
-        </div>
-
-        <!-- Users Table -->
-        <p-table
-          #userTable
-          [value]="users"
-          [rows]="10"
-          [paginator]="true"
-          [globalFilterFields]="['fullname','username','Department','Office','role']"
-          [rowsPerPageOptions]="[5, 10, 20]"
-          [loading]="userLoading"
-          [showCurrentPageReport]="false"
-          [responsive]="true"
-          [rowHover]="true"
-          [scrollable]="true"
-          scrollHeight="600px"
-          styleClass="p-datatable-sm mt-4"
-          dataKey="id"
-        >
-          <ng-template pTemplate="header">
-            <tr>
-              <th pSortableColumn="fullname">
-                Full Name
-                <p-sortIcon field="fullname"></p-sortIcon>
-              </th>
-              <th pSortableColumn="username">
-                Username
-                <p-sortIcon field="username"></p-sortIcon>
-              </th>
-             
-                <th pSortableColumn="officeId">
-                Office
-                <p-sortIcon field="officeId"></p-sortIcon>
-                </th>
-              <th pSortableColumn="role">
-                Role
-                <p-sortIcon field="role"></p-sortIcon>
-              </th>
-              <th class="w-[100px]">Actions</th>
-            </tr>
-          </ng-template>
-
-          <ng-template pTemplate="body" let-user>
-            <tr>
-              <td>{{ user.fullname }}</td>
-              <td>{{ user.username }}</td>
-              <td>{{ user.officeName }}</td>
-              <td>
-                <!-- Badge for Roles -->
-                <p-badge
-                  [value]="user.role"
-                  [severity]="getRoleSeverity(user.role)"
-                  styleClass="text-capitalize"
-                ></p-badge>
-              </td>
-              <td>
-                <div class="flex gap-2">
-                  <button
-                    pButton
-                    icon="pi pi-pencil"
-                    class="p-button-rounded p-button-primary p-button-sm"
-                    [outlined]="true"
-                    (click)="editUser(user)"
-                  ></button>
-                  <button
-                    pButton
-                    icon="pi pi-trash"
-                    class="p-button-rounded p-button-danger p-button-sm"
-                    [outlined]="true"
-                    (click)="deleteUser(user)"
-                  ></button>
-                </div>
-              </td>
-            </tr>
-          </ng-template>
-
-          <!-- Empty message -->
-          <ng-template pTemplate="emptymessage">
-            <tr>
-              <td colspan="4">
-                <div class="flex flex-col w-full items-center justify-center py-8">
-                  <span>No users found.</span>
-                </div>
-              </td>
-            </tr>
-          </ng-template>
-        </p-table>
-
-        <!-- User Dialog -->
-        <p-dialog
-          [(visible)]="userDialog"
-          [modal]="true"
-          [style]="{ width: '90vw', maxWidth: '450px' }"
-          [header]="isUserEditMode ? 'Edit User' : 'Add New User'"
-          styleClass="p-fluid"
-          [dismissableMask]="true"
-          [draggable]="false"
-          [resizable]="false"
-          [position]="'center'"
-        >
-          <span class="text-gray-600 block">
-            {{ isUserEditMode ? 'Editing' : 'Adding new' }} user.
-          </span>
-          <small class="text-gray-500 block mb-4">(Please fill out all fields)</small>
-
-          <form [formGroup]="userForm" class="w-full">
-            <!-- Full Name -->
-            <div class="flex items-center gap-4 mb-4">
-              <label class="font-semibold w-24">Full Name</label>
-              <div class="flex-auto flex-col flex">
-                <input
-                  type="text"
-                  pInputText
-                  formControlName="fullname"
-                  placeholder="Enter full name"
-                  class="w-full"
-                  required
-                  autofocus
-                />
-                <small
-                  class="self-end text-red-500 mt-1"
-                  *ngIf="userSubmitted && userForm.get('fullname')?.errors?.['required']"
-                >
-                  Full name is required.
-                </small>
-              </div>
-            </div>
-
-            <!-- Username -->
-            <div class="flex items-center gap-4 mb-4">
-              <label class="font-semibold w-24">Username</label>
-              <div class="flex-auto flex-col flex">
-                <input
-                  type="text"
-                  pInputText
-                  formControlName="username"
-                  placeholder="Enter username"
-                  class="w-full"
-                  required
-                />
-                <small
-                  class="self-end text-red-500 mt-1"
-                  *ngIf="userSubmitted && userForm.get('username')?.errors?.['required']"
-                >
-                  Username is required.
-                </small>
-              </div>
-            </div>
-
-            <!-- Password -->
-            <div class="flex items-center gap-4 mb-4">
-              <label class="font-semibold w-24">Password</label>
-              <div class="flex-auto flex-col flex">
-                <input
-                  type="password"
-                  pInputText
-                  formControlName="password"
-                  placeholder="Enter password"
-                  class="w-full"
-                  [required]="!isUserEditMode"
-                />
-                <small
-                  class="self-end text-red-500 mt-1"
-                  *ngIf="userSubmitted && userForm.get('password')?.errors?.['required']"
-                >
-                  Password is required (when creating a user).
-                </small>
-                <small
-                  class="self-end text-red-500 mt-1"
-                  *ngIf="userSubmitted && userForm.get('password')?.errors?.['minlength']"
-                >
-                  Password must be at least 6 characters.
-                </small>
-              </div>
-            </div>
-
-            <!-- Role -->
-            <div class="flex items-center gap-4 mb-4">
-              <label class="font-semibold w-24">Role</label>
-              <div class="flex-auto flex-col flex">
-                <p-dropdown
-                  [options]="roles"
-                  formControlName="role"
-                  optionLabel="label"
-                  optionValue="value"
-                  placeholder="Select a Role"
-                  [style]="{ width: '100%' }"
-                  appendTo="body"
-                ></p-dropdown>
-                <small
-                  class="self-end text-red-500 mt-1"
-                  *ngIf="userSubmitted && userForm.get('role')?.errors?.['required']"
-                >
-                  Role is required.
-                </small>
-              </div>
-            </div>
-
-            <!-- Department -->
-<div class="flex items-center gap-4 mb-4">
-  <label class="font-semibold w-24">Department</label>
-  <div class="flex-auto flex-col flex">
-    <p-dropdown
-      formControlName="departmentId"
-      [options]="departmentDropdownOptions"
-      placeholder="Select Department"
-      [style]="{ width: '100%' }"
-      appendTo="body"
-    ></p-dropdown>
-    <small
-      class="self-end text-red-500 mt-1"
-      *ngIf="userSubmitted && userForm.get('departmentId')?.errors?.['required']"
-    >
-      Department is required.
-    </small>
+    <!-- Search Box -->
+    <div class="relative w-[300px]">
+      <i class="pi pi-search absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500"></i>
+      <input
+        pInputText
+        type="text"
+        #userSearchInput
+        (input)="userTable.filterGlobal(userSearchInput.value, 'contains')"
+        placeholder="Search Name"
+        style="text-indent: 1.5rem;"
+        class="w-full border border-gray-300 rounded-md py-2 pl-10 pr-3 text-sm
+               focus:outline-none focus:ring-2 focus:ring-blue-500 placeholder:ml-6"
+      />
+    </div>
   </div>
-</div>
 
-<!-- Office -->
+  <!-- Users Table -->
+  <p-table
+    #userTable
+    [value]="users"
+    [rows]="10"
+    [paginator]="true"
+    [globalFilterFields]="['fullname','username','Department','Office','role']"
+    [rowsPerPageOptions]="[5, 10, 20]"
+    [loading]="userLoading"
+    [showCurrentPageReport]="false"
+    [responsive]="true"
+    [rowHover]="true"
+    [scrollable]="true"
+    scrollHeight="600px"
+    styleClass="p-datatable-sm mt-4"
+    dataKey="id"
+  >
+    <ng-template pTemplate="header">
+      <tr>
+        <th pSortableColumn="fullname">Full Name <p-sortIcon field="fullname"></p-sortIcon></th>
+        <th pSortableColumn="username">Username <p-sortIcon field="username"></p-sortIcon></th>
+        <th pSortableColumn="officeId">Office <p-sortIcon field="officeId"></p-sortIcon></th>
+        <th pSortableColumn="role">Role <p-sortIcon field="role"></p-sortIcon></th>
+        <th class="w-[100px]">Actions</th>
+      </tr>
+    </ng-template>
+
+    <ng-template pTemplate="body" let-user>
+      <tr>
+        <td>{{ user.fullname }}</td>
+        <td>{{ user.username }}</td>
+        <td>{{ user.officeName }}</td>
+        <td>
+          <p-badge
+            [value]="user.isAdmin ? user.role + ' Admin' : user.role"
+            [severity]="getRoleSeverity(user.role, user.isAdmin)"
+            styleClass="text-capitalize"
+          ></p-badge>
+        </td>
+        <td>
+          <div class="flex gap-2">
+            <button
+              pButton
+              icon="pi pi-pencil"
+              class="p-button-rounded p-button-primary p-button-sm"
+              [outlined]="true"
+              (click)="editUser(user)"
+            ></button>
+            <button
+              pButton
+              icon="pi pi-trash"
+              class="p-button-rounded p-button-danger p-button-sm"
+              [outlined]="true"
+              (click)="deleteUser(user)"
+            ></button>
+          </div>
+        </td>
+      </tr>
+    </ng-template>
+
+    <!-- Empty message -->
+    <ng-template pTemplate="emptymessage">
+      <tr>
+        <td colspan="5">
+          <div class="flex flex-col w-full items-center justify-center py-8">
+            <span>No users found.</span>
+          </div>
+        </td>
+      </tr>
+    </ng-template>
+  </p-table>
+
+  <!-- User Dialog -->
+ <p-dialog
+  [(visible)]="userDialog"
+  [modal]="true"
+  [style]="{ width: '90vw', maxWidth: '450px' }"
+  [header]="isUserEditMode ? 'Edit User' : 'Add New User'"
+  styleClass="p-fluid"
+  [dismissableMask]="true"
+  [draggable]="false"
+  [resizable]="false"
+  [position]="'center'"
+>
+  <span class="text-gray-600 block">
+    {{ isUserEditMode ? 'Editing' : 'Adding new' }} user.
+  </span>
+  <small class="text-gray-500 block mb-4">(Please fill out all fields)</small>
+
+  <form [formGroup]="userForm" class="w-full">
+    <!-- Full Name -->
+    <div class="flex items-center gap-4 mb-4">
+      <label class="font-semibold w-24">Full Name</label>
+      <input type="text" pInputText formControlName="fullname" placeholder="Enter full name" class="w-full" required />
+    </div>
+
+    <!-- Username -->
+    <div class="flex items-center gap-4 mb-4">
+      <label class="font-semibold w-24">Username</label>
+      <input type="text" pInputText formControlName="username" placeholder="Enter username" class="w-full" required />
+    </div>
+
+    <!-- Password -->
+    <div class="flex items-center gap-4 mb-4">
+      <label class="font-semibold w-24">Password</label>
+      <input type="password" pInputText formControlName="password" placeholder="Enter password" class="w-full" />
+    </div>
+
+    <!-- Role -->
+    <div class="flex items-center gap-4 mb-4">
+      <label class="font-semibold w-24">Role</label>
+      <p-dropdown
+        [options]="roles"
+        formControlName="role"
+        optionLabel="label"
+        optionValue="value"
+        placeholder="Select a Role"
+        [style]="{ width: '100%' }"
+        appendTo="body"
+      ></p-dropdown>
+    </div>
+
+    
+    <!-- Office Dropdown -->
 <div class="flex items-center gap-4 mb-4">
   <label class="font-semibold w-24">Office</label>
   <div class="flex-auto flex-col flex">
@@ -266,6 +171,8 @@
       formControlName="officeId"
       [options]="officeDropdownOptions"
       placeholder="Select Office"
+      optionLabel="label"
+      optionValue="value"
       [style]="{ width: '100%' }"
       appendTo="body"
     ></p-dropdown>
@@ -278,50 +185,47 @@
   </div>
 </div>
 
-            <!-- Position Dropdown only if role == 'end-user' -->
-            <div class="flex items-center gap-4 mb-4" *ngIf="userForm.get('role')?.value === 'end-user'">
-              <label class="font-semibold w-24">Position</label>
-              <div class="flex-auto flex-col flex">
-                <p-dropdown
-                  formControlName="position"
-                  [options]="positionDropdownOptions" 
-                  optionLabel="name"
-                  optionValue="name"  
-                  placeholder="Select Position"
-                  [style]="{ width: '100%' }"
-                  appendTo="body"
-                ></p-dropdown>  
-                <small
-                  class="self-end text-red-500 mt-1"
-                  *ngIf="userSubmitted && userForm.get('position')?.errors?.['required']"
-                >
-                  Position is required for end-user.
-                </small>
-              </div>
-            </div>
-          </form>
+<!-- Position Dropdown (Visible Only If Role is "End-User") -->
+<div class="flex items-center gap-4 mb-4" *ngIf="userForm.get('role')?.value === 'end-user'">
+  <label class="font-semibold w-24">Position</label>
+  <div class="flex-auto flex-col flex">
+    <p-dropdown
+      formControlName="position"
+      [options]="positionDropdownOptions" 
+      optionLabel="name"
+      optionValue="value"  
+      placeholder="Select Position"
+      [style]="{ width: '100%' }"
+      appendTo="body"
+    ></p-dropdown>  
+    <small
+      class="self-end text-red-500 mt-1"
+      *ngIf="userSubmitted && userForm.get('position')?.errors?.['required']"
+    >
+      Position is required for end-user.
+    </small>
+  </div>
+</div>
 
-          <ng-template pTemplate="footer">
-            <div class="flex justify-end gap-2">
-              <button
-                pButton
-                label="Cancel"
-                icon="pi pi-times"
-                class="p-button-text"
-                (click)="hideUserDialog()"
-                size="small"
-              ></button>
-              <button
-                pButton
-                label="Save"
-                icon="pi pi-check"
-                (click)="saveUser()"
-                size="small"
-              ></button>
-            </div>
-          </ng-template>
-        </p-dialog>
-      </p-tabPanel>
+
+
+    <!-- Admin Toggle -->
+    <div class="flex items-center gap-4 mb-4">
+      <label class="font-semibold w-24">Admin</label>
+      <p-inputSwitch formControlName="isAdmin"></p-inputSwitch>
+    </div>
+  </form>
+
+  <ng-template pTemplate="footer">
+    <div class="flex justify-end gap-2">
+      <button pButton label="Cancel" icon="pi pi-times" class="p-button-text" (click)="hideUserDialog()" size="small"></button>
+      <button pButton label="Save" icon="pi pi-check" (click)="saveUser()" size="small"></button>
+    </div>
+  </ng-template>
+</p-dialog>
+
+</p-tabPanel>
+
 
       <!-- TAB 2: ACCOUNT CODE -->
       <p-tabPanel header="Account Code">

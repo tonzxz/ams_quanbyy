@@ -6,8 +6,8 @@ import { ButtonModule } from 'primeng/button';
 import { DialogModule } from 'primeng/dialog';
 import { FormsModule } from '@angular/forms';
 import { MessageService } from 'primeng/api';
-import { PurchaseOrderService } from 'src/app/services/purchase-order.service';
 import { TabViewModule } from 'primeng/tabview';
+import { DropdownModule } from 'primeng/dropdown';
 
 @Component({
   selector: 'app-purchase-orders-admin',
@@ -20,7 +20,7 @@ import { TabViewModule } from 'primeng/tabview';
     DialogModule,
     FormsModule,
     TabViewModule,
-    
+    DropdownModule
   ],
   templateUrl: './purchase-orders-admin.component.html',
   styleUrls: ['./purchase-orders-admin.component.scss'],
@@ -28,69 +28,98 @@ import { TabViewModule } from 'primeng/tabview';
 })
 export class PurchaseOrdersAdminComponent implements OnInit {
   purchaseOrders: any[] = [];
-  isCreateModalVisible = false;
-  newPurchaseOrder: any = {
+  isModalVisible = false;
+  isReceiveModalVisible = false;
+  isEditMode = false;
+  currentPurchaseOrder: any = {
+    id: '',
     title: '',
     totalValue: 0,
-    requestedBy: ''
+    requestedBy: '',
+    status: 'Pending'
   };
+  selectedPurchaseOrder: any = {};
 
-  constructor(
-    private purchaseOrderService: PurchaseOrderService,
-    private messageService: MessageService
-  ) {}
+  constructor(private messageService: MessageService) {}
 
   async ngOnInit() {
-    await this.loadPurchaseOrders();
+    this.loadPurchaseOrders();
   }
 
-  async loadPurchaseOrders() {
-    try {
-      this.purchaseOrders = await this.purchaseOrderService.getAll();
-    } catch (error) {
-      console.error('Failed to load Purchase Orders:', error);
-      this.messageService.add({ severity: 'error', summary: 'Error', detail: 'Failed to load purchase orders.' });
-    }
+  loadPurchaseOrders() {
+    this.purchaseOrders = [
+      { id: 'PO-1001', title: 'Office Supplies', totalValue: 1500, requestedBy: 'Admin', dateCreated: new Date(), status: 'Pending' },
+      { id: 'PO-1002', title: 'Laptops', totalValue: 5000, requestedBy: 'IT Dept.', dateCreated: new Date(), status: 'Pending' }
+    ];
   }
 
   openCreatePurchaseOrderModal() {
-    this.isCreateModalVisible = true;
+    this.isEditMode = false;
+    this.currentPurchaseOrder = { id: '', title: '', totalValue: 0, requestedBy: '', status: 'Pending' };
+    this.isModalVisible = true;
   }
 
-  closeCreatePurchaseOrderModal() {
-    this.isCreateModalVisible = false;
-    this.newPurchaseOrder = { title: '', totalValue: 0, requestedBy: '' };
+  
+
+  closeModal() {
+    this.isModalVisible = false;
   }
 
-  async createPurchaseOrder() {
-    if (!this.newPurchaseOrder.title || this.newPurchaseOrder.totalValue <= 0 || !this.newPurchaseOrder.requestedBy) {
-      this.messageService.add({ severity: 'warn', summary: 'Warning', detail: 'Please fill all fields correctly.' });
-      return;
+  savePurchaseOrder() {
+    if (this.isEditMode) {
+      this.purchaseOrders = this.purchaseOrders.map(po => po.id === this.currentPurchaseOrder.id ? this.currentPurchaseOrder : po);
+    } else {
+      this.currentPurchaseOrder.id = `PO-${Math.floor(Math.random() * 100000)}`;
+      this.currentPurchaseOrder.dateCreated = new Date();
+      this.purchaseOrders.push(this.currentPurchaseOrder);
     }
 
-    try {
-      const newPO = {
-        id: `PO-${Math.floor(Math.random() * 100000)}`,
-        title: this.newPurchaseOrder.title,
-        totalValue: this.newPurchaseOrder.totalValue,
-        requestedBy: this.newPurchaseOrder.requestedBy,
-        dateCreated: new Date()
-      };
-
-      this.purchaseOrders.push(newPO);
-      this.closeCreatePurchaseOrderModal();
-      this.messageService.add({ severity: 'success', summary: 'Success', detail: 'Purchase Order Created' });
-    } catch (error) {
-      console.error('Error creating purchase order:', error);
-    }
+    this.closeModal();
   }
 
-  async deletePurchaseOrder(poId: string) {
+  deletePurchaseOrder(poId: string) {
     this.purchaseOrders = this.purchaseOrders.filter(po => po.id !== poId);
-    this.messageService.add({ severity: 'success', summary: 'Deleted', detail: 'Purchase Order Removed' });
+    this.messageService.add({
+      severity: 'success',
+      summary: 'Deleted',
+      detail: `Purchase Order ${poId} has been deleted.`
+    });
   }
 
-  async editPurchaseOrder(po: any) {
-    console.log('Edit PO:', po);
+
+  openReceivePurchaseOrderModal() {
+    this.isReceiveModalVisible = true;
   }
+  closeReceivePurchaseOrderModal() {
+    this.isReceiveModalVisible = false;
+  }
+
+  receivePurchaseOrder() {
+    this.purchaseOrders = this.purchaseOrders.map(po =>
+      po.id === this.selectedPurchaseOrder.id ? { ...po, status: 'Received' } : po
+    );
+
+    this.messageService.add({
+      severity: 'success',
+      summary: 'Received',
+      detail: `Purchase Order ${this.selectedPurchaseOrder.id} has been marked as received.`
+    });
+
+    this.closeReceivePurchaseOrderModal();
+  }
+
+  getStatusClass(status: string) {
+    return status === 'Received' ? 'bg-green-500' : 'bg-yellow-500';
+  }
+
+  isEditModalVisible: boolean = false;
+
+openEditPurchaseOrderModal() {
+  this.isEditModalVisible = true;
+}
+
+closeEditModal() {
+  this.isEditModalVisible = false;
+}
+
 }

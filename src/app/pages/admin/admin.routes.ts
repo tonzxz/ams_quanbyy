@@ -11,6 +11,7 @@ import { ItemClassificationComponent } from './item-classification/item-classifi
 import { EndUserListComponent } from './end-user-list/end-user-list.component';
 import { AdminDashboardComponent } from './admin-dashboard/admin-dashboard.component';
 import { PurchaseOrdersAdminComponent } from './purchase-orders-admin/purchase-orders-admin.component';
+import { AccountSetupComponent } from './account-setup/account-setup.component';
 
 export const AdminRoutes: Routes = [
   {
@@ -96,6 +97,13 @@ export const AdminRoutes: Routes = [
         component: PurchaseOrdersAdminComponent,
         canActivate: [roleGuard],
         data: { roles: ['admin', 'superadmin'], breadcrumb: 'Purchase Orders' } 
+      },
+                                    
+                                                                   {
+        path: 'account-setup',
+        component: AccountSetupComponent,
+        canActivate: [roleGuard],
+        data: { roles: ['admin', 'superadmin'], breadcrumb: 'Account Setup' } 
       },
     ],
   },

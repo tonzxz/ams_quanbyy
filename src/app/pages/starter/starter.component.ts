@@ -1,8 +1,8 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { CardModule } from 'primeng/card';
+import { FormsModule } from '@angular/forms';
 import { NgApexchartsModule } from 'ng-apexcharts';
-import { MaterialModule } from 'src/app/material.module';
 
 import {
   ApexChart,
@@ -12,76 +12,112 @@ import {
   ApexStroke,
   ApexTitleSubtitle
 } from 'ng-apexcharts';
+import { MaterialModule } from 'src/app/material.module';
 import { ButtonModule } from 'primeng/button';
 
 @Component({
   selector: 'app-dashboard',
   templateUrl: './starter.component.html',
   styleUrls: ['./starter.component.scss'],
-  imports: [CardModule, CommonModule, NgApexchartsModule, MaterialModule, ButtonModule],
-  standalone: true
+  standalone: true,
+  imports: [CommonModule, CardModule, FormsModule, NgApexchartsModule, MaterialModule, ButtonModule]
 })
 export class StarterComponent implements OnInit {
+  currentMonth: number = new Date().getMonth();
+  currentYear: number = new Date().getFullYear();
+  calendarDays: number[] = [];
+  daysOfWeek = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
 
-  // Single Purchase Request Data (For Quick Status View)
+  // Purchase Request Data
   purchaseRequest = {
     name: 'Procurement of IT Equipments',
     department: 'IT Department',
     amount: 5000,
-    status: 'Pending', // Possible statuses: "Approved", "Pending", "Rejected"
+    status: 'Pending',
     date: '2024-01-05'
   };
 
-  // Budget Allocation Data
-  budgetAllocations = [
-    { department: 'IT', totalBudget: 20000, allocated: 15000, remaining: 5000 },
-    { department: 'HR', totalBudget: 15000, allocated: 8000, remaining: 7000 },
-    { department: 'Finance', totalBudget: 25000, allocated: 20000, remaining: 5000 },
-    { department: 'Marketing', totalBudget: 18000, allocated: 12000, remaining: 6000 },
-    { department: 'Logistics', totalBudget: 22000, allocated: 16000, remaining: 6000 }
+  // Events
+  events = [
+    { title: 'Inspection Review', date: new Date(2025, 0, 5) },
+    { title: 'Supply Order Submission', date: new Date(2025, 0, 10) },
+    { title: 'Purchase Requests Approval', date: new Date(2025, 0, 15) },
+    { title: 'Inventory Audit', date: new Date(2025, 0, 20) }
   ];
 
-  // Supply Monitoring Data
-  supplyMonitoring = [
-    { item: 'Laptops', available: 50, used: 30, remaining: 20 },
-    { item: 'Office Chairs', available: 100, used: 60, remaining: 40 },
-    { item: 'Whiteboards', available: 40, used: 20, remaining: 20 },
-    { item: 'Printers', available: 30, used: 15, remaining: 15 },
-    { item: 'Projectors', available: 25, used: 10, remaining: 15 }
-  ];
+  filteredEvents: any[] = [];
 
-  // Budget Allocation Chart (Fixed Types)
+  // Budget Allocation Chart
   public budgetChartOptions = {
     series: [
-      { name: 'Total Budget', data: this.budgetAllocations.map(b => b.totalBudget) },
-      { name: 'Allocated', data: this.budgetAllocations.map(b => b.allocated) },
-      { name: 'Remaining', data: this.budgetAllocations.map(b => b.remaining) }
+      { name: 'Total Budget', data: [20000, 15000, 25000, 18000, 22000] },
+      { name: 'Allocated', data: [15000, 8000, 20000, 12000, 16000] },
+      { name: 'Remaining', data: [5000, 7000, 5000, 6000, 6000] }
     ],
     chart: { type: "line" as ApexChart["type"], height: 330 },
-    xaxis: { categories: this.budgetAllocations.map(b => b.department) } as ApexXAxis,
+    xaxis: { categories: ['IT', 'HR', 'Finance', 'Marketing', 'Logistics'] } as ApexXAxis,
     yaxis: { title: { text: 'Budget ($)' } } as ApexYAxis,
     stroke: { curve: "smooth" as ApexStroke["curve"] },
     title: { text: 'Budget Allocation Overview', align: "left" as ApexTitleSubtitle["align"] }
   };
 
-  // Supply Monitoring Chart (Fixed Types)
+  // Supply Monitoring Chart
   public supplyChartOptions = {
     series: [
-      { name: 'Stock Available', data: this.supplyMonitoring.map(s => s.available) },
-      { name: 'Stock Used', data: this.supplyMonitoring.map(s => s.used) }
+      { name: 'Stock Available', data: [50, 100, 40, 30, 25] },
+      { name: 'Stock Used', data: [30, 60, 20, 15, 10] }
     ],
     chart: { type: "bar" as ApexChart["type"], height: 330 },
-    xaxis: { categories: this.supplyMonitoring.map(s => s.item) } as ApexXAxis,
+    xaxis: { categories: ['Laptops', 'Office Chairs', 'Whiteboards', 'Printers', 'Projectors'] } as ApexXAxis,
     yaxis: { title: { text: 'Stock Quantity' } } as ApexYAxis,
     stroke: { curve: "smooth" as ApexStroke["curve"] },
     title: { text: 'Supply Monitoring', align: "left" as ApexTitleSubtitle["align"] }
   };
 
-  constructor() {}
+  ngOnInit() {
+    this.generateCalendar();
+    this.filterEventsByMonth();
+  }
 
-  ngOnInit() {}
+  get currentMonthName(): string {
+    return new Date(this.currentYear, this.currentMonth).toLocaleString('default', { month: 'long' });
+  }
 
-  // Get Status Class for Badge Colors
+  generateCalendar() {
+    const firstDay = new Date(this.currentYear, this.currentMonth, 1).getDay();
+    const totalDays = new Date(this.currentYear, this.currentMonth + 1, 0).getDate();
+    
+    this.calendarDays = new Array(firstDay).fill(0).concat([...Array(totalDays).keys()].map(d => d + 1));
+  }
+
+  changeMonth(direction: number) {
+    this.currentMonth += direction;
+    if (this.currentMonth < 0) {
+      this.currentMonth = 11;
+      this.currentYear--;
+    } else if (this.currentMonth > 11) {
+      this.currentMonth = 0;
+      this.currentYear++;
+    }
+    this.generateCalendar();
+    this.filterEventsByMonth();
+  }
+
+  isEventDate(day: number): boolean {
+    return this.events.some(event => 
+      event.date.getFullYear() === this.currentYear &&
+      event.date.getMonth() === this.currentMonth &&
+      event.date.getDate() === day
+    );
+  }
+
+  filterEventsByMonth() {
+    this.filteredEvents = this.events.filter(event => 
+      event.date.getFullYear() === this.currentYear &&
+      event.date.getMonth() === this.currentMonth
+    );
+  }
+
   getStatusClass(status: string): string {
     switch (status) {
       case 'Approved': return 'bg-green-500';

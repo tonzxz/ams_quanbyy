@@ -24,6 +24,13 @@ export const navItems: NavItem[] = [
     requiredRoles: ['admin', 'superadmin'],
   },
 
+  {
+    displayName: 'Account Setup',
+    iconName: 'solar:widget-add-line-duotone',
+    route: '/admin/account-setup',
+    requiredRoles: ['admin', 'superadmin'],
+  },
+
    {
     displayName: 'Purchase Order',
     iconName: 'solar:widget-add-line-duotone',
