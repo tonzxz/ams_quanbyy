@@ -18,6 +18,8 @@ import { BACResolutionComponent } from './bac-resolution/bac-resolution.componen
 import { PurchaseOrderComponent } from './purchase-order/purchase-order.component';
 import { NoaComponent } from './noa/noa.component';
 import { NtpComponent } from './ntp/ntp.component';
+import { EditableComponent } from './editable/editable.component';
+import { StockTransferComponent } from './stock-transfer/stock-transfer.component';
 
 export const SharedRoutes: Routes = [
   {
@@ -67,6 +69,18 @@ export const SharedRoutes: Routes = [
         path: 'disbursement',
         component: DisbursementComponent,
         data: {breadcrumb:'Disbursement Template'}
+      },
+
+      {
+        path: 'editable',
+        component: EditableComponent,
+        data: {breadcrumb:'View'}
+      },
+
+      {
+        path: 'stock-transfer',
+        component: StockTransferComponent,
+        data: {breadcrumb:'Stock Transfer'}
       },
       {
         path: 'stock-card',

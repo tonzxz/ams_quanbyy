@@ -30,8 +30,9 @@ import { Product, ProductsService } from 'src/app/services/products.service';
 import {toDataURL} from 'qrcode';
 import {jsPDF} from 'jspdf';
 import { User, UserService } from 'src/app/services/user.service';
+import { DepartmentService } from 'src/app/services/departments.service';
 @Component({
-  selector: 'app-stocking',
+  selector: 'app-special-receiving',
   standalone: true,
   imports: [MaterialModule,TableModule, CommonModule, DividerModule,TabsModule,
     IconFieldModule,InputIconModule,InputTextModule, FluidModule, FormsModule,
@@ -40,15 +41,16 @@ import { User, UserService } from 'src/app/services/user.service';
     ToastModule,TooltipModule,TextareaModule,BadgeModule,OverlayBadgeModule
   ],
   providers: [ConfirmationService,MessageService],
-  templateUrl: './stocking.component.html',
-  styleUrl: './stocking.component.scss'
+   templateUrl: './special-receiving.component.html',
+  styleUrl: './special-receiving.component.scss'
 })
-export class StockingComponent {
+export class SpecialReceivingComponent {
     drItems: DeliveryReceiptItems[] = [];  // List of purchase orders with items
     allDRItems: DeliveryReceiptItems[] = [];  // List of purchase orders with items
     inventories: InventoryLocation[];
     allInventories:InventoryLocation[];
     products:Product[];
+    stocks:Stock[]=[];
     currentUser?:User;
     searchValue:string='';
     stockTab:number=1;
@@ -62,6 +64,7 @@ export class StockingComponent {
       private stockService:StocksService,
       private productService:ProductsService,
       private confirmationService: ConfirmationService, 
+      private departmentService:DepartmentService,
       private inventoryService: InventoryService,
       private userService:UserService,
       private deliveryReceiptService: DeliveryReceiptService) {}
@@ -190,16 +193,14 @@ export class StockingComponent {
       if(this.currentUser?.role == 'superadmin'){
         this.currentUser!.role = 'supply';
       }
-      // Fetch the purchase orders with items
-      this.allDRItems = await this.deliveryReceiptService.getAllDRItems();
+      this.stocks = await this.stockService.getAll();
+      this.stocks = this.stocks.filter(s=>!s.dr_id )
       this.inventories = await this.inventoryService.getAllLocations();
       this.allInventories = await this.inventoryService.getAllLocations();
       this.products = await this.productService.getAll();
-      if(this.currentUser?.role =='supply'){
-        this.switchStockTab(1);
-      }else{
-        this.switchStockTab(0);
-      }
+     
+      this.switchStockTab(1);
+    
     }
   
 
@@ -273,23 +274,20 @@ export class StockingComponent {
   
     showStockModal:boolean = false;
     selectedDeliveryReceipt?:DeliveryReceipt;
-    async openAddStockModal(dr:DeliveryReceipt){
+    async openAddStockModal(){
       this.selectedStock = undefined;
       this.stockForm.reset();
-      this.selectedDeliveryReceipt = dr;
-      this.inventories = await this.inventoryService.getLocationsOnDepartment(this.selectedDeliveryReceipt.department_id);
+      this.inventories = await this.inventoryService.getLocationsOnDepartment(await this.departmentService.getOfficeDepartment(this.currentUser?.officeId!));
       this.showStockModal= true;
     }
   
     selectedStock?:Stock;
-    async openEditStockModal(dr:DeliveryReceipt,stock:Stock){
-      this.selectedDeliveryReceipt = dr;
+    async openEditStockModal(stock:Stock){
       this.selectedStock = stock;
-      this.inventories = await this.inventoryService.getLocationsOnDepartment(this.selectedDeliveryReceipt.department_id);
+      this.inventories = await this.inventoryService.getLocationsOnDepartment(await this.departmentService.getOfficeDepartment(this.currentUser?.officeId!));
       this.stockForm.setValue({
         name: this.selectedStock.name,
         ticker: this.selectedStock.ticker,
-        price: this.selectedStock.price,
         storage: this.allInventories.find(inv=>inv.id == this.selectedStock!.storage_id)??null,
         type: this.products.find(product=>product.id == this.selectedStock!.product_id)??null,
         quantity: this.selectedStock.quantity,
@@ -311,7 +309,6 @@ export class StockingComponent {
       ticker: new FormControl('', Validators.required),
       storage: new FormControl<InventoryLocation|null>(null, Validators.required),
       type: new FormControl<Product|null>(null, Validators.required),
-      price: new FormControl<number|null>(null, [Validators.required, Validators.min(0.001)]),
       quantity: new FormControl<number|null>(null, [Validators.required, Validators.min(1)]),
       description: new FormControl(''),
     });
@@ -320,7 +317,7 @@ export class StockingComponent {
       if (!this.stockForm.valid) return;
       const stockData = this.stockForm.value;
       await this.stockService.addStock({
-        dr_id: this.selectedDeliveryReceipt?.receipt_number!,
+        dr_id:undefined,
         dateAdded: new Date(),
         name: stockData.name!,
         storage_id: stockData.storage?.id,
@@ -328,7 +325,7 @@ export class StockingComponent {
         product_id: stockData.type?.id,
         product_name: stockData.type?.name,
         ticker: stockData.ticker!.toUpperCase(),
-        price: Number(stockData.price!),
+        price: 0,
         quantity: Number(stockData.quantity!),
         description: stockData.description ?? undefined,
       })
@@ -344,7 +341,7 @@ export class StockingComponent {
       const stockData = this.stockForm.value;
       await this.stockService.editStock({
         id: this.selectedStock!.id,
-        dr_id: this.selectedStock!.dr_id,
+        dr_id: undefined,
         dateAdded: this.selectedStock!.dateAdded,
         name: stockData.name!,
         storage_id: stockData.storage?.id,
@@ -352,7 +349,7 @@ export class StockingComponent {
         product_id: stockData.type?.id,
         product_name: stockData.type?.name,
         ticker: stockData.ticker!.toUpperCase(),
-        price: Number(stockData.price!),
+        price: 0,
         quantity: Number(stockData.quantity!),
         description: stockData.description ?? undefined,
       })

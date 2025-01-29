@@ -5,6 +5,7 @@ import { ViewPlanComponent } from './view-plan/view-plan.component';
 import { RequisitionComponent } from './requisition/requisition.component';
 import { ReceivingComponent } from './receiving/receiving.component';
 import { CanvassingComponent } from './canvassing/canvassing.component';
+import { SpecialReceivingComponent } from './special-receiving/special-receiving.component';
 
 export const enduserRoutes: Routes = [
   {
@@ -41,6 +42,13 @@ export const enduserRoutes: Routes = [
         path: 'receiving',
         component: ReceivingComponent,
         data: { breadcrumb: 'Receiving', roles: ['end-user'] },
+        canActivate: [roleGuard],
+      },
+
+      {
+        path: 'special-receiving',
+        component: SpecialReceivingComponent,
+        data: { breadcrumb: 'Special Receiving', roles: ['end-user','supply'] },
         canActivate: [roleGuard],
       },
 

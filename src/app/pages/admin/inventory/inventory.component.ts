@@ -237,13 +237,14 @@ export class InventoryComponent implements OnInit {
     this.locations = await this.inventoryService.getAllLocations();
     for(let i = 0; i<  this.locations.length; i++){
       this.locations[i].capacity = this.stocks.reduce((acc,curr)=>
-      {
-        if(curr.storage_id == this.locations[i].id){
-          return acc + curr.quantity ;
-        }else{
-          return acc;
-        }
-      },0
+        {
+          if(curr.storage_id == this.locations[i].id){
+            return acc + curr.quantity ;
+          }else{
+            return acc;
+          }
+        },
+        0
       );
     }
     this.locationLoading = false;

@@ -4,7 +4,7 @@ import { z } from 'zod';
 
 export const stockSchema = z.object({
   id: z.string().length(32, "ID must be exactly 32 characters").optional(), 
-  dr_id: z.string().length(10, 'Receipt  ID is required'),  
+  dr_id: z.string().length(10, 'Receipt  ID is required').optional(),  
   storage_id: z.string().min(1, 'Storage  ID is required').optional(),  
   storage_name: z.string().min(1, 'Storage name is required').optional(),  
   product_id: z.string().min(1, 'Product  ID is required').optional(),  
@@ -122,10 +122,12 @@ export class StocksService {
   async addStock(stock:Stock){
     const id = (Math.random().toString(36) + Math.random().toString(36) + Date.now().toString(36)).substring(2, 34);
     this.stockData.push({
+      ...stock,
       id: id,
-      ...stock
     });
+
     localStorage.setItem('stocks', JSON.stringify(this.stockData));
+    return id;
   }
   async editStock(stock:Stock){
     const stockIndex = this.stockData.findIndex(item=>item.id == stock.id);

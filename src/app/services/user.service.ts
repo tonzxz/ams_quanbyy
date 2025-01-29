@@ -24,7 +24,7 @@ export const userSchema = z
    fullname: z.string().min(1, "Full name is required"),
    username: z.string().min(1, "Username is required"),
    password: z.string().min(6, "Password must be at least 6 characters"),
-   role: z.enum(['superadmin', 'accounting', 'supply', 'bac', 'inspection', 'end-user', 'president']),
+   role: z.enum(['superadmin','admin' ,'accounting', 'supply', 'bac', 'inspection', 'end-user', 'president']),
    profile: z.string().min(1, "Profile is required"),
    officeId: z.string().length(32, "Office ID must be exactly 32 characters"), 
    position: z.string().optional(),
@@ -97,7 +97,7 @@ export class UserService {
     password: 'test123',
     role: 'superadmin',
     profile: 'profile-pic-url-2',
-    position: '',
+    position: 'Superadmin',
     officeId: '550e8400e29b41d4a716446655440011', // Registrar's Office - CBA
     assignedAccountCodes: [],
     assignedSubAccounts: []
@@ -255,6 +255,18 @@ export class UserService {
     role: 'president',
     profile: 'profile-pic-url-2',
     position: 'College President',
+    officeId: '550e8400e29b41d4a716446655440011', // Registrar's Office - CBA
+    assignedAccountCodes: [],
+    assignedSubAccounts: []
+  },
+  {
+    id: '16',
+    fullname: 'Anton Caesar Cabais',
+    username: 'admin',
+    password: 'test123',
+    role: 'admin',
+    profile: 'profile-pic-url-2',
+    position: 'Admin',
     officeId: '550e8400e29b41d4a716446655440011', // Registrar's Office - CBA
     assignedAccountCodes: [],
     assignedSubAccounts: []
