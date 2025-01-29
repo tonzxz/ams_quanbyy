@@ -1,0 +1,144 @@
+<p-tabView>
+  <!-- Purchase Orders Tab -->
+  <p-tabPanel header="Purchase Orders">
+    <mat-card class="cardWithShadow">
+      <mat-card-content>
+        <mat-card-title>Purchase Orders</mat-card-title>
+        <mat-card-subtitle class="text-sm text-gray-500">
+          View and Manage Purchase Orders in this section.
+        </mat-card-subtitle>
+
+        <div class="flex justify-between items-center mt-4">
+          <p-button
+            icon="pi pi-file"
+            label="Create Purchase Order"
+            severity="primary"
+            outlined="true"
+            size="small"
+            (click)="openCreatePurchaseOrderModal()"
+          ></p-button>
+          <div class="relative w-[300px]">
+            <i class="pi pi-search absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500"></i>
+            <input
+              pInputText
+              type="text"
+              #searchInput
+              (input)="dt.filterGlobal(searchInput.value, 'contains')"
+              placeholder="Search Orders"
+              class="w-full border border-gray-300 rounded-md py-2 pl-10 pr-3 text-sm focus:ring-2 focus:ring-blue-500"
+            />
+          </div>
+        </div>
+
+        <p-table
+          #dt
+          [value]="purchaseOrders"
+          [rows]="5"
+          [paginator]="true"
+          [rowsPerPageOptions]="[5, 10, 20]"
+          responsiveLayout="scroll"
+          styleClass="p-datatable-sm mt-4"
+        >
+          <ng-template pTemplate="header">
+            <tr>
+              <th>PO Number</th>
+              <th>Title</th>
+              <th>Total Value</th>
+              <th>Requested By</th>
+              <th>Date Created</th>
+              <th>Actions</th>
+            </tr>
+          </ng-template>
+
+          <ng-template pTemplate="body" let-po>
+            <tr>
+              <td>{{ po.id }}</td>
+              <td>{{ po.title }}</td>
+              <td>{{ po.totalValue | currency }}</td>
+              <td>{{ po.requestedBy }}</td>
+              <td>{{ po.dateCreated | date: 'short' }}</td>
+              <td>
+                <div class="flex gap-2">
+                  <p-button icon="pi pi-pencil" severity="primary" outlined="true" size="small"
+                    (click)="editPurchaseOrder(po)"></p-button>
+                  <p-button icon="pi pi-trash" severity="danger" outlined="true" size="small"
+                    (click)="deletePurchaseOrder(po.id)"></p-button>
+                </div>
+              </td>
+            </tr>
+          </ng-template>
+        </p-table>
+      </mat-card-content>
+    </mat-card>
+  </p-tabPanel>
+</p-tabView>
+
+<!-- Purchase Order Modal -->
+<p-dialog 
+  [(visible)]="isCreateModalVisible"
+  [modal]="true" 
+  [position]="'center'"
+  [style]="{ width: '25rem' }"
+>
+  <ng-template pTemplate="header">
+    <div class="py-0 inline-flex items-center justify-center gap-3">
+      <i class="pi pi-file-edit text-lg"></i>
+      <span class="font-bold text-lg whitespace-nowrap">Create Purchase Order</span>
+    </div>
+  </ng-template>
+
+  <span class="p-text-secondary block">Create New Purchase Order</span>
+  <small class="p-text-secondary block mb-6">(Please fill out all fields)</small>
+
+  <div class="flex items-center gap-4 mb-24">
+    <label for="titleInput" class="font-semibold w-32">Title</label>
+    <input
+      id="titleInput"
+      type="text"
+      pInputText
+      [(ngModel)]="newPurchaseOrder.title"
+      placeholder="Enter title"
+      class="w-full"
+    />
+  </div>
+
+  <div class="flex items-center gap-4 mb-24">
+    <label for="totalValueInput" class="font-semibold w-32">Total Value</label>
+    <input
+      id="totalValueInput"
+      type="number"
+      pInputText
+      [(ngModel)]="newPurchaseOrder.totalValue"
+      placeholder="Enter amount"
+      class="w-full"
+    />
+  </div>
+
+  <div class="flex items-center gap-4 mb-24">
+    <label for="requestedByInput" class="font-semibold w-32">Requested By</label>
+    <input
+      id="requestedByInput"
+      type="text"
+      pInputText
+      [(ngModel)]="newPurchaseOrder.requestedBy"
+      placeholder="Enter name"
+      class="w-full"
+    />
+  </div>
+
+  <div class="flex justify-end gap-6 mt-2">
+    <p-button 
+      size="small" 
+      label="Cancel" 
+      icon="pi pi-times" 
+      severity="secondary" 
+      (click)="closeCreatePurchaseOrderModal()"
+    />
+    <p-button 
+      size="small" 
+      label="Create" 
+      icon="pi pi-check"
+      (click)="createPurchaseOrder()" 
+    />
+  </div>
+</p-dialog>

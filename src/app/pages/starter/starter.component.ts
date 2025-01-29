@@ -1,300 +1,93 @@
 import { Component, OnInit } from '@angular/core';
-import { ChartModule } from 'primeng/chart';
-import { ChangeDetectorRef, inject, PLATFORM_ID } from '@angular/core';
-import { CardModule } from 'primeng/card';
-import { ButtonModule } from 'primeng/button';
-import { ScrollPanelModule } from 'primeng/scrollpanel';
-import { CalendarModule } from 'primeng/calendar';
 import { CommonModule } from '@angular/common';
-import { FormsModule } from '@angular/forms';
+import { CardModule } from 'primeng/card';
+import { NgApexchartsModule } from 'ng-apexcharts';
+import { MaterialModule } from 'src/app/material.module';
+
 import {
   ApexChart,
-  ApexAxisChartSeries as ApexSeries,
+  ApexAxisChartSeries,
   ApexXAxis,
   ApexYAxis,
   ApexStroke,
-  ApexTitleSubtitle,
-  NgApexchartsModule,
+  ApexTitleSubtitle
 } from 'ng-apexcharts';
-import { RFQService } from 'src/app/services/rfq.service';
-import { PurchaseRequestService, PurchaseRequest } from 'src/app/services/purchase-request.service';
-import { BudgetService, BudgetAllocation } from 'src/app/services/budget.service'; // Import BudgetService and BudgetAllocation
-
+import { ButtonModule } from 'primeng/button';
 
 @Component({
   selector: 'app-dashboard',
-  standalone: true,
-  imports: [
-    ChartModule,
-    CardModule,
-    ButtonModule,
-    ScrollPanelModule,
-    CalendarModule,
-    CommonModule,
-    FormsModule,
-    NgApexchartsModule,
-  ],
   templateUrl: './starter.component.html',
   styleUrls: ['./starter.component.scss'],
+  imports: [CardModule, CommonModule, NgApexchartsModule, MaterialModule, ButtonModule],
+  standalone: true
 })
 export class StarterComponent implements OnInit {
-  platformId = inject(PLATFORM_ID);
-  lineChartData: any;
 
-  // First chart options (RFQ data)
-  public lineChartOptions: {
-    series: ApexSeries;
-    chart: ApexChart;
-    xaxis: ApexXAxis;
-    yaxis: ApexYAxis;
-    stroke: ApexStroke;
-    title: ApexTitleSubtitle;
-  } = {
-    series: [],
-    chart: {
-      type: 'line',
-      height: 350,
-    },
-    xaxis: {
-      categories: [],
-      title: {
-        text: '',
-      },
-    },
-    yaxis: {
-      title: {
-        text: '',
-      },
-    },
-    stroke: {
-      curve: 'smooth',
-    },
-    title: {
-      text: '',
-      align: 'left',
-    },
+  // Single Purchase Request Data (For Quick Status View)
+  purchaseRequest = {
+    name: 'Procurement of IT Equipments',
+    department: 'IT Department',
+    amount: 5000,
+    status: 'Pending', // Possible statuses: "Approved", "Pending", "Rejected"
+    date: '2024-01-05'
   };
 
-  public budgetChartOptions: {
-    series: ApexSeries;
-    chart: ApexChart;
-    xaxis: ApexXAxis;
-    yaxis: ApexYAxis;
-    stroke: ApexStroke;
-    title: ApexTitleSubtitle;
-  } = {
-    series: [],
-    chart: {
-      type: 'line',
-      height: 350,
-    },
-    xaxis: {
-      categories: [],
-      title: {
-        text: '',
-      },
-    },
-    yaxis: {
-      title: {
-        text: '',
-      },
-    },
-    stroke: {
-      curve: 'smooth',
-    },
-    title: {
-      text: '',
-      align: 'left',
-    },
+  // Budget Allocation Data
+  budgetAllocations = [
+    { department: 'IT', totalBudget: 20000, allocated: 15000, remaining: 5000 },
+    { department: 'HR', totalBudget: 15000, allocated: 8000, remaining: 7000 },
+    { department: 'Finance', totalBudget: 25000, allocated: 20000, remaining: 5000 },
+    { department: 'Marketing', totalBudget: 18000, allocated: 12000, remaining: 6000 },
+    { department: 'Logistics', totalBudget: 22000, allocated: 16000, remaining: 6000 }
+  ];
+
+  // Supply Monitoring Data
+  supplyMonitoring = [
+    { item: 'Laptops', available: 50, used: 30, remaining: 20 },
+    { item: 'Office Chairs', available: 100, used: 60, remaining: 40 },
+    { item: 'Whiteboards', available: 40, used: 20, remaining: 20 },
+    { item: 'Printers', available: 30, used: 15, remaining: 15 },
+    { item: 'Projectors', available: 25, used: 10, remaining: 15 }
+  ];
+
+  // Budget Allocation Chart (Fixed Types)
+  public budgetChartOptions = {
+    series: [
+      { name: 'Total Budget', data: this.budgetAllocations.map(b => b.totalBudget) },
+      { name: 'Allocated', data: this.budgetAllocations.map(b => b.allocated) },
+      { name: 'Remaining', data: this.budgetAllocations.map(b => b.remaining) }
+    ],
+    chart: { type: "line" as ApexChart["type"], height: 330 },
+    xaxis: { categories: this.budgetAllocations.map(b => b.department) } as ApexXAxis,
+    yaxis: { title: { text: 'Budget ($)' } } as ApexYAxis,
+    stroke: { curve: "smooth" as ApexStroke["curve"] },
+    title: { text: 'Budget Allocation Overview', align: "left" as ApexTitleSubtitle["align"] }
   };
 
-  // Second chart options (Purchase Request data)
-  public purchaseRequestChartOptions: {
-    series: ApexSeries;
-    chart: ApexChart;
-    xaxis: ApexXAxis;
-    yaxis: ApexYAxis;
-    stroke: ApexStroke;
-    title: ApexTitleSubtitle;
-  } = {
-    series: [],
-    chart: {
-      type: 'line',
-      height: 350,
-    },
-    xaxis: {
-      categories: [],
-      title: {
-        text: '',
-      },
-    },
-    yaxis: {
-      title: {
-        text: '',
-      },
-    },
-    stroke: {
-      curve: 'smooth',
-    },
-    title: {
-      text: '',
-      align: 'left',
-    },
+  // Supply Monitoring Chart (Fixed Types)
+  public supplyChartOptions = {
+    series: [
+      { name: 'Stock Available', data: this.supplyMonitoring.map(s => s.available) },
+      { name: 'Stock Used', data: this.supplyMonitoring.map(s => s.used) }
+    ],
+    chart: { type: "bar" as ApexChart["type"], height: 330 },
+    xaxis: { categories: this.supplyMonitoring.map(s => s.item) } as ApexXAxis,
+    yaxis: { title: { text: 'Stock Quantity' } } as ApexYAxis,
+    stroke: { curve: "smooth" as ApexStroke["curve"] },
+    title: { text: 'Supply Monitoring', align: "left" as ApexTitleSubtitle["align"] }
   };
 
-  constructor(
-    private rfqService: RFQService, // Inject RFQService
-    private purchaseRequestService: PurchaseRequestService, // Inject PurchaseRequestService
-    private budgetService: BudgetService
-  ) {}
+  constructor() {}
 
-  async ngOnInit() {
-    // Fetch and process RFQ data for the first chart
-    const rfqs = await this.rfqService.getAll();
-    const incomingData = rfqs.map((rfq) => rfq.suppliers[0]?.biddingPrice || 0);
-    const categories = rfqs.map((rfq) => rfq.id || 'Unknown RFQ');
-  
-    await this.loadBudgetData();
+  ngOnInit() {}
 
-    this.lineChartOptions.series = [
-      {
-        name: 'Incoming',
-        data: incomingData,
-      },
-      {
-        name: 'Delivered',
-        data: [28, 48, 40, 19, 86, 27, 90], // Placeholder data
-      },
-    ];
-  
-    this.lineChartOptions.chart = {
-      type: 'line',
-      height: 330,
-    };
-  
-    this.lineChartOptions.stroke = {
-      curve: 'smooth',
-    };
-  
-    this.lineChartOptions.title = {
-      text: 'Request for Quotations',
-      align: 'left',
-    };
-  
-    this.lineChartOptions.xaxis = {
-      categories: categories,
-    };
-  
-    this.lineChartOptions.yaxis = {
-      title: {
-        text: 'Bidding Price',
-      },
-    };
-  
-    // Fetch and process Purchase Request data for the second chart
-    const purchaseRequests = await this.purchaseRequestService.getAll();
-    const approvedData = this.transformPurchaseRequestData(purchaseRequests);
-  
-    this.purchaseRequestChartOptions.series = [
-      {
-        name: 'Approved Purchase Requests',
-        data: approvedData,
-      },
-    ];
-  
-    this.purchaseRequestChartOptions.chart = {
-      type: 'line',
-      height: 330,
-    };
-  
-    this.purchaseRequestChartOptions.stroke = {
-      curve: 'smooth',
-    };
-  
-    this.purchaseRequestChartOptions.title = {
-      text: 'Approved Purchase Requests Over Time',
-      align: 'left',
-    };
-  
-    this.purchaseRequestChartOptions.xaxis = {
-      categories: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul'], // Example categories (replace with actual data)
-    };
-  
-    this.purchaseRequestChartOptions.yaxis = {
-      title: {
-        text: 'Number of Approved Requests',
-      },
-    };
-  }
-
-  private async loadBudgetData() {
-    const budgets = await this.budgetService.getAllBudgetAllocations().toPromise() || [];
-
-    // Transform budget data into chart data
-    const categories = budgets.map((budget) => budget.departmentId);
-    const totalBudgetData = budgets.map((budget) => budget.totalBudget);
-    const allocatedAmountData = budgets.map((budget) => budget.allocatedAmount);
-    const remainingBalanceData = budgets.map((budget) => budget.remainingBalance);
-
-    // Update the first chart options with budget data
-    this.budgetChartOptions.series = [
-      {
-        name: 'Total Budget',
-        data: totalBudgetData,
-      },
-      {
-        name: 'Allocated Amount',
-        data: allocatedAmountData,
-      },
-      {
-        name: 'Remaining Balance',
-        data: remainingBalanceData,
-      },
-    ];
-
-    this.budgetChartOptions.chart = {
-      type: 'line',
-      height: 330,
-    };
-
-    this.budgetChartOptions.stroke = {
-      curve: 'smooth',
-    };
-
-    this.budgetChartOptions.title = {
-      text: 'Budget Allocation Overview',
-      align: 'left',
-    };
-
-    this.budgetChartOptions.xaxis = {
-      categories: categories,
-      labels:{
-        show: false,
-      },
-      title: {
-        text: 'Department',
-      },
-    };
-
-    this.budgetChartOptions.yaxis = {
-      title: {
-        text: 'Amount (USD)',
-      },
-    };
-  }
-  
-  // Transform Purchase Request data into chart data
-  private transformPurchaseRequestData(purchaseRequests: PurchaseRequest[]): number[] {
-    // Example: Count approved purchase requests by month
-    const approvedCounts = [0, 0, 0, 0, 0, 0, 0]; // Placeholder for 7 months
-    purchaseRequests.forEach((pr) => {
-      if (pr.status === 'approved') {
-        const month = new Date(pr.date).getMonth(); // Assuming `date` is a Date object
-        if (month >= 0 && month < 7) {
-          approvedCounts[month]++;
-        }
-      }
-    });
-    return approvedCounts;
+  // Get Status Class for Badge Colors
+  getStatusClass(status: string): string {
+    switch (status) {
+      case 'Approved': return 'bg-green-500';
+      case 'Pending': return 'bg-yellow-500';
+      case 'Rejected': return 'bg-red-500';
+      default: return 'bg-gray-500';
+    }
   }
 }
