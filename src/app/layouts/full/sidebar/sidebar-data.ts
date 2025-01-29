@@ -115,7 +115,7 @@ export const navItems: NavItem[] = [
 
 
   {
-    displayName: 'Canvasing',
+    displayName: 'Canvassing',
     iconName: 'solar:documents-broken',
     route: '/shared/rfq-list',
     requiredRoles: ['end-user'],
@@ -127,7 +127,7 @@ export const navItems: NavItem[] = [
     requiredRoles: ['end-user'],
   },
   {
-    displayName: 'Receiving',
+    displayName: 'Approval Receiving',
     iconName: 'solar:documents-broken',
     route: '/enduser/receiving',
     requiredRoles: ['end-user'],
@@ -172,12 +172,12 @@ export const navItems: NavItem[] = [
     route: '/supply-management/stocking',
     requiredRoles: ['supply'],
   },
-  {
-    displayName: 'Delivery',
-    iconName: 'solar:inbox-archive-outline',
-    route: '/supply-management/delivery',
-    requiredRoles: ['supply'],
-  },
+  // {
+  //   displayName: 'Delivery',
+  //   iconName: 'solar:inbox-archive-outline',
+  //   route: '/supply-management/delivery',
+  //   requiredRoles: ['supply'],
+  // },
   // {
   //   displayName: 'Delivered Items',
   //   iconName: 'fluent:check-24-regular',
@@ -203,37 +203,7 @@ export const navItems: NavItem[] = [
     requiredRoles: ['supply', 'superadmin', 'bac', 'president', 'end-user', 'inspection'],
   },
 
-  {
-    navCap: 'Reports Generation',
-    divider: true,
-    requiredRoles: ['supply', 'superadmin'],
-  },
-  {
-    displayName: 'RSMI',
-    iconName: 'solar:ticket-sale-broken',
-    route: '/supply-management/rsmi',
-    requiredRoles: ['supply', 'superadmin'],
-  },
-  {
-    displayName: 'PAR',
-    iconName: 'solar:ticket-sale-broken',
-    route: '/supply-management/par',
-    requiredRoles: ['supply', 'superadmin'],
-  },
-  {
-    displayName: 'ICS',
-    iconName: 'solar:ticket-sale-broken',
-    route: '/supply-management/ics',
-    requiredRoles: ['supply', 'superadmin'],
-  },
-  {
-    displayName: 'Compile Reports',
-    iconName: 'solar:ticket-sale-broken',
-    route: '/supply-management/compile-reports',
-    requiredRoles: ['supply', 'superadmin'],
-  },
-
-
+ 
   // Accounting Section
   {
     navCap: 'Accounting',
@@ -415,6 +385,38 @@ export const navItems: NavItem[] = [
   //   iconName: 'solar:widget-add-line-duotone',
   //   route: '/shared/approvals',
   // },
+    
+     {
+    navCap: 'Reports Generation',
+    divider: true,
+    requiredRoles: ['supply'],
+  },
+  {
+    displayName: 'RSMI',
+    iconName: 'solar:ticket-sale-broken',
+    route: '/supply-management/rsmi',
+    requiredRoles: ['supply'],
+  },
+  {
+    displayName: 'PAR',
+    iconName: 'solar:ticket-sale-broken',
+    route: '/supply-management/par',
+    requiredRoles: ['supply'],
+  },
+  {
+    displayName: 'ICS',
+    iconName: 'solar:ticket-sale-broken',
+    route: '/supply-management/ics',
+    requiredRoles: ['supply'],
+  },
+  {
+    displayName: 'Compile Reports',
+    iconName: 'solar:ticket-sale-broken',
+    route: '/supply-management/compile-reports',
+    requiredRoles: ['supply'],
+  },
+
+
  
 ];
 
