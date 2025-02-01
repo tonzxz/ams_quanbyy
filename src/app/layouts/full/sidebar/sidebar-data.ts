@@ -381,11 +381,16 @@ export const navItems: NavItem[] = [
     route: '/bac/approved-purchase-requests',
     requiredRoles: ['bac'],
   },
-   
-    {
+  {
     displayName: 'Abstract of Quotations Template',
     iconName: 'solar:checklist-minimalistic-line-duotone',
     route: '/shared/aoq',
+    requiredRoles: ['bac'],
+  },
+  {
+    displayName: 'Consolidation',
+    iconName: 'solar:checklist-minimalistic-line-duotone',
+    route: '/bac/consolidation',
     requiredRoles: ['bac'],
   },
   // {
