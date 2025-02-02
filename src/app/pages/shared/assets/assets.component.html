@@ -9,7 +9,7 @@
                         <p-iconfield fluid class="w-full max-w-72">
                             <p-inputicon styleClass="pi pi-search" />
                             <input fluid class="w-full" pSize="small" [(ngModel)]="search" (input)="filterBySearch()"
-                                type="text" pInputText placeholder="Search" />
+                           p     type="text" pInputText placeholder="Search" />
                             <!-- <p-inputicon styleClass="pi pi-spinner pi-spin" /> -->
                         </p-iconfield>
                         <p-selectbutton [(ngModel)]="layout" [options]="options" [allowEmpty]="false">
@@ -54,7 +54,6 @@
                                     </div>
                                 </div>
                                 <div class="flex flex-col md:items-end gap-8">
-                                    <span class="text-xl font-semibold">{{ item.price | currency: 'PHP' }}</span>
                                     <div class="flex flex-row-reverse md:flex-row gap-2">
                                         <button pButton severity="secondary" icon="pi pi-info-circle"
                                             [outlined]="true"></button>
@@ -106,8 +105,7 @@
                                         </div>
                                     </div>
                                     <div class="flex flex-col gap-6">
-                                        <span class="text-lg font-semibold">{{ item.price | currency: 'PHP'
-                                            }}</span>
+                                      
                                         <!-- <div class="flex gap-2">
                                             <button (click)="openTransferModal(item)" pButton icon="pi pi-sitemap"
                                                 label="Transfer Stock" class="flex-auto whitespace-nowrap"></button>
