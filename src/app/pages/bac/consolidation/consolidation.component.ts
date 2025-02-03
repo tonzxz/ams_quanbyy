@@ -4,6 +4,8 @@ import { TableModule } from 'primeng/table';
 import { TooltipModule } from 'primeng/tooltip';
 import { ButtonModule } from 'primeng/button';
 import { CardModule } from 'primeng/card';
+import { ToastModule } from 'primeng/toast';
+import { MessageService } from 'primeng/api';
 
 interface Document {
   id: number;
@@ -20,9 +22,10 @@ interface Document {
 @Component({
   selector: 'app-consolidation',
   standalone: true,
-  imports: [CommonModule, TableModule, TooltipModule, ButtonModule, CardModule],
+  imports: [CommonModule, TableModule, TooltipModule, ButtonModule, CardModule, ToastModule],
   templateUrl: './consolidation.component.html',
-  styleUrls: ['./consolidation.component.scss']
+  styleUrls: ['./consolidation.component.scss'],
+  providers: [MessageService]
 })
 export class ConsolidationComponent {
   documents: Document[] = [
@@ -33,8 +36,16 @@ export class ConsolidationComponent {
     { id: 6, name: 'Contract Review Q1', type: 'Contract Review', submissionDate: '2025-05-20', submittedBy: 'Olivia Martinez', reviewer: 'Daniel Lee', status: 'Approved', approvalDate: '2025-05-21', attachments: ['contract_q1.pdf', 'terms_conditions.pdf'] }
   ];
 
-  approveDocument(doc: Document) {
-    
+  constructor(private messageService: MessageService) {} 
+
+  approveDocument(doc: any): void {
+    console.log(`Approved document: ${doc.name}`);
+
+    this.messageService.add({
+      severity: 'success',
+      summary: 'Success',
+      detail: `Document "${doc.name}" has been posted to PhilGEPS.`
+    });
   }
 
   getStatusClass(status: string): string {
