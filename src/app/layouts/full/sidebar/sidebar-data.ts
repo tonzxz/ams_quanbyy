@@ -214,6 +214,12 @@ export const navItems: NavItem[] = [
     route: '/enduser/special-receiving',
     requiredRoles: ['end-user','supply'],
   },
+  {
+    displayName: 'PPMP List',
+    iconName: 'solar:documents-broken',
+    route: '/enduser/ppmp-list',
+    requiredRoles: ['end-user'],
+  },
 
   
 
