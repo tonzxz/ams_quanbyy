@@ -9,7 +9,7 @@
                         <p-iconfield fluid class="w-full max-w-72">
                             <p-inputicon styleClass="pi pi-search" />
                             <input fluid class="w-full" pSize="small" [(ngModel)]="search" (input)="filterBySearch()"
-                           p     type="text" pInputText placeholder="Search" />
+                                type="text" pInputText placeholder="Search" />
                             <!-- <p-inputicon styleClass="pi pi-spinner pi-spin" /> -->
                         </p-iconfield>
                         <p-selectbutton [(ngModel)]="layout" [options]="options" [allowEmpty]="false">
@@ -54,11 +54,12 @@
                                     </div>
                                 </div>
                                 <div class="flex flex-col md:items-end gap-8">
+                                    <span class="text-xl font-semibold">{{ item.price | currency: 'PHP' }}</span>
                                     <div class="flex flex-row-reverse md:flex-row gap-2">
                                         <button pButton severity="secondary" icon="pi pi-info-circle"
                                             [outlined]="true"></button>
-                                        <button [outlined]="true" pButton (click)="openTransferModal(item)"
-                                            icon="pi pi-sitemap" label="Transfer Stock"
+                                        <button [outlined]="true" pButton (click)="openRequestModal(item)"
+                                            icon="pi pi-sitemap" label="Request Stock"
                                             class="flex-auto md:flex-initial whitespace-nowrap"></button>
                                     </div>
                                 </div>
@@ -105,7 +106,8 @@
                                         </div>
                                     </div>
                                     <div class="flex flex-col gap-6">
-                                      
+                                        <span class="text-lg font-semibold">{{ item.price | currency: 'PHP'
+                                            }}</span>
                                         <!-- <div class="flex gap-2">
                                             <button (click)="openTransferModal(item)" pButton icon="pi pi-sitemap"
                                                 label="Transfer Stock" class="flex-auto whitespace-nowrap"></button>
@@ -135,7 +137,7 @@
     <ng-template #header>
         <div class="py-0 inline-flex items-center justify-center gap-3">
             <i class="pi pi-warehouse text-lg"></i>
-            <span class="font-bold text-lg whitespace-nowrap">Transfer Stocks</span>
+            <span class="font-bold text-lg whitespace-nowrap">Requisition</span>
         </div>
     </ng-template>
     <span class="p-text-secondary block">Enter amount and location to transfer stock</span>
@@ -159,10 +161,16 @@
                 </ng-template>
             </p-select>
         </div>
-        <div class="flex items-center gap-4 mb-24">
+        <div class="flex items-center gap-4 mb-2">
             <label for="bid" class="font-semibold w-32">Amount</label>
             <p-inputnumber placeholder="Enter amount to transfer" size="small" class="flex-1" formControlName="amount"
                 inputId="currency-us" mode="decimal"  fluid></p-inputnumber>
+        </div>
+
+        <div class="flex items-center gap-4 mb-24">
+            <label for="bid" class="font-semibold w-32">Purpose</label>
+            <p-inputnumber placeholder="Purpose of Request" size="small" class="flex-1" formControlName="purpose"
+               ></p-inputnumber>
         </div>
 
 

@@ -74,12 +74,12 @@ export const navItems: NavItem[] = [
     route: '/admin/payment-terms',
     requiredRoles: ['admin', 'superadmin'],
   },
-  {
-    displayName: 'Inventory Count',
-    iconName: 'solar:widget-add-line-duotone',
-    route: '/admin/inventory',
-    requiredRoles: ['admin', 'superadmin'],
-  },
+  // {
+  //   displayName: 'Inventory Count',
+  //   iconName: 'solar:widget-add-line-duotone',
+  //   route: '/admin/inventory',
+  //   requiredRoles: ['admin', 'superadmin'],
+  // },
   {
     displayName: 'Item Classification',
     iconName: 'solar:widget-add-line-duotone',
@@ -452,12 +452,12 @@ export const navItems: NavItem[] = [
     divider: true,
     requiredRoles: ['supply', 'bac', 'president', 'end-user', 'inspection'],
   },
-  {
-    displayName: 'Inventory',
-    iconName: 'solar:box-broken',
-    route: '/shared/inventory',
-    requiredRoles: ['supply', 'bac', 'president', 'end-user', 'inspection'],
-  },
+  // {
+  //   displayName: 'Inventory',
+  //   iconName: 'solar:box-broken',
+  //   route: '/shared/inventory',
+  //   requiredRoles: ['supply', 'bac', 'president', 'end-user', 'inspection'],
+  // },
  
 ];
 

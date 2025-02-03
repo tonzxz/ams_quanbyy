@@ -78,7 +78,7 @@ export class AssetsComponent implements OnInit {
   
   }
 
-  openTransferModal(stock:Stock){
+  openRequestModal(stock:Stock){
     this.form.reset();
     this.selectedStock = stock;
     console.log(this.selectedStock?.id);
@@ -92,9 +92,8 @@ export class AssetsComponent implements OnInit {
   async fetchItems(){
     this.assets = await this.stockService.getAll();
     this.inventories = await this.inventoryService.getAllLocations();
-    const currentUser = this.userService.getUser();
-    this.assets = this.assets.filter( a=> currentUser?.role != 'end-user'|| ( this.inventoryService.getOfficeOfLocation(a.storage_id!)) === currentUser?.officeId)
     this.filteredAssets.set(this.assets);
   }
 
+  
 }
