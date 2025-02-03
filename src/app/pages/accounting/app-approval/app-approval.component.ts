@@ -4,6 +4,8 @@ import { TableModule } from 'primeng/table';
 import { TooltipModule } from 'primeng/tooltip';
 import { ButtonModule } from 'primeng/button';
 import { CardModule } from 'primeng/card';
+import { Toast, ToastModule } from 'primeng/toast';
+import { MessageService } from 'primeng/api';
 
 interface Document {
   id: number;
@@ -20,9 +22,10 @@ interface Document {
 @Component({
   selector: 'app-app-approval',
   standalone: true,
-  imports: [CommonModule, TableModule, TooltipModule, ButtonModule, CardModule],
+  imports: [CommonModule, TableModule, TooltipModule, ButtonModule, CardModule, ToastModule],
   templateUrl: './app-approval.component.html',
-  styleUrls: ['./app-approval.component.scss']
+  styleUrls: ['./app-approval.component.scss'],
+  providers: [MessageService]
 })
 export class AppApprovalComponent {
   documents: Document[] = [
@@ -33,9 +36,7 @@ export class AppApprovalComponent {
     { id: 6, name: 'Contract Review Q1', type: 'Contract Review', submissionDate: '2025-05-20', submittedBy: 'Olivia Martinez', reviewer: 'Daniel Lee', date: '2025-01-29', ppmpAttachment: ['contract_q1.pdf'], appAttachment: ['contract_terms.pdf']}
   ];
 
-  approveDocument(doc: Document) {
-    
-  }
+  constructor(private messageService: MessageService) {}
 
   getStatusClass(status: string): string {
     return status === 'Approved' ? 'bg-green-200 text-green-800 px-2 py-1 rounded-lg' : '';
@@ -43,5 +44,25 @@ export class AppApprovalComponent {
 
   getAttachmentClass(): string {
     return 'text-blue-500 underline cursor-pointer hover:text-blue-700';
+  }
+
+  approveDocument(doc: any): void {
+    console.log(`Approved document: ${doc.name}`);
+
+    this.messageService.add({
+      severity: 'success',
+      summary: 'Success',
+      detail: `Document "${doc.name}" has been approved.`
+    });
+  }
+
+  rejectDocument(doc: any): void {
+    console.log(`Rejected document: ${doc.name}`);
+
+    this.messageService.add({
+      severity: 'error',
+      summary: 'Rejected',
+      detail: `Document "${doc.name}" has been rejected.`
+    });
   }
 }
