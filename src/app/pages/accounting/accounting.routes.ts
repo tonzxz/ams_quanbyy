@@ -12,6 +12,7 @@ import { ClassificationComponent } from './classification/classification.compone
 import { RisAccountingComponent } from './ris-accounting/ris-accounting.component';
 import { IssueSlipComponent } from './issue-slip/issue-slip.component';
 import { FinalVerificationComponent } from './final-verification/final-verification.component';
+import { AppApprovalComponent } from './app-approval/app-approval.component';
 
 export const AccountingRoutes: Routes = [
   {
@@ -25,6 +26,12 @@ export const AccountingRoutes: Routes = [
       {
         path: 'accounting-dashboard',
         component: AccountingDashboardComponent,
+        canActivate: [roleGuard],
+        data: { roles: ['accounting', 'superadmin'], breadcrumb: 'Budget Management' } 
+      },
+      {
+        path: 'app-approval',
+        component: AppApprovalComponent,
         canActivate: [roleGuard],
         data: { roles: ['accounting', 'superadmin'], breadcrumb: 'Budget Management' } 
       },

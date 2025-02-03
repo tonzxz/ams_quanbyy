@@ -5,11 +5,11 @@ export const navItems: NavItem[] = [
   {
     navCap: 'Home',
   },
-  {
+  { 
     displayName: 'Dashboard',
     iconName: 'solar:widget-add-line-duotone',
     route: '/admin/admin-dashboard',
-    requiredRoles: ['superadmin', 'admin', 'bac', 'enduser', 'accounting','inspection'],
+    requiredRoles: ['superadmin', 'admin', 'bac', 'end-user', 'accounting','inspection', 'supply'],
   },
 
    {
@@ -294,12 +294,17 @@ export const navItems: NavItem[] = [
     requiredRoles: [ 'accounting'],
   },
   {
+    displayName: 'APP Approval',
+    iconName: 'solar:widget-add-line-duotone',
+    route: '/accounting/app-approval',
+    requiredRoles: ['accounting'],
+  },
+  {
     displayName: 'Budget',
     iconName: 'solar:widget-add-line-duotone',
     route: '/accounting/budget',
     requiredRoles: ['accounting'],
   },
-
   {
     displayName: 'Purchase Request Approval',
     iconName: 'solar:widget-add-line-duotone',
