@@ -2,7 +2,7 @@
   <mat-card-content>
     <mat-card-title>Budget Allocation Management</mat-card-title>
     <mat-card-subtitle class="text-sm text-gray-500">
-      Manage department budget allocations and track expenditure.
+      Manage end-user budget allocations and track expenditure.
     </mat-card-subtitle>
 
     <div class="flex justify-between items-center mt-4">
@@ -44,7 +44,7 @@
       [value]="budgetAllocations"
       [rows]="10"
       [paginator]="true"
-      [globalFilterFields]="['departmentId', 'totalBudget', 'allocatedAmount', 'status']"
+      [globalFilterFields]="['userId', 'totalBudget', 'allocatedAmount', 'status']"
       [rowsPerPageOptions]="[5, 10, 20]"
       [loading]="loading"
       [responsive]="true"
@@ -56,30 +56,23 @@
     >
       <ng-template pTemplate="header">
         <tr>
-          <th pSortableColumn="departmentId">Department <p-sortIcon field="departmentId"></p-sortIcon></th>
+          <th pSortableColumn="userId">End-User <p-sortIcon field="userId"></p-sortIcon></th>
           <th pSortableColumn="fiscalYear">Fiscal Year <p-sortIcon field="fiscalYear"></p-sortIcon></th>
           <th pSortableColumn="totalBudget">Total Budget <p-sortIcon field="totalBudget"></p-sortIcon></th>
           <th pSortableColumn="allocatedAmount">Allocated <p-sortIcon field="allocatedAmount"></p-sortIcon></th>
           <th pSortableColumn="remainingBalance">Remaining <p-sortIcon field="remainingBalance"></p-sortIcon></th>
           <th pSortableColumn="status">Status <p-sortIcon field="status"></p-sortIcon></th>
-          <th style="width: 100px">Actions</th>
         </tr>
       </ng-template>
 
       <ng-template pTemplate="body" let-budget>
         <tr>
-          <td>{{ getDepartmentName(budget.departmentId) }}</td>
+          <td>{{ getUserName(budget.userId) }}</td>
           <td>{{ budget.fiscalYear }}</td>
           <td>{{ budget.totalBudget | currency:'PHP':'symbol':'1.2-2' }}</td>
           <td>{{ budget.allocatedAmount | currency:'PHP':'symbol':'1.2-2' }}</td>
           <td>{{ budget.remainingBalance | currency:'PHP':'symbol':'1.2-2' }}</td>
-          <td>
-            <p-tag 
-              [value]="budget.status" 
-              [severity]="getStatusSeverity(budget.status)"
-              [style]="{'text-transform': 'capitalize'}"
-            ></p-tag>
-          </td>
+          
           <td>
             <div class="flex gap-2">
               <button
@@ -113,83 +106,68 @@
       </ng-template>
     </p-table>
 
-  <p-dialog [(visible)]="budgetDialog" [modal]="true" [style]="{'width': '90vw', 'max-width': '500px'}" [header]="isEditMode ? 'Edit Budget Allocation' : 'New Budget Allocation'" styleClass="p-fluid" [dismissableMask]="true" [draggable]="false" [resizable]="false">
-  <form [formGroup]="budgetForm" class="w-full">
-    <div class="flex items-center gap-4 mb-4">
-      <label for="department" class="font-semibold w-32">Department</label>
-      <div class="flex-auto flex-col flex">
-        <p-dropdown id="department" formControlName="departmentId" [options]="departments" optionLabel="name" optionValue="id" placeholder="Select Department" [filter]="true" filterBy="name" [disabled]="isEditMode" [style]="{'width':'100%'}" [panelStyle]="{'min-width': '200px', 'max-width': '100%'}"></p-dropdown>
-        <small class="text-red-500" *ngIf="submitted && budgetForm.get('departmentId')?.errors?.['required']">Department is required</small>
-      </div>
-    </div>
+    <p-dialog [(visible)]="budgetDialog" [modal]="true" [style]="{'width': '90vw', 'max-width': '500px'}"
+      [header]="isEditMode ? 'Edit Budget Allocation' : 'New Budget Allocation'" styleClass="p-fluid"
+      [dismissableMask]="true" [draggable]="false" [resizable]="false">
+      
+      <form [formGroup]="budgetForm" class="w-full">
+        <div class="flex items-center gap-4 mb-4">
+          <label for="user" class="font-semibold w-32">End-User</label>
+          <div class="flex-auto flex-col flex">
+           <p-dropdown 
+  id="userId"
+  formControlName="userId"
+  [options]="users"
+  optionLabel="fullname"
+  optionValue="id"  
+  placeholder="Select End-User"
+  [filter]="true"
+  filterBy="fullname"
+  [style]="{'width':'100%'}"
+  [panelStyle]="{'min-width': '200px', 'max-width': '100%'}"
+></p-dropdown>
+<small class="text-red-500" *ngIf="submitted && budgetForm.get('userId')?.errors?.['required']">
+  End-User is required
+</small>
 
-    <div class="flex items-center gap-4 mb-4">
-      <label for="fiscalYear" class="font-semibold w-32">Fiscal Year</label>
-      <div class="flex-auto flex-col flex">
-        <p-dropdown id="fiscalYear" formControlName="fiscalYear" [options]="years" placeholder="Select Year" [style]="{'width':'100%'}"></p-dropdown>
-        <small class="text-red-500" *ngIf="submitted && budgetForm.get('fiscalYear')?.errors?.['required']">Fiscal year is required</small>
-      </div>
-    </div>
+            <small class="text-red-500" *ngIf="submitted && budgetForm.get('userId')?.errors?.['required']">
+              End-User is required
+            </small>
+          </div>
+        </div>
 
-    <div class="flex items-center gap-4 mb-4">
-      <label for="totalBudget" class="font-semibold w-32">Total Budget</label>
-      <div class="flex-auto flex-col flex">
-        <p-inputNumber id="totalBudget" formControlName="totalBudget" [min]="0" mode="currency" currency="PHP" locale="en-US" [style]="{'width':'100%'}"></p-inputNumber>
-        <small class="text-red-500" *ngIf="submitted && budgetForm.get('totalBudget')?.errors?.['required']">Total budget is required</small>
-      </div>
-    </div>
+        <div class="flex items-center gap-4 mb-4">
+          <label for="fiscalYear" class="font-semibold w-32">Fiscal Year</label>
+          <div class="flex-auto flex-col flex">
+            <p-inputNumber id="fiscalYear" formControlName="fiscalYear" [min]="2000" mode="decimal"></p-inputNumber>
+          </div>
+        </div>
 
-    <div class="flex items-center gap-4 mb-4">
-      <label for="allocatedAmount" class="font-semibold w-32">Allocated</label>
-      <div class="flex-auto flex-col flex">
-        <p-inputNumber id="allocatedAmount" formControlName="allocatedAmount" [min]="0" mode="currency" currency="PHP" locale="en-US" [style]="{'width':'100%'}"></p-inputNumber>
-        <small class="text-red-500" *ngIf="submitted && budgetForm.get('allocatedAmount')?.errors?.['required']">Allocated amount is required</small>
-      </div>
-    </div>
+        <div class="flex items-center gap-4 mb-4">
+          <label for="totalBudget" class="font-semibold w-32">Total Budget</label>
+          <div class="flex-auto flex-col flex">
+            <p-inputNumber id="totalBudget" formControlName="totalBudget" [min]="0" mode="currency"
+              currency="PHP" locale="en-US"></p-inputNumber>
+          </div>
+        </div>
 
-    <div class="flex items-center gap-4 mb-4">
-      <label for="status" class="font-semibold w-32">Status</label>
-      <div class="flex-auto flex-col flex">
-        <p-dropdown id="status" formControlName="status" [options]="statuses" optionLabel="label" optionValue="value" placeholder="Select Status" [disabled]="!isEditMode && budgetForm.get('status')?.value === 'approved'" [style]="{'width':'100%'}" [panelStyle]="{'min-width': '200px', 'max-width': '100%'}"></p-dropdown>
-        <small class="text-red-500" *ngIf="submitted && budgetForm.get('status')?.errors?.['required']">Status is required</small>
-      </div>
-    </div>
+        <div class="flex items-center gap-4 mb-4">
+          <label for="allocatedAmount" class="font-semibold w-32">Allocated</label>
+          <div class="flex-auto flex-col flex">
+            <p-inputNumber id="allocatedAmount" formControlName="allocatedAmount" [min]="0" mode="currency"
+              currency="PHP" locale="en-US"></p-inputNumber>
+          </div>
+        </div>
+      </form>
 
-    <div class="flex items-center gap-4 mb-4">
-      <label for="approvedBy" class="font-semibold w-32">Approved By</label>
-      <div class="flex-auto flex-col flex">
-        <input pInputText id="approvedBy" formControlName="approvedBy" placeholder="Enter approver name" class="w-full" />
-      </div>
-    </div>
-
-    <div class="flex items-center gap-4 mb-4">
-      <label for="approvedAt" class="font-semibold w-32">Approved At</label>
-      <div class="flex-auto flex-col flex">
-        <p-calendar id="approvedAt" formControlName="approvedAt" [showTime]="true" [showSeconds]="true" [readonlyInput]="true" [style]="{'width':'100%'}"></p-calendar>
-      </div>
-    </div>
-  </form>
-
-  <ng-template pTemplate="footer">
-    <div class="flex justify-end gap-2">
-      <button pButton label="Cancel" icon="pi pi-times" class="p-button-text" (click)="hideDialog()"></button>
-      <button pButton label="Save" icon="pi pi-check" class="p-button-primary" (click)="saveBudget()"></button>
-    </div>
-  </ng-template>
-</p-dialog>
-
-
+      <ng-template pTemplate="footer">
+        <div class="flex justify-end gap-2">
+          <button pButton label="Cancel" icon="pi pi-times" class="p-button-text" (click)="hideDialog()"></button>
+          <button pButton label="Save" icon="pi pi-check" class="p-button-primary" (click)="saveBudget()"></button>
+        </div>
+      </ng-template>
+    </p-dialog>
   </mat-card-content>
 </mat-card>
-
-<p-confirmDialog
-  header="Confirmation"
-  icon="pi pi-exclamation-triangle"
-  [style]="{width: '450px'}"
-  acceptButtonStyleClass="p-button-danger"
-  rejectButtonStyleClass="p-button-text"
-  acceptLabel="Delete"
-  rejectLabel="Cancel">
-</p-confirmDialog>
 
 <p-toast></p-toast>

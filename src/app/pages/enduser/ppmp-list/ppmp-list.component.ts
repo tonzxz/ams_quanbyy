@@ -120,15 +120,15 @@ export class PpmpListComponent implements OnInit {
       this.loading = false;
     } else {
       this.budgetService.getAllBudgetAllocations().subscribe(
-        async (budgets: Budget[]) => {
-          const departments = await this.departmentService.getAllDepartments();
-          this.budgets = budgets.map((budget) => ({
-            ...budget,
-            departmentName:
-              departments.find((dept) => dept.id === budget.departmentId)?.name || 'Unknown',
-          }));
-          this.loading = false;
-        },
+        // async (budgets: Budget[]) => {
+        //   const departments = await this.departmentService.getAllDepartments();
+        //   this.budgets = budgets.map((budget) => ({
+        //     ...budget,
+        //     departmentName:
+        //       departments.find((dept) => dept.id === budget.departmentId)?.name || 'Unknown',
+        //   }));
+        //   this.loading = false;
+        // },
         (error) => {
           this.messageService.add({
             severity: 'error',

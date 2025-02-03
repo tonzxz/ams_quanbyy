@@ -245,68 +245,64 @@ export const navItems: NavItem[] = [
   //   route: '/shared/delivered-items',
   //   requiredRoles: ['supply'],
   // },
-  {
-    displayName: 'Disbursement Vouchers',
-    iconName: 'solar:ticket-sale-broken',
-    route: '/shared/disbursement-vouchers',
-    requiredRoles: ['supply'],
-  },
+  
 
 
- 
-  // Accounting Section
-  {
-    navCap: 'Accounting',
+   {
+    navCap: 'Budget',
     divider: true,
-    requiredRoles: [ 'accounting'],
-  },
-  {
-    displayName: 'APP Approval',
-    iconName: 'solar:widget-add-line-duotone',
-    route: '/accounting/app-approval',
     requiredRoles: ['accounting'],
   },
+ 
+
   {
-    displayName: 'Budget',
+    displayName: 'Budget Allocation',
     iconName: 'solar:widget-add-line-duotone',
     route: '/accounting/budget',
     requiredRoles: ['accounting'],
   },
-  {
-    displayName: 'Purchase Request Approval',
+
+    {
+    displayName: 'Annual Procurement Plan',
     iconName: 'solar:widget-add-line-duotone',
-    route: '/accounting/pr-approval',
+    route: '/accounting/app-approval',
     requiredRoles: ['accounting'],
   },
 
-   {
-    displayName: 'Issue Slip',
+  
+    {
+    displayName: 'Obligation Request and Status',
     iconName: 'solar:widget-add-line-duotone',
-    route: '/accounting/issue-slip',
-    requiredRoles: ['accounting'],
-  },
-   
-
-  {
-    displayName: 'Budget Utilization Report',
-    iconName: 'solar:widget-add-line-duotone',
-    route: '/shared/rfq-list',
+    route: '/accounting/ors',
     requiredRoles: ['accounting'],
   },
 
-
+    {
+    navCap: 'Accounting',
+    divider: true,
+    requiredRoles: ['accounting'],
+  },
+ 
   {
-    displayName: 'Classification',
+    displayName: 'Disbursement Vouchers',
     iconName: 'solar:ticket-sale-broken',
-    route: '/accounting/classification',
-    requiredRoles: [ 'accounting'],
+    route: '/shared/disbursement-vouchers',
+    requiredRoles: ['supply','accounting'],
   },
-  {
-    displayName: 'Voucher Review',
-    iconName: 'solar:ticket-sale-broken',
-    route: '/accounting/voucher-review',
-    requiredRoles: [ 'accounting'],
-  },
+
+  
+  // {
+  //   displayName: 'Classification',
+  //   iconName: 'solar:ticket-sale-broken',
+  //   route: '/accounting/classification',
+  //   requiredRoles: [ 'accounting'],
+  // },
+  // {
+  //   displayName: 'Voucher Review',
+  //   iconName: 'solar:ticket-sale-broken',
+  //   route: '/accounting/voucher-review',
+  //   requiredRoles: [ 'accounting'],
+  // },
   {
     displayName: 'Journal Entry Voucher',
     iconName: 'solar:ticket-sale-broken',
@@ -327,12 +323,36 @@ export const navItems: NavItem[] = [
     route: '/accounting/general-journal',
     requiredRoles: [ 'accounting'],
   },
-  {
-    displayName: 'Final Verification',
-    iconName: 'solar:ticket-sale-broken',
-    route: '/accounting/final-verification',
-    requiredRoles: [ 'accounting'],
-  },
+
+  // {
+  //   displayName: 'Purchase Request Approval',
+  //   iconName: 'solar:widget-add-line-duotone',
+  //   route: '/accounting/pr-approval',
+  //   requiredRoles: ['accounting'],
+  // },
+
+  //  {
+  //   displayName: 'Issue Slip',
+  //   iconName: 'solar:widget-add-line-duotone',
+  //   route: '/accounting/issue-slip',
+  //   requiredRoles: ['accounting'],
+  // },
+   
+
+  // {
+  //   displayName: 'Budget Utilization Report',
+  //   iconName: 'solar:widget-add-line-duotone',
+  //   route: '/shared/rfq-list',
+  //   requiredRoles: ['accounting'],
+  // },
+
+
+  // {
+  //   displayName: 'Final Verification',
+  //   iconName: 'solar:ticket-sale-broken',
+  //   route: '/accounting/final-verification',
+  //   requiredRoles: [ 'accounting'],
+  // },
 
   // Admin Section
  
