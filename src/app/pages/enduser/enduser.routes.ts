@@ -7,7 +7,7 @@ import { ReceivingComponent } from './receiving/receiving.component';
 import { CanvassingComponent } from './canvassing/canvassing.component';
 import { SpecialReceivingComponent } from './special-receiving/special-receiving.component';
 import { PpmpListComponent } from './ppmp-list/ppmp-list.component';
-import { AppComponent } from './app/app.component';
+import { AnnualProcurementPlanComponent } from './annual-procurement-plan/annual-procurement-plan.component';
 
 export const enduserRoutes: Routes = [
   {
@@ -69,7 +69,7 @@ export const enduserRoutes: Routes = [
 
         {
         path: 'app',
-        component: AppComponent,
+        component: AnnualProcurementPlanComponent,
         data: { breadcrumb: 'Annual Procurement Plan', roles: ['end-user'] },
         canActivate: [roleGuard],
       },
