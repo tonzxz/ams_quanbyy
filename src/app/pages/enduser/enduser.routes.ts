@@ -7,6 +7,7 @@ import { ReceivingComponent } from './receiving/receiving.component';
 import { CanvassingComponent } from './canvassing/canvassing.component';
 import { SpecialReceivingComponent } from './special-receiving/special-receiving.component';
 import { PpmpListComponent } from './ppmp-list/ppmp-list.component';
+import { AppComponent } from './app/app.component';
 
 export const enduserRoutes: Routes = [
   {
@@ -63,6 +64,13 @@ export const enduserRoutes: Routes = [
         path: 'ppmp-list',
         component: PpmpListComponent,
         data: { breadcrumb: 'PPMP List', roles: ['end-user','supply'] },
+        canActivate: [roleGuard],
+      },
+
+        {
+        path: 'app',
+        component: AppComponent,
+        data: { breadcrumb: 'Annual Procurement Plan', roles: ['end-user'] },
         canActivate: [roleGuard],
       },
     
