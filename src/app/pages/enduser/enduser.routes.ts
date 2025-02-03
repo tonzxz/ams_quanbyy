@@ -8,6 +8,7 @@ import { CanvassingComponent } from './canvassing/canvassing.component';
 import { SpecialReceivingComponent } from './special-receiving/special-receiving.component';
 import { PpmpListComponent } from './ppmp-list/ppmp-list.component';
 import { AnnualProcurementPlanComponent } from './annual-procurement-plan/annual-procurement-plan.component';
+import { CompletionComponent } from './completion/completion.component';
 
 export const enduserRoutes: Routes = [
   {
@@ -74,6 +75,12 @@ export const enduserRoutes: Routes = [
         canActivate: [roleGuard],
       },
     
+          {
+        path: 'completion',
+        component: CompletionComponent,
+        data: { breadcrumb: 'Completion and Acceptance', roles: ['end-user'] },
+        canActivate: [roleGuard],
+      },
     ],
   },
 ];

@@ -7,6 +7,9 @@ import { PurchaseOrderComponent } from '../shared/purchase-order/purchase-order.
 import { PurchaseOrdersComponent } from './purchase-orders/purchase-orders.component';
 import { BacDashboardComponent } from './bac-dashboard/bac-dashboard.component';
 import { ConsolidationComponent } from './consolidation/consolidation.component';
+import { ConferenceComponent } from './conference/conference.component';
+import { InvitationToBidComponent } from './invitation-to-bid/invitation-to-bid.component';
+import { OpeningOfBidsComponent } from './opening-of-bids/opening-of-bids.component';
 
 export const bacRoutes: Routes = [
   {
@@ -37,6 +40,27 @@ export const bacRoutes: Routes = [
     path: 'purchase-orders',
     component: PurchaseOrdersComponent, // Page for preparing purchase orders
     data: { breadcrumb: 'Purchase Orders', roles: ['bac', 'superadmin'] }, // Only 'bac' and 'superadmin' can access
+    canActivate: [roleGuard], // Protect the route with roleGuard
+  },
+
+   {
+    path: 'conference',
+    component: ConferenceComponent, // Page for preparing purchase orders
+    data: { breadcrumb: 'Conference', roles: ['bac'] }, // Only 'bac' and 'superadmin' can access
+    canActivate: [roleGuard], // Protect the route with roleGuard
+  },
+   
+     {
+    path: 'invitation-to-bid',
+    component: InvitationToBidComponent, // Page for preparing purchase orders
+    data: { breadcrumb: 'Invitation to Bid', roles: ['bac'] }, // Only 'bac' and 'superadmin' can access
+    canActivate: [roleGuard], // Protect the route with roleGuard
+  },
+     
+         {
+    path: 'opening-of-bids',
+    component: OpeningOfBidsComponent, // Page for preparing purchase orders
+    data: { breadcrumb: 'Opening of Bids', roles: ['bac'] }, // Only 'bac' and 'superadmin' can access
     canActivate: [roleGuard], // Protect the route with roleGuard
   },
 ];

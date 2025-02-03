@@ -137,6 +137,7 @@ export const navItems: NavItem[] = [
     requiredRoles: ['end-user'],
   },
 
+ 
 
  
   {
@@ -146,13 +147,6 @@ export const navItems: NavItem[] = [
     requiredRoles: ['bac'],
   },
 
-    {
-    displayName: 'Purchase Orders',
-    iconName: 'solar:checklist-minimalistic-line-duotone',
-    route: '/bac/purchase-orders',
-      requiredRoles: ['bac'],
-    
-  },
   
   
  
@@ -181,12 +175,12 @@ export const navItems: NavItem[] = [
   //   route: '/enduser/special-receiving',
   //   requiredRoles: ['end-user','supply'],
   // },
-  {
-    displayName: 'PPMP List',
-    iconName: 'solar:documents-broken',
-    route: '/enduser/ppmp-list',
-    requiredRoles: ['end-user'],
-  },
+  // {
+  //   displayName: 'PPMP List',
+  //   iconName: 'solar:documents-broken',
+  //   route: '/enduser/ppmp-list',
+  //   requiredRoles: ['end-user'],
+  // },
 
   
 
@@ -200,7 +194,7 @@ export const navItems: NavItem[] = [
     displayName: 'Purchase Requests',
     iconName: 'solar:documents-broken',
     route: '/inspection/purchase-request',
-    requiredRoles: ['inspection'],
+    requiredRoles: ['inspection', 'end-user'],
   },
   {
     displayName: 'Receipt Approval',
@@ -274,8 +268,17 @@ export const navItems: NavItem[] = [
     displayName: 'Obligation Request and Status',
     iconName: 'solar:widget-add-line-duotone',
     route: '/accounting/ors',
-    requiredRoles: ['accounting'],
+    requiredRoles: ['accounting', 'end-user'],
   },
+
+   
+   {
+    displayName: 'Completion and Acceptance',
+    iconName: 'solar:documents-broken',
+    route: '/enduser/completion',
+    requiredRoles: ['end-user'],
+  },
+
 
     {
     navCap: 'Accounting',
@@ -366,31 +369,64 @@ export const navItems: NavItem[] = [
     divider: true,
     requiredRoles: ['bac'],
   },
-  
-  // {
-  //   displayName: 'Validate Approved Request',
-  //   iconName: 'solar:checklist-minimalistic-line-duotone',
-  //   route: '/bac/validate-approved-request',
-  //   requiredRoles: ['bac'],
-  // },
-   {
-    displayName: 'Approved Purchase Request',
-    iconName: 'solar:checklist-minimalistic-line-duotone',
-    route: '/bac/approved-purchase-requests',
-    requiredRoles: ['bac'],
-  },
-  {
-    displayName: 'Abstract of Quotations Template',
-    iconName: 'solar:checklist-minimalistic-line-duotone',
-    route: '/shared/aoq',
-    requiredRoles: ['bac'],
-  },
+
   {
     displayName: 'Consolidation',
     iconName: 'solar:checklist-minimalistic-line-duotone',
     route: '/bac/consolidation',
     requiredRoles: ['bac'],
   },
+
+  {
+    displayName: 'Conference',
+    iconName: 'solar:checklist-minimalistic-line-duotone',
+    route: '/bac/conference',
+    requiredRoles: ['bac'],
+  },
+
+   {
+    displayName: 'Invitation to Bid',
+    iconName: 'solar:checklist-minimalistic-line-duotone',
+    route: '/bac/invitation-to-bid',
+    requiredRoles: ['bac'],
+  },
+  
+   {
+    displayName: 'Opening of Bids',
+    iconName: 'solar:checklist-minimalistic-line-duotone',
+    route: '/bac/opening-of-bids',
+    requiredRoles: ['bac'],
+  },
+
+    {
+    displayName: 'Contract',
+    iconName: 'solar:checklist-minimalistic-line-duotone',
+    route: '/bac/purchase-orders',
+      requiredRoles: ['bac'],
+    
+  },
+  
+
+
+  // {
+  //   displayName: 'Validate Approved Request',
+  //   iconName: 'solar:checklist-minimalistic-line-duotone',
+  //   route: '/bac/validate-approved-request',
+  //   requiredRoles: ['bac'],
+  // },
+  //  {
+  //   displayName: 'Approved Purchase Request',
+  //   iconName: 'solar:checklist-minimalistic-line-duotone',
+  //   route: '/bac/approved-purchase-requests',
+  //   requiredRoles: ['bac'],
+  // },
+  // {
+  //   displayName: 'Abstract of Quotations Template',
+  //   iconName: 'solar:checklist-minimalistic-line-duotone',
+  //   route: '/shared/aoq',
+  //   requiredRoles: ['bac'],
+  // },
+  
   // {
   //   displayName: 'Prepare Purchase Orders',
   //   iconName: 'solar:document-add-line-duotone',
