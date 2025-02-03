@@ -74,12 +74,12 @@ export const navItems: NavItem[] = [
     route: '/admin/payment-terms',
     requiredRoles: ['admin', 'superadmin'],
   },
-  {
-    displayName: 'Inventory Count',
-    iconName: 'solar:widget-add-line-duotone',
-    route: '/admin/inventory',
-    requiredRoles: ['admin', 'superadmin'],
-  },
+  // {
+  //   displayName: 'Inventory Count',
+  //   iconName: 'solar:widget-add-line-duotone',
+  //   route: '/admin/inventory',
+  //   requiredRoles: ['admin', 'superadmin'],
+  // },
   {
     displayName: 'Item Classification',
     iconName: 'solar:widget-add-line-duotone',
@@ -122,13 +122,21 @@ export const navItems: NavItem[] = [
   //   iconName: 'solar:widget-add-line-duotone',
   //   route: '/dashboard',
   // },
-  {
-    displayName: 'Approvals',
-    iconName: 'solar:widget-add-line-duotone',
-    route: '/shared/approvals',
-    requiredRoles: ['end-user' , 'bac', 'accounting','supply', 'caf', 'president', 'inspection'],
+  // {
+  //   displayName: 'Approvals',
+  //   iconName: 'solar:widget-add-line-duotone',
+  //   route: '/shared/approvals',
+  //   requiredRoles: ['end-user' , 'bac', 'accounting','supply', 'caf', 'president', 'inspection'],
 
+  // },
+
+   {
+    displayName: 'Annual Procurement Plan',
+    iconName: 'solar:documents-broken',
+    route: '/enduser/app',
+    requiredRoles: ['end-user'],
   },
+
 
  
   {
@@ -146,80 +154,39 @@ export const navItems: NavItem[] = [
     
   },
   
-  // {
-  //   displayName: 'Disbursement Template',
-  //   iconName: 'solar:widget-add-line-duotone',
-  //   route: '/shared/disbursement',
-  // },
-  // {
-  //   displayName: 'Stock-Card Template',
-  //   iconName: 'solar:widget-add-line-duotone',
-  //   route: '/shared/stock-card',
-  // },
-  // {
-  //   displayName: 'Requisition and Issue Slip',
-  //   iconName: 'solar:widget-add-line-duotone',
-  //   route: '/shared/ris',
-  // },
-  // {
-  //   displayName: 'Semi-Expendable',
-  //   iconName: 'solar:widget-add-line-duotone',
-  //   route: '/shared/semi-expendable',
-  // },
-
+  
  
-  
+
   // {
-  //   displayName: 'Notice to Proceed',
-  //   iconName: 'solar:widget-add-line-duotone',
-  //   route: '/shared/ntp',
+  //   displayName: 'Canvassing',
+  //   iconName: 'solar:documents-broken',
+  //   route: '/shared/rfq-list',
+  //   requiredRoles: ['end-user'],
   // },
   // {
-  //   displayName: 'Purchase Request',
-  //   iconName: 'solar:widget-add-line-duotone',
-  //   route: '/shared/purchase-req',
+  //   displayName: 'Delivery',
+  //   iconName: 'solar:inbox-archive-outline',
+  //   route: '/supply-management/stocking',
+  //   requiredRoles: ['end-user'],
   // },
-
-  // End User Section
-  
-  {
-    displayName: 'Requisition and Issue Slip',
-    iconName: 'solar:documents-broken',
-    route: '/enduser/requisition',
-    requiredRoles: ['end-user'],
-  },
-
-
-  {
-    displayName: 'Canvassing',
-    iconName: 'solar:documents-broken',
-    route: '/shared/rfq-list',
-    requiredRoles: ['end-user'],
-  },
-  {
-    displayName: 'Delivery',
-    iconName: 'solar:inbox-archive-outline',
-    route: '/supply-management/stocking',
-    requiredRoles: ['end-user'],
-  },
-  {
-    displayName: 'Approval Receiving',
-    iconName: 'solar:documents-broken',
-    route: '/enduser/receiving',
-    requiredRoles: ['end-user'],
-  },
-  {
-    displayName: 'Special Receiving',
-    iconName: 'solar:documents-broken',
-    route: '/enduser/special-receiving',
-    requiredRoles: ['end-user','supply'],
-  },
-  {
-    displayName: 'PPMP List',
-    iconName: 'solar:documents-broken',
-    route: '/enduser/ppmp-list',
-    requiredRoles: ['end-user'],
-  },
+  // {
+  //   displayName: 'Approval Receiving',
+  //   iconName: 'solar:documents-broken',
+  //   route: '/enduser/receiving',
+  //   requiredRoles: ['end-user'],
+  // },
+  // {
+  //   displayName: 'Special Receiving',
+  //   iconName: 'solar:documents-broken',
+  //   route: '/enduser/special-receiving',
+  //   requiredRoles: ['end-user','supply'],
+  // },
+  // {
+  //   displayName: 'PPMP List',
+  //   iconName: 'solar:documents-broken',
+  //   route: '/enduser/ppmp-list',
+  //   requiredRoles: ['end-user'],
+  // },
 
   
 
@@ -452,17 +419,12 @@ export const navItems: NavItem[] = [
   },
 
 
-  {
-    navCap: 'Views',
-    divider: true,
-    requiredRoles: ['supply', 'bac', 'president', 'end-user', 'inspection'],
-  },
-  {
-    displayName: 'Inventory',
-    iconName: 'solar:box-broken',
-    route: '/shared/inventory',
-    requiredRoles: ['supply', 'bac', 'president', 'end-user', 'inspection'],
-  },
+  // {
+  //   displayName: 'Inventory',
+  //   iconName: 'solar:box-broken',
+  //   route: '/shared/inventory',
+  //   requiredRoles: ['supply', 'bac', 'president', 'end-user', 'inspection'],
+  // },
  
 ];
 
