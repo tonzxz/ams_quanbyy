@@ -40,13 +40,17 @@
                     <td>{{ doc.reviewer }}</td>
                     <td>{{ doc.date || '-' }}</td>
                     <td>
-                        <div *ngFor="let attachment of doc.ppmpAttachment" class="bg-gray-200 rounded-full p-4">
-                            <a href="{{ attachment }}" target="_blank">{{ attachment }}</a><br>
+                        <div *ngFor="let attachment of doc.ppmpAttachment" class="mb-2">
+                            <a href="{{ attachment }}" target="_blank">
+                                <p-button [severity]="'secondary'" pTooltip="{{doc.ppmpAttachment}}" icon="pi pi-file-pdf" [outlined]="true" styleClass="p-button-sm"></p-button>
+                            </a><br>
                         </div>
                     </td>
                     <td>
-                        <div *ngFor="let attachment of doc.appAttachment" class="bg-gray-200 rounded-full p-4">
-                            <a href="{{ attachment }}" target="_blank">{{ attachment }}</a><br>
+                        <div *ngFor="let attachment of doc.appAttachment" class="mb-2">
+                            <a href="{{ attachment }}" target="_blank">
+                                <p-button [severity]="'secondary'" pTooltip="{{doc.appAttachment}}" icon="pi pi-file-pdf" [outlined]="true" styleClass="p-button-sm"></p-button>
+                            </a><br>
                         </div>
                     <td>
                         <div class="flex flex-row gap-2">
