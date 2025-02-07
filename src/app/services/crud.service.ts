@@ -30,7 +30,7 @@ export class CrudService<T> {
 
   // Read (Get all records)
   async getAll<T extends Identifiable>(table: string): Promise<T[]> {
-    const url = `${this.baseUrl}/${table}${environment.use == 'assets'? '/index.json':''}`;
+    const url = `${this.baseUrl}/${table}${environment.use == 'assets'? '.json':''}`;
     return firstValueFrom(this.http.get<T[]>(url));
   }
 
@@ -49,7 +49,6 @@ export class CrudService<T> {
   // Update
   async update<T extends Identifiable>(table: string, id: string, data: T): Promise<T> {
     if(environment.use == 'assets'){
-      const url = `${this.baseUrl}/${table}${environment.use == 'assets'? '/index.json':''}`;
       const dummyData: T[] =  await this.getAll(table);
       const replaceIndex = dummyData.findIndex(i=>i.id == id)
       dummyData[replaceIndex] = data;
