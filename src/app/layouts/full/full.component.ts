@@ -76,17 +76,7 @@ export class FullComponent implements OnInit {
   }
 
   async ngOnInit() {
-    const response = await this.cs.update('user', '2', {
-      "id": '2',
-      "name": "Jane Smiths",
-      "username": "janesmith",
-      "password": "password456",
-      "user_type": "Admin",
-      "role": "BAC",
-      "department_id": 102,
-      "office_id": 1002
-    },);
-    alert(JSON.stringify(response))
+
   }
 
   ngOnDestroy() {
