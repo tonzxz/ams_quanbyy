@@ -219,6 +219,7 @@ getOfficeName(id: string): string {
    role: ['', Validators.required],
    profile: ['default-profile-pic-url'],
    position: [''],
+   departmentId: [''],
    officeId: ['', Validators.required]
  });
 

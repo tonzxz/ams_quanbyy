@@ -27,6 +27,7 @@ export const userSchema = z
    role: z.enum(['superadmin','admin' ,'accounting', 'supply', 'bac', 'inspection', 'end-user', 'president']),
    profile: z.string().min(1, "Profile is required"),
    officeId: z.string().length(32, "Office ID must be exactly 32 characters"), 
+   departmentId: z.string().length(32, "Office ID must be exactly 32 characters").optional(), 
    position: z.string().optional(),
    assignedAccountCodes: z.array(z.string()).optional(),
    assignedSubAccounts: z.array(z.string()).optional()
