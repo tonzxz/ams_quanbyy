@@ -201,7 +201,7 @@ export class AccountingDashboardComponent implements OnInit {
     const budgets = await this.budgetService.getAllBudgetAllocations().toPromise() || [];
 
     // Transform budget data into chart data
-    const categories = budgets.map((budget) => budget.departmentId);
+    // const categories = budgets.map((budget) => budget.departmentId);
     const totalBudgetData = budgets.map((budget) => budget.totalBudget);
     const allocatedAmountData = budgets.map((budget) => budget.allocatedAmount);
     const remainingBalanceData = budgets.map((budget) => budget.remainingBalance);
@@ -237,7 +237,7 @@ export class AccountingDashboardComponent implements OnInit {
     };
 
     this.lineChartOptions.xaxis = {
-      categories: categories,
+      // categories: categories,
       labels:{
         show: false,
       },

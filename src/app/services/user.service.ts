@@ -17,33 +17,60 @@ export const positionSchema = z.object({
   name: z.string().min(1, "Position name is required"),
 });
 
-// 1) We add a .refine() so that if role is "end-user", position must not be empty.
+// export const userSchema = z
+//  .object({
+//    id: z.string().length(32, "ID must be exactly 32 characters").optional(),
+//    fullname: z.string().min(1, "Full name is required"),
+//    username: z.string().min(1, "Username is required"),
+//    password: z.string().min(6, "Password must be at least 6 characters"),
+//    role: z.enum(['superadmin','admin' ,'accounting', 'supply', 'bac', 'inspection', 'end-user', 'president']),
+//    profile: z.string().min(1, "Profile is required"),
+//    officeId: z.string().length(32, "Office ID must be exactly 32 characters"), 
+//    position: z.string().optional(),
+//    assignedAccountCodes: z.array(z.string()).optional(),
+//    assignedSubAccounts: z.array(z.string()).optional()
+//  })
+//  .refine(
+//    (data) => {
+//      if (data.role === 'end-user') {
+//        return data.position && data.position.trim().length > 0;
+//      }
+//      return true;
+//    },
+//    {
+//      message: 'Position is required for users with the "end-user" role.',
+//      path: ['position']
+//    }
+//  );
+
 export const userSchema = z
- .object({
-   id: z.string().length(32, "ID must be exactly 32 characters").optional(),
-   fullname: z.string().min(1, "Full name is required"),
-   username: z.string().min(1, "Username is required"),
-   password: z.string().min(6, "Password must be at least 6 characters"),
-   role: z.enum(['superadmin','admin' ,'accounting', 'supply', 'bac', 'inspection', 'end-user', 'president']),
-   profile: z.string().min(1, "Profile is required"),
-   officeId: z.string().length(32, "Office ID must be exactly 32 characters"), 
-   departmentId: z.string().length(32, "Office ID must be exactly 32 characters").optional(), 
-   position: z.string().optional(),
-   assignedAccountCodes: z.array(z.string()).optional(),
-   assignedSubAccounts: z.array(z.string()).optional()
- })
- .refine(
-   (data) => {
-     if (data.role === 'end-user') {
-       return data.position && data.position.trim().length > 0;
-     }
-     return true;
-   },
-   {
-     message: 'Position is required for users with the "end-user" role.',
-     path: ['position']
-   }
- );
+  .object({
+    id: z.string().length(32, "ID must be exactly 32 characters").optional(),
+    fullname: z.string().min(1, "Full name is required"),
+    username: z.string().min(1, "Username is required"),
+    password: z.string().min(6, "Password must be at least 6 characters"),
+    role: z.enum([
+      'superadmin', 'accounting', 'supply', 'bac', 'inspection', 'end-user', 'president'
+    ]), // Keep Superadmin as a unique role
+    isAdmin: z.boolean().default(false).optional(), 
+    profile: z.string().min(1, "Profile is required"),
+    officeId: z.string().length(32, "Office ID must be exactly 32 characters"),
+    position: z.string().optional(),
+    assignedAccountCodes: z.array(z.string()).optional(),
+    assignedSubAccounts: z.array(z.string()).optional()
+  })
+  .refine(
+    (data) => {
+      if (data.role === 'end-user') {
+        return data.position && data.position.trim().length > 0;
+      }
+      return true;
+    },
+    {
+      message: 'Position is required for users with the "end-user" role.',
+      path: ['position']
+    }
+  );
 
 export const accountCodeSchema = z.object({
   id: z.string().length(32, "ID must be exactly 32 characters").optional(),
@@ -84,7 +111,8 @@ export class UserService {
     fullname: 'John Doe',
     username: 'accounting',
     password: 'test123',
-    role: 'accounting',
+     role: 'accounting',
+    isAdmin: true,
     profile: 'profile-pic-url-1',
     position: 'Budget Officer',
     officeId: '550e8400e29b41d4a716446655440010', // Dean's Office - COE
@@ -97,6 +125,7 @@ export class UserService {
     username: 'superadmin',
     password: 'test123',
     role: 'superadmin',
+
     profile: 'profile-pic-url-2',
     position: 'Superadmin',
     officeId: '550e8400e29b41d4a716446655440011', // Registrar's Office - CBA
@@ -110,6 +139,8 @@ export class UserService {
     username: 'supply',
     password: 'test123',
     role: 'supply',
+        isAdmin: true,
+
     profile: 'profile-pic-url-3',
     position: 'Supply Officer',
     officeId: '550e8400e29b41d4a716446655440012', // Faculty Room - COED
@@ -122,6 +153,8 @@ export class UserService {
     username: 'bac',
     password: 'test123',
     role: 'bac',
+        isAdmin: true,
+
     profile: 'profile-pic-url-4',
     position: 'BAC Chairman',
     officeId: '550e8400e29b41d4a716446655440013', // IT Lab - CIT
@@ -134,6 +167,8 @@ export class UserService {
     username: 'inspection',
     password: 'test123',
     role: 'inspection',
+        isAdmin: true,
+
     profile: 'profile-pic-url-5',
     position: 'Inspection Officer',
     officeId: '550e8400e29b41d4a716446655440014', // Dean's Office - COA
@@ -146,6 +181,8 @@ export class UserService {
     username: 'enduser',
     password: 'test123',
     role: 'end-user',
+        isAdmin: true,
+
     profile: 'profile-pic-url-6',
     position: 'End User Manager',
     officeId: '550e8400e29b41d4a716446655440015', // Simulation Lab - CON
@@ -260,18 +297,18 @@ export class UserService {
     assignedAccountCodes: [],
     assignedSubAccounts: []
   },
-  {
-    id: '16',
-    fullname: 'Anton Caesar Cabais',
-    username: 'admin',
-    password: 'test123',
-    role: 'admin',
-    profile: 'profile-pic-url-2',
-    position: 'Admin',
-    officeId: '550e8400e29b41d4a716446655440011', // Registrar's Office - CBA
-    assignedAccountCodes: [],
-    assignedSubAccounts: []
-  },
+  // {
+  //   id: '16',
+  //   fullname: 'Anton Caesar Cabais',
+  //   username: 'admin',
+  //   password: 'test123',
+  //   role: 'admin',
+  //   profile: 'profile-pic-url-2',
+  //   position: 'Admin',
+  //   officeId: '550e8400e29b41d4a716446655440011', // Registrar's Office - CBA
+  //   assignedAccountCodes: [],
+  //   assignedSubAccounts: []
+  // },
 ];
 
 

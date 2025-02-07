@@ -5,11 +5,86 @@ export const navItems: NavItem[] = [
   {
     navCap: 'Home',
   },
-  {
+  { 
     displayName: 'Dashboard',
     iconName: 'solar:widget-add-line-duotone',
     route: '/admin/admin-dashboard',
-    requiredRoles: ['superadmin', 'admin', 'bac', 'enduser', 'accounting','inspection'],
+    requiredRoles: ['superadmin', 'admin', 'bac', 'end-user', 'accounting','inspection', 'supply'],
+  },
+
+   {
+    navCap: 'Admin',
+    divider: true,
+    requiredRoles: ['admin', 'superadmin'],
+  },
+  {
+    displayName: 'User Management',
+    iconName: 'solar:widget-add-line-duotone',
+    route: '/admin/user-management',
+    requiredRoles: ['admin', 'superadmin'],
+  },
+
+  {
+    displayName: 'Account Setup',
+    iconName: 'solar:widget-add-line-duotone',
+    route: '/admin/account-setup',
+    requiredRoles: ['admin', 'superadmin'],
+  },
+
+   {
+    displayName: 'Purchase Order',
+    iconName: 'solar:widget-add-line-duotone',
+    route: '/admin/purchase-order-admin',
+    requiredRoles: ['admin', 'superadmin'],
+  },
+
+  {
+    displayName: 'Department',
+    iconName: 'solar:widget-add-line-duotone',
+    route: '/admin/department',
+    requiredRoles: ['admin', 'superadmin'],
+  },
+  {
+    displayName: 'Supplier List',
+    iconName: 'solar:widget-add-line-duotone',
+    route: '/admin/supplier-list',
+    requiredRoles: ['admin', 'superadmin'],
+  },
+  {
+    displayName: 'End-User List',
+    iconName: 'solar:widget-add-line-duotone',
+    route: '/admin/end-user-list',
+    requiredRoles: ['admin', 'superadmin'],
+  },
+  {
+    displayName: 'Product Type',
+    iconName: 'solar:widget-add-line-duotone',
+    route: '/admin/product-type',
+    requiredRoles: ['admin', 'superadmin'],
+  },
+  {
+    displayName: 'Approval Sequence',
+    iconName: 'solar:widget-add-line-duotone',
+    route: '/admin/approval-sequence',
+    requiredRoles: ['admin', 'superadmin'],
+  },
+  {
+    displayName: 'Payment Terms',
+    iconName: 'solar:widget-add-line-duotone',
+    route: '/admin/payment-terms',
+    requiredRoles: ['admin', 'superadmin'],
+  },
+  // {
+  //   displayName: 'Inventory Count',
+  //   iconName: 'solar:widget-add-line-duotone',
+  //   route: '/admin/inventory',
+  //   requiredRoles: ['admin', 'superadmin'],
+  // },
+  {
+    displayName: 'Item Classification',
+    iconName: 'solar:widget-add-line-duotone',
+    route: '/admin/item-classification',
+    requiredRoles: ['admin', 'superadmin'],
   },
   
   // {
@@ -47,102 +122,65 @@ export const navItems: NavItem[] = [
   //   iconName: 'solar:widget-add-line-duotone',
   //   route: '/dashboard',
   // },
-  {
-    displayName: 'Approvals',
-    iconName: 'solar:widget-add-line-duotone',
-    route: '/shared/approvals',
-    requiredRoles: ['end-user','superadmin' , 'bac', 'accounting','supply', 'caf', 'president', 'inspection'],
+  // {
+  //   displayName: 'Approvals',
+  //   iconName: 'solar:widget-add-line-duotone',
+  //   route: '/shared/approvals',
+  //   requiredRoles: ['end-user' , 'bac', 'accounting','supply', 'caf', 'president', 'inspection'],
 
+  // },
+
+   {
+    displayName: 'Annual Procurement Plan',
+    iconName: 'solar:documents-broken',
+    route: '/enduser/app',
+    requiredRoles: ['end-user'],
   },
+
+ 
 
  
   {
     displayName: 'Request for Quotation',
     iconName: 'solar:widget-add-line-duotone',
     route: '/shared/rfq-list',
-    requiredRoles: ['bac','superadmin'],
+    requiredRoles: ['bac'],
   },
 
-    {
-    displayName: 'Purchase Orders',
-    iconName: 'solar:checklist-minimalistic-line-duotone',
-    route: '/bac/purchase-orders',
-      requiredRoles: ['bac','superadmin'],
-    
-  },
-  {
-    displayName: 'HTML',
-    iconName: 'solar:widget-add-line-duotone',
-    route: '/shared/editable',
-  },
-  // {
-  //   displayName: 'Disbursement Template',
-  //   iconName: 'solar:widget-add-line-duotone',
-  //   route: '/shared/disbursement',
-  // },
-  // {
-  //   displayName: 'Stock-Card Template',
-  //   iconName: 'solar:widget-add-line-duotone',
-  //   route: '/shared/stock-card',
-  // },
-  // {
-  //   displayName: 'Requisition and Issue Slip',
-  //   iconName: 'solar:widget-add-line-duotone',
-  //   route: '/shared/ris',
-  // },
-  // {
-  //   displayName: 'Semi-Expendable',
-  //   iconName: 'solar:widget-add-line-duotone',
-  //   route: '/shared/semi-expendable',
-  // },
-
+  
+  
  
-  
+
   // {
-  //   displayName: 'Notice to Proceed',
-  //   iconName: 'solar:widget-add-line-duotone',
-  //   route: '/shared/ntp',
+  //   displayName: 'Canvassing',
+  //   iconName: 'solar:documents-broken',
+  //   route: '/shared/rfq-list',
+  //   requiredRoles: ['end-user'],
   // },
   // {
-  //   displayName: 'Purchase Request',
-  //   iconName: 'solar:widget-add-line-duotone',
-  //   route: '/shared/purchase-req',
+  //   displayName: 'Delivery',
+  //   iconName: 'solar:inbox-archive-outline',
+  //   route: '/supply-management/stocking',
+  //   requiredRoles: ['end-user'],
   // },
-
-  // End User Section
-  
-  {
-    displayName: 'Requisition and Issue Slip',
-    iconName: 'solar:documents-broken',
-    route: '/enduser/requisition',
-    requiredRoles: ['end-user'],
-  },
-
-
-  {
-    displayName: 'Canvasing',
-    iconName: 'solar:documents-broken',
-    route: '/shared/rfq-list',
-    requiredRoles: ['end-user'],
-  },
-  {
-    displayName: 'Delivery',
-    iconName: 'solar:inbox-archive-outline',
-    route: '/supply-management/stocking',
-    requiredRoles: ['end-user'],
-  },
-  {
-    displayName: 'Receiving',
-    iconName: 'solar:documents-broken',
-    route: '/enduser/receiving',
-    requiredRoles: ['end-user'],
-  },
-  {
-    displayName: 'Special Receiving',
-    iconName: 'solar:documents-broken',
-    route: '/enduser/special-receiving',
-    requiredRoles: ['end-user','supply'],
-  },
+  // {
+  //   displayName: 'Approval Receiving',
+  //   iconName: 'solar:documents-broken',
+  //   route: '/enduser/receiving',
+  //   requiredRoles: ['end-user'],
+  // },
+  // {
+  //   displayName: 'Special Receiving',
+  //   iconName: 'solar:documents-broken',
+  //   route: '/enduser/special-receiving',
+  //   requiredRoles: ['end-user','supply'],
+  // },
+  // {
+  //   displayName: 'PPMP List',
+  //   iconName: 'solar:documents-broken',
+  //   route: '/enduser/ppmp-list',
+  //   requiredRoles: ['end-user'],
+  // },
 
   
 
@@ -150,38 +188,38 @@ export const navItems: NavItem[] = [
   {
     navCap: 'Inspection',
     divider: true,
-    requiredRoles: ['inspection','superadmin'],
+    requiredRoles: ['inspection'],
   },
   {
     displayName: 'Purchase Requests',
     iconName: 'solar:documents-broken',
     route: '/inspection/purchase-request',
-    requiredRoles: ['inspection','superadmin'],
+    requiredRoles: ['inspection', 'end-user'],
   },
   {
     displayName: 'Receipt Approval',
     iconName: 'solar:documents-broken',
     route: '/inspection/receipt-approval',
-    requiredRoles: ['inspection','superadmin'],
+    requiredRoles: ['inspection'],
   },
 
   // Supply Unit Section
   {
     navCap: 'Supply Unit',
     divider: true,
-    requiredRoles: ['supply','superadmin'],
+    requiredRoles: ['supply'],
   },
   {
     displayName: 'Delivery Receipts',
     iconName: 'solar:documents-broken',
     route: '/shared/delivery-receipts',
-    requiredRoles: ['supply','superadmin'],
+    requiredRoles: ['supply'],
   },
   {
     displayName: 'Supply Stocking',
     iconName: 'solar:inbox-archive-outline',
     route: '/supply-management/stocking',
-    requiredRoles: ['supply','superadmin'],
+    requiredRoles: ['supply'],
   },
   {
     displayName: 'Stock Transfer',
@@ -189,121 +227,90 @@ export const navItems: NavItem[] = [
     route: '/shared/stock-transfer',
     requiredRoles: ['supply'],
   },
-  {
-    displayName: 'Delivery',
-    iconName: 'solar:inbox-archive-outline',
-    route: '/supply-management/delivery',
-    requiredRoles: ['supply','superadmin'],
-  },
+  // {
+  //   displayName: 'Delivery',
+  //   iconName: 'solar:inbox-archive-outline',
+  //   route: '/supply-management/delivery',
+  //   requiredRoles: ['supply'],
+  // },
   // {
   //   displayName: 'Delivered Items',
   //   iconName: 'fluent:check-24-regular',
   //   route: '/shared/delivered-items',
   //   requiredRoles: ['supply'],
   // },
+  
+
+
+   {
+    navCap: 'Budget',
+    divider: true,
+    requiredRoles: ['accounting'],
+  },
+ 
+
+  {
+    displayName: 'Budget Allocation',
+    iconName: 'solar:widget-add-line-duotone',
+    route: '/accounting/budget',
+    requiredRoles: ['accounting'],
+  },
+
+    {
+    displayName: 'Annual Procurement Plan',
+    iconName: 'solar:widget-add-line-duotone',
+    route: '/accounting/app-approval',
+    requiredRoles: ['accounting'],
+  },
+
+  
+    {
+    displayName: 'Obligation Request and Status',
+    iconName: 'solar:widget-add-line-duotone',
+    route: '/accounting/ors',
+    requiredRoles: ['accounting', 'end-user'],
+  },
+
+   
+   {
+    displayName: 'Completion and Acceptance',
+    iconName: 'solar:documents-broken',
+    route: '/enduser/completion',
+    requiredRoles: ['end-user'],
+  },
+
+
+    {
+    navCap: 'Accounting',
+    divider: true,
+    requiredRoles: ['accounting'],
+  },
+ 
   {
     displayName: 'Disbursement Vouchers',
     iconName: 'solar:ticket-sale-broken',
     route: '/shared/disbursement-vouchers',
-    requiredRoles: ['supply','superadmin'],
+    requiredRoles: ['supply','accounting'],
   },
 
-  {
-    navCap: 'Views',
-    divider: true,
-    requiredRoles: ['supply', 'superadmin', 'bac', 'president', 'end-user', 'inspection'],
-  },
-  {
-    displayName: 'Inventory',
-    iconName: 'solar:box-broken',
-    route: '/shared/inventory',
-    requiredRoles: ['supply', 'superadmin', 'bac', 'president', 'end-user', 'inspection'],
-  },
-
-  {
-    navCap: 'Reports Generation',
-    divider: true,
-    requiredRoles: ['supply', 'superadmin'],
-  },
-  {
-    displayName: 'RSMI',
-    iconName: 'solar:ticket-sale-broken',
-    route: '/supply-management/rsmi',
-    requiredRoles: ['supply', 'superadmin'],
-  },
-  {
-    displayName: 'PAR',
-    iconName: 'solar:ticket-sale-broken',
-    route: '/supply-management/par',
-    requiredRoles: ['supply', 'superadmin'],
-  },
-  {
-    displayName: 'ICS',
-    iconName: 'solar:ticket-sale-broken',
-    route: '/supply-management/ics',
-    requiredRoles: ['supply', 'superadmin'],
-  },
-  {
-    displayName: 'Compile Reports',
-    iconName: 'solar:ticket-sale-broken',
-    route: '/supply-management/compile-reports',
-    requiredRoles: ['supply', 'superadmin'],
-  },
-
-
-  // Accounting Section
-  {
-    navCap: 'Accounting',
-    divider: true,
-    requiredRoles: [ 'accounting','superadmin'],
-  },
-  {
-    displayName: 'Budget',
-    iconName: 'solar:widget-add-line-duotone',
-    route: '/accounting/budget',
-    requiredRoles: ['accounting','superadmin'],
-  },
-
-  {
-    displayName: 'Purchase Request Approval',
-    iconName: 'solar:widget-add-line-duotone',
-    route: '/accounting/pr-approval',
-    requiredRoles: ['accounting','superadmin'],
-  },
-
-   {
-    displayName: 'Issue Slip',
-    iconName: 'solar:widget-add-line-duotone',
-    route: '/accounting/issue-slip',
-    requiredRoles: ['accounting','superadmin'],
-  },
-   
-
-  {
-    displayName: 'Budget Utilization Report',
-    iconName: 'solar:widget-add-line-duotone',
-    route: '/shared/rfq-list',
-    requiredRoles: ['accounting','superadmin'],
-  },
-
-
-  {
-    displayName: 'Classification',
-    iconName: 'solar:ticket-sale-broken',
-    route: '/accounting/classification',
-    requiredRoles: [ 'accounting','superadmin'],
-  },
-  {
-    displayName: 'Voucher Review',
-    iconName: 'solar:ticket-sale-broken',
-    route: '/accounting/voucher-review',
-    requiredRoles: [ 'accounting','superadmin'],
-  },
+  
+  // {
+  //   displayName: 'Classification',
+  //   iconName: 'solar:ticket-sale-broken',
+  //   route: '/accounting/classification',
+  //   requiredRoles: [ 'accounting'],
+  // },
+  // {
+  //   displayName: 'Voucher Review',
+  //   iconName: 'solar:ticket-sale-broken',
+  //   route: '/accounting/voucher-review',
+  //   requiredRoles: [ 'accounting'],
+  // },
   {
     displayName: 'Journal Entry Voucher',
     iconName: 'solar:ticket-sale-broken',
     route: '/accounting/journal-entry-voucher',
-    requiredRoles: [ 'accounting','superadmin'],
+    requiredRoles: [ 'accounting'],
   },
   
 
@@ -311,81 +318,47 @@ export const navItems: NavItem[] = [
     displayName: 'General Ledger',
     iconName: 'solar:ticket-sale-broken',
     route: '/accounting/general-ledger',
-    requiredRoles: [ 'accounting','superadmin'],
+    requiredRoles: [ 'accounting'],
   },
   {
     displayName: 'General Journal',
     iconName: 'solar:ticket-sale-broken',
     route: '/accounting/general-journal',
-    requiredRoles: [ 'accounting','superadmin'],
-  },
-  {
-    displayName: 'Final Verification',
-    iconName: 'solar:ticket-sale-broken',
-    route: '/accounting/final-verification',
-    requiredRoles: [ 'accounting','superadmin'],
+    requiredRoles: [ 'accounting'],
   },
 
+  // {
+  //   displayName: 'Purchase Request Approval',
+  //   iconName: 'solar:widget-add-line-duotone',
+  //   route: '/accounting/pr-approval',
+  //   requiredRoles: ['accounting'],
+  // },
+
+  //  {
+  //   displayName: 'Issue Slip',
+  //   iconName: 'solar:widget-add-line-duotone',
+  //   route: '/accounting/issue-slip',
+  //   requiredRoles: ['accounting'],
+  // },
+   
+
+  // {
+  //   displayName: 'Budget Utilization Report',
+  //   iconName: 'solar:widget-add-line-duotone',
+  //   route: '/shared/rfq-list',
+  //   requiredRoles: ['accounting'],
+  // },
+
+
+  // {
+  //   displayName: 'Final Verification',
+  //   iconName: 'solar:ticket-sale-broken',
+  //   route: '/accounting/final-verification',
+  //   requiredRoles: [ 'accounting'],
+  // },
+
   // Admin Section
-  {
-    navCap: 'Admin',
-    divider: true,
-    requiredRoles: ['admin', 'superadmin'],
-  },
-  {
-    displayName: 'User Management',
-    iconName: 'solar:widget-add-line-duotone',
-    route: '/admin/user-management',
-    requiredRoles: ['admin', 'superadmin'],
-  },
-  {
-    displayName: 'Department',
-    iconName: 'solar:widget-add-line-duotone',
-    route: '/admin/department',
-    requiredRoles: ['admin', 'superadmin'],
-  },
-  {
-    displayName: 'Supplier List',
-    iconName: 'solar:widget-add-line-duotone',
-    route: '/admin/supplier-list',
-    requiredRoles: ['admin', 'superadmin'],
-  },
-  {
-    displayName: 'End-User List',
-    iconName: 'solar:widget-add-line-duotone',
-    route: '/admin/end-user-list',
-    requiredRoles: ['admin', 'superadmin'],
-  },
-  {
-    displayName: 'Product Type',
-    iconName: 'solar:widget-add-line-duotone',
-    route: '/admin/product-type',
-    requiredRoles: ['admin', 'superadmin'],
-  },
-  {
-    displayName: 'Approval Sequence',
-    iconName: 'solar:widget-add-line-duotone',
-    route: '/admin/approval-sequence',
-    requiredRoles: ['admin', 'superadmin'],
-  },
-  {
-    displayName: 'Payment Terms',
-    iconName: 'solar:widget-add-line-duotone',
-    route: '/admin/payment-terms',
-    requiredRoles: ['admin', 'superadmin'],
-  },
-  {
-    displayName: 'Inventory Count',
-    iconName: 'solar:widget-add-line-duotone',
-    route: '/admin/inventory',
-    requiredRoles: ['admin', 'superadmin'],
-  },
-  {
-    displayName: 'Item Classification',
-    iconName: 'solar:widget-add-line-duotone',
-    route: '/admin/item-classification',
-    requiredRoles: ['admin', 'superadmin'],
-  },
+ 
 
   // Views Section
   
@@ -394,28 +367,66 @@ export const navItems: NavItem[] = [
   {
     navCap: 'BAC',
     divider: true,
-    requiredRoles: ['bac','superadmin'],
+    requiredRoles: ['bac'],
+  },
+
+  {
+    displayName: 'Consolidation',
+    iconName: 'solar:checklist-minimalistic-line-duotone',
+    route: '/bac/consolidation',
+    requiredRoles: ['bac'],
+  },
+
+  {
+    displayName: 'Conference',
+    iconName: 'solar:checklist-minimalistic-line-duotone',
+    route: '/bac/conference',
+    requiredRoles: ['bac'],
+  },
+
+   {
+    displayName: 'Invitation to Bid',
+    iconName: 'solar:checklist-minimalistic-line-duotone',
+    route: '/bac/invitation-to-bid',
+    requiredRoles: ['bac'],
   },
   
+   {
+    displayName: 'Opening of Bids',
+    iconName: 'solar:checklist-minimalistic-line-duotone',
+    route: '/bac/opening-of-bids',
+    requiredRoles: ['bac'],
+  },
+
+    {
+    displayName: 'Contract',
+    iconName: 'solar:checklist-minimalistic-line-duotone',
+    route: '/bac/purchase-orders',
+      requiredRoles: ['bac'],
+    
+  },
+  
+
+
   // {
   //   displayName: 'Validate Approved Request',
   //   iconName: 'solar:checklist-minimalistic-line-duotone',
   //   route: '/bac/validate-approved-request',
   //   requiredRoles: ['bac'],
   // },
-   {
-    displayName: 'Approved Purchase Request',
-    iconName: 'solar:checklist-minimalistic-line-duotone',
-    route: '/bac/approved-purchase-requests',
-    requiredRoles: ['bac','superadmin'],
-  },
-   
-    {
-    displayName: 'Abstract of Quotations Template',
-    iconName: 'solar:checklist-minimalistic-line-duotone',
-    route: '/shared/aoq',
-    requiredRoles: ['bac','superadmin'],
-  },
+  //  {
+  //   displayName: 'Approved Purchase Request',
+  //   iconName: 'solar:checklist-minimalistic-line-duotone',
+  //   route: '/bac/approved-purchase-requests',
+  //   requiredRoles: ['bac'],
+  // },
+  // {
+  //   displayName: 'Abstract of Quotations Template',
+  //   iconName: 'solar:checklist-minimalistic-line-duotone',
+  //   route: '/shared/aoq',
+  //   requiredRoles: ['bac'],
+  // },
+  
   // {
   //   displayName: 'Prepare Purchase Orders',
   //   iconName: 'solar:document-add-line-duotone',
@@ -432,6 +443,44 @@ export const navItems: NavItem[] = [
   //   iconName: 'solar:widget-add-line-duotone',
   //   route: '/shared/approvals',
   // },
+    
+     {
+    navCap: 'Reports Generation',
+    divider: true,
+    requiredRoles: ['supply'],
+  },
+  {
+    displayName: 'RSMI',
+    iconName: 'solar:ticket-sale-broken',
+    route: '/supply-management/rsmi',
+    requiredRoles: ['supply'],
+  },
+  {
+    displayName: 'PAR',
+    iconName: 'solar:ticket-sale-broken',
+    route: '/supply-management/par',
+    requiredRoles: ['supply'],
+  },
+  {
+    displayName: 'ICS',
+    iconName: 'solar:ticket-sale-broken',
+    route: '/supply-management/ics',
+    requiredRoles: ['supply'],
+  },
+  {
+    displayName: 'Compile Reports',
+    iconName: 'solar:ticket-sale-broken',
+    route: '/supply-management/compile-reports',
+    requiredRoles: ['supply'],
+  },
+
+
+  {
+    displayName: 'Inventory',
+    iconName: 'solar:box-broken',
+    route: '/shared/inventory',
+    requiredRoles: ['supply', 'bac', 'president', 'end-user', 'inspection'],
+  },
  
 ];
 

@@ -19,6 +19,7 @@ import { DepartmentService, Office } from 'src/app/services/departments.service'
 import { ItemClassificationService, ItemClassification } from 'src/app/services/item-classification.service';
 import { MaterialModule } from 'src/app/material.module';
 import { StocksService, Stock } from 'src/app/services/stocks.service';
+import { FileUpload } from 'primeng/fileupload';
 
 @Component({
   selector: 'app-inventory',
@@ -37,7 +38,8 @@ import { StocksService, Stock } from 'src/app/services/stocks.service';
     DropdownModule,
     ConfirmDialogModule,
     ToastModule,
-    TabViewModule
+    TabViewModule,
+    FileUpload
   ],
   providers: [ConfirmationService, MessageService]
 })
@@ -96,6 +98,16 @@ export class InventoryComponent implements OnInit {
 
     // build dropdown arrays
     this.buildDropdowns();
+
+
+  this.icsForm = this.formBuilder.group({
+    icsNumber: ['', Validators.required],
+    issuedTo: ['', Validators.required],
+    dateIssued: ['', Validators.required],
+    status: ['', Validators.required],
+    document: [null]
+  });
+
   }
 
   buildDropdowns() {
@@ -332,4 +344,60 @@ export class InventoryComponent implements OnInit {
     if (!found) return 'Unknown';
     return found.name + ' (Room ' + found.roomNumber + ')';
   }
+
+  random2Digits(): number {
+  return Math.floor(10 + Math.random() * 90); // Generates a random number between 10 and 99
+  }
+  
+  // Inventory Custodian Slip (ICS)
+icsList = [
+  { icsNumber: 'ICS-2024-001', issuedTo: 'John Doe', dateIssued: '2024-01-15', status: 'Active', document: null },
+  { icsNumber: 'ICS-2024-002', issuedTo: 'Jane Smith', dateIssued: '2024-01-20', status: 'Pending', document: null }
+];
+
+icsDialog = false;
+icsForm!: FormGroup;
+isICSEditMode = false;
+
+icsStatusDropdown = [
+  { label: 'Active', value: 'Active' },
+  { label: 'Pending', value: 'Pending' },
+  { label: 'Returned', value: 'Returned' }
+];
+
+
+openNewICSDialog() {
+  this.isICSEditMode = false;
+  this.icsDialog = true;
+  this.icsForm.reset();
 }
+
+editICS(ics: any) {
+  this.isICSEditMode = true;
+  this.icsDialog = true;
+  this.icsForm.patchValue(ics);
+}
+
+hideICSDialog() {
+  this.icsDialog = false;
+  this.submitted = false;
+}
+
+saveICS() {
+  console.log('Saving ICS:', this.icsForm.value);
+  this.icsDialog = false;
+}
+
+onICSUpload(event: any) {
+  const file = event.files[0];
+  this.icsForm.patchValue({ document: file.name });
+}
+// View ICS Document (Dummy - Open in New Tab)
+viewICS(file: any) {
+  alert(`Opening ${file.name}`);
+}
+
+
+
+}
+

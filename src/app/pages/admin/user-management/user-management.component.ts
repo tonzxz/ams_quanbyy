@@ -16,6 +16,7 @@ import { ConfirmDialog } from 'primeng/confirmdialog';
 import { UserService, User, AccountCode, SubAccount, Position } from 'src/app/services/user.service';
 import { MaterialModule } from 'src/app/material.module';
 import { Department, DepartmentService, Office } from 'src/app/services/departments.service';
+import { InputSwitchModule } from 'primeng/inputswitch';
 
 /** 
  * Simple local helper to generate a random 32-char hex string.
@@ -50,7 +51,8 @@ interface RoleOption {
     ToastModule,
     BadgeModule,
     TabViewModule,
-    ConfirmDialog
+    ConfirmDialog,
+    InputSwitchModule
   ],
   providers: [ConfirmationService, MessageService]
 })
@@ -182,12 +184,19 @@ loadDepartmentsAndOffices(): void {
     console.log('Offices loaded:', offices); // Debug output
     this.offices = offices;
 
-    // Reload users and ensure offices are mapped correctly
+    // Map offices to dropdown options with proper type safety
+    this.officeDropdownOptions = offices.map((o) => ({
+      label: o.name,
+      value: o.id ?? ""  // Ensure value is always a string
+    }));
+
+    // Reload users to update office names
     this.loadUsers();
   }).catch((error) => {
     console.error('Failed to load offices:', error);
   });
 }
+
 
 
 checkIfReadyToRender() {
@@ -211,40 +220,44 @@ getOfficeName(id: string): string {
 
   
   
-  initializeUserForm() {
- this.userForm = this.fb.group({
-   fullname: ['', Validators.required],
-   username: ['', Validators.required],
-   password: ['', [Validators.required, Validators.minLength(6)]],
-   role: ['', Validators.required],
-   profile: ['default-profile-pic-url'],
-   position: [''],
-   departmentId: [''],
-   officeId: ['', Validators.required]
- });
+ initializeUserForm() {
+  this.userForm = this.fb.group({
+    fullname: ['', Validators.required],
+    username: ['', Validators.required],
+    password: ['', [Validators.required, Validators.minLength(6)]],
+    role: ['', Validators.required],
+    isAdmin: [false],  // Default is false
+    profile: ['default-profile-pic-url'],
+    position: [''],
+    officeId: ['', Validators.required]
+  });
 
-    // If role == 'end-user', require 'position'
-    this.userForm.get('role')?.valueChanges.subscribe((selectedRole) => {
-      const positionControl = this.userForm.get('position');
-      if (selectedRole === 'end-user') {
-        positionControl?.setValidators([Validators.required]);
-      } else {
-        positionControl?.clearValidators();
-      }
-      positionControl?.updateValueAndValidity();
-    });
-  }
+  // If role == 'end-user', require 'position'
+  this.userForm.get('role')?.valueChanges.subscribe((selectedRole) => {
+    const positionControl = this.userForm.get('position');
+    if (selectedRole === 'end-user') {
+      positionControl?.setValidators([Validators.required]);
+    } else {
+      positionControl?.clearValidators();
+    }
+    positionControl?.updateValueAndValidity();
+  });
+}
+
+
 
   initializeRoles() {
-    this.roles = [
-      { label: 'Superadmin', value: 'superadmin' },
-      { label: 'Accounting', value: 'accounting' },
-      { label: 'Supply', value: 'supply' },
-      { label: 'BAC', value: 'bac' },
-      { label: 'Inspection', value: 'inspection' },
-      { label: 'End User', value: 'end-user' }
-    ];
-  }
+  this.roles = [
+    { label: 'Superadmin', value: 'superadmin' },
+    { label: 'Accounting', value: 'accounting' },
+    { label: 'Supply', value: 'supply' },
+    { label: 'BAC', value: 'bac' },
+    { label: 'Inspection', value: 'inspection' },
+    { label: 'End User', value: 'end-user' },
+    { label: 'President', value: 'president' }
+  ];
+}
+
 
   openNewUserDialog() {
     this.isUserEditMode = false;
@@ -256,26 +269,28 @@ getOfficeName(id: string): string {
   }
 
   editUser(u: User) {
-    this.isUserEditMode = true;
-    this.selectedUserId = u.id!;
-    this.userSubmitted = false;
-    this.userDialog = true;
+  this.isUserEditMode = true;
+  this.selectedUserId = u.id!;
+  this.userSubmitted = false;
+  this.userDialog = true;
 
-    this.initializeUserForm();
-    this.userForm.patchValue({
-      fullname: u.fullname,
-      username: u.username,
-      role: u.role,
-      profile: u.profile,
-      position: u.position || ''
-    });
+  this.initializeUserForm();
+  this.userForm.patchValue({
+    fullname: u.fullname,
+    username: u.username,
+    role: u.role,
+    isAdmin: u.role === 'superadmin' ? false : u.isAdmin, // Superadmin can't be an admin
+    profile: u.profile,
+    position: u.position || '',
+    officeId: u.officeId
+  });
 
-    // Password optional in edit => only minLength if typed
-    const passwordCtrl = this.userForm.get('password');
-    passwordCtrl?.clearValidators();
-    passwordCtrl?.addValidators(Validators.minLength(6));
-    passwordCtrl?.updateValueAndValidity();
+  // Disable isAdmin if role is Superadmin
+  if (u.role === 'superadmin') {
+    this.userForm.get('isAdmin')?.disable();
   }
+}
+
 
   deleteUser(u: User) {
     this.confirmationService.confirm({
@@ -304,59 +319,70 @@ getOfficeName(id: string): string {
     this.userSubmitted = false;
     this.userForm.reset();
   }
+saveUser() {
+  this.userSubmitted = true;
+  
+  console.log("Form Status:", this.userForm.valid);
+  console.log("Form Data:", this.userForm.value);
 
-  saveUser() {
-    this.userSubmitted = true;
-    if (this.userForm.valid) {
-      const data = this.userForm.value;
-      if (this.isUserEditMode && this.selectedUserId) {
-        // Update
-        this.userService.updateUser(this.selectedUserId, data).subscribe({
-          next: () => {
-            this.loadUsers();
-            this.hideUserDialog();
-            this.messageService.add({ severity: 'success', summary: 'Success', detail: 'User updated successfully' });
-          },
-          error: (err) => {
-            console.error('Error updating user:', err);
-            this.messageService.add({ severity: 'error', summary: 'Error', detail: err.message });
-          }
-        });
-      } else {
-        // Create
-        this.userService.addUser(data).subscribe({
-          next: () => {
-            this.loadUsers();
-            this.hideUserDialog();
-            this.messageService.add({ severity: 'success', summary: 'Success', detail: 'User created successfully' });
-          },
-          error: (err) => {
-            console.error('Error creating user:', err);
-            this.messageService.add({ severity: 'error', summary: 'Error', detail: err.message });
-          }
-        });
-      }
+  if (this.userForm.valid) {
+    const data = this.userForm.value;
+
+    if (this.isUserEditMode && this.selectedUserId) {
+      // Update existing user
+      this.userService.updateUser(this.selectedUserId, data).subscribe({
+        next: () => {
+          this.loadUsers();
+          this.hideUserDialog();
+          this.messageService.add({ severity: 'success', summary: 'Success', detail: 'User updated successfully' });
+        },
+        error: (err) => {
+          console.error('Error updating user:', err);
+          this.messageService.add({ severity: 'error', summary: 'Error', detail: err.message });
+        }
+      });
+    } else {
+      // Create new user
+      console.log("Sending user data to API:", data);
+      
+      this.userService.addUser(data).subscribe({
+        next: () => {
+          this.loadUsers();
+          this.hideUserDialog();
+          this.messageService.add({ severity: 'success', summary: 'Success', detail: 'User created successfully' });
+        },
+        error: (err) => {
+          console.error('Error creating user:', err);
+          this.messageService.add({ severity: 'error', summary: 'Error', detail: err.message });
+        }
+      });
     }
+  } else {
+    console.warn("Form is invalid. Check missing fields.");
+  }
+}
+
+
+  getRoleSeverity(role: string, isAdmin: boolean): 'success' | 'info' | 'warn' | 'danger' | 'secondary' {
+  if (role === 'superadmin') return 'success'; // Superadmin is always unique
+
+  if (isAdmin) {
+    return 'success'; // Admin roles get a special color
   }
 
-  getRoleSeverity(role: string): 'success' | 'info' | 'warn' | 'danger' | 'secondary' {
-    switch (role.toLowerCase()) {
-      case 'superadmin':
-        return 'success';
-      case 'accounting':
-        return 'info';
-      case 'supply':
-        return 'warn';
-      case 'bac':
-        return 'info';
-      case 'inspection':
-        return 'danger';
-      case 'end-user':
-        return 'secondary';
-      default:
-        return 'secondary';
-    }
+  switch (role.toLowerCase()) {
+    case 'accounting': return 'info';
+    case 'supply': return 'warn';
+    case 'bac': return 'info';
+    case 'inspection': return 'danger';
+    case 'end-user': return 'secondary';
+    case 'president': return 'success';
+    default: return 'secondary';
   }
+}
+
+
+
 
   // =============================================
   // ACCOUNT CODE MANAGEMENT

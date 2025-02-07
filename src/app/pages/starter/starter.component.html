@@ -1,50 +1,109 @@
 <section class="w-full h-screen">
-    <div class="flex flex-col gap-3.5 w-full h-full">
-        <div class="w-full h-full flex flex-row gap-5">
-            <!-- First Chart (RFQ Data) -->
-            <p-card [style]="{ height: '50vh', width: '80vh', display: 'flex', flexDirection: 'column' }">
-              <apx-chart
-                [series]="lineChartOptions.series"
-                [chart]="lineChartOptions.chart"
-                [xaxis]="lineChartOptions.xaxis"
-                [yaxis]="lineChartOptions.yaxis"
-                [stroke]="lineChartOptions.stroke"
-                [title]="lineChartOptions.title">
-              </apx-chart>
-              <div *ngIf="!lineChartOptions.series">Loading RFQ chart data...</div>
-            </p-card>
-          
-            <!-- Second Chart (Purchase Request Data) -->
-            <p-card [style]="{ height: '50vh', width: '80vh', display: 'flex', flexDirection: 'column' }">
-              <apx-chart
-                [series]="purchaseRequestChartOptions.series"
-                [chart]="purchaseRequestChartOptions.chart"
-                [xaxis]="purchaseRequestChartOptions.xaxis"
-                [yaxis]="purchaseRequestChartOptions.yaxis"
-                [stroke]="purchaseRequestChartOptions.stroke"
-                [title]="purchaseRequestChartOptions.title">
-              </apx-chart>
-              <div *ngIf="!purchaseRequestChartOptions.series">Loading Purchase Request chart data...</div>
-            </p-card>
-        </div>
-  
-        <div class="h-1/2 w-full flex flex-row gap-5">
-            <p-card [style]="{ height: '50vh', width: '80vh', display: 'flex', flexDirection: 'column' }">
-                <apx-chart
-                  [series]="budgetChartOptions.series"
-                  [chart]="budgetChartOptions.chart"
-                  [xaxis]="budgetChartOptions.xaxis"
-                  [yaxis]="budgetChartOptions.yaxis"
-                  [stroke]="budgetChartOptions.stroke"
-                  [title]="budgetChartOptions.title">
-                </apx-chart>
-                <div *ngIf="!budgetChartOptions.series">Loading Purchase Request chart data...</div>
-              </p-card>
-  
-            <div class="flex flex-col gap-2 w-full h-full mb-5">
-                    
+  <div class="flex flex-col gap-3.5 w-full h-full">
+    <!-- Top Row: Purchase Request Status and Budget Allocation -->
+    <div class="w-full h-full flex flex-row gap-5">
+      <!-- Purchase Request Status -->
+      <p-card [style]="{ height: '50vh', width: '80vh', display: 'flex', flexDirection: 'column', padding: '1rem' }">
+        <div class="flex flex-col gap-2">
+          <div class="flex justify-between items-center">
+            <div>
+              <mat-card-title class="text-xl font-semibold">Purchase Request Status</mat-card-title>
+              <mat-card-subtitle class="text-sm text-gray-500">
+                Latest updates on purchase requests.
+              </mat-card-subtitle>
             </div>
-  
+            <p-button label="View All" icon="pi pi-arrow-right" outlined="true" size="small" class="p-button-text text-blue-500"></p-button>
+          </div>
+
+          <div class="mt-6 bg-white rounded-lg shadow-md overflow-hidden border border-gray-200">
+            <table class="w-full text-sm">
+              <thead>
+                <tr class="bg-gray-50 text-gray-900">
+                  <th class="p-3 text-left">Request Name</th>
+                  <th class="p-3 text-left">Department</th>
+                  <th class="p-3 text-left">Amount</th>
+                  <th class="p-3 text-left">Status</th>
+                  <th class="p-3 text-left">Date</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr class="border-b hover:bg-gray-50 transition">
+                  <td class="p-3">Procurement of IT Equipments</td>
+                  <td class="p-3">IT Department</td>
+                  <td class="p-3 font-semibold">50,000</td>
+                  <td class="p-3">
+                    <span class="px-3 py-1 text-xs font-semibold rounded-lg text-white" 
+                      [ngClass]="getStatusClass(purchaseRequest.status)">
+                      {{ purchaseRequest.status }}
+                    </span>
+                  </td>
+                  <td class="p-3 text-gray-600">2024-01-05</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
         </div>
-    </div>  
+      </p-card>
+
+      <!-- Budget Allocation Chart -->
+      <p-card [style]="{ height: '50vh', width: '80vh', display: 'flex', flexDirection: 'column' }">
+        <apx-chart
+          [series]="budgetChartOptions.series"
+          [chart]="budgetChartOptions.chart"
+          [xaxis]="budgetChartOptions.xaxis"
+          [yaxis]="budgetChartOptions.yaxis"
+          [stroke]="budgetChartOptions.stroke"
+          [title]="budgetChartOptions.title">
+        </apx-chart>
+      </p-card>
+    </div>
+
+    <!-- Bottom Row: Supply Monitoring and Calendar -->
+    <div class="h-1/2 w-full flex flex-row gap-5">
+      <p-card [style]="{ height: '50vh', width: '80vh', display: 'flex', flexDirection: 'column' }">
+        <apx-chart
+          [series]="supplyChartOptions.series"
+          [chart]="supplyChartOptions.chart"
+          [xaxis]="supplyChartOptions.xaxis"
+          [yaxis]="supplyChartOptions.yaxis"
+          [stroke]="supplyChartOptions.stroke"
+          [title]="supplyChartOptions.title">
+        </apx-chart>
+      </p-card>
+
+      <!-- Custom Hardcoded Calendar -->
+     <p-card class="events-card">
+  <div class="calendar-events-container">
+    <!-- Calendar Section -->
+    <div class="calendar">
+      <div class="calendar-header">
+        <button (click)="changeMonth(-1)" class="nav-button">❮</button>
+        <span class="month-title">{{ currentMonthName }} {{ currentYear }}</span>
+        <button (click)="changeMonth(1)" class="nav-button">❯</button>
+      </div>
+      <div class="calendar-grid">
+        <div *ngFor="let day of daysOfWeek" class="calendar-day header">{{ day }}</div>
+        <div *ngFor="let day of calendarDays" 
+             class="calendar-day" 
+             [ngClass]="{ 'highlight': isEventDate(day) }">
+          {{ day !== 0 ? day : '' }}
+        </div>
+      </div>
+    </div>
+
+    <!-- Events List Section -->
+    <div class="events-list">
+      <h3 class="events-title">📅 Activities This Month</h3>
+      <ul class="events-list-items">
+        <li *ngFor="let event of filteredEvents" class="event-item">
+          <span class="event-date">{{ event.date | date: 'MMM d' }}</span> 
+          <span class="event-title">{{ event.title }}</span>
+        </li>
+      </ul>
+    </div>
+  </div>
+</p-card>
+
+    </div>
+  </div>
 </section>

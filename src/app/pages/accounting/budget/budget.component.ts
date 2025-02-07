@@ -1,57 +1,40 @@
 import { Component, OnInit } from '@angular/core';
-import { CommonModule } from '@angular/common';
-import { FormBuilder, FormGroup, Validators, FormsModule, ReactiveFormsModule } from '@angular/forms';
+import { FormBuilder, FormGroup, FormsModule, ReactiveFormsModule, Validators } from '@angular/forms';
 import { MessageService, ConfirmationService } from 'primeng/api';
-import { TableModule } from 'primeng/table';
-import { ButtonModule } from 'primeng/button';
-import { InputTextModule } from 'primeng/inputtext';
-import { DialogModule } from 'primeng/dialog';
-import { InputNumberModule } from 'primeng/inputnumber';
-import { DropdownModule } from 'primeng/dropdown';
-import { ToastModule } from 'primeng/toast';
-import { TagModule } from 'primeng/tag';
-import { ConfirmDialogModule } from 'primeng/confirmdialog';
-import { CalendarModule } from 'primeng/calendar'; // Import CalendarModule
-import { MaterialModule } from 'src/app/material.module';
 import { BudgetService, BudgetAllocation } from 'src/app/services/budget.service';
-import { DepartmentService, Department } from 'src/app/services/departments.service';
+import { UserService, User } from 'src/app/services/user.service';
 import { finalize } from 'rxjs/operators';
+import { Table, TableModule } from 'primeng/table';
+import { DropdownModule } from 'primeng/dropdown';
+import { Dialog, DialogModule } from 'primeng/dialog';
+import { InputNumberModule } from 'primeng/inputnumber';
+import { TagModule } from 'primeng/tag';
+import { ToastModule } from 'primeng/toast';
+import { ConfirmDialogModule } from 'primeng/confirmdialog';
+import { Button, ButtonModule } from 'primeng/button';
+import { InputTextModule } from 'primeng/inputtext';
+import { CommonModule } from '@angular/common';
+import { MaterialModule } from 'src/app/material.module';
+import { ButtonGroupModule } from 'primeng/buttongroup';
 
 @Component({
   selector: 'app-budget',
-  standalone: true,
-  imports: [
-    CommonModule,
-    MaterialModule,
-    TableModule,
-    ButtonModule,
-    InputTextModule,
-    DialogModule,
-    FormsModule,
-    ReactiveFormsModule,
-    InputNumberModule,
-    DropdownModule,
-    ToastModule,
-    TagModule,
-    ConfirmDialogModule,
-    InputTextModule,
-    CalendarModule // Add CalendarModule to imports
-  ],
   templateUrl: './budget.component.html',
-  providers: [MessageService, ConfirmationService]
+  providers: [MessageService, ConfirmationService],
+  standalone: true,
+  imports: [CommonModule, MaterialModule, FormsModule, ReactiveFormsModule, ButtonGroupModule, InputTextModule, DropdownModule, DialogModule, Dialog, ToastModule, ButtonModule, TableModule, TagModule, InputNumberModule ],
 })
 export class BudgetComponent implements OnInit {
   budgetAllocations: BudgetAllocation[] = [];
-  departments: any[] = [];
+  users: User[] = [];
   budgetForm!: FormGroup;
   budgetDialog = false;
   submitted = false;
   loading = false;
   isEditMode = false;
-  currentYear = new Date().getFullYear();
-  years: number[] = [];
-  selectedYear = this.currentYear;
+  selectedYear = new Date().getFullYear();
   currentBudgetId: string | null = null;
+ years: number[] = Array.from({ length: 10 }, (_, i) => new Date().getFullYear() - i);
 
   statuses = [
     { label: 'Draft', value: 'draft' },
@@ -63,64 +46,125 @@ export class BudgetComponent implements OnInit {
   constructor(
     private formBuilder: FormBuilder,
     private budgetService: BudgetService,
-    private departmentService: DepartmentService,
+    private userService: UserService,
     private messageService: MessageService,
     private confirmationService: ConfirmationService
-  ) {
-    for (let i = -5; i <= 5; i++) {
-      this.years.push(this.currentYear + i);
-    }
-  }
+  ) {}
 
   ngOnInit(): void {
     this.initializeForm();
-    this.loadDepartments();
+    this.loadUsers();
     this.loadBudgetAllocations();
   }
 
- initializeForm(): void {
+  initializeForm(): void {
   this.budgetForm = this.formBuilder.group({
-    departmentId: ['', Validators.required],
-    fiscalYear: [this.currentYear, Validators.required],
+    userId: ['', Validators.required], 
+    fiscalYear: [this.selectedYear, Validators.required],
     totalBudget: [0, [Validators.required, Validators.min(0)]],
-    allocatedAmount: [0, [Validators.required, Validators.min(0)]],
-    status: ['draft', Validators.required],
-    approvedBy: [''],
-    approvedAt: [null]
+    allocatedAmount: [0, [Validators.required, Validators.min(0)]]
   });
 }
 
-  loadDepartments(): void {
-    this.departmentService.getAllDepartments().then(departments => {
-      this.departments = departments;
-    });
-  }
+  loadUsers(): void {
+  this.userService.getAllUsers().subscribe(users => {
+    this.users = users.filter(user => user.role === 'end-user');
+    console.log('Loaded Users:', this.users); // Debugging log
+  });
+}
+
 
   loadBudgetAllocations(): void {
     this.loading = true;
-    this.budgetService.getBudgetAllocationsByYear(this.selectedYear)
+    this.budgetService.getAllBudgetAllocations()
       .pipe(finalize(() => this.loading = false))
-      .subscribe({
-        next: (allocations) => {
-          this.budgetAllocations = allocations;
-        },
-        error: () => {
-          this.messageService.add({
-            severity: 'error',
-            summary: 'Error',
-            detail: 'Failed to load budget allocations'
-          });
-        }
+      .subscribe(allocations => this.budgetAllocations = allocations);
+  }
+
+  openNewBudgetDialog(): void {
+    this.budgetForm.reset({
+      fiscalYear: this.selectedYear,
+      totalBudget: 0,
+      allocatedAmount: 0,
+      status: 'draft'
+    });
+    this.isEditMode = false;
+    this.currentBudgetId = null;
+    this.budgetDialog = true;
+  }
+
+  
+
+   generateId(): string {
+  return Array.from({ length: 32 }, () =>
+    Math.floor(Math.random() * 16).toString(16)
+  ).join('');
+}
+
+
+saveBudget(): void {
+  this.submitted = true;
+
+  if (this.budgetForm.invalid) {
+    console.log('Invalid Form:', this.budgetForm.value);
+    return;
+  }
+
+  console.log('Saving Budget:', this.budgetForm.value);
+
+  const formValue = this.budgetForm.value;
+
+  // Ensure allocated amount doesn't exceed total budget
+  if (formValue.allocatedAmount > formValue.totalBudget) {
+    this.messageService.add({
+      severity: 'error',
+      summary: 'Error',
+      detail: 'Allocated amount cannot exceed total budget'
+    });
+    return;
+  }
+
+  const budgetData: BudgetAllocation = {
+    id: this.isEditMode && this.currentBudgetId ? this.currentBudgetId : this.generateId(),
+    userId: formValue.userId,
+    fiscalYear: formValue.fiscalYear,
+    totalBudget: formValue.totalBudget,
+    allocatedAmount: formValue.allocatedAmount,
+    remainingBalance: formValue.totalBudget - formValue.allocatedAmount
+  };
+
+  this.loading = true;
+
+  if (this.isEditMode && this.currentBudgetId) {
+    this.budgetService.updateBudgetAllocation(this.currentBudgetId, budgetData)
+      .pipe(finalize(() => this.loading = false))
+      .subscribe(() => {
+        this.messageService.add({
+          severity: 'success',
+          summary: 'Success',
+          detail: 'Budget updated successfully'
+        });
+        this.loadBudgetAllocations();
+        this.hideDialog();
+      });
+  } else {
+    this.budgetService.addBudgetAllocation(budgetData)
+      .pipe(finalize(() => this.loading = false))
+      .subscribe(() => {
+        this.messageService.add({
+          severity: 'success',
+          summary: 'Success',
+          detail: 'Budget added successfully'
+        });
+        this.loadBudgetAllocations();
+        this.hideDialog();
       });
   }
+}
 
-  onYearChange(year: number): void {
-    this.selectedYear = year;
-    this.loadBudgetAllocations();
-  }
 
-  getDepartmentName(departmentId: string): string {
-    return this.departments.find(d => d.id === departmentId)?.name || 'Unknown Department';
+  getUserName(userId: string): string {
+    return this.users.find(user => user.id === userId)?.fullname || 'Unknown User';
   }
 
   getStatusSeverity(status: string): 'success' | 'danger' | 'warn' | 'info' | 'secondary' | 'contrast' | undefined {
@@ -132,112 +176,19 @@ export class BudgetComponent implements OnInit {
     }
   }
 
-  openNewBudgetDialog(): void {
-    this.budgetForm.reset({
-      fiscalYear: this.currentYear,
-      totalBudget: 0,
-      allocatedAmount: 0,
-      remainingBalance: 0,
-      status: 'draft',
-      remarks: '',
-      approvedBy: '',
-      approvedAt: null
-    });
-    this.isEditMode = false;
-    this.currentBudgetId = null;
-    this.budgetDialog = true;
-  }
-
   editBudget(budget: BudgetAllocation): void {
     this.currentBudgetId = budget.id ?? null;
     this.budgetForm.patchValue({
-      departmentId: budget.departmentId,
+      userId: budget.userId,
       fiscalYear: budget.fiscalYear,
       totalBudget: budget.totalBudget,
-      allocatedAmount: budget.allocatedAmount,
-      remainingBalance: budget.remainingBalance,
-      status: budget.status,
-      remarks: budget.remarks,
-      approvedBy: budget.approvedBy,
-      approvedAt: budget.approvedAt
+      allocatedAmount: budget.allocatedAmount
     });
     this.isEditMode = true;
     this.budgetDialog = true;
-  }
-
-  saveBudget(): void {
-  this.submitted = true;
-  if (this.budgetForm.invalid) {
-    return;
-  }
-
-  const formValue = this.budgetForm.value;
-
-  // Auto-generate remainingBalance
-  const remainingBalance = formValue.totalBudget - formValue.allocatedAmount;
-
-  const budgetData = {
-    ...formValue,
-    remainingBalance: remainingBalance // Auto-generated remaining balance
-  };
-
-  this.loading = true;
-
-  if (this.isEditMode && this.currentBudgetId) {
-    this.budgetService.updateBudgetAllocation(this.currentBudgetId, budgetData)
-      .pipe(finalize(() => this.loading = false))
-      .subscribe({
-        next: () => {
-          this.messageService.add({
-            severity: 'success',
-            summary: 'Success',
-            detail: 'Budget updated successfully'
-          });
-          this.loadBudgetAllocations();
-          this.hideDialog();
-        },
-        error: (error) => {
-          this.messageService.add({
-            severity: 'error',
-            summary: 'Error',
-            detail: error.message || 'Failed to update budget'
-          });
-        }
-      });
-  } else {
-    this.budgetService.addBudgetAllocation(budgetData)
-      .pipe(finalize(() => this.loading = false))
-      .subscribe({
-        next: () => {
-          this.messageService.add({
-            severity: 'success',
-            summary: 'Success',
-            detail: 'Budget added successfully'
-          });
-          this.loadBudgetAllocations();
-          this.hideDialog();
-        },
-        error: (error) => {
-          this.messageService.add({
-            severity: 'error',
-            summary: 'Error',
-            detail: error.message || 'Failed to add budget'
-          });
-        }
-      });
-  }
 }
 
-  deleteBudget(budget: BudgetAllocation): void {
-    if (budget.status === 'approved') {
-      this.messageService.add({
-        severity: 'warn',
-        summary: 'Warning',
-        detail: 'Approved budgets cannot be deleted'
-      });
-      return;
-    }
-
+deleteBudget(budget: BudgetAllocation): void {
     this.confirmationService.confirm({
       message: 'Are you sure you want to delete this budget allocation?',
       accept: () => {
@@ -263,6 +214,12 @@ export class BudgetComponent implements OnInit {
           });
       }
     });
+}
+
+
+  onYearChange(year: number): void {
+    this.selectedYear = year;
+    this.loadBudgetAllocations();
   }
 
   hideDialog(): void {
