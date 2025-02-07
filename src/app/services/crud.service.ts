@@ -35,7 +35,7 @@ export class CrudService<T> {
   }
 
   // Read (Get by ID)
-  async getById<T extends Identifiable>(table: string, id: string): Promise<T|undefined> {
+  async get<T extends Identifiable>(table: string, id: string): Promise<T|undefined> {
     const url = `${this.baseUrl}/${table}/${id}`;
     if(environment.use == 'assets'){
       const dummyData:T[] =  await this.getAll(table);
@@ -58,6 +58,22 @@ export class CrudService<T> {
       return firstValueFrom(this.http.put<T>(url, data));
     }
   }
+
+  async partial_update<T extends Identifiable>(table: string, id: string, patch:string ,data: Partial<T>): Promise<T> {
+    if(environment.use == 'assets'){
+      const dummyData: T[] =  await this.getAll(table);
+      const replaceIndex = dummyData.findIndex(i=>i.id == id)
+      dummyData[replaceIndex] = {
+        ...dummyData[replaceIndex],
+        ...data
+      };
+      return dummyData[replaceIndex];
+    }else{
+      const url = `${this.baseUrl}/${table}/${id}/${patch}`;
+      return firstValueFrom(this.http.patch<T>(url, data));
+    }
+  }
+
 
   // Delete
   async delete<T extends Identifiable>(table: string, id: string): Promise<T|undefined> {
