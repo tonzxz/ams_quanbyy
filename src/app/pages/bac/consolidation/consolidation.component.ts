@@ -16,7 +16,8 @@ interface Document {
   reviewer: string;
   status: string;
   approvalDate?: string;
-  attachments: string[];
+  ppmpAttachment: string[];
+  appAttachment: string[];
 }
 
 @Component({
@@ -29,11 +30,11 @@ interface Document {
 })
 export class ConsolidationComponent {
   documents: Document[] = [
-    { id: 2, name: 'Bidding Strategy', type: 'Bid Strategy', submissionDate: '2025-01-28', submittedBy: 'Alice Brown', reviewer: 'Robert White', status: 'Approved', approvalDate: '2025-01-29', attachments: ['bidding_strategy.pdf', 'contract_terms.pdf'] },
-    { id: 3, name: 'Procurement Plan Q2', type: 'Procurement Plan', submissionDate: '2025-02-15', submittedBy: 'Michael Green', reviewer: 'Sophia Adams', status: 'Approved', approvalDate: '2025-02-16', attachments: ['procurement_q2.pdf', 'budget_q2.pdf'] },
-    { id: 4, name: 'Supplier Evaluation', type: 'Evaluation Report', submissionDate: '2025-03-10', submittedBy: 'Emily Davis', reviewer: 'Mark Thompson', status: 'Approved', approvalDate: '2025-03-11', attachments: ['supplier_eval.pdf', 'comparison_chart.pdf'] },
-    { id: 5, name: 'Annual Procurement Plan', type: 'Annual Plan', submissionDate: '2025-04-05', submittedBy: 'David Wilson', reviewer: 'Emma Carter', status: 'Approved', approvalDate: '2025-04-06', attachments: ['annual_plan.pdf', 'financial_analysis.pdf'] },
-    { id: 6, name: 'Contract Review Q1', type: 'Contract Review', submissionDate: '2025-05-20', submittedBy: 'Olivia Martinez', reviewer: 'Daniel Lee', status: 'Approved', approvalDate: '2025-05-21', attachments: ['contract_q1.pdf', 'terms_conditions.pdf'] }
+    { id: 2, name: 'Bidding Strategy', type: 'Bid Strategy', submissionDate: '2025-01-28', submittedBy: 'Alice Brown', reviewer: 'Robert White', status: 'Approved', approvalDate: '2025-01-29', ppmpAttachment: ['bidding_strategy.pdf'], appAttachment:['contract_terms.pdf'] },
+    { id: 3, name: 'Procurement Plan Q2', type: 'Procurement Plan', submissionDate: '2025-02-15', submittedBy: 'Michael Green', reviewer: 'Sophia Adams', status: 'Approved', approvalDate: '2025-02-16', ppmpAttachment: ['procurement_q2.pdf'], appAttachment:['budget_q2.pdf'] },
+    { id: 4, name: 'Supplier Evaluation', type: 'Evaluation Report', submissionDate: '2025-03-10', submittedBy: 'Emily Davis', reviewer: 'Mark Thompson', status: 'Approved', approvalDate: '2025-03-11', ppmpAttachment: ['supplier_eval.pdf'], appAttachment:['comparison_chart.pdf'] },
+    { id: 5, name: 'Annual Procurement Plan', type: 'Annual Plan', submissionDate: '2025-04-05', submittedBy: 'David Wilson', reviewer: 'Emma Carter', status: 'Approved', approvalDate: '2025-04-06', ppmpAttachment: ['annual_plan.pdf'], appAttachment: ['financial_analysis.pdf'] },
+    { id: 6, name: 'Contract Review Q1', type: 'Contract Review', submissionDate: '2025-05-20', submittedBy: 'Olivia Martinez', reviewer: 'Daniel Lee', status: 'Approved', approvalDate: '2025-05-21', ppmpAttachment: ['contract_q1.pdf'], appAttachment:['terms_conditions.pdf'] }
   ];
 
   constructor(private messageService: MessageService) {} 
