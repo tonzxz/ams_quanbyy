@@ -475,12 +475,12 @@ export const navItems: NavItem[] = [
   },
 
 
-  // {
-  //   displayName: 'Inventory',
-  //   iconName: 'solar:box-broken',
-  //   route: '/shared/inventory',
-  //   requiredRoles: ['supply', 'bac', 'president', 'end-user', 'inspection'],
-  // },
+  {
+    displayName: 'Inventory',
+    iconName: 'solar:box-broken',
+    route: '/shared/inventory',
+    requiredRoles: ['supply', 'bac', 'president', 'end-user', 'inspection'],
+  },
  
 ];
 
