@@ -57,7 +57,8 @@ export class CrudService<T> {
     const url = `${this.baseUrl}/${table}${environment.use == 'assets' ? '.json' : ''}`;
     return firstValueFrom(this.http.get<T[]>(url, {
       params: {
-        ...params
+        ...params,
+        join: params?.join ? JSON.stringify(params?.join) :''
       }
     }));
   }

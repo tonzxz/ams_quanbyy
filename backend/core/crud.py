@@ -1,5 +1,6 @@
 from cryptography.fernet import Fernet
 from flask import request, jsonify
+import json
 
 class CRUD:
     def __init__(self, app, mysql, encryption_key):
@@ -84,13 +85,13 @@ class CRUD:
         cursor = self.mysql.connection.cursor()
         params = request.args or {}
         # Start building the query
-        query = f"SELECT {params.get('selector', '*')} FROM {resource_name.lower()}"
-
+        query = f"SELECT {params.get('selector', '*')} FROM {resource_name.lower()}"  
         # Handle JOINs
         if 'join' in params:
-            for i in range(0, len(params['join']), 2):
-                table = params['join'][i]
-                condition = params['join'][i + 1]
+            join = json.loads(params['join'])
+            for i in range(0, len(join), 2):
+                table = join[i]
+                condition = join[i + 1]
                 query += f" LEFT JOIN {table} ON {condition}"
 
         # Apply filter if it exists
