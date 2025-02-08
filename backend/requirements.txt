@@ -5,3 +5,4 @@ PyMuPDF
 flask_mysqldb
 google-generativeai
 cryptography
+flask-socketio

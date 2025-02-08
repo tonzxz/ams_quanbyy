@@ -80,15 +80,28 @@ class CRUD:
         
         return jsonify({'message': f'{resource_name} created successfully'}), 201
 
-    # Read (Get entries from the table)
-    def read(self, resource_name, item_id=None):
+    def read(self, resource_name, item_id=None, params=None):
         cursor = self.mysql.connection.cursor()
-        
+
+        # Start building the query
+        query = f"SELECT {params.get('selector', '*')} FROM {resource_name.lower()}"
+
+        # Handle JOINs
+        if 'join' in params:
+            for i in range(0, len(params['join']), 2):
+                table = params['join'][i]
+                condition = params['join'][i + 1]
+                query += f" LEFT JOIN {table} ON {condition}"
+
+        # Apply filter if it exists
+        if 'filter' in params:
+            query += f" {params['filter']}"
+
+        # Handle item_id, if it's provided
         if item_id:
-            query = f"SELECT * FROM {resource_name.lower()} WHERE id = %s"
+            query += f" AND {resource_name.lower()}.id = %s"
             cursor.execute(query, (item_id,))
         else:
-            query = f"SELECT * FROM {resource_name.lower()}"
             cursor.execute(query)
         
         # Fetch the column names
