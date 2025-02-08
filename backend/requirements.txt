@@ -1,0 +1,7 @@
+# pip install -r requirements.txt : Python version 3.12.1
+Flask
+Flask-Cors
+PyMuPDF
+flask_mysqldb
+google-generativeai
+cryptography
