@@ -81,7 +81,7 @@ class CRUD:
         
         return jsonify({'message': f'{resource_name} created successfully'}), 201
 
-    def read(self, resource_name, item_id=None, params=None):
+    def read(self, resource_name, item_id=None):
         cursor = self.mysql.connection.cursor()
         params = request.args or {}
         # Start building the query
