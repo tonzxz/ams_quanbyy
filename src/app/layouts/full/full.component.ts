@@ -76,8 +76,8 @@ export class FullComponent implements OnInit {
   }
 
   async ngOnInit() {
-   const ppmps =  await this.cs.getAll('ppmp',{ join:['ppmp_approvers ','ppmp_approvers.ppmp_id = ppmp.id']});
-  //  alert(JSON.stringify(ppmps));
+   const ppmps =  await this.cs.getAll('ppmp',{ join:['users','users.id IS NOT NULL']});
+   alert(JSON.stringify(ppmps));
   }
 
   ngOnDestroy() {
