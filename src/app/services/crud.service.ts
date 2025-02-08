@@ -59,7 +59,7 @@ export class CrudService<T> {
     }
   }
 
-  async partial_update<T extends Identifiable>(table: string, id: string, patch:string ,data: Partial<T>): Promise<T> {
+  async partial_update<T extends Identifiable>(table: string, id: string ,data: Partial<T>): Promise<T> {
     if(environment.use == 'assets'){
       const dummyData: T[] =  await this.getAll(table);
       const replaceIndex = dummyData.findIndex(i=>i.id == id)
@@ -69,7 +69,7 @@ export class CrudService<T> {
       };
       return dummyData[replaceIndex];
     }else{
-      const url = `${this.baseUrl}/${table}/${id}/${patch}`;
+      const url = `${this.baseUrl}/${table}/${id}`;
       return firstValueFrom(this.http.patch<T>(url, data));
     }
   }
