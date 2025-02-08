@@ -38,22 +38,22 @@ class CRUD:
             return self.read(resource_name)
         
         # GET endpoint to fetch a specific resource by ID
-        @self.app.route(f'/api/{resource_name}/<int:item_id>', methods=['GET'], endpoint=f'{resource_name.lower()}_read_by_id')
+        @self.app.route(f'/api/{resource_name}/<item_id>', methods=['GET'], endpoint=f'{resource_name.lower()}_read_by_id')
         def read_by_id(item_id):
             return self.read(resource_name, item_id)
         
         # PATCH route for partial updates
-        @self.app.route(f'/api/{resource_name}/<int:item_id>', methods=['PATCH'], endpoint=f'{resource_name.lower()}_patch')
+        @self.app.route(f'/api/{resource_name}/<item_id>', methods=['PATCH'], endpoint=f'{resource_name.lower()}_patch')
         def patch(item_id):
             return self.patch(resource_name, item_id)
 
         # PUT endpoint to update a resource by ID
-        @self.app.route(f'/api/{resource_name}/<int:item_id>', methods=['PUT'], endpoint=f'{resource_name.lower()}_update')
+        @self.app.route(f'/api/{resource_name}/<item_id>', methods=['PUT'], endpoint=f'{resource_name.lower()}_update')
         def update(item_id):
             return self.update(resource_name, item_id)
         
         # DELETE endpoint to delete a resource by ID
-        @self.app.route(f'/api/{resource_name}/<int:item_id>', methods=['DELETE'], endpoint=f'{resource_name.lower()}_delete')
+        @self.app.route(f'/api/{resource_name}/<item_id>', methods=['DELETE'], endpoint=f'{resource_name.lower()}_delete')
         def delete(item_id):
             return self.delete(resource_name, item_id)
 
