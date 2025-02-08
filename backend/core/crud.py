@@ -82,7 +82,7 @@ class CRUD:
 
     def read(self, resource_name, item_id=None, params=None):
         cursor = self.mysql.connection.cursor()
-        params = params or {}
+        params = request.args or {}
         # Start building the query
         query = f"SELECT {params.get('selector', '*')} FROM {resource_name.lower()}"
 

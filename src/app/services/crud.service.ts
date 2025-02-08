@@ -37,7 +37,8 @@ export class CrudService<T> {
 
   private baseUrl = environment.use == 'assets' ? '/assets/dummy' : environment.api; // Replace with your API base URL
   private dataCache: { [key: string]: any[] } = {}; // Cache to hold table data
-  constructor(private http: HttpClient, private wsService:WebSocketService) { }
+  private wsService = new WebSocketService();
+  constructor(private http: HttpClient) { }
 
   // Create
   async create<T extends Identifiable>(table: string, data: T): Promise<T> {

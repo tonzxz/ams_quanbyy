@@ -76,7 +76,8 @@ export class FullComponent implements OnInit {
   }
 
   async ngOnInit() {
-
+   const ppmps =  await this.cs.getAll('ppmp');
+   alert(JSON.stringify(ppmps)); 
   }
 
   ngOnDestroy() {
