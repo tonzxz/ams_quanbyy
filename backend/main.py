@@ -12,7 +12,7 @@ import argparse
 load_dotenv()
 
 parser = argparse.ArgumentParser(description="Flask Backend API")
-parser.add_argument('--db', type=str, default=None, help='Database: [postgres], [mysql]')
+parser.add_argument('--db', type=str, default=None, help='Use Database: postgres | mysql')
 
 args = parser.parse_args()
 
@@ -32,7 +32,7 @@ if args.db == 'mysql':
     print('Server running on MySQL')
 elif args.db == 'psql':
     app.config['POSTGRES_HOST'] = os.getenv('DB_HOST')
-    app.config['POSTGRES_USER'] = os.getenv('DB_USER')
+    app.config['POSTGRES_USER'] = os.getenv('DB_USER')  
     app.config['POSTGRES_PASSWORD'] = os.getenv('DB_PASSWORD')
     app.config['POSTGRES_DB'] = os.getenv('DB_NAME')
     app.config['POSTGRES_PORT'] = os.getenv('DB_PORT')
