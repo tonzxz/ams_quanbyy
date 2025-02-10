@@ -18,6 +18,7 @@ import { ConfirmDialogModule } from 'primeng/confirmdialog';
 import { CardModule } from 'primeng/card';
 import { v4 as uuidv4 } from 'uuid';
 import { PPMP, PPMPItem, PPMPSchedule } from 'src/app/schema/schema';
+import { TextareaModule } from 'primeng/textarea';
 
 @Component({
   selector: 'app-ppmp',
@@ -37,7 +38,7 @@ import { PPMP, PPMPItem, PPMPSchedule } from 'src/app/schema/schema';
     TableModule,
     InputNumberModule,
     InputTextModule,
-    
+    TextareaModule,
     CheckboxModule,
     TooltipModule,
     ConfirmDialogModule,
