@@ -80,186 +80,190 @@
 <p-dialog 
   [(visible)]="ppmpDialog" 
   [modal]="true" 
-  [style]="{ width: '700px' }" 
+  [closable]="true"
+  [style]="{ width: '50vw', maxHeight: '100vh', overflow: 'visible' }" 
+  [contentStyle]="{ 'overflow': 'visible' }" 
   [header]="isEditMode ? 'Edit PPMP' : 'New PPMP'">
 
-  <form [formGroup]="ppmpForm" class="p-fluid">
-    <!-- Project Title and Code -->
-    <div class="grid">
-      <div class="col-12 md:col-6">
-        <label for="project_title">Project Title *</label>
-        <input 
-          id="project_title" 
-          type="text" 
-          pInputText 
-          formControlName="project_title"
-          [ngClass]="{'ng-invalid ng-dirty': isFieldInvalid('project_title')}"
-          placeholder="Enter project title"/>
-          </div>
+  <form [formGroup]="ppmpForm" class="p-fluid grid grid-cols-1 md:grid-cols-2 gap-4">
 
-      <div class="col-12 md:col-6">
-        <label for="project_code">Project Code</label>
-        <input 
-          id="project_code" 
-          type="text" 
-          pInputText 
-          formControlName="project_code"
-          placeholder="Enter project code"/>
-      </div>
+    <!-- Project Title (Full Width) -->
+    <div class="p-field col-span-2">
+      <label for="project_title" class="text-sm font-medium mb-1">Project Title *</label>
+      <input 
+        id="project_title" 
+        type="text" 
+        pInputText 
+        formControlName="project_title"
+        [class.p-invalid]="isFieldInvalid('project_title')"
+        placeholder="Enter project title"
+        class="w-full"/>
     </div>
 
-    <!-- Procurement Method  -->
-    <div class="grid">
-      <div class="col-12 md:col-6">
-        <label for="procurement_method">Procurement Method *</label>
-        <p-dropdown 
-          id="procurement_method"
-          [options]="procurementMethods" 
-          formControlName="procurement_method" 
-          placeholder="Select Method"
-          [ngClass]="{'ng-invalid ng-dirty': isFieldInvalid('procurement_method')}"
-          [style]="{'width':'100%'}">
-        </p-dropdown>
-      </div>
-
-    
+    <!-- Project Code -->
+    <div class="p-field">
+      <label for="project_code" class="text-sm font-medium mb-1">Project Code</label>
+      <input 
+        id="project_code" 
+        type="text" 
+        pInputText 
+        formControlName="project_code"
+        placeholder="Enter project code"
+        class="w-full"/>
     </div>
 
-    <!-- Description and Specification -->
-    <div class="grid">
-      <div class="col-12">
-        <label for="item_description">Item Description *</label>
-        <textarea 
-          id="item_description" 
-          pInputTextarea 
-          formControlName="item_description" 
-          [ngClass]="{'ng-invalid ng-dirty': isFieldInvalid('item_description')}"
-          rows="3" 
-          placeholder="Enter item description"
-          class="w-full">
-        </textarea>
-      </div>
-
-      <div class="col-12">
-        <label for="technical_specification">Technical Specification *</label>
-        <textarea 
-          id="technical_specification" 
-          pInputTextarea 
-          formControlName="technical_specification" 
-          [ngClass]="{'ng-invalid ng-dirty': isFieldInvalid('technical_specification')}"
-          rows="3" 
-          placeholder="Enter technical specification"
-          class="w-full">
-        </textarea>
-      </div>
+    <!-- Procurement Method -->
+    <div class="p-field">
+      <label for="procurement_method" class="text-sm font-medium mb-1">Procurement Method *</label>
+      <p-dropdown 
+        id="procurement_method"
+        [options]="procurementMethods" 
+        formControlName="procurement_method" 
+        placeholder="Select Method"
+        [class.p-invalid]="isFieldInvalid('procurement_method')"
+        class="w-full">
+      </p-dropdown>
     </div>
 
-    <!-- Unit, Quantity and Costs -->
-    <div class="grid">
-      <div class="col-12 md:col-6">
-        <label for="unit_measurement">Unit of Measurement *</label>
-        <input 
-          id="unit_measurement" 
-          type="text" 
-          pInputText 
-          formControlName="unit_of_measurement"
-          [ngClass]="{'ng-invalid ng-dirty': isFieldInvalid('unit_of_measurement')}"
-          placeholder="Enter unit (e.g., pieces, lot)"/>
-      </div>
-
-      <div class="col-12 md:col-6">
-        <label for="quantity">Quantity Required *</label>
-        <p-inputNumber 
-          id="quantity"
-          formControlName="quantity_required"
-          [ngClass]="{'ng-invalid ng-dirty': isFieldInvalid('quantity_required')}"
-          [min]="1"
-          placeholder="Enter quantity"
-          [showButtons]="false"
-          mode="decimal"
-          [minFractionDigits]="0"
-          class="w-full">
-        </p-inputNumber>
-      </div>
-
-      <div class="col-12 md:col-6">
-        <label for="unit_cost">Estimated Unit Cost *</label>
-        <p-inputNumber 
-          id="unit_cost"
-          formControlName="estimated_unit_cost"
-          [ngClass]="{'ng-invalid ng-dirty': isFieldInvalid('estimated_unit_cost')}"
-          mode="currency" 
-          currency="PHP" 
-          [min]="0"
-          placeholder="₱0.00"
-          [showButtons]="false"
-          class="w-full">
-        </p-inputNumber>
-      </div>
-
-      <div class="col-12 md:col-6">
-        <label for="total_cost">Estimated Total Cost</label>
-        <p-inputNumber 
-          id="total_cost"
-          formControlName="estimated_total_cost"
-          mode="currency" 
-          currency="PHP" 
-          [readonly]="true"
-          [showButtons]="false"
-          class="w-full">
-        </p-inputNumber>
-      </div>
+    <!-- Item Description (Full Width) -->
+    <div class="p-field col-span-2">
+      <label for="item_description" class="text-sm font-medium mb-1">Item Description *</label>
+      <textarea 
+        rows="5" cols="30" pTextarea
+        id="item_description" 
+        formControlName="item_description"
+        [class.p-invalid]="isFieldInvalid('item_description')"
+        placeholder="Enter item description"
+        class="w-full">
+      </textarea>
     </div>
 
-    <!-- Schedule Duration -->
-    <div class="grid">
-      <div class="col-12">
-        <label>Schedule Duration</label>
-        <div class="flex gap-2">
-          <div class="flex-1">
-            <label class="text-sm">Start Month *</label>
-            <p-dropdown 
-              formControlName="start_month"
-              [options]="months"
-              placeholder="Select Start Month"
-              [ngClass]="{'ng-invalid ng-dirty': isFieldInvalid('start_month')}"
-              [style]="{'width':'100%'}">
-            </p-dropdown>
-          </div>
-          <div class="flex-1">
-            <label class="text-sm">End Month *</label>
-            <p-dropdown 
-              formControlName="end_month"
-              [options]="getFilteredEndMonths()"
-              placeholder="Select End Month"
-              [ngClass]="{'ng-invalid ng-dirty': isFieldInvalid('end_month')}"
-              [style]="{'width':'100%'}">
-            </p-dropdown>
-          </div>
+    <!-- Technical Specification (Full Width) -->
+    <div class="p-field col-span-2">
+      <label for="technical_specification" class="text-sm font-medium mb-1">Technical Specification *</label>
+      <textarea 
+        rows="5" cols="30" pTextarea
+        id="technical_specification" 
+        formControlName="technical_specification"
+        [class.p-invalid]="isFieldInvalid('technical_specification')"
+        placeholder="Enter technical specification"
+        class="w-full">
+      </textarea>
+    </div>
+
+    <!-- Unit of Measurement -->
+    <div class="p-field">
+      <label for="unit_measurement" class="text-sm font-medium mb-1">Unit of Measurement *</label>
+      <input 
+        id="unit_measurement" 
+        type="text" 
+        pInputText 
+        formControlName="unit_of_measurement"
+        [class.p-invalid]="isFieldInvalid('unit_of_measurement')"
+        placeholder="Enter unit (e.g., pieces, lot)"
+        class="w-full"/>
+    </div>
+
+    <!-- Quantity Required -->
+    <div class="p-field">
+      <label for="quantity_required" class="text-sm font-medium mb-1">Quantity Required *</label>
+      <p-inputNumber 
+        id="quantity_required"
+        formControlName="quantity_required"
+        [min]="1"
+        [class.p-invalid]="isFieldInvalid('quantity_required')"
+        placeholder="Enter quantity"
+        class="w-full">
+      </p-inputNumber>
+    </div>
+
+    <!-- Estimated Unit Cost -->
+    <div class="p-field">
+      <label for="estimated_unit_cost" class="text-sm font-medium mb-1">Estimated Unit Cost *</label>
+      <p-inputNumber 
+        id="estimated_unit_cost"
+        formControlName="estimated_unit_cost"
+        mode="currency" 
+        currency="PHP" 
+        [min]="0"
+        [class.p-invalid]="isFieldInvalid('estimated_unit_cost')"
+        placeholder="₱0.00"
+        class="w-full">
+      </p-inputNumber>
+    </div>
+
+    <!-- Estimated Total Cost -->
+    <div class="p-field">
+      <label for="estimated_total_cost" class="text-sm font-medium mb-1">Estimated Total Cost</label>
+      <p-inputNumber 
+        id="estimated_total_cost"
+        formControlName="estimated_total_cost"
+        mode="currency" 
+        currency="PHP"
+        [readonly]="true"
+        class="w-full">
+      </p-inputNumber>
+    </div>
+
+    <!-- Schedule Duration (2 Equal Columns) -->
+    <div class="p-field col-span-2">
+      <label class="text-sm font-medium mb-1">Schedule Duration *</label>
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+
+        <!-- Start Month -->
+        <div class="p-field">
+          <p-dropdown 
+            id="start_month"
+            formControlName="start_month"
+            [options]="months"
+            placeholder="Select Start Month"
+            [class.p-invalid]="isFieldInvalid('start_month')"
+            class="w-full">
+          </p-dropdown>
         </div>
+
+        <!-- End Month -->
+        <div class="p-field">
+          <p-dropdown 
+            id="end_month"
+            formControlName="end_month"
+            [options]="getFilteredEndMonths()"
+            placeholder="Select End Month"
+            [class.p-invalid]="isFieldInvalid('end_month')"
+            class="w-full">
+          </p-dropdown>
+        </div>
+
       </div>
     </div>
-  </form>
 
-  <ng-template pTemplate="footer">
-    <div class="flex justify-end gap-2">
-      <button 
-        pButton 
-        label="Cancel" 
-        icon="pi pi-times" 
-        class="p-button-text" 
-        (click)="hideDialog()">
-      </button>
-      <button 
-        pButton 
-        label="Save" 
-        icon="pi pi-check" 
-        [loading]="loading"
-        (click)="savePpmp()">
-      </button>
+    <!-- Dialog Footer -->
+    <div class="col-span-2">
+      <p-footer>
+        <div class="flex justify-end gap-x-4 mt-2">
+          <p-button 
+            label="Cancel" 
+            icon="pi pi-times" 
+            severity="secondary" 
+            (click)="hideDialog()"
+            outlined="true">
+          </p-button>
+          <p-button 
+            label="Save" 
+            icon="pi pi-check" 
+            severity="success" 
+            [loading]="loading" 
+             outlined="true"
+            (click)="savePpmp()">
+          </p-button>
+        </div>
+      </p-footer>
     </div>
-  </ng-template>
+
+  </form>
 </p-dialog>
+
+
 
 <p-toast position="top-right"></p-toast>
 <p-confirmDialog></p-confirmDialog>
