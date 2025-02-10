@@ -13,6 +13,7 @@ import { CascadeSelectModule } from 'primeng/cascadeselect';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { Select } from 'primeng/select';
 import { DropdownModule } from 'primeng/dropdown';
+import { CommonModule } from '@angular/common';
 
 @Component({
   selector: 'app-conference',
@@ -32,7 +33,8 @@ import { DropdownModule } from 'primeng/dropdown';
     Select,
     FormsModule,
     ReactiveFormsModule,
-    DropdownModule
+    DropdownModule,
+    CommonModule
   ],
   templateUrl: './conference.component.html',
   styleUrl: './conference.component.scss',
@@ -67,6 +69,9 @@ export class ConferenceComponent implements OnInit {
   constructor(private messageService: MessageService) {}
 
   ngOnInit() {
+    this.selectedModeCode = 'ON'; // Default to Online mode
+    this.selectedPPMP = this.ppmpList[0];
+
     this.meetMode = [
       { name: 'Online', code: 'ON' },
       { name: 'In-Person', code: 'IP' },
@@ -85,6 +90,8 @@ export class ConferenceComponent implements OnInit {
       ]
     };
 
+    console.log("platformsByMode initialized:", this.platformsByMode);
+
     this.events = [
       { name: 'Event 1', date: '2025-02-10', mode: { name: 'Online', code: 'ON' }, platform: { name: 'Zoom', code: 'ZM' } },
       { name: 'Event 2', date: '2025-02-15', mode: { name: 'In-Person', code: 'IP' }, platform: null },
@@ -99,36 +106,57 @@ export class ConferenceComponent implements OnInit {
 
     // Add PPMP List (example values)
     this.ppmpList = [
-      { name: 'Procurement Plan A', code: 'PA' },
-      { name: 'Procurement Plan B', code: 'PB' },
-      { name: 'Procurement Plan C', code: 'PC' }
+      { name: 'Procurement Plan A', code: 'PA', purchaseRequests: 'Request 1, Request 2' },
+      { name: 'Procurement Plan B', code: 'PB', purchaseRequests: 'Request 3, Request 4' },
+      { name: 'Procurement Plan C', code: 'PC', purchaseRequests: '' } // No purchase requests
     ];
   }
 
-  onPPMPChange(event: any) {
-    this.purchaseRequests = event.value.purchaseRequests || ''; // Auto-fill purchase requests
-  }
-
   onModeChange(event: any) {
-    this.selectedMode = this.meetMode.find(mode => mode.code === this.selectedModeCode) || { name: '', code: '' };
-  
-    // Reset platform selection if mode does not have platforms
-    if (this.selectedMode.code === 'IP') {  // In-Person has no platforms
-      this.selectedPlatform = null;  // Reset platform
-    } else {
-      this.selectedPlatform = { name: '', code: '' };  // Reset for Online/Hybrid
+    if (!event.value || event.value === this.selectedModeCode) {
+        console.log("Mode didn't change, skipping update.");
+        return;
     }
 
-    this.selectedPlatformCode = '';
+    console.log("Mode changed:", event.value);
+
+    // Update selected mode and mode code
+    this.selectedModeCode = event.value;
+    this.selectedMode = this.meetMode.find(mode => mode.code === event.value) || { name: '', code: '' };
+
+    // Reset or update platform selection
+    if (this.selectedModeCode === 'IP') {
+        this.selectedPlatform = null;
+    } else {
+        const platforms = this.getPlatformsForSelectedMode();
+        this.selectedPlatform = platforms.length > 0 ? platforms[0] : { name: '', code: '' };
+    }
+
+    console.log("Updated Selected Mode:", this.selectedMode);
+    console.log("Updated Selected Platform:", this.selectedPlatform);
   }
 
+
+
+
+  onPPMPChange() {
+    if (this.selectedPPMP) {
+      console.log('Selected PPMP:', this.selectedPPMP);
+      this.purchaseRequests = this.selectedPPMP.purchaseRequests || 'No purchase requests available.';
+    } else {
+      this.purchaseRequests = 'No purchase requests available.';
+    }
+  }
+  
 
   getPlatformsForSelectedMode() {
-    if (!this.selectedMode || !this.selectedMode.code) {
-      return [];
-    }
-    return this.platformsByMode[this.selectedMode.code] || [];
+    console.log("Selected Mode Code:", this.selectedModeCode);
+    console.log("Platforms Available:", this.platformsByMode[this.selectedModeCode] || []);
+
+    return this.selectedModeCode ? this.platformsByMode[this.selectedModeCode] || [] : [];
   }
+
+
 
   OpenEventCard() {
     console.log('Card clicked!');
@@ -144,12 +172,27 @@ export class ConferenceComponent implements OnInit {
   }
 
   onEventChange(event: any) {
-    if (event.value) {
-      this.eventDate = event.value.date;
-      this.selectedMode = event.value.mode;
-      this.selectedPlatform = event.value.platform;
+    if (!event.value) return;
+
+    console.log("Event selected:", event.value);
+
+    // Update event details
+    this.selectedEvent = event.value;
+    this.eventDate = event.value.date || ''; // Ensure it's empty if undefined
+    this.selectedMode = event.value.mode || null; // Set to null if no mode is provided
+
+    // Set platform only if mode is online or hybrid
+    if (this.selectedMode && this.selectedMode.code !== 'IP') {
+        const platforms = this.getPlatformsForSelectedMode();
+        this.selectedPlatform = platforms.length > 0 ? platforms[0] : null;
+    } else {
+        this.selectedPlatform = null;
     }
+
+    console.log("Updated Mode:", this.selectedMode);
+    console.log("Updated Platform:", this.selectedPlatform);
   }
+
 
   saveEvent() {
     this.eventModal = false;

@@ -88,7 +88,7 @@
             <div class="flex flex-row gap-6 overflow-clip overflow-x-auto h-full mt-2 p-1">
                 <p-card [style]="{ height: '30vh', width: '18rem', overflow: 'hidden', display: 'flex', flexDirection: 'column' }">
                     <div class="flex flex-col gap-4 pb-1 h-full">
-                      <!-- Event Title -->
+                        <!-- Event Title -->
                         <div class="flex flex-col">
                             <span class="font-semibold text-xl text-gray-800">Contract Negotiations</span>
                             
@@ -99,7 +99,7 @@
                             <span class="font-semibold text-sm">2:00 PM - 4:00 PM</span>
                         </div>
                   
-                      <!-- Mode & Platform -->
+                        <!-- Mode & Platform -->
                         <div class="flex flex-col gap-2">
                             <div class="flex flex-row items-center gap-2">
                             <span class="text-sm text-gray-600">Mode:</span>
@@ -110,8 +110,8 @@
                             <span class="font-semibold text-sm">Microsoft Teams</span>
                             </div>
                         </div>
-                  
-                      <!-- Participants -->
+
+                        <!-- Participants -->
                         <div class="flex flex-col gap-2 mt-2">
                             <span class="text-sm text-gray-600">Participants:</span>
                             <div class="flex flex-row gap-3">
@@ -156,43 +156,50 @@
     
             <!-- Mode Selection -->
             <div class="p-field flex flex-col gap-1">
-                <label for="event-mode">Mode</label>
+                <label for="event-platform">Meeting mode</label>
                 <p-dropdown [(ngModel)]="selectedModeCode" 
-                        [options]="meetMode" 
-                        optionLabel="name" 
-                        placeholder="Select a Mode" 
-                        name="selectedMode"
-                        (onChange)="onModeChange($event)">
+                    [options]="meetMode" 
+                    optionLabel="name" 
+                    optionValue="code"
+                    placeholder="Select a Mode" 
+                    name="selectedMode"
+                    (onChange)="onModeChange($event)">
                 </p-dropdown>
             </div>
-    
-            <!-- Platform Selection (Only shows for Online/Hybrid) -->
-            <div class="p-field" [hidden]="!getPlatformsForSelectedMode().length">
+
+
+            <!-- Platform Selection (Only for Online & Hybrid) -->
+            <div class="p-field" *ngIf="selectedModeCode === 'ON' || selectedModeCode === 'HY'">
                 <div class="flex flex-col gap-1">
-                  <label for="event-platform">Platform</label>
-                  <p-dropdown [(ngModel)]="selectedPlatform" 
-                              [options]="getPlatformsForSelectedMode()" 
-                              optionLabel="name" 
-                              placeholder="Select a Platform"
-                              name="selectedPlatform">
-                  </p-dropdown>
+                    <label for="event-platform">Platform</label>
+                    <p-dropdown [(ngModel)]="selectedPlatform" 
+                                [options]="getPlatformsForSelectedMode()" 
+                                optionLabel="name" 
+                                placeholder="Select a Platform"
+                                name="selectedPlatform">
+                    </p-dropdown>
                 </div>
             </div>
 
+            
+
             <div class="p-field flex flex-col gap-1">
                 <label for="ppmp-name">PPMP Name</label>
-                <p-dropdown [(ngModel)]="selectedPPMP" 
-                            [options]="ppmpList" 
-                            optionLabel="name" 
-                            placeholder="Select a PPMP"
-                            name="selectedPPMP"
-                            (onChange)="onPPMPChange($event)">
+                <p-dropdown [(ngModel)]="selectedPPMP"
+                    [options]="ppmpList"
+                    optionLabel="name"
+                    placeholder="Select a PPMP"
+                    name="selectedPPMP"
+                    (onChange)="onPPMPChange()">
                 </p-dropdown>
             </div>
         
             <div class="p-field flex flex-col gap-1">
                 <label for="purchase-requests">Purchase Requests</label>
                 <textarea id="purchase-requests" disabled="true" pInputTextarea [(ngModel)]="purchaseRequests" name="purchaseRequests" readonly></textarea>
+                <div *ngIf="purchaseRequests === ''">
+                    No purchase requests available for the selected PPMP.
+                </div>
             </div>
         </div>
 
@@ -210,9 +217,9 @@
           [style]="{ width: '30vw', maxHeight: '100vh', overflow: 'visible'}" 
           [contentStyle]="{ 'overflow': 'visible' }"
           header="Create Invitation">
-    <form class="p-fluid flex flex-col">
+    <form class="p-fluid flex flex-col gap-3">
         <!-- Event Selection -->
-        <div class="p-field flex flex-col gap-3 mb-4">
+        <div class="p-field flex flex-col gap-1">
             <label for="event-select">Select Event</label>
             <p-dropdown [(ngModel)]="selectedEvent" 
                         [options]="events" 
@@ -224,23 +231,23 @@
         </div>
 
         <!-- Auto-filled Fields -->
-        <div class="p-field flex flex-col gap-3">
+        <div class="p-field flex flex-col gap-1">
             <label>Event Date</label>
             <input type="text" pInputText [(ngModel)]="eventDate" name="eventDate" disabled />
         </div>
-
-        <div class="p-field flex flex-col gap-3">
+        
+        <div class="p-field flex flex-col gap-1">
             <label>Mode</label>
-            <input type="text" pInputText    name="selectedMode" disabled />
+            <input type="text" pInputText [value]="selectedMode?.name" disabled />
         </div>
         
-        <div class="p-field flex flex-col gap-3" *ngIf="selectedMode && selectedMode.code !== 'IP'">
+        <div class="p-field flex flex-col gap-1" *ngIf="selectedMode && selectedMode.code !== 'IP'">
             <label>Platform</label>
-            <input type="text" pInputText name="selectedPlatform" disabled />
+            <input type="text" pInputText [value]="selectedPlatform?.name || ''" name="selectedPlatform" disabled />
         </div>
 
         <!-- Participant Selection -->
-        <div class="p-field flex flex-col gap-3">
+        <div class="p-field flex flex-col gap-1 mb-4">
             <label for="participant-select">Select Participants</label>
             <p-multiSelect [(ngModel)]="selectedParticipants" 
                            [options]="participants" 
