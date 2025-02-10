@@ -9,6 +9,7 @@ import { SpecialReceivingComponent } from './special-receiving/special-receiving
 import { PpmpListComponent } from './ppmp-list/ppmp-list.component';
 import { AnnualProcurementPlanComponent } from './annual-procurement-plan/annual-procurement-plan.component';
 import { CompletionComponent } from './completion/completion.component';
+import { PpmpComponent } from './ppmp/ppmp.component';
 
 export const enduserRoutes: Routes = [
   {
@@ -65,6 +66,14 @@ export const enduserRoutes: Routes = [
         path: 'ppmp-list',
         component: PpmpListComponent,
         data: { breadcrumb: 'PPMP List', roles: ['end-user','supply'] },
+        canActivate: [roleGuard],
+      },
+
+      
+       {
+        path: 'ppmp',
+        component: PpmpComponent,
+        data: { breadcrumb: 'Project Procurement Management Plan', roles: ['end-user'] },
         canActivate: [roleGuard],
       },
 
