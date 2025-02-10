@@ -389,22 +389,19 @@ export const navItems: NavItem[] = [
     route: '/bac/conference',
     requiredRoles: ['bac'],
   },
-
-   {
+  {
     displayName: 'Invitation to Bid',
     iconName: 'solar:checklist-minimalistic-line-duotone',
     route: '/bac/invitation-to-bid',
     requiredRoles: ['bac'],
   },
-  
-   {
+  {
     displayName: 'Opening of Bids',
     iconName: 'solar:checklist-minimalistic-line-duotone',
     route: '/bac/opening-of-bids',
     requiredRoles: ['bac'],
   },
-
-    {
+  {
     displayName: 'Contract',
     iconName: 'solar:checklist-minimalistic-line-duotone',
     route: '/bac/purchase-orders',

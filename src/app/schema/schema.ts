@@ -1,40 +1,40 @@
 // src/app/schema/schema.ts
 
-export interface Department {
-  id: number
+export class Department {
+  id: string
   name: string
 }
 
-export interface Office {
-  id: number
-  department_id: number
+export class Office {
+  id: string
+  department_id: string
   name: string
 }
 
-export interface User {
-  id: number
+export class User {
+  id: string
   name: string
   username: string
   password: string
   user_type: 'SuperAdmin' | 'Admin' | 'User'
   role: 'End-User' | 'BAC' | 'Budget' | 'Accounting' | 'Supply' | 'Inspection' | 'HOPE'
-  department_id: number
-  office_id: number
+  department_id: string
+  office_id: string
 }
 
-export interface ProcurementMode {
-  id: number
+export class ProcurementMode {
+  id: string
   mode_name: string
 }
 
-export interface FundingSource {
-  id: number
+export class FundingSource {
+  id: string
   source_name: string
 }
 
-export interface Budget {
-  id: number
-  department_id: number
+export class Budget {
+  id: string
+  department_id: string
   fiscal_year: number
   total_budget: number
   allocated_budget: number
@@ -43,10 +43,10 @@ export interface Budget {
   date_created: Date
 }
 
-export interface UserBudget {
-  id: number
-  user_id: number
-  budget_id: number
+export class UserBudget {
+  id: string
+  user_id: string
+  budget_id: string
   allocated_amount: number
   used_amount: number
   remaining_amount: number
@@ -76,18 +76,17 @@ export interface PPMPItem {
   quantity_required: number
   estimated_unit_cost: number
   estimated_total_cost: number
-  schedule: PPMPSchedule[]
+  procurement_mode_id: number
+  funding_source_id: number
+  remarks?: string
+  approval_status: 'Pending' | 'Approved' | 'Rejected'
+  current_approval_stage: string
 }
 
-export interface PPMPSchedule {
-  month: string
-  milestone: boolean
-}
-
-export interface PPMPApprover {
-  id: number
-  ppmp_id: number
-  user_id: number
+export class PPMPApprover {
+  id: string
+  ppmp_id: string
+  user_id: string
   approver_role: 'Department Head' | 'BAC' | 'Budget'
   approval_status: 'Pending' | 'Approved' | 'Rejected'
   approval_date: Date
@@ -96,8 +95,8 @@ export interface PPMPApprover {
   approval_order: number
 }
 
-export interface APP {
-  id: number
+export class APP {
+  id: string
   app_reference_number: string
   agency_name: string
   fiscal_year: number
@@ -105,7 +104,7 @@ export interface APP {
   date_prepared: Date
   date_approved?: Date
   approved_by?: number
-  ppmp_ids: number[]
+  ppmp_ids: string[]
   total_quantity_required: number
   total_estimated_cost: number
   implementation_schedule_q1: boolean
@@ -115,10 +114,10 @@ export interface APP {
   remarks?: string
 }
 
-export interface APPApprover {
-  id: number
-  app_id: number
-  user_id: number
+export class APPApprover {
+  id: string
+  app_id: string
+  user_id: string
   approver_role: 'BAC' | 'HOPE'
   approval_status: 'Pending' | 'Approved' | 'Rejected'
   approval_date: Date
@@ -127,10 +126,10 @@ export interface APPApprover {
   approval_order: number
 }
 
-export interface PurchaseRequest {
-  id: number
-  ppmp_id: number
-  requester_id: number
+export class PurchaseRequest {
+  id: string
+  ppmp_id: string
+  requester_id: string
   request_date: Date
   item_description: string
   quantity: number
@@ -139,10 +138,10 @@ export interface PurchaseRequest {
   approval_date?: Date
 }
 
-export interface PurchaseRequestApprover {
-  id: number
-  purchase_request_id: number
-  user_id: number
+export class PurchaseRequestApprover {
+  id: string
+  purchase_request_id: string
+  user_id: string
   approver_role: 'Department Head' | 'BAC' | 'Budget'
   approval_status: 'Pending' | 'Approved' | 'Rejected'
   approval_date: Date
@@ -151,9 +150,9 @@ export interface PurchaseRequestApprover {
   approval_order: number
 }
 
-export interface ProcurementProcess {
-  id: number
-  purchase_request_id: number
+export class ProcurementProcess {
+  id: string
+  purchase_request_id: string
   process_stage: string
   process_order: number
   date_started: Date
@@ -161,9 +160,9 @@ export interface ProcurementProcess {
   remarks?: string
 }
 
-export interface Contract {
-  id: number
-  procurement_id: number
+export class Contract {
+  id: string
+  procurement_id: string
   contractor_name: string
   contract_amount: number
   contract_date: Date
@@ -172,22 +171,22 @@ export interface Contract {
   status: 'Active' | 'Completed' | 'Terminated'
 }
 
-export interface InspectionAcceptance {
-  id: number
-  contract_id: number
+export class InspectionAcceptance {
+  id: string
+  contract_id: string
   inspected_by: number
   inspection_date: Date
   accepted: boolean
   remarks?: string
 }
 
-export interface Payment {
-  id: number
-  contract_id: number
+export class Payment {
+  id: string
+  contract_id: string
   obligation_request_date: Date
   disbursement_voucher_date: Date
   payment_date: Date
-  amount_paid: number
+  amount_paid: string
   payment_method: 'Check' | 'ADA'
   certificate_of_completion_issued: boolean
 }
