@@ -27,6 +27,10 @@ class CRUD:
                 data[column] = self.cipher.decrypt(value.encode()).decode()  # Decrypt and decode
         return data
 
+    def add_logic(self, resource_name, query):
+        @self.app.route(f'/api/{resource_name}', methods=['GET'], endpoint=f'{resource_name.lower()}_create')
+        def join():
+            return self.join(query)
     def add_route(self, resource_name):
         # POST endpoint to create a resource
         @self.app.route(f'/api/{resource_name}', methods=['POST'], endpoint=f'{resource_name.lower()}_create')
@@ -86,19 +90,7 @@ class CRUD:
         cursor = self.postgres.cursor(cursor_factory=RealDictCursor)
         params = request.args or {}
         # Start building the query
-        query = f"SELECT {params.get('selector', '*')} FROM {resource_name.lower()}"  
-        # Handle JOINs
-        if 'join' in params:
-            join = json.loads(params['join'])
-            for i in range(0, len(join), 2):
-                table = join[i]
-                condition = join[i + 1]
-                query += f" LEFT JOIN {table} ON {condition}"
-
-        # Apply filter if it exists
-        if 'filter' in params:
-            query += f" {params['filter']}"
-
+        query = f"SELECT * FROM {resource_name.lower()}"  
         # Handle item_id, if it's provided
         if item_id:
             query += f" WHERE {resource_name.lower()}.id = %s"
@@ -170,3 +162,22 @@ class CRUD:
         cursor.close()
 
         return jsonify({'message': f'{resource_name} partially updated successfully'}), 200
+
+    def join(self, query):
+        cursor = self.postgres.cursor(cursor_factory=RealDictCursor)
+        # Handle item_id, if it's provided
+        cursor.execute(query)
+        
+        # Fetch the result rows and format them as a list of dictionaries
+        results = cursor.fetchall()
+        
+        # Exclude sensitive columns
+        for result in results:
+            for column in self.encrypted_columns:
+                if column in result:
+                    del result[column]
+
+        cursor.close()
+        
+        # Return the results as JSON
+        return jsonify(results), 200

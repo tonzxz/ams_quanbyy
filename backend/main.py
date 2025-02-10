@@ -65,6 +65,8 @@ crud = CRUD(app, db,key)
 for resource in resources:
     crud.add_route(resource)
 
+
+
 CORS(app)
 
 if __name__ == '__main__':
