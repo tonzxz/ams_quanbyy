@@ -59,6 +59,7 @@ export class FullComponent implements OnInit {
   }
 
   constructor(
+    private depService:CrudService<Department>,
     private ppmpService:CrudService<PPMP>,
     private userService:CrudService<User>,
     private breakpointObserver: BreakpointObserver, private navService: NavService) {
@@ -77,6 +78,16 @@ export class FullComponent implements OnInit {
   }
 
   async ngOnInit() {
+    // Create
+    localStorage.removeItem('departments');
+    const data:Partial<Department> = {
+      name: 'Antonxs'
+    }
+    await this.depService.create('departments',data)
+    const output = await this.depService.getAll('departments')
+    const outputUsers = await this.userService.getAll('users')
+    console.log('Departments', output);
+    console.log('USERS', outputUsers);
 
   }
 
