@@ -31,10 +31,11 @@ export class CrudService {
   constructor(private http: HttpClient) {}
 
   // Create
-  async create<T>(table: string, data: Omit<T,'id'>): Promise<T> {
+  async create<T>(model: { new(): T }, data: Omit<T,'id'>): Promise<T> {
+    const table = model.name.toLowerCase().replaceAll(' ','_');
     if (environment.use == 'local') {
       // For 'local', we modify localStorage
-      const dummyData: T[] = await this.getAll<T>(table);
+      const dummyData: T[] = await this.getAll<T>(model);
       dummyData.push({ ...data, id: `${Date.now()}` } as T); // Use timestamp for new ID
       localStorage.setItem(table, JSON.stringify(dummyData));
       return data as T;
@@ -45,7 +46,8 @@ export class CrudService {
   }
 
   // Read (Get all records)
-  async getAll<T>(table: string): Promise<T[]> {
+  async getAll<T>(model: { new(): T }): Promise<T[]> {
+    const table = model.name.toLowerCase().replaceAll(' ','_');
     if (environment.use == 'local') {
       const dummyData = localStorage.getItem(table);
       if (dummyData) {
@@ -64,7 +66,8 @@ export class CrudService {
   }
 
   // Method to return Observable that fetches data on WebSocket signal
-  getAllLive<T>(table: string): Observable<T[]> {
+  getAllLive<T>(model: { new(): T }): Observable<T[]> {
+    const table = model.name.toLowerCase().replaceAll(' ','_');
     const dataSubject = new BehaviorSubject<T[]>(this.dataCache[table] || []); // Subject to hold data
     // Listen to WebSocket updates for the table
     this.wsService.listenToTable(table).subscribe(() => {
@@ -76,7 +79,7 @@ export class CrudService {
         });
       } else {
         // In 'local', listen to changes in localStorage (though, in practice, you might need a more event-driven approach for localStorage updates)
-        const updatedData = this.getAll<T>(table); 
+        const updatedData = this.getAll<T>(model); 
         updatedData.then(newData => {
           this.dataCache[table] = newData;
           dataSubject.next(newData);
@@ -87,9 +90,10 @@ export class CrudService {
   }
 
   // Read (Get by ID)
-  async get<T>(table: string, id: string): Promise<T | undefined> {
+  async get<T>(model: { new(): T }, id: string): Promise<T | undefined> {
+    const table = model.name.toLowerCase().replaceAll(' ','_');
     if (environment.use == 'local') {
-      const dummyData: T[] = await this.getAll<T>(table);
+      const dummyData: T[] = await this.getAll<T>(model);
       const item = dummyData.find(i => (i as any).id == id); // Accessing `id` in a type-safe way
       return item;
     } else {
@@ -99,9 +103,10 @@ export class CrudService {
   }
 
   // Update
-  async update<T>(table: string, id: string, data: Omit<T,'id'>): Promise<T> {
+  async update<T>(model: { new(): T }, id: string, data: Omit<T,'id'>): Promise<T> {
+    const table = model.name.toLowerCase().replaceAll(' ','_');
     if (environment.use == 'local') {
-      const dummyData: T[] = await this.getAll<T>(table);
+      const dummyData: T[] = await this.getAll<T>(model);
       const replaceIndex = dummyData.findIndex(i => (i as any).id == id); // Accessing `id` in a type-safe way
       if (replaceIndex !== -1) {
         dummyData[replaceIndex] = { ...dummyData[replaceIndex], ...data };
@@ -117,9 +122,10 @@ export class CrudService {
   }
 
   // Partial Update
-  async partial_update<T>(table: string, id: string, data: Partial<Omit<T,'id'>>): Promise<T> {
+  async partial_update<T>(model: { new(): T }, id: string, data: Partial<Omit<T,'id'>>): Promise<T> {
+    const table = model.name.toLowerCase().replaceAll(' ','_');
     if (environment.use == 'local') {
-      const dummyData: T[] = await this.getAll<T>(table);
+      const dummyData: T[] = await this.getAll<T>(model);
       const replaceIndex = dummyData.findIndex(i => (i as any).id == id); // Accessing `id` in a type-safe way
       if (replaceIndex !== -1) {
         dummyData[replaceIndex] = { ...dummyData[replaceIndex], ...data };
@@ -135,9 +141,10 @@ export class CrudService {
   }
 
   // Delete
-  async delete<T>(table: string, id: string): Promise<T | undefined> {
+  async delete<T>(model: { new(): T }, id: string): Promise<T | undefined> {
+    const table = model.name.toLowerCase().replaceAll(' ','_');
     if (environment.use == 'local') {
-      const dummyData: T[] = await this.getAll<T>(table);
+      const dummyData: T[] = await this.getAll<T>(model);
       const index = dummyData.findIndex(i => (i as any).id == id); // Accessing `id` in a type-safe way
       if (index !== -1) {
         const deletedItem = dummyData.splice(index, 1)[0];

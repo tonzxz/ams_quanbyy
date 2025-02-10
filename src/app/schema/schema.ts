@@ -1,17 +1,17 @@
 // src/app/schema/schema.ts
 
-export interface Department {
+export class Department {
   id: string
   name: string
 }
 
-export interface Office {
+export class Office {
   id: string
   department_id: string
   name: string
 }
 
-export interface User {
+export class User {
   id: string
   name: string
   username: string
@@ -22,17 +22,17 @@ export interface User {
   office_id: string
 }
 
-export interface ProcurementMode {
+export class ProcurementMode {
   id: string
   mode_name: string
 }
 
-export interface FundingSource {
+export class FundingSource {
   id: string
   source_name: string
 }
 
-export interface Budget {
+export class Budget {
   id: string
   department_id: string
   fiscal_year: number
@@ -43,7 +43,7 @@ export interface Budget {
   date_created: Date
 }
 
-export interface UserBudget {
+export class UserBudget {
   id: string
   user_id: string
   budget_id: string
@@ -53,7 +53,7 @@ export interface UserBudget {
   date_allocated: Date
 }
 
-export interface PPMP {
+export class PPMP {
   id: string
   department_id: string
   office_id: string
@@ -76,7 +76,7 @@ export interface PPMP {
   current_approval_stage: string
 }
 
-export interface PPMPApprover {
+export class PPMPApprover {
   id: string
   ppmp_id: string
   user_id: string
@@ -88,7 +88,7 @@ export interface PPMPApprover {
   approval_order: number
 }
 
-export interface APP {
+export class APP {
   id: string
   app_reference_number: string
   agency_name: string
@@ -107,7 +107,7 @@ export interface APP {
   remarks?: string
 }
 
-export interface APPApprover {
+export class APPApprover {
   id: string
   app_id: string
   user_id: string
@@ -119,7 +119,7 @@ export interface APPApprover {
   approval_order: number
 }
 
-export interface PurchaseRequest {
+export class PurchaseRequest {
   id: string
   ppmp_id: string
   requester_id: string
@@ -131,7 +131,7 @@ export interface PurchaseRequest {
   approval_date?: Date
 }
 
-export interface PurchaseRequestApprover {
+export class PurchaseRequestApprover {
   id: string
   purchase_request_id: string
   user_id: string
@@ -143,7 +143,7 @@ export interface PurchaseRequestApprover {
   approval_order: number
 }
 
-export interface ProcurementProcess {
+export class ProcurementProcess {
   id: string
   purchase_request_id: string
   process_stage: string
@@ -153,7 +153,7 @@ export interface ProcurementProcess {
   remarks?: string
 }
 
-export interface Contract {
+export class Contract {
   id: string
   procurement_id: string
   contractor_name: string
@@ -164,7 +164,7 @@ export interface Contract {
   status: 'Active' | 'Completed' | 'Terminated'
 }
 
-export interface InspectionAcceptance {
+export class InspectionAcceptance {
   id: string
   contract_id: string
   inspected_by: number
@@ -173,7 +173,7 @@ export interface InspectionAcceptance {
   remarks?: string
 }
 
-export interface Payment {
+export class Payment {
   id: string
   contract_id: string
   obligation_request_date: Date
