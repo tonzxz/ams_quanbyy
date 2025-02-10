@@ -79,15 +79,15 @@ export class FullComponent implements OnInit {
 
   async ngOnInit() {
     // Create
-    localStorage.removeItem('departments');
-    const data:Partial<Department> = {
-      name: 'Antonxs'
-    }
-    await this.depService.create('departments',data)
-    const output = await this.depService.getAll('departments')
-    const outputUsers = await this.userService.getAll('users')
-    console.log('Departments', output);
-    console.log('USERS', outputUsers);
+    // localStorage.removeItem('departments');
+    // const data:Partial<Department> = {
+    //   name: 'Antonxs'
+    // }
+    // await this.depService.create('departments',data)
+    // const output = await this.depService.getAll('departments')
+    // const outputUsers = await this.userService.getAll('users')
+    // console.log('Departments', output);
+    // console.log('USERS', outputUsers);
 
   }
 
