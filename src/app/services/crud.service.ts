@@ -28,11 +28,15 @@ export class CrudService {
   private baseUrl = environment.use == 'assets' || environment.use == 'local' ? '/assets/dummy' : environment.api; // API base URL or dummy data for local
   private dataCache: { [key: string]: any[] } = {}; // Cache to hold table data
   private wsService = new WebSocketService();
+  private getTableName(input: string): string {
+    return input.replace(/([a-z])([A-Z])/g, '$1_$2').toLowerCase();
+  }
+
   constructor(private http: HttpClient) {}
 
   // Create
   async create<T>(model: { new(): T }, data: Omit<T,'id'>): Promise<T> {
-    const table = model.name.toLowerCase().replaceAll(' ','_');
+    const table = this.getTableName(model.name);
     if (environment.use == 'local') {
       // For 'local', we modify localStorage
       const dummyData: T[] = await this.getAll<T>(model);
@@ -47,7 +51,7 @@ export class CrudService {
 
   // Read (Get all records)
   async getAll<T>(model: { new(): T }): Promise<T[]> {
-    const table = model.name.toLowerCase().replaceAll(' ','_');
+    const table =this.getTableName(model.name);
     if (environment.use == 'local') {
       const dummyData = localStorage.getItem(table);
       if (dummyData) {
@@ -67,7 +71,7 @@ export class CrudService {
 
   // Method to return Observable that fetches data on WebSocket signal
   getAllLive<T>(model: { new(): T }): Observable<T[]> {
-    const table = model.name.toLowerCase().replaceAll(' ','_');
+    const table = this.getTableName(model.name);
     const dataSubject = new BehaviorSubject<T[]>(this.dataCache[table] || []); // Subject to hold data
     // Listen to WebSocket updates for the table
     this.wsService.listenToTable(table).subscribe(() => {
@@ -91,7 +95,7 @@ export class CrudService {
 
   // Read (Get by ID)
   async get<T>(model: { new(): T }, id: string): Promise<T | undefined> {
-    const table = model.name.toLowerCase().replaceAll(' ','_');
+    const table = this.getTableName(model.name);
     if (environment.use == 'local') {
       const dummyData: T[] = await this.getAll<T>(model);
       const item = dummyData.find(i => (i as any).id == id); // Accessing `id` in a type-safe way
@@ -104,7 +108,7 @@ export class CrudService {
 
   // Update
   async update<T>(model: { new(): T }, id: string, data: Omit<T,'id'>): Promise<T> {
-    const table = model.name.toLowerCase().replaceAll(' ','_');
+    const table = this.getTableName(model.name);
     if (environment.use == 'local') {
       const dummyData: T[] = await this.getAll<T>(model);
       const replaceIndex = dummyData.findIndex(i => (i as any).id == id); // Accessing `id` in a type-safe way
@@ -123,7 +127,7 @@ export class CrudService {
 
   // Partial Update
   async partial_update<T>(model: { new(): T }, id: string, data: Partial<Omit<T,'id'>>): Promise<T> {
-    const table = model.name.toLowerCase().replaceAll(' ','_');
+    const table = this.getTableName(model.name);
     if (environment.use == 'local') {
       const dummyData: T[] = await this.getAll<T>(model);
       const replaceIndex = dummyData.findIndex(i => (i as any).id == id); // Accessing `id` in a type-safe way
@@ -142,7 +146,7 @@ export class CrudService {
 
   // Delete
   async delete<T>(model: { new(): T }, id: string): Promise<T | undefined> {
-    const table = model.name.toLowerCase().replaceAll(' ','_');
+    const table = this.getTableName(model.name);
     if (environment.use == 'local') {
       const dummyData: T[] = await this.getAll<T>(model);
       const index = dummyData.findIndex(i => (i as any).id == id); // Accessing `id` in a type-safe way
