@@ -13,6 +13,8 @@ import { SidebarComponent } from './sidebar/sidebar.component';
 import { NgScrollbarModule } from 'ngx-scrollbar';
 import { TablerIconsModule } from 'angular-tabler-icons';
 import { HeaderComponent } from './header/header.component';
+import { CrudService } from 'src/app/services/crud.service';
+import { User } from 'src/app/schema/schema';
 
 const MOBILE_VIEW = 'screen and (max-width: 768px)';
 const TABLET_VIEW = 'screen and (min-width: 769px) and (max-width: 1024px)';
@@ -56,7 +58,9 @@ export class FullComponent implements OnInit {
     return this.isMobileScreen;
   }
 
-  constructor(private breakpointObserver: BreakpointObserver, private navService: NavService) {
+  constructor(
+    private cs:CrudService<User>,
+    private breakpointObserver: BreakpointObserver, private navService: NavService) {
     
     this.htmlElement = document.querySelector('html')!;
     this.htmlElement.classList.add('light-theme');
@@ -71,7 +75,10 @@ export class FullComponent implements OnInit {
       });
   }
 
-  ngOnInit(): void {}
+  async ngOnInit() {
+   const ppmps =  await this.cs.getAll('ppmp',{ join:['users','users.id IS NOT NULL']});
+   alert(JSON.stringify(ppmps));
+  }
 
   ngOnDestroy() {
     this.layoutChangesSubscription.unsubscribe();

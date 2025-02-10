@@ -164,6 +164,27 @@
 
     
     <!-- Office Dropdown -->
+            <!-- Department -->
+<!-- <div class="flex items-center gap-4 mb-4">
+  <label class="font-semibold w-24">Department</label>
+  <div class="flex-auto flex-col flex">
+    <p-dropdown
+      formControlName="departmentId"
+      [options]="departmentDropdownOptions"
+      placeholder="Select Department"
+      [style]="{ width: '100%' }"
+      appendTo="body"
+    ></p-dropdown>
+    <small
+      class="self-end text-red-500 mt-1"
+      *ngIf="userSubmitted && userForm.get('departmentId')?.errors?.['required']"
+    >
+      Department is required.
+    </small>
+  </div>
+</div> -->
+
+<!-- Office -->
 <div class="flex items-center gap-4 mb-4">
   <label class="font-semibold w-24">Office</label>
   <div class="flex-auto flex-col flex">

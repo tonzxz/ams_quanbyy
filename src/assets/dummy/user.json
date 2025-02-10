@@ -1,0 +1,73 @@
+[
+    {
+      "id": 1,
+      "name": "John Doe",
+      "username": "johndoe",
+      "password": "password123",
+      "user_type": "SuperAdmin",
+      "role": "End-User",
+      "department_id": 101,
+      "office_id": 1001
+    },
+    {
+      "id": 2,
+      "name": "Jane Smith",
+      "username": "janesmith",
+      "password": "password456",
+      "user_type": "Admin",
+      "role": "BAC",
+      "department_id": 102,
+      "office_id": 1002
+    },
+    {
+      "id": 3,
+      "name": "Robert Johnson",
+      "username": "robertjohnson",
+      "password": "password789",
+      "user_type": "User",
+      "role": "Budget",
+      "department_id": 103,
+      "office_id": 1003
+    },
+    {
+      "id": 4,
+      "name": "Emily Davis",
+      "username": "emilydavis",
+      "password": "password101",
+      "user_type": "Admin",
+      "role": "Accounting",
+      "department_id": 104,
+      "office_id": 1004
+    },
+    {
+      "id": 5,
+      "name": "Michael Brown",
+      "username": "michaelbrown",
+      "password": "password102",
+      "user_type": "User",
+      "role": "Supply",
+      "department_id": 105,
+      "office_id": 1005
+    },
+    {
+      "id": 6,
+      "name": "Sarah Wilson",
+      "username": "sarahwilson",
+      "password": "password103",
+      "user_type": "SuperAdmin",
+      "role": "Inspection",
+      "department_id": 106,
+      "office_id": 1006
+    },
+    {
+      "id": 7,
+      "name": "David Lee",
+      "username": "davidlee",
+      "password": "password104",
+      "user_type": "Admin",
+      "role": "HOPE",
+      "department_id": 107,
+      "office_id": 1007
+    }
+  ]
+  
