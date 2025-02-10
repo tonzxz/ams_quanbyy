@@ -2,16 +2,52 @@ from datetime import datetime
 from flask import Flask, request, jsonify,send_from_directory
 from flask_cors import CORS
 from flask_mysqldb import MySQL
-from core.crud import CRUD
+import psycopg2
+import os
+from dotenv import load_dotenv
+
 from cryptography.fernet import Fernet
+import argparse
+
+load_dotenv()
+
+parser = argparse.ArgumentParser(description="Flask Backend API")
+parser.add_argument('--db', type=str, default=None, help='Database: [postgres], [mysql]')
+
+args = parser.parse_args()
+
+if args.db is None:
+    print('Please specify database using --db')
+
 app = Flask(__name__)
 
-app.config['MYSQL_HOST'] = 'localhost'
-app.config['MYSQL_USER'] = 'root'
-app.config['MYSQL_PASSWORD'] = ''
-app.config['MYSQL_DB'] = 'ams'
+if args.db == 'mysql':
+    app.config['MYSQL_HOST'] = os.getenv('DB_HOST')
+    app.config['MYSQL_USER'] = os.getenv('DB_USER')
+    app.config['MYSQL_PASSWORD'] = os.getenv('DB_PASSWORD')
+    app.config['MYSQL_DB'] = os.getenv('DB_NAME')
 
-mysql = MySQL(app)
+    db = MySQL(app)
+    from core.controllers.mySQL import CRUD
+    print('Server running on MySQL')
+elif args.db == 'psql':
+    app.config['POSTGRES_HOST'] = os.getenv('DB_HOST')
+    app.config['POSTGRES_USER'] = os.getenv('DB_USER')
+    app.config['POSTGRES_PASSWORD'] = os.getenv('DB_PASSWORD')
+    app.config['POSTGRES_DB'] = os.getenv('DB_NAME')
+    app.config['POSTGRES_PORT'] = os.getenv('DB_PORT')
+    db = psycopg2.connect(
+        host=app.config['POSTGRES_HOST'],
+        user=app.config['POSTGRES_USER'],
+        password=app.config['POSTGRES_PASSWORD'],
+        dbname=app.config['POSTGRES_DB'],
+        port= app.config['POSTGRES_PORT'] or 5432
+    )
+    from core.controllers.postgreSQL import CRUD
+    print('Server running on PostgreSQL')
+else:
+    print(f'{args.db} is not supported')
+    exit()
 
 # List of resource names
 resources = [
@@ -24,7 +60,7 @@ resources = [
 
 key = Fernet.generate_key()
 # Instantiate CRUD object
-crud = CRUD(app, mysql,key)
+crud = CRUD(app, db,key)
 # Dynamically add routes for each resource
 for resource in resources:
     crud.add_route(resource)
