@@ -5,16 +5,6 @@ import { environment } from 'src/environment/environment';
 import { WebSocketSubject } from 'rxjs/webSocket'; // rxjs WebSocketSubject
 
 
-interface Identifiable {
-  id: string;
-}
-
-interface JoinQuery{
-  selector?:string;
-  join?:string[];
-  filter?:string;
-}
-
 class WebSocketService {
   private socket: WebSocketSubject<any>;
 
@@ -33,18 +23,18 @@ class WebSocketService {
 @Injectable({
   providedIn: 'root'
 })
-export class CrudService<T> {
+export class CrudService {
 
   private baseUrl = environment.use == 'assets' || environment.use == 'local' ? '/assets/dummy' : environment.api; // API base URL or dummy data for local
   private dataCache: { [key: string]: any[] } = {}; // Cache to hold table data
   private wsService = new WebSocketService();
-  constructor(private http: HttpClient) { }
+  constructor(private http: HttpClient) {}
 
   // Create
-  async create(table: string, data: Partial<T>): Promise<T> {
+  async create<T>(table: string, data: Omit<T,'id'>): Promise<T> {
     if (environment.use == 'local') {
       // For 'local', we modify localStorage
-      const dummyData: T[] = await this.getAll(table);
+      const dummyData: T[] = await this.getAll<T>(table);
       dummyData.push({ ...data, id: `${Date.now()}` } as T); // Use timestamp for new ID
       localStorage.setItem(table, JSON.stringify(dummyData));
       return data as T;
@@ -55,7 +45,7 @@ export class CrudService<T> {
   }
 
   // Read (Get all records)
-  async getAll(table: string): Promise<T[]> {
+  async getAll<T>(table: string): Promise<T[]> {
     if (environment.use == 'local') {
       const dummyData = localStorage.getItem(table);
       if (dummyData) {
@@ -74,7 +64,7 @@ export class CrudService<T> {
   }
 
   // Method to return Observable that fetches data on WebSocket signal
-  getAllLive(table: string): Observable<T[]> {
+  getAllLive<T>(table: string): Observable<T[]> {
     const dataSubject = new BehaviorSubject<T[]>(this.dataCache[table] || []); // Subject to hold data
     // Listen to WebSocket updates for the table
     this.wsService.listenToTable(table).subscribe(() => {
@@ -86,7 +76,7 @@ export class CrudService<T> {
         });
       } else {
         // In 'local', listen to changes in localStorage (though, in practice, you might need a more event-driven approach for localStorage updates)
-        const updatedData = this.getAll(table); 
+        const updatedData = this.getAll<T>(table); 
         updatedData.then(newData => {
           this.dataCache[table] = newData;
           dataSubject.next(newData);
@@ -97,9 +87,9 @@ export class CrudService<T> {
   }
 
   // Read (Get by ID)
-  async get(table: string, id: string): Promise<T | undefined> {
+  async get<T>(table: string, id: string): Promise<T | undefined> {
     if (environment.use == 'local') {
-      const dummyData: T[] = await this.getAll(table);
+      const dummyData: T[] = await this.getAll<T>(table);
       const item = dummyData.find(i => (i as any).id == id); // Accessing `id` in a type-safe way
       return item;
     } else {
@@ -109,9 +99,9 @@ export class CrudService<T> {
   }
 
   // Update
-  async update(table: string, id: string, data: Partial<T>): Promise<T> {
+  async update<T>(table: string, id: string, data: Omit<T,'id'>): Promise<T> {
     if (environment.use == 'local') {
-      const dummyData: T[] = await this.getAll(table);
+      const dummyData: T[] = await this.getAll<T>(table);
       const replaceIndex = dummyData.findIndex(i => (i as any).id == id); // Accessing `id` in a type-safe way
       if (replaceIndex !== -1) {
         dummyData[replaceIndex] = { ...dummyData[replaceIndex], ...data };
@@ -127,9 +117,9 @@ export class CrudService<T> {
   }
 
   // Partial Update
-  async partial_update(table: string, id: string, data: Partial<T>): Promise<T> {
+  async partial_update<T>(table: string, id: string, data: Partial<Omit<T,'id'>>): Promise<T> {
     if (environment.use == 'local') {
-      const dummyData: T[] = await this.getAll(table);
+      const dummyData: T[] = await this.getAll<T>(table);
       const replaceIndex = dummyData.findIndex(i => (i as any).id == id); // Accessing `id` in a type-safe way
       if (replaceIndex !== -1) {
         dummyData[replaceIndex] = { ...dummyData[replaceIndex], ...data };
@@ -145,9 +135,9 @@ export class CrudService<T> {
   }
 
   // Delete
-  async delete(table: string, id: string): Promise<T | undefined> {
+  async delete<T>(table: string, id: string): Promise<T | undefined> {
     if (environment.use == 'local') {
-      const dummyData: T[] = await this.getAll(table);
+      const dummyData: T[] = await this.getAll<T>(table);
       const index = dummyData.findIndex(i => (i as any).id == id); // Accessing `id` in a type-safe way
       if (index !== -1) {
         const deletedItem = dummyData.splice(index, 1)[0];

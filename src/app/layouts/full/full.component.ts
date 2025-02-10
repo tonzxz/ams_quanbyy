@@ -59,9 +59,7 @@ export class FullComponent implements OnInit {
   }
 
   constructor(
-    private depService:CrudService<Department>,
-    private ppmpService:CrudService<PPMP>,
-    private userService:CrudService<User>,
+    private crudService:CrudService,
     private breakpointObserver: BreakpointObserver, private navService: NavService) {
     
     this.htmlElement = document.querySelector('html')!;
@@ -84,10 +82,10 @@ export class FullComponent implements OnInit {
     //   name: 'Antonxs'
     // }
     // await this.depService.create('departments',data)
-    // const output = await this.depService.getAll('departments')
-    // const outputUsers = await this.userService.getAll('users')
-    // console.log('Departments', output);
-    // console.log('USERS', outputUsers);
+    const output = await this.crudService.getAll<Department>('departments')
+    const outputUsers = await this.crudService.getAll<User>('users')
+    console.log('Departments', output);
+    console.log('USERS', outputUsers);
 
   }
 
