@@ -6,3 +6,5 @@ flask_mysqldb
 google-generativeai
 cryptography
 flask-socketio
+python-dotenv
+psycopg2

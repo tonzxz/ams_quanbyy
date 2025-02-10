@@ -1,0 +1,265 @@
+<!-- ppmp.component.html -->
+<mat-card class="cardWithShadow">
+  <mat-card-content>
+    <mat-card-title>PPMP Management</mat-card-title>
+    <mat-card-subtitle class="text-sm text-gray-500">
+      Manage Project Procurement Management Plan (PPMP)
+    </mat-card-subtitle>
+
+    <div class="flex justify-end mt-4">
+      <p-button
+        pTooltip="Add New PPMP"
+        (click)="openNewPpmpDialog()"
+        [outlined]="true"
+        size="small"
+        label="Add PPMP"
+        icon="pi pi-plus">
+      </p-button>
+    </div>
+
+    <p-table
+      [value]="ppmps"
+      [paginator]="true"
+      [rows]="10"
+      [responsive]="true"
+      [rowHover]="true"
+      styleClass="p-datatable-sm mt-4">
+      
+      <ng-template pTemplate="header">
+        <tr>
+          <th>Project Title</th>
+          <th>Description</th>
+          <th>Procurement Method</th>
+          <th>Total Cost</th>
+          <th>Status</th>
+          <th>Actions</th>
+        </tr>
+      </ng-template>
+
+      <ng-template pTemplate="body" let-ppmp>
+        <tr>
+          <td>{{ ppmp.items[0].project_title }}</td>
+          <td>{{ ppmp.items[0].item_description }}</td>
+          <td>{{ ppmp.items[0].procurement_method }}</td>
+          <td>₱{{ ppmp.items[0].estimated_total_cost | number:'1.2-2' }}</td>
+          <td>
+            <span [class]="'status-badge status-' + ppmp.approval_status.toLowerCase()">
+              {{ ppmp.approval_status }}
+            </span>
+          </td>
+          <td>
+            <div class="flex gap-2">
+              <button
+                pButton
+                icon="pi pi-pencil"
+                class="p-button-rounded p-button-primary p-button-sm"
+                [outlined]="true"
+                (click)="editPpmp(ppmp)">
+              </button>
+              <button
+                pButton
+                icon="pi pi-trash"
+                class="p-button-rounded p-button-danger p-button-sm"
+                [outlined]="true"
+                (click)="deletePpmp(ppmp)">
+              </button>
+            </div>
+          </td>
+        </tr>
+      </ng-template>
+
+      <ng-template pTemplate="emptymessage">
+        <tr>
+          <td colspan="6" class="text-center">No PPMP records found.</td>
+        </tr>
+      </ng-template>
+    </p-table>
+  </mat-card-content>
+</mat-card>
+
+<p-dialog 
+  [(visible)]="ppmpDialog" 
+  [modal]="true" 
+  [style]="{ width: '700px' }" 
+  [header]="isEditMode ? 'Edit PPMP' : 'New PPMP'">
+
+  <form [formGroup]="ppmpForm" class="p-fluid">
+    <!-- Project Title and Code -->
+    <div class="grid">
+      <div class="col-12 md:col-6">
+        <label for="project_title">Project Title *</label>
+        <input 
+          id="project_title" 
+          type="text" 
+          pInputText 
+          formControlName="project_title"
+          [ngClass]="{'ng-invalid ng-dirty': isFieldInvalid('project_title')}"
+          placeholder="Enter project title"/>
+          </div>
+
+      <div class="col-12 md:col-6">
+        <label for="project_code">Project Code</label>
+        <input 
+          id="project_code" 
+          type="text" 
+          pInputText 
+          formControlName="project_code"
+          placeholder="Enter project code"/>
+      </div>
+    </div>
+
+    <!-- Procurement Method  -->
+    <div class="grid">
+      <div class="col-12 md:col-6">
+        <label for="procurement_method">Procurement Method *</label>
+        <p-dropdown 
+          id="procurement_method"
+          [options]="procurementMethods" 
+          formControlName="procurement_method" 
+          placeholder="Select Method"
+          [ngClass]="{'ng-invalid ng-dirty': isFieldInvalid('procurement_method')}"
+          [style]="{'width':'100%'}">
+        </p-dropdown>
+      </div>
+
+    
+    </div>
+
+    <!-- Description and Specification -->
+    <div class="grid">
+      <div class="col-12">
+        <label for="item_description">Item Description *</label>
+        <textarea 
+          id="item_description" 
+          pInputTextarea 
+          formControlName="item_description" 
+          [ngClass]="{'ng-invalid ng-dirty': isFieldInvalid('item_description')}"
+          rows="3" 
+          placeholder="Enter item description"
+          class="w-full">
+        </textarea>
+      </div>
+
+      <div class="col-12">
+        <label for="technical_specification">Technical Specification *</label>
+        <textarea 
+          id="technical_specification" 
+          pInputTextarea 
+          formControlName="technical_specification" 
+          [ngClass]="{'ng-invalid ng-dirty': isFieldInvalid('technical_specification')}"
+          rows="3" 
+          placeholder="Enter technical specification"
+          class="w-full">
+        </textarea>
+      </div>
+    </div>
+
+    <!-- Unit, Quantity and Costs -->
+    <div class="grid">
+      <div class="col-12 md:col-6">
+        <label for="unit_measurement">Unit of Measurement *</label>
+        <input 
+          id="unit_measurement" 
+          type="text" 
+          pInputText 
+          formControlName="unit_of_measurement"
+          [ngClass]="{'ng-invalid ng-dirty': isFieldInvalid('unit_of_measurement')}"
+          placeholder="Enter unit (e.g., pieces, lot)"/>
+      </div>
+
+      <div class="col-12 md:col-6">
+        <label for="quantity">Quantity Required *</label>
+        <p-inputNumber 
+          id="quantity"
+          formControlName="quantity_required"
+          [ngClass]="{'ng-invalid ng-dirty': isFieldInvalid('quantity_required')}"
+          [min]="1"
+          placeholder="Enter quantity"
+          [showButtons]="false"
+          mode="decimal"
+          [minFractionDigits]="0"
+          class="w-full">
+        </p-inputNumber>
+      </div>
+
+      <div class="col-12 md:col-6">
+        <label for="unit_cost">Estimated Unit Cost *</label>
+        <p-inputNumber 
+          id="unit_cost"
+          formControlName="estimated_unit_cost"
+          [ngClass]="{'ng-invalid ng-dirty': isFieldInvalid('estimated_unit_cost')}"
+          mode="currency" 
+          currency="PHP" 
+          [min]="0"
+          placeholder="₱0.00"
+          [showButtons]="false"
+          class="w-full">
+        </p-inputNumber>
+      </div>
+
+      <div class="col-12 md:col-6">
+        <label for="total_cost">Estimated Total Cost</label>
+        <p-inputNumber 
+          id="total_cost"
+          formControlName="estimated_total_cost"
+          mode="currency" 
+          currency="PHP" 
+          [readonly]="true"
+          [showButtons]="false"
+          class="w-full">
+        </p-inputNumber>
+      </div>
+    </div>
+
+    <!-- Schedule Duration -->
+    <div class="grid">
+      <div class="col-12">
+        <label>Schedule Duration</label>
+        <div class="flex gap-2">
+          <div class="flex-1">
+            <label class="text-sm">Start Month *</label>
+            <p-dropdown 
+              formControlName="start_month"
+              [options]="months"
+              placeholder="Select Start Month"
+              [ngClass]="{'ng-invalid ng-dirty': isFieldInvalid('start_month')}"
+              [style]="{'width':'100%'}">
+            </p-dropdown>
+          </div>
+          <div class="flex-1">
+            <label class="text-sm">End Month *</label>
+            <p-dropdown 
+              formControlName="end_month"
+              [options]="getFilteredEndMonths()"
+              placeholder="Select End Month"
+              [ngClass]="{'ng-invalid ng-dirty': isFieldInvalid('end_month')}"
+              [style]="{'width':'100%'}">
+            </p-dropdown>
+          </div>
+        </div>
+      </div>
+    </div>
+  </form>
+
+  <ng-template pTemplate="footer">
+    <div class="flex justify-end gap-2">
+      <button 
+        pButton 
+        label="Cancel" 
+        icon="pi pi-times" 
+        class="p-button-text" 
+        (click)="hideDialog()">
+      </button>
+      <button 
+        pButton 
+        label="Save" 
+        icon="pi pi-check" 
+        [loading]="loading"
+        (click)="savePpmp()">
+      </button>
+    </div>
+  </ng-template>
+</p-dialog>
+
+<p-toast position="top-right"></p-toast>
+<p-confirmDialog></p-confirmDialog>
