@@ -1,6 +1,6 @@
 // src/app/schema/schema.ts
 
-export class Department {
+export interface Department {
   id: string
   name: string
 }

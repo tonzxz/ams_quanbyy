@@ -83,7 +83,7 @@ export class FullComponent implements OnInit {
     // }
     // await this.depService.create('departments',data)
     const output = await this.crudService.getAll<Department>('departments')
-    const outputUsers = await this.crudService.getAll<User>('users')
+    const outputUsers = await this.crudService.getAll('users')
     console.log('Departments', output);
     console.log('USERS', outputUsers);
 
