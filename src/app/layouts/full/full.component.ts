@@ -14,7 +14,7 @@ import { NgScrollbarModule } from 'ngx-scrollbar';
 import { TablerIconsModule } from 'angular-tabler-icons';
 import { HeaderComponent } from './header/header.component';
 import { CrudService } from 'src/app/services/crud.service';
-import { User } from 'src/app/schema/schema';
+import { Department, Office, PPMP, PPMPApprover, User } from 'src/app/schema/schema';
 
 const MOBILE_VIEW = 'screen and (max-width: 768px)';
 const TABLET_VIEW = 'screen and (min-width: 769px) and (max-width: 1024px)';
@@ -59,7 +59,8 @@ export class FullComponent implements OnInit {
   }
 
   constructor(
-    private cs:CrudService<User>,
+    private ppmpService:CrudService<PPMP>,
+    private userService:CrudService<User>,
     private breakpointObserver: BreakpointObserver, private navService: NavService) {
     
     this.htmlElement = document.querySelector('html')!;
@@ -76,8 +77,7 @@ export class FullComponent implements OnInit {
   }
 
   async ngOnInit() {
-   const ppmps =  await this.cs.getAll('ppmp',{ join:['users','users.id IS NOT NULL']});
-   alert(JSON.stringify(ppmps));
+
   }
 
   ngOnDestroy() {

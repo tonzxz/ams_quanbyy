@@ -41,38 +41,31 @@ export class CrudService<T> {
   constructor(private http: HttpClient) { }
 
   // Create
-  async create<T extends Identifiable>(table: string, data: T): Promise<T> {
+  async create(table: string, data: Partial<T>): Promise<T> {
     const url = `${this.baseUrl}/${table}`;
     if (environment.use == 'assets') {
       const dummyData: T[] = await this.getAll(table);
-      dummyData.push(data);
-      return data;
+      dummyData.push(data as T);
+      return data as T;
     } else {
       return firstValueFrom(this.http.post<T>(url, data));
     }
   }
 
   // Read (Get all records)
-  async getAll<T extends Identifiable>(table: string, params?:JoinQuery): Promise<T[]> {
+  async getAll(table: string, params?: JoinQuery): Promise<T[]> {
     const url = `${this.baseUrl}/${table}${environment.use == 'assets' ? '.json' : ''}`;
-    return firstValueFrom(this.http.get<T[]>(url, {
-      params: {
-        ...params,
-        join: params?.join ? JSON.stringify(params?.join) :''
-      }
-    }));
+    return firstValueFrom(this.http.get<T[]>(url));
   }
 
   // Method to return Observable that fetches data on WebSocket signal
-  getAllLive<T extends Identifiable>(table: string,params?:JoinQuery): Observable<T[]> {
+  getAllLive(table: string, params?: JoinQuery): Observable<T[]> {
     const url = `${this.baseUrl}/${table}${environment.use == 'assets' ? '.json' : ''}`;
     const dataSubject = new BehaviorSubject<T[]>(this.dataCache[table] || []); // Subject to hold data
     // Listen to WebSocket updates for the table
     this.wsService.listenToTable(table).subscribe(() => {
       // When a signal is received, trigger the HTTP GET
-      this.http.get<T[]>(url,{params: {
-        ...params
-      }}).subscribe((newData) => {
+      this.http.get<T[]>(url, { params: { ...params } }).subscribe((newData) => {
         this.dataCache[table] = newData; // Cache new data
         dataSubject.next(newData); // Emit new data
       });
@@ -81,11 +74,11 @@ export class CrudService<T> {
   }
 
   // Read (Get by ID)
-  async get<T extends Identifiable>(table: string, id: string): Promise<T | undefined> {
+  async get(table: string, id: string): Promise<T | undefined> {
     const url = `${this.baseUrl}/${table}/${id}`;
     if (environment.use == 'assets') {
       const dummyData: T[] = await this.getAll(table);
-      const item = dummyData.find(i => i.id == id);
+      const item = dummyData.find(i => (i as any).id == id); // Accessing `id` in a type-safe way
       return item;
     } else {
       return firstValueFrom(this.http.get<T>(url));
@@ -93,11 +86,11 @@ export class CrudService<T> {
   }
 
   // Update
-  async update<T extends Identifiable>(table: string, id: string, data: T): Promise<T> {
+  async update(table: string, id: string, data: Partial<T>): Promise<T> {
     if (environment.use == 'assets') {
       const dummyData: T[] = await this.getAll(table);
-      const replaceIndex = dummyData.findIndex(i => i.id == id)
-      dummyData[replaceIndex] = data;
+      const replaceIndex = dummyData.findIndex(i => (i as any).id == id); // Accessing `id` in a type-safe way
+      dummyData[replaceIndex] = data as T;
       return dummyData[replaceIndex];
     } else {
       const url = `${this.baseUrl}/${table}/${id}`;
@@ -105,30 +98,15 @@ export class CrudService<T> {
     }
   }
 
-  async partial_update<T extends Identifiable>(table: string, id: string, data: Partial<T>): Promise<T> {
-    if (environment.use == 'assets') {
-      const dummyData: T[] = await this.getAll(table);
-      const replaceIndex = dummyData.findIndex(i => i.id == id)
-      dummyData[replaceIndex] = {
-        ...dummyData[replaceIndex],
-        ...data
-      };
-      return dummyData[replaceIndex];
-    } else {
-      const url = `${this.baseUrl}/${table}/${id}`;
-      return firstValueFrom(this.http.patch<T>(url, data));
-    }
-  }
-
-
   // Delete
-  async delete<T extends Identifiable>(table: string, id: string): Promise<T | undefined> {
+  async delete(table: string, id: string): Promise<T | undefined> {
     const url = `${this.baseUrl}/${table}/${id}`;
     if (environment.use == 'assets') {
       const dummyData: T[] = await this.getAll(table);
-      return dummyData.find(i => i.id == id);
+      return dummyData.find(i => (i as any).id == id); // Accessing `id` in a type-safe way
     } else {
       return firstValueFrom(this.http.delete<T>(url));
     }
   }
 }
+

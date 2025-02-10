@@ -25,7 +25,6 @@ resources = [
 key = Fernet.generate_key()
 # Instantiate CRUD object
 crud = CRUD(app, mysql,key)
-
 # Dynamically add routes for each resource
 for resource in resources:
     crud.add_route(resource)
