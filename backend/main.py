@@ -65,7 +65,9 @@ crud = CRUD(app, db,key)
 for resource in resources:
     crud.add_route(resource)
 
-
+crud.add_logic('approved_ppmps', f'''
+    SELECT * FROM ppmp_approvers pa, ppmp p WHERE p.id = pa.ppmp_id
+''')
 
 CORS(app)
 
