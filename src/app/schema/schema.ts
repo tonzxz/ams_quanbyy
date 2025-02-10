@@ -54,26 +54,34 @@ export interface UserBudget {
 }
 
 export interface PPMP {
-  id: number
+  id: string
   department_id: number
   office_id: number
+  fiscal_year: number
+  prepared_by: string
+  approval_status: 'Pending' | 'Approved' | 'Rejected'
+  current_approval_stage: string
+  remarks?: string
+  items: PPMPItem[]
+}
+
+export interface PPMPItem {
+  id: string
   project_title: string
   project_code?: string
-  fiscal_year: number
-  start_date: Date
-  end_date: Date
-  prepared_by: string
-  date_prepared: Date
+  procurement_method: 'Public Bidding' | 'Shopping' | 'Negotiated Procurement' | 'Direct Contracting'
   item_description: string
+  technical_specification: string
   unit_of_measurement: string
   quantity_required: number
   estimated_unit_cost: number
   estimated_total_cost: number
-  procurement_mode_id: number
-  funding_source_id: number
-  remarks?: string
-  approval_status: 'Pending' | 'Approved' | 'Rejected'
-  current_approval_stage: string
+  schedule: PPMPSchedule[]
+}
+
+export interface PPMPSchedule {
+  month: string
+  milestone: boolean
 }
 
 export interface PPMPApprover {
@@ -182,4 +190,46 @@ export interface Payment {
   amount_paid: number
   payment_method: 'Check' | 'ADA'
   certificate_of_completion_issued: boolean
-} 
+}
+
+export interface Entity {
+  id: number
+  name: 'PPMP' | 'PurchaseRequest' | 'APP' | 'ProcurementProcess' | 'Contract' | 'InspectionAcceptance' | 'Payment'
+  description?: string
+}
+
+export interface AuditTrail {
+  id: number
+  entity_id: number             // References Entity table for type
+  record_id: number             // The ID of the specific record in the entity (e.g., PPMP ID)
+  action: 'Created' | 'Updated' | 'Approved' | 'Rejected' | 'Deleted'
+  performed_by: number         // User ID who performed the action
+  performed_at: Date           // Timestamp when the action was performed
+  remarks?: string             // Additional comments if any
+}
+
+export interface Notification {
+  id: number
+  user_id: number
+  message: string
+  is_read: boolean
+  created_at: Date
+}
+
+export interface Document {
+  id: number
+  entity_id: number             // References Entity table for type
+  record_id: number             // The ID of the specific record in the entity
+  file_path: string
+  uploaded_by: number
+  upload_date: Date
+}
+
+export interface ProcurementSchedule {
+  id: number
+  ppmp_id: number
+  month: string
+  milestone: boolean
+  created_at: Date
+  updated_at: Date
+}

@@ -130,6 +130,15 @@ export const navItems: NavItem[] = [
 
   // },
 
+
+   {
+    displayName: 'PPMP',
+    iconName: 'solar:documents-broken',
+    route: '/enduser/ppmp',
+  requiredRoles: ['end-user'],
+  },
+  
+
    {
     displayName: 'Annual Procurement Plan',
     iconName: 'solar:documents-broken',
@@ -175,12 +184,7 @@ export const navItems: NavItem[] = [
   //   route: '/enduser/special-receiving',
   //   requiredRoles: ['end-user','supply'],
   // },
-  // {
-  //   displayName: 'PPMP List',
-  //   iconName: 'solar:documents-broken',
-  //   route: '/enduser/ppmp-list',
-  //   requiredRoles: ['end-user'],
-  // },
+  
 
   
 
@@ -255,6 +259,8 @@ export const navItems: NavItem[] = [
     route: '/accounting/budget',
     requiredRoles: ['accounting'],
   },
+
+ 
 
     {
     displayName: 'Annual Procurement Plan',
