@@ -81,6 +81,14 @@ export interface PPMPItem {
   remarks?: string
   approval_status: 'Pending' | 'Approved' | 'Rejected'
   current_approval_stage: string
+    schedule: PPMPSchedule[]
+
+}
+
+
+export interface PPMPSchedule {
+  month: string
+  milestone: boolean
 }
 
 export class PPMPApprover {

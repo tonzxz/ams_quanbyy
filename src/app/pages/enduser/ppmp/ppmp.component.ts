@@ -204,6 +204,10 @@ export class PpmpComponent implements OnInit {
         estimated_unit_cost: formValue.estimated_unit_cost,
         estimated_total_cost: formValue.estimated_total_cost,
         schedule: schedule,
+        procurement_mode_id: 0,
+        funding_source_id: 0,
+        approval_status: 'Pending',
+        current_approval_stage: ''
       };
 
       // Create PPMP
