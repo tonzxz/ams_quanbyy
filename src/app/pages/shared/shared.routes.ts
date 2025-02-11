@@ -20,6 +20,12 @@ import { NoaComponent } from './noa/noa.component';
 import { NtpComponent } from './ntp/ntp.component';
 import { EditableComponent } from './editable/editable.component';
 import { StockTransferComponent } from './stock-transfer/stock-transfer.component';
+import { PpmpSequenceComponent } from './ppmp-sequence/ppmp-sequence.component';
+import { AppSequenceComponent } from './app-sequence/app-sequence.component';
+import { ProcurementProcessComponent } from './procurement-process/procurement-process.component';
+import { PrSequenceComponent } from './pr-sequence/pr-sequence.component';
+import { DocumentManagementComponent } from './document-management/document-management.component';
+import { AuditTrailsComponent } from './audit-trails/audit-trails.component';
 
 export const SharedRoutes: Routes = [
   {
@@ -136,6 +142,44 @@ export const SharedRoutes: Routes = [
         path: 'ntp',
         component: NtpComponent,
         data: {breadcrumb:'Notice to Proceed Template'}
+      },
+
+       {
+        path: 'ppmp-sequence',
+        component: PpmpSequenceComponent,
+        data: {breadcrumb:'Project Procurement Management Plan Sequence'}
+      },
+       
+        {
+        path: 'app-sequence',
+        component: AppSequenceComponent,
+        data: {breadcrumb:'Annual Procurement Plan Sequence'}
+      },
+        
+           {
+        path: 'procurement-process',
+        component: ProcurementProcessComponent,
+        data: {breadcrumb:'Procurement Process'}
+      },
+           
+              {
+        path: 'pr-sequence',
+        component: PrSequenceComponent,
+        data: {breadcrumb:'Purchase Request Sequence'}
+      },
+              
+                    
+      {
+        path: 'document-management',
+        component: DocumentManagementComponent,
+        data: {breadcrumb:'Document Management'}
+      },
+              
+                    
+        {
+        path: 'audit-trails',
+        component: AuditTrailsComponent,
+        data: {breadcrumb:'Audit Trails'}
       },
     ],
   },
