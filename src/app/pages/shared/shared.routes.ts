@@ -26,6 +26,8 @@ import { ProcurementProcessComponent } from './procurement-process/procurement-p
 import { PrSequenceComponent } from './pr-sequence/pr-sequence.component';
 import { DocumentManagementComponent } from './document-management/document-management.component';
 import { AuditTrailsComponent } from './audit-trails/audit-trails.component';
+import { AppSharedComponent } from './app-shared/app-shared.component';
+import { PrSharedComponent } from './pr-shared/pr-shared.component';
 
 export const SharedRoutes: Routes = [
   {
@@ -39,6 +41,16 @@ export const SharedRoutes: Routes = [
       {
         path: 'inventory',
         component: AssetsComponent,
+        data: {breadcrumb:'Inventory'}
+      },
+      {
+        path: 'app-app-shared',
+        component: AppSharedComponent,
+        data: {breadcrumb:'Inventory'}
+      },
+      {
+        path: 'app-pr-shared',
+        component: PrSharedComponent,
         data: {breadcrumb:'Inventory'}
       },
       {

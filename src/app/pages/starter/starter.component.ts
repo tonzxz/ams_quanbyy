@@ -66,13 +66,13 @@ export class StarterComponent implements OnInit {
   }
 
   ppmpData = [
-    { department: 'IT', year: 2024, budget: 150000, status: 'Pending' },
-    { department: 'Finance', year: 2024, budget: 200000, status: 'Pending' },
-    { department: 'HR', year: 2024, budget: 50000, status: 'Pending' },
-    { department: 'Logistics', year: 2024, budget: 120000, status: 'Pending' },
-    { department: 'Marketing', year: 2024, budget: 80000, status: 'Pending' }
+    { projectName: 'Network Upgrade', department: 'IT', year: 2024, budget: 150000, status: 'Pending' },
+    { projectName: 'Financial Audit', department: 'Finance', year: 2024, budget: 200000, status: 'Pending' },
+    { projectName: 'Employee Training', department: 'HR', year: 2024, budget: 50000, status: 'Pending' },
+    { projectName: 'Warehouse Expansion', department: 'Logistics', year: 2024, budget: 120000, status: 'Pending' },
+    { projectName: 'Marketing Campaign', department: 'Marketing', year: 2024, budget: 80000, status: 'Pending' },
+    { projectName: 'Financial Audit', department: 'Finance', year: 2024, budget: 200000, status: 'Pending' },
   ];
-  
 
   // Events
   events = [
