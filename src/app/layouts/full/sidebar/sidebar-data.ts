@@ -438,18 +438,15 @@ export const navItems: NavItem[] = [
    {
     displayName: 'Annual Procurement Plan',
     iconName: 'solar:checklist-minimalistic-line-duotone',
-    route: '/bac/annual-procurement-plan',
+    route: '/shared/app-app-shared',
     requiredRoles: ['bac'],
   },
-
-
-   {
+  {
     displayName: 'Purchase Request',
     iconName: 'solar:checklist-minimalistic-line-duotone',
-    route: '/bac/annual-procurement-plan',
+    route: '/shared/app-pr-shared',
     requiredRoles: ['bac'],
   },
-
   {
     displayName: 'Conference',
     iconName: 'solar:checklist-minimalistic-line-duotone',

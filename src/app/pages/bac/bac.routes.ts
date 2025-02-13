@@ -10,6 +10,8 @@ import { ConsolidationComponent } from './consolidation/consolidation.component'
 import { ConferenceComponent } from './conference/conference.component';
 import { InvitationToBidComponent } from './invitation-to-bid/invitation-to-bid.component';
 import { OpeningOfBidsComponent } from './opening-of-bids/opening-of-bids.component';
+import { AppSharedComponent } from '../shared/app-shared/app-shared.component';
+import { PrSharedComponent } from '../shared/pr-shared/pr-shared.component';
 
 export const bacRoutes: Routes = [
   {
@@ -22,6 +24,18 @@ export const bacRoutes: Routes = [
     path: 'consolidation',
     component: ConsolidationComponent, // Single page for BAC functionality
     data: { breadcrumb: 'Consolidation', roles: ['bac', 'superadmin'] }, // Only 'bac' and 'superadmin' can access
+    canActivate: [roleGuard], // Protect the route with roleGuard
+  },
+  {
+    path: 'app-app-shared',
+    component: AppSharedComponent, // Single page for BAC functionality
+    data: { breadcrumb: 'Annual Procurement Plan', roles: ['bac', 'superadmin'] }, // Only 'bac' and 'superadmin' can access
+    canActivate: [roleGuard], // Protect the route with roleGuard
+  },
+  {
+    path: 'app-pr-shared',
+    component: PrSharedComponent, // Single page for BAC functionality
+    data: { breadcrumb: 'Annual Procurement Plan', roles: ['bac', 'superadmin'] }, // Only 'bac' and 'superadmin' can access
     canActivate: [roleGuard], // Protect the route with roleGuard
   },
   {
@@ -49,8 +63,7 @@ export const bacRoutes: Routes = [
     data: { breadcrumb: 'Conference', roles: ['bac'] }, // Only 'bac' and 'superadmin' can access
     canActivate: [roleGuard], // Protect the route with roleGuard
   },
-   
-     {
+  {
     path: 'invitation-to-bid',
     component: InvitationToBidComponent, // Page for preparing purchase orders
     data: { breadcrumb: 'Invitation to Bid', roles: ['bac'] }, // Only 'bac' and 'superadmin' can access
