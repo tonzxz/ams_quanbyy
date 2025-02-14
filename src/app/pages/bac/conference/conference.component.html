@@ -1,0 +1,271 @@
+<p-card [style]="{ height: '80vh' }">
+    <h1 class="font-semibold text-xl">Procurement Conference</h1>
+    <p class="mb-4">Review and create invitations for Procurement Conferences</p>
+    <div>
+        <div class="flex flex-col gap-4">
+            <div class="flex justify-between items-center">
+                <h1 class="font-semibold text-base">
+                    Pre-Procurement Conference Events
+                </h1>
+                <div class="flex flex-row gap-4 items-center">
+                    <p-button label="Add Event" icon="pi pi-plus" class="p-button-xs" [outlined]="true" (onClick)="addEvent()"></p-button>
+                    <p-button label="Create Invitation" icon="pi pi-envelope" class="p-button-xs" [outlined]="true" (onClick)="createInvite()"></p-button>
+                </div>
+            </div>
+            <div class="flex flex-row gap-6 overflow-clip overflow-x-auto h-28 mt-2 p-1">
+                <!-- First Event Card -->
+                <p-card (click)="OpenEventCard()" [style]="{ height: '5.5rem', width: '20rem', overflow: 'hidden', display: 'flex', alignItems:'start'}">
+                    <div class="flex items-center gap-4 h-full">
+                        <div class="bg-blue-500 text-white flex items-center justify-center w-12 h-12 rounded mr-2">
+                            <i class="pi pi-calendar text-2xl"></i>
+                        </div>
+                        <div class="flex flex-col">
+                            <span class="font-semibold text-sm">Procurement Kickoff</span>
+                            <span class="text-xs font-semibold text-gray-500">Feb 15, 2025</span>
+                            <div class="flex flex-row gap-6">
+                                <span class="text-xs text-gray-500">Mode: <span class="font-semibold">Online</span> - <span class="font-semibold">Google Meet</span></span>
+                            </div>
+                        </div>
+                    </div>
+                </p-card>
+
+                <!-- Second Event Card -->
+                <p-card (click)="OpenEventCard()" [style]="{ height: '5.5rem', width: '20rem', overflow: 'hidden', display: 'flex', alignItems:'start'}">
+                    <div class="flex items-center gap-4 h-full">
+                        <div class="bg-blue-500 text-white flex items-center justify-center w-12 h-12 rounded mr-2">
+                            <i class="pi pi-calendar text-2xl"></i>
+                        </div>
+                        <div class="flex flex-col">
+                            <span class="font-semibold text-sm">Supplier Networking</span>
+                            <span class="text-xs font-semibold text-gray-500">Feb 17, 2025</span>
+                            <div class="flex flex-row gap-6">
+                                <span class="text-xs text-gray-500">Mode: <span class="font-semibold">Hybrid</span> - <span class="font-semibold">Zoom</span></span>
+                            </div>
+                        </div>
+                    </div>
+                </p-card>
+
+                <!-- Third Event Card -->
+                <p-card (click)="OpenEventCard()" [style]="{ height: '5.5rem', width: '20rem', overflow: 'hidden', display: 'flex', alignItems:'start'}">
+                    <div class="flex items-center gap-4 h-full">
+                        <div class="bg-blue-500 text-white flex items-center justify-center w-12 h-12 rounded mr-2">
+                            <i class="pi pi-calendar text-2xl"></i>
+                        </div>
+                        <div class="flex flex-col">
+                            <span class="font-semibold text-sm">Procurement Strategy</span>
+                            <span class="text-xs font-semibold text-gray-500">Feb 20, 2025</span>
+                            <div class="flex flex-row gap-6">
+                                <span class="text-xs text-gray-500">Mode: <span class="font-semibold">In-Person</span> - <span class="font-semibold">Conference Room A</span></span>
+                            </div>
+                        </div>
+                    </div>
+                </p-card>
+
+                <!-- Fourth Event Card -->
+                <p-card (click)="OpenEventCard()" [style]="{ height: '5.5rem', width: '20rem', overflow: 'hidden', display: 'flex', alignItems:'start'}">
+                    <div class="flex items-center gap-4 h-full">
+                        <div class="bg-blue-500 text-white flex items-center justify-center w-12 h-12 rounded mr-2">
+                            <i class="pi pi-calendar text-2xl"></i>
+                        </div>
+                        <div class="flex flex-col">
+                            <span class="font-semibold text-sm">Contract Negotiations</span>
+                            <span class="text-xs font-semibold text-gray-500">Feb 25, 2025</span>
+                            <div class="flex flex-row gap-6">
+                                <span class="text-xs text-gray-500">Mode: <span class="font-semibold">Online</span> - <span class="font-semibold">Microsoft Teams</span></span>
+                            </div>
+                        </div>
+                    </div>
+                </p-card>
+            </div>
+        </div>
+    </div>
+    <p-divider></p-divider>
+    <div class="flex h-[50vh]">
+        <div class="flex flex-col gap-4 h-full">
+            <h1 class="font-semibold text-base">
+                Recent Invitations
+            </h1>
+            <div class="flex flex-row gap-6 overflow-clip overflow-x-auto h-full mt-2 p-1">
+                <p-card [style]="{ height: '30vh', width: '18rem', overflow: 'hidden', display: 'flex', flexDirection: 'column' }">
+                    <div class="flex flex-col gap-4 pb-1 h-full">
+                        <!-- Event Title -->
+                        <div class="flex flex-col">
+                            <span class="font-semibold text-xl text-gray-800">Contract Negotiations</span>
+                            
+                        </div>
+
+                        <div class="flex flex-row items-center gap-5">
+                            <span class="text-sm font-semibold">Feb 25, 2025</span>
+                            <span class="font-semibold text-sm">2:00 PM - 4:00 PM</span>
+                        </div>
+                  
+                        <!-- Mode & Platform -->
+                        <div class="flex flex-col gap-2">
+                            <div class="flex flex-row items-center gap-2">
+                            <span class="text-sm text-gray-600">Mode:</span>
+                            <span class="font-semibold text-sm">Online</span>
+                            </div>
+                            <div class="flex flex-row items-center gap-2">
+                            <span class="text-sm text-gray-600">Platform:</span>
+                            <span class="font-semibold text-sm">Microsoft Teams</span>
+                            </div>
+                        </div>
+
+                        <!-- Participants -->
+                        <div class="flex flex-col gap-2 mt-2">
+                            <span class="text-sm text-gray-600">Participants:</span>
+                            <div class="flex flex-row gap-3">
+                                <div class="bg-blue-500 text-white flex items-center justify-center w-8 h-8 rounded-full">
+                                    <i class="pi pi-user text-xl"></i>
+                                </div>
+                                <div class="bg-green-500 text-white flex items-center justify-center w-8 h-8 rounded-full">
+                                    <i class="pi pi-user text-xl"></i>
+                                </div>
+                                <div class="bg-yellow-500 text-white flex items-center justify-center w-8 h-8 rounded-full">
+                                    <i class="pi pi-user text-xl"></i>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </p-card>
+            </div> 
+
+        </div>
+    </div>
+</p-card>
+
+<p-toast [position]="'bottom-right'"></p-toast>
+
+<p-dialog [(visible)]="eventModal" [modal]="true" [closable]="true" 
+          [style]="{ width: '30vw', maxHeight: '100vh', overflow: 'visible'}" 
+          [contentStyle]="{ 'overflow': 'visible' }"
+          header="Add Event">
+    <form class="p-fluid flex flex-col">
+        <!-- Event Name -->
+        <div class="flex flex-col gap-3 mb-4">
+            <div class="p-field flex flex-col gap-1">
+                <label for="event-name">Event Name</label>
+                <input id="event-name" type="text" pInputText [(ngModel)]="eventName" name="eventName" />
+            </div>
+    
+            <!-- Event Date -->
+            <div class="p-field flex flex-col gap-1">
+                <label for="event-date">Event Date</label>
+                <input id="event-date" type="date" pInputText [(ngModel)]="eventDate" name="eventDate" />
+            </div>
+    
+            <!-- Mode Selection -->
+            <div class="p-field flex flex-col gap-1">
+                <label for="event-platform">Meeting mode</label>
+                <p-dropdown [(ngModel)]="selectedModeCode" 
+                    [options]="meetMode" 
+                    optionLabel="name" 
+                    optionValue="code"
+                    placeholder="Select a Mode" 
+                    name="selectedMode"
+                    (onChange)="onModeChange($event)">
+                </p-dropdown>
+            </div>
+
+
+            <!-- Platform Selection (Only for Online & Hybrid) -->
+            <div class="p-field" *ngIf="selectedModeCode === 'ON' || selectedModeCode === 'HY'">
+                <div class="flex flex-col gap-1">
+                    <label for="event-platform">Platform</label>
+                    <p-dropdown [(ngModel)]="selectedPlatform" 
+                                [options]="getPlatformsForSelectedMode()" 
+                                optionLabel="name" 
+                                placeholder="Select a Platform"
+                                name="selectedPlatform">
+                    </p-dropdown>
+                </div>
+            </div>
+
+            
+
+            <div class="p-field flex flex-col gap-1">
+                <label for="ppmp-name">PPMP Name</label>
+                <p-dropdown [(ngModel)]="selectedPPMP"
+                    [options]="ppmpList"
+                    optionLabel="name"
+                    placeholder="Select a PPMP"
+                    name="selectedPPMP"
+                    (onChange)="onPPMPChange()">
+                </p-dropdown>
+            </div>
+        
+            <div class="p-field flex flex-col gap-1">
+                <label for="purchase-requests">Purchase Requests</label>
+                <textarea id="purchase-requests" disabled="true" pInputTextarea [(ngModel)]="purchaseRequests" name="purchaseRequests" readonly></textarea>
+                <div *ngIf="purchaseRequests === ''">
+                    No purchase requests available for the selected PPMP.
+                </div>
+            </div>
+        </div>
+
+        <!-- Dialog Footer -->
+        <p-footer>
+            <div class="flex justify-end gap-2">
+                <p-button label="Cancel" icon="pi pi-times" severity="secondary" (click)="eventModal = false"></p-button>
+                <p-button label="Save" icon="pi pi-check" severity="success" (click)="saveEvent()"></p-button>
+            </div>
+        </p-footer>
+    </form>
+</p-dialog>
+
+<p-dialog [(visible)]="inviteModal" [modal]="true" [closable]="true"
+          [style]="{ width: '30vw', maxHeight: '100vh', overflow: 'visible'}" 
+          [contentStyle]="{ 'overflow': 'visible' }"
+          header="Create Invitation">
+    <form class="p-fluid flex flex-col gap-3">
+        <!-- Event Selection -->
+        <div class="p-field flex flex-col gap-1">
+            <label for="event-select">Select Event</label>
+            <p-dropdown [(ngModel)]="selectedEvent" 
+                        [options]="events" 
+                        optionLabel="name" 
+                        placeholder="Choose an Event" 
+                        name="selectedEvent"
+                        (onChange)="onEventChange($event)">
+            </p-dropdown>
+        </div>
+
+        <!-- Auto-filled Fields -->
+        <div class="p-field flex flex-col gap-1">
+            <label>Event Date</label>
+            <input type="text" pInputText [(ngModel)]="eventDate" name="eventDate" disabled />
+        </div>
+        
+        <div class="p-field flex flex-col gap-1">
+            <label>Mode</label>
+            <input type="text" pInputText [value]="selectedMode?.name" disabled />
+        </div>
+        
+        <div class="p-field flex flex-col gap-1" *ngIf="selectedMode && selectedMode.code !== 'IP'">
+            <label>Platform</label>
+            <input type="text" pInputText [value]="selectedPlatform?.name || ''" name="selectedPlatform" disabled />
+        </div>
+
+        <!-- Participant Selection -->
+        <div class="p-field flex flex-col gap-1 mb-4">
+            <label for="participant-select">Select Participants</label>
+            <p-multiSelect [(ngModel)]="selectedParticipants" 
+                           [options]="participants" 
+                           optionLabel="name" 
+                           placeholder="Choose Participants" 
+                           name="selectedParticipants">
+            </p-multiSelect>
+        </div>
+
+        <!-- Dialog Footer -->
+        <p-footer>
+            <div class="flex justify-end gap-2">
+                <p-button label="Cancel" icon="pi pi-times" severity="secondary" (click)="inviteModal = false"></p-button>
+                <p-button label="Send Invitation" icon="pi pi-check" severity="success" (click)="sendInvite()"></p-button>
+            </div>
+        </p-footer>
+    </form>
+</p-dialog>
+
+
+

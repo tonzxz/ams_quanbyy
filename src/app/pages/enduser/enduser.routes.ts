@@ -6,6 +6,10 @@ import { RequisitionComponent } from './requisition/requisition.component';
 import { ReceivingComponent } from './receiving/receiving.component';
 import { CanvassingComponent } from './canvassing/canvassing.component';
 import { SpecialReceivingComponent } from './special-receiving/special-receiving.component';
+import { PpmpListComponent } from './ppmp-list/ppmp-list.component';
+import { AnnualProcurementPlanComponent } from './annual-procurement-plan/annual-procurement-plan.component';
+import { CompletionComponent } from './completion/completion.component';
+import { PpmpComponent } from './ppmp/ppmp.component';
 
 export const enduserRoutes: Routes = [
   {
@@ -58,7 +62,34 @@ export const enduserRoutes: Routes = [
         data: { breadcrumb: 'Canvassing', roles: ['end-user'] },
         canActivate: [roleGuard],
       },
+      {
+        path: 'ppmp-list',
+        component: PpmpListComponent,
+        data: { breadcrumb: 'PPMP List', roles: ['end-user','supply'] },
+        canActivate: [roleGuard],
+      },
+
+      
+       {
+        path: 'ppmp',
+        component: PpmpComponent,
+        data: { breadcrumb: 'Project Procurement Management Plan', roles: ['end-user'] },
+        canActivate: [roleGuard],
+      },
+
+        {
+        path: 'app',
+        component: AnnualProcurementPlanComponent,
+        data: { breadcrumb: 'Annual Procurement Plan', roles: ['end-user'] },
+        canActivate: [roleGuard],
+      },
     
+          {
+        path: 'completion',
+        component: CompletionComponent,
+        data: { breadcrumb: 'Completion and Acceptance', roles: ['end-user'] },
+        canActivate: [roleGuard],
+      },
     ],
   },
 ];

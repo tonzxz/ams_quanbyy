@@ -12,6 +12,8 @@ import { ClassificationComponent } from './classification/classification.compone
 import { RisAccountingComponent } from './ris-accounting/ris-accounting.component';
 import { IssueSlipComponent } from './issue-slip/issue-slip.component';
 import { FinalVerificationComponent } from './final-verification/final-verification.component';
+import { AppApprovalComponent } from './app-approval/app-approval.component';
+import { OrsComponent } from './ors/ors.component';
 
 export const AccountingRoutes: Routes = [
   {
@@ -26,69 +28,83 @@ export const AccountingRoutes: Routes = [
         path: 'accounting-dashboard',
         component: AccountingDashboardComponent,
         canActivate: [roleGuard],
-        data: { roles: ['accounting', 'superadmin'], breadcrumb: 'Budget Management' } 
+        data: { roles: ['accounting'], breadcrumb: 'Dashboard' } 
+      },
+      {
+        path: 'app-approval',
+        component: AppApprovalComponent,
+        canActivate: [roleGuard],
+        data: { roles: ['accounting'], breadcrumb: 'Annual Procurement Plan' } 
       },
       {
         path: 'budget',
         component: BudgetComponent,
         canActivate: [roleGuard],
-        data: { roles: ['accounting', 'superadmin'], breadcrumb: 'Budget Management' } 
+        data: { roles: ['accounting'], breadcrumb: 'Budget Allocation' } 
       },
       {
         path: 'voucher-review',
         component: VoucherReviewComponent,
         canActivate: [roleGuard],
-        data: { roles: ['accounting', 'superadmin'], breadcrumb: 'Voucher Review' } 
+        data: { roles: ['accounting'], breadcrumb: 'Voucher Review' } 
       },
       {
         path: 'journal-entry-voucher',
         component: JournalEntryVoucherComponent,
         canActivate: [roleGuard],
-        data: { roles: ['accounting', 'superadmin'], breadcrumb: 'Journal Entry Voucher' } 
+        data: { roles: ['accounting'], breadcrumb: 'Journal Entry Voucher' } 
       },
       {
         path: 'general-ledger',
         component: GeneralLedgerComponent,
         canActivate: [roleGuard],
-        data: { roles: ['accounting', 'superadmin'], breadcrumb: 'General Ledger' } 
+        data: { roles: ['accounting'], breadcrumb: 'General Ledger' } 
       },
       {
         path: 'general-journal',
         component: GeneralJournalComponent,
         canActivate: [roleGuard],
-        data: { roles: ['accounting', 'superadmin'], breadcrumb: 'General Journal' } 
+        data: { roles: ['accounting'], breadcrumb: 'General Journal' } 
       },
 
       {
         path: 'pr-approval',
         component: PrApprovalComponent,
         canActivate: [roleGuard],
-        data: { roles: ['accounting', 'superadmin'], breadcrumb: 'Purchase Request Approval' } 
+        data: { roles: ['accounting'], breadcrumb: 'Purchase Request Approval' } 
       },
       {
         path: 'classification',
         component: ClassificationComponent,
         canActivate: [roleGuard],
-        data: { roles: ['accounting', 'superadmin'], breadcrumb: 'Classification' } 
+        data: { roles: ['accounting'], breadcrumb: 'Classification' } 
       },
       {
         path: 'ris-accounting',
         component: RisAccountingComponent,
         canActivate: [roleGuard],
-        data: { roles: ['accounting', 'superadmin'], breadcrumb: 'Requisition and Issue Slips' } 
+        data: { roles: ['accounting'], breadcrumb: 'Requisition and Issue Slips' } 
       },
 
         {
         path: 'issue-slip',
         component: IssueSlipComponent,
         canActivate: [roleGuard],
-        data: { roles: ['accounting', 'superadmin'], breadcrumb: 'Requisition and Issue Slips' } 
+        data: { roles: ['accounting'], breadcrumb: 'Requisition and Issue Slips' } 
       },
       {
         path: 'final-verification',
         component: FinalVerificationComponent,
         canActivate: [roleGuard],
-        data: { roles: ['accounting', 'superadmin'], breadcrumb: 'Final Verification' } 
+        data: { roles: ['accounting'], breadcrumb: 'Final Verification' } 
+      },
+    
+
+       {
+        path: 'ors',
+        component: OrsComponent,
+        canActivate: [roleGuard],
+        data: { roles: ['accounting'], breadcrumb: 'Obligation Request and Status' } 
       },
     
     ],

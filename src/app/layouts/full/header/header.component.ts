@@ -24,11 +24,16 @@ import { filter } from 'rxjs';
 import { ScrollPanelModule } from 'primeng/scrollpanel';
 import { AppNotification, NotificationService } from 'src/app/services/notifications.service';
 import { ToastModule } from 'primeng/toast';
+import { IconField, IconFieldModule } from 'primeng/iconfield';
+import { InputIcon, InputIconModule } from 'primeng/inputicon';
+import {  InputTextModule } from 'primeng/inputtext';
+import {AutoCompleteCompleteEvent, AutoCompleteModule} from 'primeng/autocomplete';
+import { FormsModule } from '@angular/forms';
 @Component({
   selector: 'app-header',
   standalone: true,
-  imports: [RouterModule, CommonModule, NgScrollbarModule, MaterialModule, MatButtonModule, BadgeModule,OverlayBadgeModule,
-    BreadcrumbModule,ConfirmDialogModule, DividerModule,PanelModule,ScrollPanelModule, ToastModule
+  imports: [RouterModule, CommonModule, NgScrollbarModule, MaterialModule, MatButtonModule, BadgeModule,OverlayBadgeModule,IconFieldModule, InputIconModule,InputTextModule,
+    BreadcrumbModule,ConfirmDialogModule, DividerModule,PanelModule,ScrollPanelModule, ToastModule, AutoCompleteModule, FormsModule,
   ],
   templateUrl: './header.component.html',
   providers:[ConfirmationService,MessageService],
@@ -49,6 +54,16 @@ export class HeaderComponent implements OnInit {
   greeting: string;
   notifications:AppNotification[]=[];
 
+  suggestions:{value:string, location:string}[]=[{value:'REC0012348',location:'Delivery Receipts'},
+    {value:'REC0012350',location:'Delivery Receipts'},
+    {value:'REC0012351',location:'Delivery Receipts'},
+    {value:'Office Essentials Ltd.',location:'Offices'},
+    {value:'Main Warehouse.',location:'Inventory Location'},
+    {value:'DV-2025-321902',location:'Disbursement Voucher'},
+    {value:'Asset',location:'Industrial Printer'},]
+  filteredSuggestions:{value:string, location:string}[]=[];
+  searchValue:string='';
+
   constructor(private userService:UserService, 
     private router:Router,
     private activatedRoute:ActivatedRoute,
@@ -56,6 +71,10 @@ export class HeaderComponent implements OnInit {
     private notificationService:NotificationService,
     private breadcrumpService:BreadcrumbService,
     private confirmationService:ConfirmationService) {}
+
+  search(event: AutoCompleteCompleteEvent) {
+      this.filteredSuggestions = this.suggestions.filter((a)=>a.value.includes(event.query)) ;
+  }
 
   getGreeting(): string {
     const hour = this.currentTime.getHours();

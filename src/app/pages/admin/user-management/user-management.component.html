@@ -6,14 +6,7 @@
     </mat-card-subtitle>
 
     <p-tabView>
-      <!-- TAB 1: USER MANAGEMENT -->
       <p-tabPanel header="User Management">
-        <mat-card-title>User Management</mat-card-title>
-        <mat-card-subtitle class="text-sm text-gray-500">
-          View and manage users in this section.
-        </mat-card-subtitle>
-
-        <!-- Header: Add User + Search -->
         <div class="flex justify-between items-center mt-4">
           <p-button
             pTooltip="Add User"
@@ -24,11 +17,8 @@
             icon="pi pi-plus"
           ></p-button>
 
-          <!-- Search Box -->
           <div class="relative w-[300px]">
-            <i
-              class="pi pi-search absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500"
-            ></i>
+            <i class="pi pi-search absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500"></i>
             <input
               pInputText
               type="text"
@@ -36,22 +26,19 @@
               (input)="userTable.filterGlobal(userSearchInput.value, 'contains')"
               placeholder="Search Name"
               style="text-indent: 1.5rem;"
-              class="w-full border border-gray-300 rounded-md py-2 pl-10 pr-3 text-sm
-                     focus:outline-none focus:ring-2 focus:ring-blue-500 placeholder:ml-6"
+              class="w-full border border-gray-300 rounded-md py-2 pl-10 pr-3 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 placeholder:ml-6"
             />
           </div>
         </div>
 
-        <!-- Users Table -->
         <p-table
           #userTable
           [value]="users"
           [rows]="10"
           [paginator]="true"
-          [globalFilterFields]="['fullname','username','Department','Office','role']"
+          [globalFilterFields]="['name', 'username', 'role', 'user_type', 'office_id']"
           [rowsPerPageOptions]="[5, 10, 20]"
           [loading]="userLoading"
-          [showCurrentPageReport]="false"
           [responsive]="true"
           [rowHover]="true"
           [scrollable]="true"
@@ -61,40 +48,28 @@
         >
           <ng-template pTemplate="header">
             <tr>
-              <th pSortableColumn="fullname">
-                Full Name
-                <p-sortIcon field="fullname"></p-sortIcon>
-              </th>
-              <th pSortableColumn="username">
-                Username
-                <p-sortIcon field="username"></p-sortIcon>
-              </th>
-             
-                <th pSortableColumn="officeId">
-                Office
-                <p-sortIcon field="officeId"></p-sortIcon>
-                </th>
-              <th pSortableColumn="role">
-                Role
-                <p-sortIcon field="role"></p-sortIcon>
-              </th>
+              <th pSortableColumn="name">Full Name <p-sortIcon field="name"></p-sortIcon></th>
+              <th pSortableColumn="username">Username <p-sortIcon field="username"></p-sortIcon></th>
+              <th pSortableColumn="user_type">User Type <p-sortIcon field="user_type"></p-sortIcon></th>
+              <th pSortableColumn="role">Role <p-sortIcon field="role"></p-sortIcon></th>
+              <th pSortableColumn="office_id">Office <p-sortIcon field="office_id"></p-sortIcon></th>
               <th class="w-[100px]">Actions</th>
             </tr>
           </ng-template>
 
           <ng-template pTemplate="body" let-user>
             <tr>
-              <td>{{ user.fullname }}</td>
+              <td>{{ user.name }}</td>
               <td>{{ user.username }}</td>
-              <td>{{ user.officeName }}</td>
+              <td>{{ user.user_type }}</td>
               <td>
-                <!-- Badge for Roles -->
                 <p-badge
                   [value]="user.role"
-                  [severity]="getRoleSeverity(user.role)"
+                  [severity]="getRoleSeverity(user.role, user.user_type === 'Admin')"
                   styleClass="text-capitalize"
                 ></p-badge>
               </td>
+              <td>{{ user.office_id }}</td>
               <td>
                 <div class="flex gap-2">
                   <button
@@ -116,10 +91,9 @@
             </tr>
           </ng-template>
 
-          <!-- Empty message -->
           <ng-template pTemplate="emptymessage">
             <tr>
-              <td colspan="4">
+              <td colspan="6">
                 <div class="flex flex-col w-full items-center justify-center py-8">
                   <span>No users found.</span>
                 </div>
@@ -128,7 +102,6 @@
           </ng-template>
         </p-table>
 
-        <!-- User Dialog -->
         <p-dialog
           [(visible)]="userDialog"
           [modal]="true"
@@ -140,791 +113,76 @@
           [resizable]="false"
           [position]="'center'"
         >
-          <span class="text-gray-600 block">
-            {{ isUserEditMode ? 'Editing' : 'Adding new' }} user.
-          </span>
+          <span class="text-gray-600 block">{{ isUserEditMode ? 'Editing' : 'Adding new' }} user.</span>
           <small class="text-gray-500 block mb-4">(Please fill out all fields)</small>
 
           <form [formGroup]="userForm" class="w-full">
-            <!-- Full Name -->
             <div class="flex items-center gap-4 mb-4">
               <label class="font-semibold w-24">Full Name</label>
-              <div class="flex-auto flex-col flex">
-                <input
-                  type="text"
-                  pInputText
-                  formControlName="fullname"
-                  placeholder="Enter full name"
-                  class="w-full"
-                  required
-                  autofocus
-                />
-                <small
-                  class="self-end text-red-500 mt-1"
-                  *ngIf="userSubmitted && userForm.get('fullname')?.errors?.['required']"
-                >
-                  Full name is required.
-                </small>
-              </div>
+              <input type="text" pInputText formControlName="name" placeholder="Enter full name" class="w-full" required />
             </div>
 
-            <!-- Username -->
             <div class="flex items-center gap-4 mb-4">
               <label class="font-semibold w-24">Username</label>
-              <div class="flex-auto flex-col flex">
-                <input
-                  type="text"
-                  pInputText
-                  formControlName="username"
-                  placeholder="Enter username"
-                  class="w-full"
-                  required
-                />
-                <small
-                  class="self-end text-red-500 mt-1"
-                  *ngIf="userSubmitted && userForm.get('username')?.errors?.['required']"
-                >
-                  Username is required.
-                </small>
-              </div>
+              <input type="text" pInputText formControlName="username" placeholder="Enter username" class="w-full" required />
             </div>
 
-            <!-- Password -->
             <div class="flex items-center gap-4 mb-4">
               <label class="font-semibold w-24">Password</label>
-              <div class="flex-auto flex-col flex">
-                <input
-                  type="password"
-                  pInputText
-                  formControlName="password"
-                  placeholder="Enter password"
-                  class="w-full"
-                  [required]="!isUserEditMode"
-                />
-                <small
-                  class="self-end text-red-500 mt-1"
-                  *ngIf="userSubmitted && userForm.get('password')?.errors?.['required']"
-                >
-                  Password is required (when creating a user).
-                </small>
-                <small
-                  class="self-end text-red-500 mt-1"
-                  *ngIf="userSubmitted && userForm.get('password')?.errors?.['minlength']"
-                >
-                  Password must be at least 6 characters.
-                </small>
-              </div>
+              <input type="password" pInputText formControlName="password" placeholder="Enter password" class="w-full" />
             </div>
 
-            <!-- Role -->
+            <div class="flex items-center gap-4 mb-4">
+              <label class="font-semibold w-24">User Type</label>
+              <p-dropdown
+                [options]="userTypes"
+                formControlName="user_type"
+                optionLabel="label"
+                optionValue="value"
+                placeholder="Select User Type"
+                [style]="{ width: '100%' }"
+                appendTo="body"
+              ></p-dropdown>
+            </div>
+
             <div class="flex items-center gap-4 mb-4">
               <label class="font-semibold w-24">Role</label>
-              <div class="flex-auto flex-col flex">
-                <p-dropdown
-                  [options]="roles"
-                  formControlName="role"
-                  optionLabel="label"
-                  optionValue="value"
-                  placeholder="Select a Role"
-                  [style]="{ width: '100%' }"
-                  appendTo="body"
-                ></p-dropdown>
-                <small
-                  class="self-end text-red-500 mt-1"
-                  *ngIf="userSubmitted && userForm.get('role')?.errors?.['required']"
-                >
-                  Role is required.
-                </small>
-              </div>
+              <p-dropdown
+                [options]="roles"
+                formControlName="role"
+                optionLabel="label"
+                optionValue="value"
+                placeholder="Select a Role"
+                [style]="{ width: '100%' }"
+                appendTo="body"
+              ></p-dropdown>
             </div>
 
-            <!-- Department -->
-<div class="flex items-center gap-4 mb-4">
-  <label class="font-semibold w-24">Department</label>
-  <div class="flex-auto flex-col flex">
-    <p-dropdown
-      formControlName="departmentId"
-      [options]="departmentDropdownOptions"
-      placeholder="Select Department"
-      [style]="{ width: '100%' }"
-      appendTo="body"
-    ></p-dropdown>
-    <small
-      class="self-end text-red-500 mt-1"
-      *ngIf="userSubmitted && userForm.get('departmentId')?.errors?.['required']"
-    >
-      Department is required.
-    </small>
-  </div>
-</div>
-
-<!-- Office -->
-<div class="flex items-center gap-4 mb-4">
-  <label class="font-semibold w-24">Office</label>
-  <div class="flex-auto flex-col flex">
-    <p-dropdown
-      formControlName="officeId"
-      [options]="officeDropdownOptions"
-      placeholder="Select Office"
-      [style]="{ width: '100%' }"
-      appendTo="body"
-    ></p-dropdown>
-    <small
-      class="self-end text-red-500 mt-1"
-      *ngIf="userSubmitted && userForm.get('officeId')?.errors?.['required']"
-    >
-      Office is required.
-    </small>
-  </div>
-</div>
-
-            <!-- Position Dropdown only if role == 'end-user' -->
-            <div class="flex items-center gap-4 mb-4" *ngIf="userForm.get('role')?.value === 'end-user'">
-              <label class="font-semibold w-24">Position</label>
-              <div class="flex-auto flex-col flex">
-                <p-dropdown
-                  formControlName="position"
-                  [options]="positionDropdownOptions" 
-                  optionLabel="name"
-                  optionValue="name"  
-                  placeholder="Select Position"
-                  [style]="{ width: '100%' }"
-                  appendTo="body"
-                ></p-dropdown>  
-                <small
-                  class="self-end text-red-500 mt-1"
-                  *ngIf="userSubmitted && userForm.get('position')?.errors?.['required']"
-                >
-                  Position is required for end-user.
-                </small>
-              </div>
+            <div class="flex items-center gap-4 mb-4">
+              <label class="font-semibold w-24">Office</label>
+              <p-dropdown
+                formControlName="office_id"
+                [options]="officeDropdownOptions"
+                placeholder="Select Office"
+                optionLabel="label"
+                optionValue="value"
+                [style]="{ width: '100%' }"
+                appendTo="body"
+              ></p-dropdown>
             </div>
           </form>
 
           <ng-template pTemplate="footer">
             <div class="flex justify-end gap-2">
-              <button
-                pButton
-                label="Cancel"
-                icon="pi pi-times"
-                class="p-button-text"
-                (click)="hideUserDialog()"
-                size="small"
-              ></button>
-              <button
-                pButton
-                label="Save"
-                icon="pi pi-check"
-                (click)="saveUser()"
-                size="small"
-              ></button>
-            </div>
-          </ng-template>
-        </p-dialog>
-      </p-tabPanel>
-
-      <!-- TAB 2: ACCOUNT CODE -->
-      <p-tabPanel header="Account Code">
-        <mat-card-title>Account Code Management</mat-card-title>
-        <mat-card-subtitle class="text-sm text-gray-500">
-          View and manage account codes in this section.
-        </mat-card-subtitle>
-
-        <!-- Header: Add + Search -->
-        <div class="flex justify-between items-center mt-4">
-          <p-button
-            pTooltip="Add Account Code"
-            (click)="openNewAccountCodeDialog()"
-            [outlined]="true"
-            size="small"
-            label="Add Account Code"
-            icon="pi pi-plus"
-          ></p-button>
-
-          <div class="relative w-[300px]">
-            <i
-              class="pi pi-search absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500"
-            ></i>
-            <input
-              pInputText
-              type="text"
-              #codeSearchInput
-              (input)="codeTable.filterGlobal(codeSearchInput.value, 'contains')"
-              placeholder="Search"
-              style="text-indent: 1.5rem;"
-              class="w-full border border-gray-300 rounded-md py-2 pl-10 pr-3 text-sm
-                     focus:outline-none focus:ring-2 focus:ring-blue-500 placeholder:ml-6"
-            />
-          </div>
-        </div>
-
-        <!-- Table -->
-        <p-table
-          #codeTable
-          [value]="accountCodes"
-          [rows]="10"
-          [paginator]="true"
-          [globalFilterFields]="['code','description']"
-          [rowsPerPageOptions]="[5, 10, 20]"
-          [loading]="codeLoading"
-          [showCurrentPageReport]="false"
-          [responsive]="true"
-          [rowHover]="true"
-          [scrollable]="true"
-          scrollHeight="600px"
-          styleClass="p-datatable-sm mt-4"
-          dataKey="id"
-        >
-          <ng-template pTemplate="header">
-            <tr>
-              <th pSortableColumn="code">
-                Code
-                <p-sortIcon field="code"></p-sortIcon>
-              </th>
-              <th pSortableColumn="description">
-                Description
-                <p-sortIcon field="description"></p-sortIcon>
-              </th>
-              <th class="w-[100px]">Actions</th>
-            </tr>
-          </ng-template>
-
-          <ng-template pTemplate="body" let-ac>
-            <tr>
-              <td>{{ ac.code }}</td>
-              <td>{{ ac.description }}</td>
-              <td>
-                <div class="flex gap-2">
-                  <button
-                    pButton
-                    icon="pi pi-pencil"
-                    class="p-button-rounded p-button-primary p-button-sm"
-                    [outlined]="true"
-                    (click)="editAccountCode(ac)"
-                  ></button>
-                  <button
-                    pButton
-                    icon="pi pi-trash"
-                    class="p-button-rounded p-button-danger p-button-sm"
-                    [outlined]="true"
-                    (click)="deleteAccountCode(ac)"
-                  ></button>
-                </div>
-              </td>
-            </tr>
-          </ng-template>
-
-          <!-- Empty message -->
-          <ng-template pTemplate="emptymessage">
-            <tr>
-              <td colspan="3">
-                <div class="flex flex-col w-full items-center justify-center py-8">
-                  <span>No account codes found.</span>
-                </div>
-              </td>
-            </tr>
-          </ng-template>
-        </p-table>
-
-        <!-- Account Code Dialog -->
-        <p-dialog
-          [(visible)]="codeDialog"
-          [modal]="true"
-          [style]="{ width: '90vw', maxWidth: '450px' }"
-          [header]="isCodeEditMode ? 'Edit Account Code' : 'Add New Account Code'"
-          styleClass="p-fluid"
-          [dismissableMask]="true"
-          [draggable]="false"
-          [resizable]="false"
-          [position]="'center'"
-        >
-          <span class="text-gray-600 block">
-            {{ isCodeEditMode ? 'Editing' : 'Adding new' }} account code.
-          </span>
-          <small class="text-gray-500 block mb-4">(Please fill out all forms)</small>
-
-          <form [formGroup]="codeForm" class="w-full">
-            <!-- Code -->
-            <div class="flex items-center gap-4 mb-4">
-              <label class="font-semibold w-24">Code</label>
-              <div class="flex-auto flex-col flex">
-                <input
-                  type="text"
-                  pInputText
-                  formControlName="code"
-                  placeholder="Enter code"
-                  class="w-full"
-                  required
-                />
-                <small
-                  class="self-end text-red-500 mt-1"
-                  *ngIf="codeSubmitted && codeForm.get('code')?.errors?.['required']"
-                >
-                  Code is required.
-                </small>
-              </div>
-            </div>
-
-            <!-- Description -->
-            <div class="flex items-center gap-4 mb-4">
-              <label class="font-semibold w-24">Description</label>
-              <div class="flex-auto flex-col flex">
-                <input
-                  type="text"
-                  pInputText
-                  formControlName="description"
-                  placeholder="Enter description"
-                  class="w-full"
-                  required
-                />
-                <small
-                  class="self-end text-red-500 mt-1"
-                  *ngIf="
-                    codeSubmitted &&
-                    codeForm.get('description')?.errors?.['required']
-                  "
-                >
-                  Description is required.
-                </small>
-              </div>
-            </div>
-          </form>
-
-          <ng-template pTemplate="footer">
-            <div class="flex justify-end gap-2">
-              <button
-                pButton
-                label="Cancel"
-                icon="pi pi-times"
-                class="p-button-text"
-                (click)="hideCodeDialog()"
-                size="small"
-              ></button>
-              <button
-                pButton
-                label="Save"
-                icon="pi pi-check"
-                (click)="saveAccountCode()"
-                size="small"
-              ></button>
-            </div>
-          </ng-template>
-        </p-dialog>
-      </p-tabPanel>
-
-      <!-- TAB 3: SUB ACCOUNT SETUP -->
-      <p-tabPanel header="Sub Account Setup">
-        <mat-card-title>Sub Account Management</mat-card-title>
-        <mat-card-subtitle class="text-sm text-gray-500">
-          View and manage sub-accounts in this section.
-        </mat-card-subtitle>
-
-        <!-- Header: Add + Search -->
-        <div class="flex justify-between items-center mt-4">
-          <p-button
-            pTooltip="Add Sub Account"
-            (click)="openNewSubAccountDialog()"
-            [outlined]="true"
-            size="small"
-            label="Add Sub Account"
-            icon="pi pi-plus"
-          ></p-button>
-
-          <div class="relative w-[300px]">
-            <i
-              class="pi pi-search absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500"
-            ></i>
-            <input
-              pInputText
-              type="text"
-              #subSearchInput
-              (input)="subTable.filterGlobal(subSearchInput.value, 'contains')"
-              placeholder="Search"
-              style="text-indent: 1.5rem;"
-              class="w-full border border-gray-300 rounded-md py-2 pl-10 pr-3 text-sm
-                     focus:outline-none focus:ring-2 focus:ring-blue-500 placeholder:ml-6"
-            />
-          </div>
-        </div>
-
-        <!-- SubAccounts Table -->
-        <p-table
-          #subTable
-          [value]="subAccounts"
-          [rows]="10"
-          [paginator]="true"
-          [globalFilterFields]="['mainAccountCode','subClassification','subLevel','subCode']"
-          [rowsPerPageOptions]="[5, 10, 20]"
-          [loading]="subLoading"
-          [showCurrentPageReport]="false"
-          [responsive]="true"
-          [rowHover]="true"
-          [scrollable]="true"
-          scrollHeight="600px"
-          styleClass="p-datatable-sm mt-4"
-          dataKey="id"
-        >
-          <ng-template pTemplate="header">
-            <tr>
-              <th pSortableColumn="mainAccountCode">
-                Main Account Code
-                <p-sortIcon field="mainAccountCode"></p-sortIcon>
-              </th>
-              <th pSortableColumn="subClassification">
-                Sub Classification
-                <p-sortIcon field="subClassification"></p-sortIcon>
-              </th>
-              <th pSortableColumn="subLevel">
-                Sub Level
-                <p-sortIcon field="subLevel"></p-sortIcon>
-              </th>
-              <th pSortableColumn="subCode">
-                Sub Code
-                <p-sortIcon field="subCode"></p-sortIcon>
-              </th>
-              <th class="w-[100px]">Actions</th>
-            </tr>
-          </ng-template>
-
-          <ng-template pTemplate="body" let-sub>
-            <tr>
-              <td>{{ sub.mainAccountCode }}</td>
-              <td>{{ sub.subClassification }}</td>
-              <td>{{ sub.subLevel }}</td>
-              <td>{{ sub.subCode }}</td>
-              <td>
-                <div class="flex gap-2">
-                  <button
-                    pButton
-                    icon="pi pi-pencil"
-                    class="p-button-rounded p-button-primary p-button-sm"
-                    [outlined]="true"
-                    (click)="editSubAccount(sub)"
-                  ></button>
-                  <button
-                    pButton
-                    icon="pi pi-trash"
-                    class="p-button-rounded p-button-danger p-button-sm"
-                    [outlined]="true"
-                    (click)="deleteSubAccount(sub)"
-                  ></button>
-                </div>
-              </td>
-            </tr>
-          </ng-template>
-
-          <ng-template pTemplate="emptymessage">
-            <tr>
-              <td colspan="5">
-                <div class="flex flex-col w-full items-center justify-center py-8">
-                  <span>No sub-accounts found.</span>
-                </div>
-              </td>
-            </tr>
-          </ng-template>
-        </p-table>
-
-        <!-- SubAccount Dialog -->
-        <p-dialog
-          [(visible)]="subDialog"
-          [modal]="true"
-          [style]="{ width: '90vw', maxWidth: '450px' }"
-          [header]="isSubEditMode ? 'Edit Sub Account' : 'Add New Sub Account'"
-          styleClass="p-fluid"
-          [dismissableMask]="true"
-          [draggable]="false"
-          [resizable]="false"
-          [position]="'center'"
-        >
-          <span class="text-gray-600 block">
-            {{ isSubEditMode ? 'Editing' : 'Adding new' }} sub account.
-          </span>
-          <small class="text-gray-500 block mb-4">(Please fill out all fields)</small>
-
-          <form [formGroup]="subForm" class="w-full">
-            <!-- Main Account Code -->
-            <div class="flex items-center gap-4 mb-4">
-              <label class="font-semibold w-24">Main Code</label>
-              <div class="flex-auto flex-col flex">
-                <input
-                  type="text"
-                  pInputText
-                  formControlName="mainAccountCode"
-                  placeholder="Enter main code"
-                  class="w-full"
-                  required
-                />
-                <small
-                  class="self-end text-red-500 mt-1"
-                  *ngIf="
-                    subSubmitted &&
-                    subForm.get('mainAccountCode')?.errors?.['required']
-                  "
-                >
-                  Main code is required.
-                </small>
-              </div>
-            </div>
-
-            <!-- Sub Classification -->
-            <div class="flex items-center gap-4 mb-4">
-              <label class="font-semibold w-24">Classification</label>
-              <div class="flex-auto flex-col flex">
-                <input
-                  type="text"
-                  pInputText
-                  formControlName="subClassification"
-                  placeholder="Enter sub classification"
-                  class="w-full"
-                  required
-                />
-                <small
-                  class="self-end text-red-500 mt-1"
-                  *ngIf="
-                    subSubmitted &&
-                    subForm.get('subClassification')?.errors?.['required']
-                  "
-                >
-                  Classification is required.
-                </small>
-              </div>
-            </div>
-
-            <!-- Sub Level -->
-            <div class="flex items-center gap-4 mb-4">
-              <label class="font-semibold w-24">Sub Level</label>
-              <div class="flex-auto flex-col flex">
-                <input
-                  type="number"
-                  pInputText
-                  formControlName="subLevel"
-                  placeholder="Enter sub level"
-                  class="w-full"
-                  required
-                />
-                <small
-                  class="self-end text-red-500 mt-1"
-                  *ngIf="
-                    subSubmitted && subForm.get('subLevel')?.errors?.['required']
-                  "
-                >
-                  Sub level is required.
-                </small>
-              </div>
-            </div>
-
-            <!-- Sub Code -->
-            <div class="flex items-center gap-4 mb-4">
-              <label class="font-semibold w-24">Sub Code</label>
-              <div class="flex-auto flex-col flex">
-                <input
-                  type="text"
-                  pInputText
-                  formControlName="subCode"
-                  placeholder="Enter sub code"
-                  class="w-full"
-                  required
-                />
-                <small
-                  class="self-end text-red-500 mt-1"
-                  *ngIf="
-                    subSubmitted && subForm.get('subCode')?.errors?.['required']
-                  "
-                >
-                  Sub code is required.
-                </small>
-              </div>
-            </div>
-          </form>
-
-          <ng-template pTemplate="footer">
-            <div class="flex justify-end gap-2">
-              <button
-                pButton
-                label="Cancel"
-                icon="pi pi-times"
-                class="p-button-text"
-                (click)="hideSubDialog()"
-                size="small"
-              ></button>
-              <button
-                pButton
-                label="Save"
-                icon="pi pi-check"
-                (click)="saveSubAccount()"
-                size="small"
-              ></button>
-            </div>
-          </ng-template>
-        </p-dialog>
-      </p-tabPanel>
-
-      <!-- TAB 4: POSITION MANAGEMENT -->
-      <p-tabPanel header="Position Management">
-        <mat-card-title>Position Management</mat-card-title>
-        <mat-card-subtitle class="text-sm text-gray-500">
-          View and manage positions in this section.
-        </mat-card-subtitle>
-
-        <!-- Header: Add Position + Search -->
-        <div class="flex justify-between items-center mt-4">
-          <p-button
-            pTooltip="Add Position"
-            (click)="openNewPositionDialog()"
-            [outlined]="true"
-            size="small"
-            label="Add Position"
-            icon="pi pi-plus"
-          ></p-button>
-
-          <div class="relative w-[300px]">
-            <i
-              class="pi pi-search absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500"
-            ></i>
-            <input
-              pInputText
-              type="text"
-              #positionSearchInput
-              (input)="positionTable.filterGlobal(positionSearchInput.value, 'contains')"
-              placeholder="Search Position"
-              style="text-indent: 1.5rem;"
-              class="w-full border border-gray-300 rounded-md py-2 pl-10 pr-3 text-sm
-                     focus:outline-none focus:ring-2 focus:ring-blue-500 placeholder:ml-6"
-            />
-          </div>
-        </div>
-
-        <!-- Positions Table -->
-        <p-table
-          #positionTable
-          [value]="positions"
-          [rows]="10"
-          [paginator]="true"
-          [globalFilterFields]="['name']"
-          [rowsPerPageOptions]="[5, 10, 20]"
-          [loading]="positionLoading"
-          [showCurrentPageReport]="false"
-          [responsive]="true"
-          [rowHover]="true"
-          [scrollable]="true"
-          scrollHeight="600px"
-          styleClass="p-datatable-sm mt-4"
-          dataKey="id"
-        >
-          <ng-template pTemplate="header">
-            <tr>
-              <th pSortableColumn="name">
-                Position Name
-                <p-sortIcon field="name"></p-sortIcon>
-              </th>
-              <th class="w-[100px]">Actions</th>
-            </tr>
-          </ng-template>
-
-          <ng-template pTemplate="body" let-pos>
-            <tr>
-              <td>{{ pos.name }}</td>
-              <td>
-                <div class="flex gap-2">
-                  <button
-                    pButton
-                    icon="pi pi-pencil"
-                    class="p-button-rounded p-button-primary p-button-sm"
-                    [outlined]="true"
-                    (click)="editPosition(pos)"
-                  ></button>
-                  <button
-                    pButton
-                    icon="pi pi-trash"
-                    class="p-button-rounded p-button-danger p-button-sm"
-                    [outlined]="true"
-                    (click)="deletePosition(pos)"
-                  ></button>
-                </div>
-              </td>
-            </tr>
-          </ng-template>
-
-          <!-- Empty message -->
-          <ng-template pTemplate="emptymessage">
-            <tr>
-              <td colspan="2">
-                <div class="flex flex-col w-full items-center justify-center py-8">
-                  <span>No positions found.</span>
-                </div>
-              </td>
-            </tr>
-          </ng-template>
-        </p-table>
-
-        <!-- Position Dialog -->
-        <p-dialog
-          [(visible)]="positionDialog"
-          [modal]="true"
-          [style]="{ width: '90vw', maxWidth: '450px' }"
-          [header]="isPositionEditMode ? 'Edit Position' : 'Add New Position'"
-          styleClass="p-fluid"
-          [dismissableMask]="true"
-          [draggable]="false"
-          [resizable]="false"
-          [position]="'center'"
-        >
-          <span class="text-gray-600 block">
-            {{ isPositionEditMode ? 'Editing' : 'Adding new' }} position.
-          </span>
-          <small class="text-gray-500 block mb-4">(Please fill out all forms)</small>
-
-          <form [formGroup]="positionForm" class="w-full">
-            <!-- Position Name -->
-            <div class="flex items-center gap-4 mb-4">
-              <label class="font-semibold w-24">Name</label>
-              <div class="flex-auto flex-col flex">
-                <input
-                  type="text"
-                  pInputText
-                  formControlName="name"
-                  placeholder="Enter position name"
-                  class="w-full"
-                  required
-                />
-                <small
-                  class="self-end text-red-500 mt-1"
-                  *ngIf="positionSubmitted && positionForm.get('name')?.errors?.['required']"
-                >
-                  Position name is required.
-                </small>
-              </div>
-            </div>
-          </form>
-
-          <ng-template pTemplate="footer">
-            <div class="flex justify-end gap-2">
-              <button
-                pButton
-                label="Cancel"
-                icon="pi pi-times"
-                class="p-button-text"
-                (click)="hidePositionDialog()"
-                size="small"
-              ></button>
-              <button
-                pButton
-                label="Save"
-                icon="pi pi-check"
-                (click)="savePosition()"
-                size="small"
-              ></button>
+              <button pButton label="Cancel" icon="pi pi-times" class="p-button-text" (click)="hideUserDialog()" size="small"></button>
+              <button pButton label="Save" icon="pi pi-check" (click)="saveUser()" size="small"></button>
             </div>
           </ng-template>
         </p-dialog>
       </p-tabPanel>
     </p-tabView>
 
-    <!-- Shared Confirm Dialog & Toast -->
-    <p-confirmDialog
-      [style]="{ width: '90vw', maxWidth: '450px' }"
-      rejectButtonStyleClass="p-button-text"
-    ></p-confirmDialog>
+    <p-confirmDialog [style]="{ width: '90vw', maxWidth: '450px' }" rejectButtonStyleClass="p-button-text"></p-confirmDialog>
     <p-toast position="bottom-right"></p-toast>
   </mat-card-content>
 </mat-card>

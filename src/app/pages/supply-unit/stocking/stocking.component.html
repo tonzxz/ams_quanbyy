@@ -52,7 +52,7 @@
             <ng-template #header>
                 <tr>
                     <th pFrozen="left">Name</th>
-                    <th>Ticker</th>
+                    <th>Property Code</th>
                     <th>Storage</th>
                     <th>Type</th>
                     <th>Price</th>
@@ -246,16 +246,24 @@
             </div>
         </div>
 
-        <div class="flex items-center gap-4 mb-2">
-            <label for="ticker" class="font-semibold w-24">Code</label>
-            <div class="flex-auto flex-col flex">
-                <input placeholder="Enter item property code" formControlName="ticker" pSize="small" pInputText id="ticker"
-                    class="flex-auto uppercase placeholder:normal-case" autocomplete="off" />
-                @if(stockForm.get('ticker')?.hasError('required') && stockForm.get('ticker')?.touched){
-                <small class="self-end text-red-500 mt-2">Item Ticker is required</small>
-                }
-            </div>
-        </div>
+      <div class="flex items-center gap-4 mb-2">
+    <label for="ticker" class="font-semibold w-24">Property Number</label>
+    <div class="flex-auto flex-col flex relative">
+        <input placeholder="Enter item property number" formControlName="ticker" pSize="small" pInputText id="ticker"
+            class="flex-auto uppercase placeholder:normal-case pr-10" autocomplete="off" />
+        <button type="button" class="absolute right-2 top-1/2 -translate-y-1/2 p-1 group">
+            <i class="pi pi-sync text-gray-500"></i>
+            <span class="absolute left-1/2 bottom-full mb-1 hidden group-hover:block -translate-x-1/2 bg-gray-700 text-white text-xs px-2 py-1 rounded-md">
+                Auto generation of property number
+            </span>
+        </button>
+        @if(stockForm.get('ticker')?.hasError('required') && stockForm.get('ticker')?.touched){
+        <small class="self-end text-red-500 mt-2">Item Ticker is required</small>
+        }
+    </div>
+</div>
+
+    
 
         <div class="flex items-center gap-4 mb-2">
             <label for="price" class="font-semibold w-24">Item Price</label>
