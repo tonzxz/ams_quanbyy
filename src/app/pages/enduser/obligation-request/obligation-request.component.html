@@ -1,0 +1,134 @@
+<p-card>
+    <h1 class="text-xl font-semibold">Obligation Request and Status</h1>
+
+    <div class="flex justify-between mb-4 items-center">
+        <p class="text-sm">Initiate Enduser ORS request</p>
+        <div class="flex flex-row gap-2">
+            <p-iconfield styleClass="small">
+                <p-inputicon styleClass="pi pi-search smal  l"/>
+                <input size="" type="text" pInputText placeholder="Search" [(ngModel)]="searchQuery" (input)="filterRequests()"/>
+                <!-- <p-inputicon styleClass="pi pi-spinner pi-spin" /> -->
+            </p-iconfield>
+            <p-button label="Create ORS" icon="pi pi-plus" [outlined]="true" (click)="showDialog()"></p-button>
+        </div>
+    </div>
+
+    <!-- ORS Table -->
+    <p-table [value]="filteredORSList" responsiveLayout="scroll" [paginator]="true" [rows]="5">
+        <ng-template pTemplate="header">
+            <tr>
+                <th>ORS ID</th>
+                <th>Requesting Office</th>
+                <th>Payee</th>
+                <th>Particulars</th>
+                <th>Fund Source</th>
+                <th>Account Code</th>
+                <th>Amount</th>
+                <th>Supporting Docs</th>
+                <th>Status</th>
+                <th>Request Date</th>
+            </tr>
+        </ng-template>
+        <ng-template pTemplate="body" let-ors>
+            <tr>
+                <td>{{ ors.id }}</td>
+                <td>{{ ors.requestingOffice }}</td>
+                <td>{{ ors.payee }}</td>
+                <td>{{ ors.particulars }}</td>
+                <td>{{ ors.fundSource }}</td>
+                <td>{{ ors.accountCode }}</td>
+                <td>{{ ors.amount | currency: 'PHP' }}</td>
+                <td>
+                    <i *ngIf="ors.supportingDocs" class="pi pi-check text-green-500"></i>
+                    <i *ngIf="!ors.supportingDocs" class="pi pi-times text-red-500"></i>
+                </td>
+                <td>
+                    <span [ngClass]="getStatusClass(ors.status)" class="px-3 py-1 rounded-lg text-white">
+                        {{ ors.status }}
+                    </span>
+                </td>
+                <td>{{ ors.date }}</td>
+            </tr>
+        </ng-template>
+    </p-table>
+</p-card>
+
+
+<p-toast position="bottom-right"></p-toast>
+
+<p-dialog header="Create ORS Request" [(visible)]="displayDialog" [modal]="true" [closable]="true" [style]="{width:'30vw'}">
+    <form (ngSubmit)="submitORS()">
+        <div class="grid gap-5">
+            <!-- Requesting Office -->  
+            <div class="flex flex-col gap-1">
+                <label for="requestingOffice">Requesting Office</label>
+                <input pInputText id="requestingOffice" [(ngModel)]="ors.requestingOffice" name="requestingOffice" required/>
+            </div>
+
+            <!-- Payee/Supplier Name -->
+            <div class="flex flex-col gap-1">
+                <label for="payee">Payee/Supplier</label>
+                <input pInputText id="payee" [(ngModel)]="ors.payee" name="payee" required/>
+            </div>
+
+            <!-- Particulars -->
+            <div class="flex flex-col gap-1">
+                <label for="particulars">Particulars / Description</label>
+                <textarea pTextarea id="particulars" [(ngModel)]="ors.particulars" name="particulars" rows="3" required></textarea>
+            </div>
+
+            <!-- Amount -->
+            <div class="flex flex-col gap-1">
+                <label for="amount">Amount (₱)</label>
+                <p-inputNumber id="amount" [(ngModel)]="ors.amount" name="amount" mode="currency" currency="PHP" required></p-inputNumber>
+            </div>
+
+            <!-- Fund Source -->
+            <div class="flex flex-col gap-1">
+                <label for="fundSource">Fund Source</label>
+                <p-dropdown id="fundSource" [(ngModel)]="ors.fundSource" name="fundSource" [options]="fundSources" optionLabel="name" placeholder="Select Fund Source" required></p-dropdown>
+            </div>
+
+            <!-- Charge to Account Code -->
+            <div class="flex flex-col gap-1">
+                <label for="accountCode">Charge to Account Code</label>
+                <input pInputText id="accountCode" [(ngModel)]="ors.accountCode" name="accountCode" required/>
+            </div>
+
+            <!-- Date of Request -->
+            <div class="flex flex-col gap-1">
+                <label for="requestDate">Date of Request</label>
+                <p-calendar id="requestDate" [(ngModel)]="ors.requestDate" name="requestDate" dateFormat="yy-mm-dd" showIcon required></p-calendar>
+            </div>  
+
+            <!-- Supporting Documents Upload -->
+            <div class="flex flex-col gap-1 items-start">
+                <label>Supporting Documents</label>
+                <p-fileUpload mode="basic" accept=".pdf,.jpg,.png" chooseLabel="Choose" chooseIcon="pi pi-upload" styleClass="p-button-sm"  (onUpload)="onFileUpload($event)"></p-fileUpload>
+            </div>
+
+            
+        </div>
+
+        <div class="flex justify-end gap-2 mt-4">
+            <p-button 
+                label="Cancel" 
+                icon="pi pi-times" 
+                size="small"
+                [outlined]="true"
+                [severity]="'secondary'"
+                (click)="displayDialog = false">
+            </p-button>
+        
+            <p-button   
+                label="Submit" 
+                icon="pi pi-check" 
+                type="submit" 
+                size="small"
+                [outlined]="true"
+                [severity]="'success'"
+                >
+            </p-button>
+        </div>
+    </form>
+</p-dialog>
