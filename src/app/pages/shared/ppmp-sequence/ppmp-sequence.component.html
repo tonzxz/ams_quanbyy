@@ -1,1 +1,201 @@
-<p>ppmp-sequence works!</p>
+<mat-card class="cardWithShadow">
+  <mat-card-content>
+    <mat-card-title>PPMP Approval Sequence Management</mat-card-title>
+    <mat-card-subtitle class="text-sm text-gray-500">
+      Configure the sequence of approvers for PPMP approval workflows.
+    </mat-card-subtitle>
+
+    <!-- Add Sequence Button and Search Input -->
+    <div class="flex justify-between items-center mt-4">
+      <div class="flex gap-2">
+        <p-button
+          pTooltip="Add Approval Sequence"
+          (click)="openNewApproverDialog()"
+          [outlined]="true"
+          size="small"
+          label="Add Sequence"
+          icon="pi pi-plus"
+        ></p-button>
+
+        <div class="relative w-[300px]">
+          <i class="pi pi-search absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500"></i>
+          <input
+            pInputText
+            type="text"
+            #searchInput
+            (input)="dt.filterGlobal(searchInput.value, 'contains')"
+            placeholder="Search Sequences"
+            style="text-indent: 1.5rem;"
+            class="w-full border border-gray-300 rounded-md py-2 pl-10 pr-3 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 placeholder:ml-6"
+          />
+        </div>
+      </div>
+    </div>
+
+    <!-- Approvers Table -->
+    <p-table
+      #dt
+      [value]="sequences"
+      [rows]="10"
+      [paginator]="true"
+      [globalFilterFields]="['user_id', 'approver_role', 'title']"
+      [rowsPerPageOptions]="[5, 10, 20]"
+      [loading]="loading"
+      [showCurrentPageReport]="false"
+      [responsive]="true"
+      [rowHover]="true"
+      [scrollable]="true"
+      scrollHeight="400px"
+      styleClass="p-datatable-sm"
+      [tableStyle]="{'min-width': '50rem'}"
+      dataKey="id"
+    >
+      <ng-template pTemplate="header">
+        <tr>
+          <th pSortableColumn="approval_order">Order <p-sortIcon field="approval_order"></p-sortIcon></th>
+          <th pSortableColumn="user_id">User ID <p-sortIcon field="user_id"></p-sortIcon></th>
+          <th pSortableColumn="approver_role">Role <p-sortIcon field="approver_role"></p-sortIcon></th>
+          <th pSortableColumn="title">Title <p-sortIcon field="title"></p-sortIcon></th>
+          <th class="w-[100px]">Actions</th>
+        </tr>
+      </ng-template>
+
+      <ng-template pTemplate="body" let-approver>
+        <tr>
+          <td>{{ approver.approval_order }}</td>
+          <td>{{ approver.user_id }}</td>
+          <td>{{ approver.approver_role }}</td>
+          <td>{{ approver.title }}</td>
+          <td>
+            <div class="flex gap-2">
+              <button
+                pButton
+                icon="pi pi-pencil"
+                class="p-button-rounded p-button-primary p-button-sm"
+                [outlined]="true"
+                (click)="editApprover(approver)"
+              ></button>
+              <button
+                pButton
+                icon="pi pi-trash"
+                class="p-button-rounded p-button-danger p-button-sm"
+                [outlined]="true"
+                (click)="deleteApprover(approver)"
+              ></button>
+            </div>
+          </td>
+        </tr>
+      </ng-template>
+
+      <ng-template pTemplate="emptymessage">
+        <tr>
+          <td colspan="5">
+            <div class="flex flex-col w-full items-center justify-center py-8">
+              <span>No approval sequences found.</span>
+            </div>
+          </td>
+        </tr>
+      </ng-template>
+    </p-table>
+  </mat-card-content>
+</mat-card>
+
+<!-- Dialog for Adding/Editing Approval Sequence -->
+<p-dialog
+  [(visible)]="approverDialog"
+  [style]="{ width: '50vw' }"
+  [modal]="true"
+  [closable]="false"
+  [resizable]="false"
+  [draggable]="false"
+>
+  <ng-template pTemplate="header">
+    <h3 class="text-lg font-semibold">{{ isEditMode ? 'Edit' : 'Add' }} Approval Sequence</h3>
+  </ng-template>
+
+  <ng-template pTemplate="content">
+    <form [formGroup]="approverForm" class="grid grid-cols-1 gap-4">
+      <!-- User ID -->
+      <div>
+        <label for="user_id" class="block text-sm font-medium text-gray-700">User ID</label>
+        <input
+          pInputText
+          id="user_id"
+          formControlName="user_id"
+          class="w-full"
+          placeholder="Enter user ID"
+        />
+        <small *ngIf="submitted && approverForm.controls['user_id'].errors" class="text-red-500">
+          User ID is required
+        </small>
+      </div>
+
+      <!-- Role -->
+      <div>
+        <label for="approver_role" class="block text-sm font-medium text-gray-700">Role</label>
+        <p-dropdown
+          id="approver_role"
+          formControlName="approver_role"
+          [options]="roles"
+          optionLabel="name"
+          optionValue="code"
+          placeholder="Select role"
+          class="w-full"
+        ></p-dropdown>
+        <small *ngIf="submitted && approverForm.controls['approver_role'].errors" class="text-red-500">
+          Role is required
+        </small>
+      </div>
+
+      <!-- Title -->
+      <div>
+        <label for="title" class="block text-sm font-medium text-gray-700">Title</label>
+        <input
+          pInputText
+          id="title"
+          formControlName="title"
+          class="w-full"
+          placeholder="Enter Title"
+        />
+        <small *ngIf="submitted && approverForm.controls['title'].errors" class="text-red-500">
+          Title is required
+        </small>
+      </div>
+
+      <!-- Approval Order -->
+      <div>
+        <label for="approval_order" class="block text-sm font-medium text-gray-700">Approval Order</label>
+        <input
+          pInputText
+          id="approval_order"
+          formControlName="approval_order"
+          type="number"
+          class="w-full"
+          placeholder="Enter order"
+        />
+        <small *ngIf="submitted && approverForm.controls['approval_order'].errors" class="text-red-500">
+          Order is required and must be at least 1
+        </small>
+      </div>
+    </form>
+  </ng-template>
+
+  <ng-template pTemplate="footer">
+    <button
+      pButton
+      type="button"
+      label="Cancel"
+      icon="pi pi-times"
+      class="p-button-text"
+      (click)="hideDialog()"
+    ></button>
+    <button
+      pButton
+      type="button"
+      label="Save"
+      icon="pi pi-check"
+      class="p-button-success"
+      (click)="saveApprover()"
+    ></button>
+  </ng-template>
+</p-dialog>
