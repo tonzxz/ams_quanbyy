@@ -1,203 +1,142 @@
-
-
-// general-ledger.component.ts
-import { Component, OnInit } from '@angular/core';
-import { CommonModule } from '@angular/common';
+import { Component } from '@angular/core';
 import { FormsModule } from '@angular/forms';
-import { MessageService } from 'primeng/api';
-import { ButtonModule } from 'primeng/button';
-import { TableModule } from 'primeng/table';
-import { DialogModule } from 'primeng/dialog';
-import { ToastModule } from 'primeng/toast';
-import { MaterialModule } from 'src/app/material.module';
-import { IconFieldModule } from 'primeng/iconfield';
-import { InputTextModule } from 'primeng/inputtext';
-import { TooltipModule } from 'primeng/tooltip';
-import { AccountingService, LedgerAccount } from 'src/app/services/accounting.service';
-import { LottieAnimationComponent } from '../../ui-components/lottie-animation/lottie-animation.component';
-import { InputIcon } from 'primeng/inputicon';
-import jsPDF from 'jspdf';
-import 'jspdf-autotable';
-import { InputNumber } from 'primeng/inputnumber';
+import { CommonModule } from '@angular/common';
+
+// ✅ Define User Roles
+type UserRole = 'SUPERADMIN' | 'ADMINISTRATOR' | 'USER';
+
+// ✅ Define WFP Status
+type WFPStatus = 'Draft' | 'Submitted' | 'Approved' | 'Returned for Modification' | 'Denied';
+
+// ✅ Define Work Financial Plan Structure
+interface WorkFinancialPlan {
+  id: number;
+  title: string;
+  department: string;
+  budgetAmount: number;
+  submissionDate: string;
+  status: WFPStatus;
+  submittedBy: string;
+  isEditing: boolean;
+  original?: WorkFinancialPlan | null;
+}
 
 @Component({
- 
-  standalone: true,
-  imports: [
-    CommonModule,
-    FormsModule,
-    MaterialModule,
-    ButtonModule,
-    TableModule,
-    DialogModule,
-    ToastModule,
-    IconFieldModule,
-    InputTextModule,
-    TooltipModule,
-    LottieAnimationComponent,
-    InputIcon,
-    InputNumber,
-  ],
-  providers: [MessageService],
-  
- selector: 'app-editable',
+  selector: 'app-editable',
   templateUrl: './editable.component.html',
-  styleUrl: './editable.component.scss'
+  styleUrls: ['./editable.component.scss'],
+  standalone: true,
+  imports: [FormsModule, CommonModule]
 })
-export class EditableComponent implements OnInit{
-  ledgerAccounts: LedgerAccount[] = [];
-  searchValue: string = '';
-  showTransactionsDialog: boolean = false;
-  selectedAccount?: LedgerAccount;
+export class EditableComponent {
+  // ✅ Set Current User Role (Change this for testing different roles)
+  currentUserRole: UserRole = 'ADMINISTRATOR';
 
-  constructor(
-    private accountingService: AccountingService,
-    private messageService: MessageService
-  ) {}
-
-  ngOnInit() {
-    this.accountingService.getLedgerAccounts().subscribe({
-      next: (accounts) => {
-        this.ledgerAccounts = accounts;
-      },
-      error: (error) => {
-        this.messageService.add({
-          severity: 'error',
-          summary: 'Error',
-          detail: 'Failed to load ledger accounts'
-        });
-      }
-    });
-  }
-
-  getTotalDebits(): number {
-    return this.ledgerAccounts.reduce((sum, account) => 
-      sum + account.debitTotal, 0);
-  }
-
-  getTotalCredits(): number {
-    return this.ledgerAccounts.reduce((sum, account) => 
-      sum + account.creditTotal, 0);
-  }
-
-  getNetBalance(): number {
-    return this.ledgerAccounts.reduce((sum, account) => 
-      sum + account.balance, 0);
-  }
-
-  viewTransactions(account: LedgerAccount) {
-    this.selectedAccount = account;
-    this.showTransactionsDialog = true;
-  }
-
-  exportToPDF(account: LedgerAccount) {
-    const doc = new jsPDF();
-  
-    // Add Appendix 5 to the top-right corner
-    doc.setFontSize(10); // Smaller font size
-    doc.text('Appendix 5', doc.internal.pageSize.width - 20, 10, { align: 'right' });
-  
-    // Add GENERAL LEDGER title at the center and make it bold
-    doc.setFontSize(14);
-    doc.setFont('helvetica', 'bold'); // Make text bold
-    const textWidth = doc.getTextWidth('GENERAL LEDGER');
-    const centerX = (doc.internal.pageSize.width - textWidth) / 2; // Center horizontally
-    doc.text('GENERAL LEDGER', centerX, 20);
-  
-    // Reset font to normal
-    doc.setFont('helvetica', 'normal');
-  
-    // Add Entity Name, Fund Cluster, Account Title, and UACS Object Code
-    doc.setFontSize(10);
-  
-    // Define positions for the fields
-    const startX = 10; // Starting X position
-    const startY = 30; // Starting Y position
-    const lineHeight = 10; // Vertical spacing between lines
-    const columnWidth = 90; // Width of each column
-  
-    // First row: Entity Name and Fund Cluster
-    doc.text(`Entity Name: ${account.accountName}`, startX, startY);
-    doc.text(`Fund Cluster: [Fund Cluster Value]`, startX + columnWidth, startY);
-  
-    // Second row: Account Title and UACS Object Code
-    doc.text(`Account Title: ${account.accountName}`, startX, startY + lineHeight);
-    doc.text(`UACS Object Code: [UACS Object Code Value]`, startX + columnWidth, startY + lineHeight);
-  
-    // Define the table headers and data
-    const columns = ['Date', 'Particulars', 'Ref', 'Amount', 'Debit', 'Credit', 'Balance'];
-  
-    // Get the first 25 transactions (or fewer if there are not enough)
-    const transactions = account.transactions.slice(0, 25);
-  
-    // Create rows for the table
-    const rows = transactions.map(transaction => [
-      transaction.date.toLocaleDateString(),
-      transaction.description,
-      '[Ref Value]', // Replace with actual reference if available
-      '', // Empty value for Amount (merged across Debit, Credit, Balance)
-      transaction.debit,
-      transaction.credit,
-      account.balance,
-    ]);
-  
-    // Add empty rows if there are fewer than 25 transactions
-    while (rows.length < 25) {
-      rows.push(['', '', '', '', '', '', '']);
+  // ✅ Mock Data for Work Financial Plans (WFP)
+  workFinancialPlans: WorkFinancialPlan[] = [
+    {
+      id: 1,
+      title: 'Infrastructure Development Q1',
+      department: 'Public Works',
+      budgetAmount: 15000000,
+      submissionDate: '2024-02-10',
+      status: 'Submitted',
+      submittedBy: 'SUPERADMIN',
+      isEditing: false,
+      original: null
+    },
+    {
+      id: 2,
+      title: 'Office Supplies Budget 2024',
+      department: 'Procurement',
+      budgetAmount: 500000,
+      submissionDate: '2024-02-15',
+      status: 'Draft',
+      submittedBy: 'USER',
+      isEditing: false,
+      original: null
     }
-  
-    // Add a row for totals
-    rows.push([
-      '',
-      '',
-      'TOTALS',
-      '', // Empty for Amount
-      account.debitTotal,
-      account.creditTotal,
-      account.balance,
-    ]);
-  
-    // Generate the table with black borders and no background color
-    (doc as any).autoTable({
-      startY: startY + 2 * lineHeight, // Start table immediately below the fields
-      head: [
-        ['Date', 'Particulars', 'Ref', { content: 'Amount', colSpan: 3, align: 'center' }],
-        ['', '', '', 'Debit', 'Credit', 'Balance'], // Labels for Debit, Credit, and Balance under Amount
-      ],
-      body: rows,
-      theme: 'plain', // Use plain theme for no background color
-      styles: { 
-        fontSize: 9,
-        font: 'helvetica', // Use Helvetica font
-        lineColor: [0, 0, 0], // Black border lines
-        lineWidth: 0.1, // Thin border lines
-        cellPadding: 1,
-      },
-      headStyles: {
-        fillColor: false, 
-        textColor: [0, 0, 0], 
-        lineColor: [0, 0, 0], 
-        lineWidth: 0.1, 
-        halign: 'center', 
-      },
-      bodyStyles: {
-        fillColor: false, 
-        textColor: [0, 0, 0], 
-        lineColor: [0, 0, 0], 
-        lineWidth: 0.1, 
-      },
-      columnStyles: {
-        0: { halign: 'center' }, 
-        1: { halign: 'left' },   
-        2: { halign: 'center' }, 
-        3: { halign: 'center' }, 
-        4: { halign: 'right' },  
-        5: { halign: 'right' },  
-        6: { halign: 'right' },  
-      },
+  ];
+
+  // ✅ Add New WFP
+  addNewWFP(): void {
+    this.workFinancialPlans.push({
+      id: this.workFinancialPlans.length + 1,
+      title: '',
+      department: '',
+      budgetAmount: 0,
+      submissionDate: new Date().toISOString().split('T')[0],
+      status: 'Draft',
+      submittedBy: this.currentUserRole,
+      isEditing: true,
+      original: null
     });
-  
-    // Save the PDF
-    doc.save(`${account.accountName}_general_ledger.pdf`);
-}
+  }
+
+  // ✅ Edit WFP
+  editWFP(index: number): void {
+    this.workFinancialPlans[index].isEditing = true;
+    this.workFinancialPlans[index].original = JSON.parse(
+      JSON.stringify(this.workFinancialPlans[index])
+    );
+  }
+
+  // ✅ Save WFP
+  saveWFP(index: number): void {
+    this.workFinancialPlans[index].isEditing = false;
+    this.workFinancialPlans[index].original = null;
+  }
+
+  // ✅ Cancel Editing WFP
+  cancelEditWFP(index: number): void {
+    if (this.workFinancialPlans[index].original) {
+      this.workFinancialPlans[index] = JSON.parse(
+        JSON.stringify(this.workFinancialPlans[index].original)
+      );
+    }
+    this.workFinancialPlans[index].isEditing = false;
+  }
+
+  // ✅ Delete WFP
+  deleteWFP(index: number): void {
+    if (confirm('Are you sure you want to delete this Work Financial Plan?')) {
+      this.workFinancialPlans.splice(index, 1);
+    }
+  }
+
+  // ✅ Submit WFP for Approval
+  submitWFP(index: number): void {
+    if (this.workFinancialPlans[index].status === 'Draft') {
+      this.workFinancialPlans[index].status = 'Submitted';
+      alert('WFP has been submitted to the Budget and Allocation Department.');
+    } else {
+      alert('Only Draft WFPs can be submitted.');
+    }
+  }
+
+  // ✅ Acknowledge WFP (Admin/Approver Role)
+  acknowledgeWFP(index: number): void {
+    if (this.workFinancialPlans[index].status === 'Submitted') {
+      this.workFinancialPlans[index].status = 'Approved';
+      alert('WFP has been approved.');
+    } else {
+      alert('Only Submitted WFPs can be acknowledged.');
+    }
+  }
+
+  // ✅ Return WFP for Modification
+  returnWFP(index: number): void {
+    if (this.workFinancialPlans[index].status === 'Submitted') {
+      this.workFinancialPlans[index].status = 'Returned for Modification';
+      alert('WFP has been returned for modification.');
+    }
+  }
+
+  // ✅ Deny WFP
+  denyWFP(index: number): void {
+    if (this.workFinancialPlans[index].status === 'Submitted') {
+      this.workFinancialPlans[index].status = 'Denied';
+      alert('WFP has been denied.');
+    }
+  }
 }

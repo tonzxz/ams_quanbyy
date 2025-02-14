@@ -1,110 +1,57 @@
-<mat-card class="cardWithShadow">
-    <mat-card-content>
-        <mat-card-title>Consumption Report</mat-card-title>
-        <mat-card-subtitle class="mat-body-1 mb-10 !flex justify-between items-center">
-            <span> Review and manage your product consumption report. </span>
-            <div>
-                <p-iconfield fluid class="w-full max-w-72">
-                    <p-inputicon styleClass="pi pi-search" />
-                    <input fluid class="w-full" pSize="small" type="text" pInputText placeholder="Search" />
-                </p-iconfield>
-            </div>
-        </mat-card-subtitle>
+<div class="p-6 bg-white rounded-lg shadow-lg">
+  <h2 class="text-3xl font-bold text-gray-900 flex items-center mb-4">
+    📝 Work Financial Plan (WFP)
+  </h2>
+  <p class="text-gray-600 mb-4">
+    Manage Work Financial Plans, submit for approval, and track status.
+  </p>
 
-        <div class="mb-4">
-            <p-button label="Generate Report" icon="pi pi-refresh" severity="primary" [outlined]="true"
-                size="small"></p-button>
-        </div>
+  <button class="btn btn-add" (click)="addNewWFP()">➕ Add New WFP</button>
 
-        <!-- Consumption Report Table -->
-        <p-table #dt [value]="[
-                { productCode: 'P101', productName: 'Product A', quantityConsumed: 100, totalCost: 5000 },
-                { productCode: 'P102', productName: 'Product B', quantityConsumed: 200, totalCost: 15000 },
-                { productCode: 'P103', productName: 'Product C', quantityConsumed: 50, totalCost: 2500 },
-                { productCode: 'P104', productName: 'Product D', quantityConsumed: 150, totalCost: 7500 }
-            ]" [paginator]="true" [rows]="5" [rowsPerPageOptions]="[5, 10, 20]"
-            [globalFilterFields]="['productCode', 'productName']" [tableStyle]="{ 'min-width': '50rem' }">
-            <ng-template #header>
-                <tr>
-                    <th>Product Code</th>
-                    <th>Product Name</th>
-                    <th>Quantity Consumed</th>
-                    <th>Total Cost</th>
-                    <th style="width: 5rem">Actions</th>
-                </tr>
-            </ng-template>
-
-            <ng-template #body let-product>
-                <tr>
-                    <td>{{ product.productCode }}</td>
-                    <td>{{ product.productName }}</td>
-                    <td>{{ product.quantityConsumed }}</td>
-                    <td>{{ product.totalCost | currency: 'PHP' }}</td>
-                    <td>
-                        <div class="flex gap-3">
-                            <!-- View Product Details Button -->
-                            <p-button severity="secondary" pTooltip="View product details" [outlined]="true"
-                                size="small" icon="pi pi-eye" rounded></p-button>
-
-                            <!-- Export to PDF Button -->
-                            <p-button severity="secondary" pTooltip="Export to PDF" [outlined]="true" size="small"
-                                icon="pi pi-file-pdf" rounded></p-button>
-                        </div>
-                    </td>
-                </tr>
-            </ng-template>
-
-
-        <ng-template #emptymessage>
-            <tr>
-                <td colspan="5">
-                    <div class="flex flex-col w-full items-center justify-center mb-8">
-                        <div class="overflow-hidden h-52 w-52 mr-8">
-                            <app-lottie-animation animation="box" class="w-60 h-60"></app-lottie-animation>
-                        </div>
-                        <span>No consumption data found.</span>
-                    </div>
-                </td>
-            </tr>
-        </ng-template>
-        </p-table>
-
-    </mat-card-content>
-</mat-card>
-
-<!-- Generate Report Modal -->
-<p-dialog [visible]="false" [modal]="true" [style]="{ width: '50rem' }">
-    <ng-template #header>
-        <h3>Product Consumption Details</h3>
-    </ng-template>
-    <div>
-        <p-table [value]="[
-            { date: '2025-01-01', productCode: 'P101', productName: 'Product A', quantity: 20, totalCost: 1000 },
-            { date: '2025-01-05', productCode: 'P102', productName: 'Product B', quantity: 50, totalCost: 2500 },
-            { date: '2025-01-10', productCode: 'P103', productName: 'Product C', quantity: 15, totalCost: 750 },
-            { date: '2025-01-15', productCode: 'P104', productName: 'Product D', quantity: 30, totalCost: 1500 }
-        ]" [tableStyle]="{ 'min-width': '40rem' }">
-            <ng-template #header>
-                <tr>
-                    <th>Date</th>
-                    <th>Product Code</th>
-                    <th>Product Name</th>
-                    <th>Quantity</th>
-                    <th>Total Cost</th>
-                </tr>
-            </ng-template>
-
-            <ng-template #body let-transaction>
-                <tr>
-                    <td>{{ transaction.date | date: 'mediumDate' }}</td>
-                    <td>{{ transaction.productCode }}</td>
-                    <td>{{ transaction.productName }}</td>
-                    <td>{{ transaction.quantity }}</td>
-                    <td>{{ transaction.totalCost | currency: 'PHP' }}</td>
-                </tr>
-            </ng-template>
-        </p-table>
-    </div>
-</p-dialog>
-
-<p-toast position="bottom-right" />
+  <div class="overflow-x-auto mt-6">
+    <table>
+      <thead>
+        <tr>
+          <th>Title</th>
+          <th>Department</th>
+          <th>Budget Amount</th>
+          <th>Submission Date</th>
+          <th>Status</th>
+          <th>Submitted By</th>
+          <th class="text-center">Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let wfp of workFinancialPlans; let i = index">
+          <td>{{ wfp.title }}</td>
+          <td>{{ wfp.department }}</td>
+          <td>₱{{ wfp.budgetAmount.toLocaleString() }}</td>
+          <td>{{ wfp.submissionDate }}</td>
+          <td>
+            <span class="status"
+              [ngClass]="{
+                'status-draft': wfp.status === 'Draft',
+                'status-submitted': wfp.status === 'Submitted',
+                'status-approved': wfp.status === 'Approved',
+                'status-returned': wfp.status === 'Returned for Modification',
+                'status-denied': wfp.status === 'Denied'
+              }">
+              {{ wfp.status }}
+            </span>
+          </td>
+          <td>{{ wfp.submittedBy }}</td>
+          <td class="flex space-x-2 justify-center">
+            <button *ngIf="!wfp.isEditing" class="btn btn-edit" (click)="editWFP(i)">✏️ Edit</button>
+            <button *ngIf="wfp.isEditing" class="btn btn-save" (click)="saveWFP(i)">💾 Save</button>
+            <button *ngIf="wfp.isEditing" class="btn btn-cancel" (click)="cancelEditWFP(i)">❌ Cancel</button>
+            <button class="btn btn-delete" (click)="deleteWFP(i)">🗑️ Delete</button>
+            <button *ngIf="wfp.status === 'Draft'" class="btn btn-submit" (click)="submitWFP(i)">📤 Submit</button>
+            <button *ngIf="wfp.status === 'Submitted'" class="btn btn-approve" (click)="acknowledgeWFP(i)">✅ Approve</button>
+            <button *ngIf="wfp.status === 'Submitted'" class="btn btn-return" (click)="returnWFP(i)">🔄 Return</button>
+            <button *ngIf="wfp.status === 'Submitted'" class="btn btn-deny" (click)="denyWFP(i)">❌ Deny</button>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</div>
