@@ -321,7 +321,7 @@ export const navItems: NavItem[] = [
   },
   { 
     displayName: 'Obligation Request and Status',
-    iconName: 'solar:widget-add-line-duotone',
+    iconName: 'solar:documents-broken',
     route: '/enduser/obligation-request',
     requiredRoles: ['accounting', 'end-user'],
   },
