@@ -10,6 +10,7 @@ import { PpmpListComponent } from './ppmp-list/ppmp-list.component';
 import { AnnualProcurementPlanComponent } from './annual-procurement-plan/annual-procurement-plan.component';
 import { CompletionComponent } from './completion/completion.component';
 import { PpmpComponent } from './ppmp/ppmp.component';
+import { ObligationRequestComponent } from './obligation-request/obligation-request.component';
 
 export const enduserRoutes: Routes = [
   {
@@ -26,7 +27,12 @@ export const enduserRoutes: Routes = [
         data: { breadcrumb: 'Dashboard', roles: ['end-user'] }, // Use 'end-user' role
         canActivate: [roleGuard],
       },
-     
+      {
+        path: 'obligation-request',
+        component: ObligationRequestComponent,
+        data: { breadcrumb: 'Obligation Request and Status', roles: ['end-user'] }, // Use 'end-user' role
+        canActivate: [roleGuard],
+      },
       {
         path: 'view-plan',
         component: ViewPlanComponent,

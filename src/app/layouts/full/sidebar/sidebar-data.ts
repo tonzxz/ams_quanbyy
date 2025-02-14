@@ -131,12 +131,11 @@ export const navItems: NavItem[] = [
     divider: true,
     requiredRoles: ['end-user'],
   },
-
-   {
+  {
     displayName: 'PPMP',
     iconName: 'solar:documents-broken',
     route: '/enduser/ppmp',
-  requiredRoles: ['end-user'],
+    requiredRoles: ['end-user'],
   },
   
 
@@ -320,30 +319,23 @@ export const navItems: NavItem[] = [
     route: '/accounting/app-approval',
     requiredRoles: ['accounting'],
   },
-
-  
-    {
+  { 
     displayName: 'Obligation Request and Status',
     iconName: 'solar:widget-add-line-duotone',
-    route: '/accounting/ors',
+    route: '/enduser/obligation-request',
     requiredRoles: ['accounting', 'end-user'],
   },
-
-   
-   {
+  {
     displayName: 'Completion and Acceptance',
     iconName: 'solar:documents-broken',
     route: '/enduser/completion',
     requiredRoles: ['end-user'],
   },
-
-
-    {
+  {
     navCap: 'Accounting',
     divider: true,
     requiredRoles: ['accounting'],
   },
- 
   {
     displayName: 'Disbursement Vouchers',
     iconName: 'solar:ticket-sale-broken',
