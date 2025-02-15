@@ -1,0 +1,109 @@
+<mat-card class="cardWithShadow">
+    <mat-card-content>
+      <mat-card-title>{{config.title}}</mat-card-title>
+      <mat-card-subtitle class="mat-body-1 mb-10 !flex justify-between items-center">
+        <span> {{config.description}} </span>
+        <p-iconfield fluid class="w-full max-w-72">
+          <p-inputicon styleClass="pi pi-search" />
+          <input
+            fluid
+            class="w-full"
+            pSize="small"
+            [(ngModel)]="searchValue"
+            (input)="dt.filterGlobal(searchValue, 'contains')"
+            type="text"
+            pInputText
+            placeholder="Search"
+          />
+        </p-iconfield>
+      </mat-card-subtitle>
+  
+      <div class="card flex items-center w-full py-3 px-4 gap-3">
+        <div class="flex-1 px-6 border-dotted rounded-xl border-gray-700/25 border-2">
+          <p-stepper [(value)]="config.activeStep" class="w-full" fluid>
+            <p-step-list>
+              @for(step of config.steps; track step.id; let idx = $index){
+                <p-step pTooltip="{{step.tooltip??''}}" [value]="idx" class="flex flex-row flex-auto gap-2">
+                  <ng-template #content let-activateCallback="activateCallback" let-value="value">
+                    <button class="bg-transparent border-0 flex items-center gap-2 px-2" (click)="activateCallback(); step.function ? step.function(step.id) : null">
+                      <i [ngClass]="{'text-primary': value == config.activeStep}" class="{{step.icon?step.icon + ' mr-1' :''}}"></i>
+                      <span [ngClass]="{'text-primary': value == config.activeStep}">{{step.label}}</span>
+                    </button>
+                  </ng-template>
+                </p-step>
+              }
+            </p-step-list>
+          </p-stepper>
+        </div>
+      </div>
+  
+      <!-- Disbursement Voucher Table -->
+      <p-table
+        #dt
+        [value]="filteredData()"
+        [paginator]="true"
+        [rows]="5"
+        [rowsPerPageOptions]="[5, 10, 20]"
+        [globalFilterFields]="getFieldNames()"
+        [tableStyle]="{ 'min-width': '50rem' }"
+      >
+        <ng-template #header>
+          <tr>
+            @for(column of getColumnNames(); track column){
+                <th>{{column}}</th>
+            }
+            <th style="width: 5rem"></th>
+          </tr>
+        </ng-template>
+  
+        <ng-template #body let-voucher>
+          <tr>
+            @for(row of config.data;track getRowId(row)){
+              @for(field of getFields(); track field){
+                <td>{{row[field]}}</td>
+              }
+              @for(step of config.steps; track step.id){
+                @if(isActiveStep(step.id)){
+                  <td>
+                    <div class="flex gap-3">
+                      @for(action of step.actions; track action.label){
+                        <p-button
+                            [severity]="action.color"
+                            [pTooltip]="action.tooltip"
+                            [outlined]="true"
+                            size="small"
+                            [icon]="action.icon"
+                            [rounded]="action.shape == 'rounded'"
+                            (click)="action.function(row)"
+                          ></p-button>
+                      }
+                    </div>
+                  </td>
+  
+                }
+              }
+            }
+          </tr>
+        </ng-template>
+  
+        <ng-template #emptymessage>
+          <tr>
+            <td colspan="6">
+              <div class="flex flex-col w-full items-center justify-center mb-8">
+                <div class="overflow-hidden h-52 w-52 mr-8">
+                  <app-lottie-animation animation="box" class="w-60 h-60"></app-lottie-animation>
+                </div>
+                <span>No items found.</span>
+              </div>
+            </td>
+          </tr>
+        </ng-template>
+      </p-table>
+  
+      <div class="card flex justify-between">
+        <p-button [disabled]="config.activeStep <= 1" outlined size="small" label="Back" icon="pi pi-arrow-left" (click)="prevStep()" />
+        <p-button [disabled]="config.activeStep >= config.steps.length" outlined size="small" label="Next" icon="pi pi-arrow-right" (click)="nextStep()" iconPos="right" />
+      </div>
+    </mat-card-content>
+  </mat-card>
+  
