@@ -14,7 +14,7 @@ import { NgScrollbarModule } from 'ngx-scrollbar';
 import { TablerIconsModule } from 'angular-tabler-icons';
 import { HeaderComponent } from './header/header.component';
 import { CrudService } from 'src/app/services/crud.service';
-import { Department, Office, PPMP, PPMPApprover, User } from 'src/app/schema/schema';
+import { Departments, Offices, Ppmp, PpmpApprovers, Users } from 'src/app/schema/schema';
 
 const MOBILE_VIEW = 'screen and (max-width: 768px)';
 const TABLET_VIEW = 'screen and (min-width: 769px) and (max-width: 1024px)';
@@ -78,12 +78,12 @@ export class FullComponent implements OnInit {
   async ngOnInit() {
     // Create
     // localStorage.removeItem('departments');
-    const data:Omit<Department,'id'> = {
+    const data:Omit<Departments,'id'> = {
       name: 'Antonxs'
     }
-    await this.crudService.create(Department,data)
-    const output = await this.crudService.getAll(Department)
-    const outputUsers = await this.crudService.getAll(User)
+    await this.crudService.create(Departments,data)
+    const output = await this.crudService.getAll(Departments)
+    const outputUsers = await this.crudService.getAll(Users)
     console.log('Departments', output);
     console.log('USERS', outputUsers);
 

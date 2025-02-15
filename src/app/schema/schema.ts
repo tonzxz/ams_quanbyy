@@ -158,15 +158,15 @@ export class PurchaseRequestApprover {
   approval_order: number
 }
 
-export class ProcurementProcess {
-  id: string
-  purchase_request_id: string
-  process_stage: string
-  process_order: number
-  date_started: Date
-  date_completed?: Date
-  remarks?: string
-}
+// export class ProcurementProcess {
+//   id: string
+//   purchase_request_id: string
+//   process_stage: string
+//   process_order: number
+//   date_started: Date
+//   date_completed?: Date
+//   remarks?: string
+// }
 
 export class Contract {
   id: string
@@ -179,14 +179,14 @@ export class Contract {
   status: 'Active' | 'Completed' | 'Terminated'
 }
 
-export class InspectionAcceptance {
-  id: string
-  contract_id: string
-  inspected_by: number
-  inspection_date: Date
-  accepted: boolean
-  remarks?: string
-}
+// export class InspectionAcceptance {
+//   id: string
+//   contract_id: string
+//   inspected_by: number
+//   inspection_date: Date
+//   accepted: boolean
+//   remarks?: string
+// }
 
 export class Payment {
   id: string
@@ -239,4 +239,205 @@ export interface ProcurementSchedule {
   milestone: boolean
   created_at: Date
   updated_at: Date
+}
+
+
+// departments.ts
+export class Departments {
+  id: string;
+  name: string;
+}
+
+// offices.ts
+export class Offices {
+  id: string;
+  departmentId: string;
+  name: string;
+}
+
+// users.ts
+export class Users {
+  id: string;
+  name: string;
+  username: string;
+  password: string;
+  userType: 'SuperAdmin' | 'Admin' | 'User';
+  role: 'End-User' | 'BAC' | 'Budget' | 'Accounting' | 'Supply' | 'Inspection' | 'HOPE';
+  departmentId?: string;
+  officeId?: string;
+}
+
+// procurement-modes.ts
+export class ProcurementModes {
+  id: string;
+  modeName: string;
+}
+
+// funding-sources.ts
+export class FundingSources {
+  id: string;
+  sourceName: string;
+}
+
+// budgets.ts
+export class Budgets {
+  id: string;
+  departmentId: string;
+  fiscalYear: number;
+  totalBudget: number;
+  allocatedBudget: number;
+  remainingBudget: number;
+  createdBy: string;
+  dateCreated: string;
+}
+
+// user-budgets.ts
+export class UserBudgets {
+  id: string;
+  userId: string;
+  budgetId: string;
+  allocatedAmount: number;
+  usedAmount: number;
+  remainingAmount: number;
+  dateAllocated: string;
+}
+
+// ppmp.ts
+export class Ppmp {
+  id: string;
+  departmentId: string;
+  officeId: string;
+  projectTitle: string;
+  projectCode: string;
+  fiscalYear: number;
+  startDate: string;
+  endDate: string;
+  preparedBy: string;
+  datePrepared: string;
+  itemDescription: string;
+  unitOfMeasurement: string;
+  quantityRequired: number;
+  estimatedUnitCost: number;
+  estimatedTotalCost: number;
+  procurementModeId: string;
+  fundingSourceId: string;
+  remarks: string;
+  approvalStatus: string;
+  currentApprovalStage: string;
+}
+
+// ppmp-approvers.ts
+export class PpmpApprovers {
+  id: string;
+  ppmpId: string;
+  userId: string;
+  approverRole: string;
+  approvalStatus: string;
+  approvalDate: string;
+  signature: string;
+  remarks: string;
+  approvalOrder: number;
+}
+
+// app.ts
+export class App {
+  id: string;
+  appReferenceNumber: string;
+  agencyName: string;
+  fiscalYear: number;
+  preparedBy: string;
+  datePrepared: string;
+  dateApproved: string;
+  approvedBy: string;
+  ppmpIds: string[];
+  totalQuantityRequired: number;
+  totalEstimatedCost: number;
+  implementationScheduleQ1: boolean;
+  implementationScheduleQ2: boolean;
+  implementationScheduleQ3: boolean;
+  implementationScheduleQ4: boolean;
+  remarks: string;
+}
+
+// app-approvers.ts
+export class AppApprovers {
+  id: string;
+  appId: string;
+  userId: string;
+  approverRole: string;
+  approvalStatus: string;
+  approvalDate: string;
+  signature: string;
+  remarks: string;
+  approvalOrder: number;
+}
+
+// purchase-requests.ts
+export class PurchaseRequests {
+  id: string;
+  ppmpId: string;
+  requesterId: string;
+  requestDate: string;
+  itemDescription: string;
+  quantity: number;
+  estimatedCost: number;
+  status: string;
+  approvalDate: string;
+}
+
+// purchase-request-approvers.ts
+export class PurchaseRequestApprovers {
+  id: string;
+  purchaseRequestId: string;
+  userId: string;
+  approverRole: string;
+  approvalStatus: string;
+  approvalDate: string;
+  signature: string;
+  remarks: string;
+  approvalOrder: number;
+}
+
+// procurement-process.ts
+export class ProcurementProcess {
+  id: string;
+  purchaseRequestId: string;
+  processStage: string;
+  processOrder: number;
+  dateStarted: string;
+  dateCompleted: string;
+  remarks: string;
+}
+
+// contracts.ts
+export class Contracts {
+  id: string;
+  procurementId: string;
+  contractorName: string;
+  contractAmount: number;
+  contractDate: string;
+  startDate: string;
+  endDate: string;
+  status: string;
+}
+
+// inspection-acceptance.ts
+export class InspectionAcceptance {
+  id: string;
+  contractId: string;
+  inspectionDate: string;
+  accepted: boolean;
+  remarks: string;
+}
+
+// payments.ts
+export class Payments {
+  id: string;
+  contractId: string;
+  obligationRequestDate: string;
+  disbursementVoucherDate: string;
+  paymentDate: string;
+  amountPaid: number;
+  paymentMethod: 'Check' | 'ADA';
+  certificateOfCompletionIssued: boolean;
 }
