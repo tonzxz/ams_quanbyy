@@ -60,7 +60,7 @@ interface RowAction<T> {
  * @param icon: (Optional) A string for icon
  * @param function: (Optional) Custom function to call when pressed
  */
-interface Step<T, K extends keyof T>{
+interface Tab<T, K extends keyof T>{
   id:T[K],
   label:string,
   actions?: RowAction<T>[]
@@ -69,7 +69,7 @@ interface Step<T, K extends keyof T>{
   function?:(event:Event,id:T[K])=>void
 }
 /**
- * Contains Data for Progress Table
+ * Contains Data for Grouped Table
  * 
  * Usage (TS):
  * ```ts
@@ -117,33 +117,35 @@ interface Step<T, K extends keyof T>{
  * ```
  * 
  */
-export interface ProgressTableData<T, K extends keyof T>{
+export interface GroupedTableData<T,G extends keyof T,K extends keyof T>{
   title:string,
   description:string,
   columns: {[K in keyof Partial<T>]:string},
-  activeStep:number,
-  stepField:K,
-  steps: [Step<T, K>, Step<T, K>] | [Step<T, K>, Step<T, K>, Step<T, K>];
+  activeTab:number,
+  tabField:K,
+  tabs?: [Tab<T, K>, Tab<T, K>] | Tab<T, K>[];
+  childrenField: G,
   data: T[],
   formatters?:{[K in keyof Partial<T>]:(value:T[keyof T])=>string},
   topAction?:TopAction<T>,
+  actions?: RowAction<T>[],
   searchFields?:(keyof T)[],
   dataLoaded?:boolean,
 }
 
 
 @Component({
-  selector: 'app-progress-table',
+  selector: 'grouped-table',
   standalone: true,
   imports: [
     CommonModule,FormsModule,MaterialModule,
-    LottieAnimationComponent,ButtonModule,IconFieldModule,InputIcon,InputTextModule,StepperModule,TableModule,ToastModule,FluidModule,TooltipModule,DialogModule,ConfirmPopupModule],
+    LottieAnimationComponent,ButtonModule,IconFieldModule,InputIcon,InputTextModule,TableModule,ToastModule,FluidModule,TooltipModule,DialogModule,ConfirmPopupModule],
   providers:[MessageService,ConfirmationService],
-  templateUrl: './progress-table.component.html',
-  styleUrl: './progress-table.component.scss'
+  templateUrl: './grouped-table.component.html',
+  styleUrl: './grouped-table.component.scss'
 })
-export class ProgressTableComponent<T,K extends keyof T> {
-  @Input() config:ProgressTableData<T,K>;
+export class GroupedTableComponent<T,G extends keyof T,K extends keyof T> {
+  @Input() config:GroupedTableData<T,G,K>;
 
   searchValue:string='';
 
@@ -183,8 +185,12 @@ export class ProgressTableComponent<T,K extends keyof T> {
 
   hasActions(){
     if(this.config){
-      const step = this.config.steps[this.config.activeStep]
-      return  step.actions?.length
+      if(this.config.tabs){
+        const step = this.config.tabs[this.config.activeTab]
+        return  step.actions?.length
+      }else{
+        return  this.config.actions?.length;
+      }
     }else{
       throw new Error('Progress Table config has not been loaded')
     }
@@ -199,9 +205,13 @@ export class ProgressTableComponent<T,K extends keyof T> {
     }
   }
 
-  isActiveStep(stepId:T[K]){
+  isActiveStep(tabId:T[K]){
     if(this.config){
-      return this.config.activeStep == this.config.steps.findIndex(s=>s.id == stepId);
+      if(this.config.tabs){
+        return this.config.activeTab == this.config.tabs.findIndex(s=>s.id == tabId);
+      }else{
+        return false;
+      }
     }else{
       throw new Error('Progress Table config has not been loaded')
     }
@@ -209,26 +219,14 @@ export class ProgressTableComponent<T,K extends keyof T> {
 
   filteredData():T[]{
     if(this.config){
-      const steps = this.config.steps;
-      return this.config.data.filter(d=>d[this.config.stepField as keyof T] == steps[this.config.activeStep].id);
+      const tabs = this.config.tabs;
+      if(tabs){
+        return this.config.data.filter(d=>d[this.config.tabField as keyof T] == tabs[this.config.activeTab].id);
+      }else{
+        return this.config.data;
+      }
     }else{
       throw new Error('Progress Table config has not been loaded')
     }
   }
-
-  nextStep(){
-    if(this.config){
-      this.config.activeStep++;
-    }else{
-      throw new Error('Progress Table config has not been loaded')
-    }
-  }
-  prevStep(){
-    if(this.config){
-      this.config.activeStep--;
-    }else{
-      throw new Error('Progress Table config has not been loaded')
-    }
-  }
-
 }
