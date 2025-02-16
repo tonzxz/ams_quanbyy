@@ -55,7 +55,7 @@
             @if(config.tabs){
 
               @for(tab of config.tabs; track tab.id){
-                @if(isActiveStep(tab.id) && hasActions()){
+                @if(isActiveTab(tab.id) && hasActions()){
                   <td>
                     <div class="flex gap-3">
                       @for(action of tab.actions; track action.label){
