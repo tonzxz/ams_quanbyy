@@ -107,7 +107,9 @@ export interface Step<T, K extends keyof T>{
  * @param stepField: A key representing the field to filter
  * @param steps: An array of step configurations
  * @param data: an array of data to display
+ * @param formatters: (Optional) A map of strings to map real fields to function formatters
  * @param searchFields: (Optional) an array of keys to filter using search
+ * @param topAction: (Optional) an TopAction object which represent top action button
  * @param dataLoaded: (Defaults false) a boolean to toggle loading indicator on table
  * Usage (HTML)
  * ```html
@@ -123,6 +125,7 @@ export interface ProgressTableData<T, K extends keyof T>{
   stepField:K,
   steps: [Step<T, K>, Step<T, K>] | [Step<T, K>, Step<T, K>, Step<T, K>];
   data: T[],
+  formatters?:{[K in keyof Partial<T>]:(value:T[keyof T])=>string},
   topAction?:TopAction<T>,
   searchFields?:(keyof T)[],
   dataLoaded?:boolean,
@@ -152,9 +155,18 @@ export class ProgressTableComponent<T,K extends keyof T> {
       throw new Error('Progress Table config has not been loaded')
     }
   }
-
-  getRowId(row:T): T[keyof T]{
-    return row['id' as keyof T];
+  
+  formatValue(field: keyof T,row:T){
+    if(this.config){
+      if(!this.config.formatters) return row[field];
+      if(field in this.config.formatters){
+        return this.config.formatters[field]!(row[field])
+      }else{
+        return row[field];
+      }
+    }else{
+      throw new Error('Progress Table config has not been loaded')
+    }
   }
 
   getFieldNames(): string[]{

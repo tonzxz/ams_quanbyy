@@ -52,6 +52,10 @@
             </p-step-list>
           </p-stepper>
         </div>
+        @if(config.topAction){
+          <p-button [pTooltip]="config.topAction.tooltip" [outlined]="true" size="small" [label]="config.topAction.label"
+        (click)="config.topAction.function()" [icon]="config.topAction.icon" />
+        }
       </div>
   
       <!-- Disbursement Voucher Table -->
@@ -78,7 +82,7 @@
         <ng-template #body let-row>
           <tr>
             @for(field of getFields(); track field){
-              <td>{{row[field]}}</td>
+              <td>{{formatValue(field,row)}}</td>
             }
             @for(step of config.steps; track step.id){
               @if(isActiveStep(step.id) && hasActions()){

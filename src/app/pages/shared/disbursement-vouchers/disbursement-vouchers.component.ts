@@ -1,4 +1,4 @@
-import { CommonModule } from '@angular/common';
+import { CommonModule, CurrencyPipe } from '@angular/common';
 import { Component } from '@angular/core';
 import { Router } from '@angular/router';
 import { DeliveryReceiptService } from 'src/app/services/delivery-receipt.service';
@@ -14,7 +14,7 @@ import { ProgressTableComponent, ProgressTableData } from 'src/app/components/pr
   selector: 'app-disbursement-vouchers',
   standalone: true,
   imports:  [ConfirmPopupModule, ProgressTableComponent, CommonModule,ToastModule,DialogModule],
-  providers:[MessageService, ConfirmationService],
+  providers:[MessageService, ConfirmationService,CurrencyPipe],
   
   templateUrl: './disbursement-vouchers.component.html',
   styleUrl: './disbursement-vouchers.component.scss'
@@ -26,6 +26,7 @@ export class DisbursementVouchersComponent {
     constructor(
       private router:Router,
       private confirmationService:ConfirmationService,
+      private currencyPipe:CurrencyPipe,
       private messageService:MessageService,
       private pdfService:PdfGeneratorService,
       private deliveryReceiptService:DeliveryReceiptService,
@@ -85,6 +86,9 @@ export class DisbursementVouchersComponent {
         deliveryReceiptNo: 'DR Number',
         supplierName: 'Supplier Name',
         totalAmountDue: 'Total Ammount'
+      },
+      formatters:{
+        totalAmountDue: (value)=>this.currencyPipe.transform(value?.toString(), 'PHP', 'symbol', '1.2-2') ?? ''
       },
       activeStep:0,
       stepField:'status',
