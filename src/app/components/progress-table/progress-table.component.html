@@ -25,7 +25,7 @@
               @for(step of config.steps; track step.id; let idx = $index){
                 <p-step pTooltip="{{step.tooltip??''}}" [value]="idx" class="flex flex-row flex-auto gap-2">
                   <ng-template #content let-activateCallback="activateCallback" let-value="value">
-                    <button class="bg-transparent border-0 flex items-center gap-2 px-2" (click)="activateCallback(); step.function ? step.function(step.id) : null">
+                    <button class="bg-transparent border-0 flex items-center gap-2 px-2" (click)="activateCallback(); step.function ? step.function($event,step.id) : null">
                       <i [ngClass]="{'text-primary': value == config.activeStep}" class="{{step.icon?step.icon + ' mr-1' :''}}"></i>
                       <span [ngClass]="{'text-primary': value == config.activeStep}">{{step.label}}</span>
                     </button>
@@ -52,35 +52,34 @@
             @for(column of getColumnNames(); track column){
                 <th>{{column}}</th>
             }
-            <th style="width: 5rem"></th>
+            @if(hasActions()){
+              <th style="width: 5rem"></th>
+            }
           </tr>
         </ng-template>
   
-        <ng-template #body let-voucher>
+        <ng-template #body let-row>
           <tr>
-            @for(row of config.data;track getRowId(row)){
-              @for(field of getFields(); track field){
-                <td>{{row[field]}}</td>
-              }
-              @for(step of config.steps; track step.id){
-                @if(isActiveStep(step.id)){
-                  <td>
-                    <div class="flex gap-3">
-                      @for(action of step.actions; track action.label){
-                        <p-button
-                            [severity]="action.color"
-                            [pTooltip]="action.tooltip"
-                            [outlined]="true"
-                            size="small"
-                            [icon]="action.icon"
-                            [rounded]="action.shape == 'rounded'"
-                            (click)="action.function(row)"
-                          ></p-button>
-                      }
-                    </div>
-                  </td>
-  
-                }
+            @for(field of getFields(); track field){
+              <td>{{row[field]}}</td>
+            }
+            @for(step of config.steps; track step.id){
+              @if(isActiveStep(step.id) && hasActions()){
+                <td>
+                  <div class="flex gap-3">
+                    @for(action of step.actions; track action.label){
+                      <p-button
+                          [severity]="action.color"
+                          [pTooltip]="action.tooltip"
+                          [outlined]="true"
+                          size="small"
+                          [icon]="action.icon"
+                          [rounded]="action.shape == 'rounded'"
+                          (click)="action.function ? action.function($event,row):null"
+                        ></p-button>
+                    }
+                  </div>
+                </td>
               }
             }
           </tr>
@@ -101,9 +100,9 @@
       </p-table>
   
       <div class="card flex justify-between">
-        <p-button [disabled]="config.activeStep <= 1" outlined size="small" label="Back" icon="pi pi-arrow-left" (click)="prevStep()" />
-        <p-button [disabled]="config.activeStep >= config.steps.length" outlined size="small" label="Next" icon="pi pi-arrow-right" (click)="nextStep()" iconPos="right" />
+        <p-button [disabled]="config.activeStep <= 0" outlined size="small" label="Back" icon="pi pi-arrow-left" (click)="prevStep()" />
+        <p-button [disabled]="config.activeStep >= config.steps.length-1" outlined size="small" label="Next" icon="pi pi-arrow-right" (click)="nextStep()" iconPos="right" />
       </div>
     </mat-card-content>
   </mat-card>
-  
+  <p-confirmpopup />

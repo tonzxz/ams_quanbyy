@@ -45,7 +45,7 @@ export interface TopAction<T> {
 export interface RowAction<T> {
   icon:string,
   shape:'rounded'|'default',
-  function: (args:T)=>void
+  function?: (event:Event,args:T)=>void
   disabled?:boolean,
   color?: 'success' | 'info' | 'warn' | 'danger' | 'help' | 'primary' | 'secondary' | 'contrast',
   label?:string,
@@ -60,22 +60,42 @@ export interface RowAction<T> {
  * @param icon: (Optional) A string for icon
  * @param function: (Optional) Custom function to call when pressed
  */
-export interface Step<T>{
-  id:T[keyof T],
+export interface Step<T, K extends keyof T>{
+  id:T[K],
   label:string,
-  actions: RowAction<T>[]
+  actions?: RowAction<T>[]
   tooltip?:string,
   icon?:string,
-  function?:(id:Step<T>['id'])=>void
+  function?:(event:Event,id:T[K])=>void
 }
 /**
  * Contains Data for Progress Table
  * 
  * Usage (TS):
  * ```ts
- * this.config:ProgressTableData = {
- *  column: ['Column1','Column2'],
- *  data: this.users
+ * this.config:ProgressTableData<User,'verified'> = {
+ *  title: 'My Table',
+ *  description: 'This is an example table',
+ *  columns: {
+ *    'name' : 'Name',
+ *    'id'   : 'User ID'
+ *  },
+ *  activeStep: 0,
+ *  stepField: 'verified',
+ *  steps: [
+ *    id:'unverified',
+ *    label:'Unverified',
+ *    actions: [
+ *      {
+ *        icon: 'pi pi-spinner pi-spin',
+ *        shape: 'default',
+ *        label: 'Waiting...',
+ *        disabled: true,
+ *      }
+ *    ]
+ *    
+ *  ],
+ *  data: this.data,
  * }
  * // Additional data processing
  * this.config.dataLoaded = true
@@ -83,10 +103,11 @@ export interface Step<T>{
  * @param title: A string representing table name
  * @param description: A string representing table description
  * @param columns: A map of strings to map real fields to names
+ * @param activeStep: A number representing default step
+ * @param stepField: A key representing the field to filter
  * @param steps: An array of step configurations
- * @param stepField: A string representing the field to filter
  * @param data: an array of data to display
- * @param searchFields: (Optional) an array of string to filter using search
+ * @param searchFields: (Optional) an array of keys to filter using search
  * @param dataLoaded: (Defaults false) a boolean to toggle loading indicator on table
  * Usage (HTML)
  * ```html
@@ -94,15 +115,15 @@ export interface Step<T>{
  * ```
  * 
  */
-export interface ProgressTableData<T>{
+export interface ProgressTableData<T, K extends keyof T>{
   title:string,
   description:string,
-  topAction:TopAction<T>,
-  columns: {[K in keyof T]:string},
+  columns: {[K in keyof Partial<T>]:string},
   activeStep:number,
-  steps: Step<T>[],
-  stepField:Step<T>['id'],
+  stepField:K,
+  steps: Step<T, K>[],
   data: T[],
+  topAction?:TopAction<T>,
   searchFields?:(keyof T)[],
   dataLoaded?:boolean,
 }
@@ -118,8 +139,8 @@ export interface ProgressTableData<T>{
   templateUrl: './progress-table.component.html',
   styleUrl: './progress-table.component.scss'
 })
-export class ProgressTableComponent<T> {
-  @Input() config:ProgressTableData<T>;
+export class ProgressTableComponent<T,K extends keyof T> {
+  @Input() config:ProgressTableData<T,K>;
 
   searchValue:string='';
 
@@ -148,6 +169,15 @@ export class ProgressTableComponent<T> {
     }
   }
 
+  hasActions(){
+    if(this.config){
+      const step = this.config.steps[this.config.activeStep]
+      return  step.actions?.length
+    }else{
+      throw new Error('Progress Table config has not been loaded')
+    }
+  }
+
   getFields(): (keyof T)[]{
     if(this.config){
       const table_names = Object.keys(this.config.columns)  as  (keyof T)[];
@@ -157,7 +187,7 @@ export class ProgressTableComponent<T> {
     }
   }
 
-  isActiveStep(stepId:T[keyof T]){
+  isActiveStep(stepId:T[K]){
     if(this.config){
       return this.config.activeStep == this.config.steps.findIndex(s=>s.id == stepId);
     }else{

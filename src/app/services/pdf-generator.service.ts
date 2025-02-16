@@ -229,7 +229,6 @@ export class PdfGeneratorService {
   // Method for generating a Disbursement Voucher PDF
   generateDisbursementVoucher(voucher: DisbursementVoucher): Blob {
     const doc = new jsPDF();
-
     // Header (More formal title, black and white)
     doc.setFontSize(22);
     doc.setFont('helvetica', 'bold');
