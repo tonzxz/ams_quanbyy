@@ -22,16 +22,33 @@
         <div class="flex-1 px-6 border-dotted rounded-xl border-gray-700/25 border-2">
           <p-stepper [(value)]="config.activeStep" class="w-full" fluid>
             <p-step-list>
-              @for(step of config.steps; track step.id; let idx = $index){
-                <p-step pTooltip="{{step.tooltip??''}}" [value]="idx" class="flex flex-row flex-auto gap-2">
+                <p-step pTooltip="{{config.steps[0].tooltip??''}}" [value]="0" class="flex flex-row flex-auto gap-2">
                   <ng-template #content let-activateCallback="activateCallback" let-value="value">
-                    <button class="bg-transparent border-0 flex items-center gap-2 px-2" (click)="activateCallback(); step.function ? step.function($event,step.id) : null">
-                      <i [ngClass]="{'text-primary': value == config.activeStep}" class="{{step.icon?step.icon + ' mr-1' :''}}"></i>
-                      <span [ngClass]="{'text-primary': value == config.activeStep}">{{step.label}}</span>
+                    <button class="bg-transparent border-0 flex items-center gap-2 px-2" (click)="activateCallback(); config.steps[0].function ? config.steps[0].function($event,config.steps[0].id) : null">
+                      <i [ngClass]="{'text-primary': value == config.activeStep}" class="{{config.steps[0].icon?config.steps[0].icon + ' mr-1' :''}}"></i>
+                      <span [ngClass]="{'text-primary': value == config.activeStep}">{{config.steps[0].label}}</span>
                     </button>
                   </ng-template>
                 </p-step>
-              }
+                <p-step pTooltip="{{config.steps[1].tooltip??''}}" [value]="1" class="flex flex-row flex-auto gap-2">
+                  <ng-template #content let-activateCallback="activateCallback" let-value="value">
+                    <button class="bg-transparent border-0 flex items-center gap-2 px-2" (click)="activateCallback(); config.steps[1].function ? config.steps[1].function($event,config.steps[1].id) : null">
+                      <i [ngClass]="{'text-primary': value == config.activeStep}" class="{{config.steps[1].icon?config.steps[1].icon + ' mr-1' :''}}"></i>
+                      <span [ngClass]="{'text-primary': value == config.activeStep}">{{config.steps[1].label}}</span>
+                    </button>
+                  </ng-template>
+                </p-step>
+                @if(config.steps.length == 3){
+                  <p-step pTooltip="{{config.steps[2].tooltip??''}}" [value]="2" class="flex flex-row flex-auto gap-2">
+                    <ng-template #content let-activateCallback="activateCallback" let-value="value">
+                      <button class="bg-transparent border-0 flex items-center gap-2 px-2" (click)="activateCallback(); config.steps[2].function ? config.steps[2].function($event,config.steps[2].id) : null">
+                        <i [ngClass]="{'text-primary': value == config.activeStep}" class="{{config.steps[2].icon?config.steps[2].icon + ' mr-1' :''}}"></i>
+                        <span [ngClass]="{'text-primary': value == config.activeStep}">{{config.steps[2].label}}</span>
+                      </button>
+                    </ng-template>
+                  </p-step>
+                }
+              
             </p-step-list>
           </p-stepper>
         </div>

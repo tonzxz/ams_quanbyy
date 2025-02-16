@@ -121,7 +121,7 @@ export interface ProgressTableData<T, K extends keyof T>{
   columns: {[K in keyof Partial<T>]:string},
   activeStep:number,
   stepField:K,
-  steps: Step<T, K>[],
+  steps: [Step<T, K>, Step<T, K>] | [Step<T, K>, Step<T, K>, Step<T, K>];
   data: T[],
   topAction?:TopAction<T>,
   searchFields?:(keyof T)[],
