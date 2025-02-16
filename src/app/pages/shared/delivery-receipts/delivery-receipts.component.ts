@@ -1,4 +1,4 @@
-import { CommonModule } from '@angular/common';
+import { CommonModule, CurrencyPipe, DatePipe } from '@angular/common';
 import { Component, OnInit, ViewChild } from '@angular/core';
 import { MaterialModule } from 'src/app/material.module';
 import { StepperModule } from 'primeng/stepper';
@@ -27,11 +27,10 @@ import { Supplier, SuppliersService } from 'src/app/services/suppliers.service';
 import { SelectModule } from 'primeng/select';
 import { Department, DepartmentService } from 'src/app/services/departments.service';
 import { Requisition, RequisitionService } from 'src/app/services/requisition.service';
-import { UserService } from 'src/app/services/user.service';
 import jsPDF from 'jspdf';
 import 'jspdf-autotable';
-import autoTable from 'jspdf-autotable';
-import { UserOptions } from 'jspdf-autotable';
+import { ProgressTableComponent, ProgressTableData } from 'src/app/components/progress-table/progress-table.component';
+import { PdfGeneratorService } from 'src/app/services/pdf-generator.service';
 
 
 @Component({
@@ -39,9 +38,9 @@ import { UserOptions } from 'jspdf-autotable';
   standalone: true,
   imports: [MaterialModule,CommonModule, StepperModule, TableModule, ButtonModule, ButtonGroupModule, 
     InputTextModule, InputIconModule,IconFieldModule, FormsModule, SelectModule,
-    FileUploadModule,DatePickerModule,InputNumberModule, ToastModule, ReactiveFormsModule, TextareaModule,LottieAnimationComponent,
-    FluidModule, TooltipModule, DialogModule, InputTextModule,ConfirmPopupModule],
-  providers:[MessageService, ConfirmationService],
+    FileUploadModule,DatePickerModule,InputNumberModule, ToastModule, ReactiveFormsModule, TextareaModule,
+    FluidModule, TooltipModule, DialogModule, InputTextModule,ConfirmPopupModule, ProgressTableComponent],
+  providers:[MessageService, ConfirmationService, CurrencyPipe, DatePipe],
   templateUrl: './delivery-receipts.component.html',
   styleUrl: './delivery-receipts.component.scss'
 })
@@ -49,13 +48,10 @@ export class DeliveryReceiptsComponent implements OnInit {
 
   @ViewChild('fileUpload') fileUpload: FileUpload;
 
-  activeStep:number = 1;
   receipts:DeliveryReceipt[]=[];
-  filteredReceipts:DeliveryReceipt[]=[];
   suppliers:Supplier[];
   departments:Department[];
   requisitions: Requisition[];
-  searchValue:string='';
 
   showReceiptModal:boolean = false;
 
@@ -72,12 +68,14 @@ export class DeliveryReceiptsComponent implements OnInit {
 
   constructor(
     private router:Router,
-    private userService:UserService,
     private requisitionService:RequisitionService,
     private confirmationService:ConfirmationService,
+    private datePipe:DatePipe,
+    private currencyPipe:CurrencyPipe,
     private messageService:MessageService,
     private departmentService:DepartmentService,
     private supplierService:SuppliersService,
+    private pdfService:PdfGeneratorService,
     private deliveryService:DeliveryReceiptService){}
 
   ngOnInit(): void {
@@ -117,13 +115,6 @@ export class DeliveryReceiptsComponent implements OnInit {
     this.showReceiptModal = true;
   }
 
-  filterByStatus(status:'unverified'|'processing'|'verified'){
-    this.filteredReceipts = this.receipts.filter(r => r.status == status);
-  }
-
-  getSeverityFromStatus(status:'unverified'|'processing'|'verified'){
-    return status == 'verified' ? 'success' : 'secondary';
-  }
 
   files:File[] = [];
   onSelectedFiles(event:any) {
@@ -159,7 +150,7 @@ export class DeliveryReceiptsComponent implements OnInit {
     this.showReceiptModal = false;
     this.messageService.add({ severity: 'success', summary: 'Success', detail: `Successfully added receipt no. ${dr.receipt_number?.toUpperCase()}` });
     await this.fetchItems();
-    this.activeStep = 1;
+    this.progressTable.activeStep = 0;
   }
 
   async editReceipt(){
@@ -189,41 +180,11 @@ export class DeliveryReceiptsComponent implements OnInit {
     this.showReceiptModal = false;
     this.messageService.add({ severity: 'success', summary: 'Success', detail: `Successfully edited receipt no. ${dr.receipt_number?.toUpperCase()}` });
     await this.fetchItems();
-    this.activeStep = 1;
+    this.progressTable.activeStep = 0;
   }
 
 
-
-  nextStep(){
-    this.activeStep++;
-    switch (this.activeStep) {
-      case 1:
-        this.filterByStatus('unverified');
-        break;
-      case 2:
-        this.filterByStatus('processing');
-        break;
-      case 3:
-        this.filterByStatus('verified');
-        break;
-    }
-  }
-  backStep(){
-    this.activeStep--;
-    switch (this.activeStep) {
-      case 1:
-        this.filterByStatus('unverified');
-        break;
-      case 2:
-        this.filterByStatus('processing');
-        break;
-      case 3:
-        this.filterByStatus('verified');
-        break;
-    }
-  }
-
-  async confirmDeleteReceipt(event: Event,id:string){
+  async confirmDeleteReceipt(event: Event,dr:DeliveryReceipt){
     this.confirmationService.confirm({
       target: event.target as EventTarget,
       message: 'Are you sure you want to delete this receipt?',
@@ -237,10 +198,10 @@ export class DeliveryReceiptsComponent implements OnInit {
           label: 'Confirm'
       },
       accept: async () => {
-          await this.deliveryService.deleteReceipt(id)
+          await this.deliveryService.deleteReceipt(dr.id!)
           this.messageService.add({ severity: 'success', summary: 'Success', detail: `Successfully deleted receipt.` });
           await this.fetchItems();
-          this.activeStep = 1;
+          this.progressTable.activeStep = 0;
       },
       reject: () => {
           
@@ -248,7 +209,7 @@ export class DeliveryReceiptsComponent implements OnInit {
   });
   }
 
-  async confirmForInspection(event: Event,id:string){
+  async confirmForInspection(event: Event,dr:DeliveryReceipt){
     this.confirmationService.confirm({
       target: event.target as EventTarget,
       message: 'Are you sure you want to submit this receipt for inspection?',
@@ -262,11 +223,10 @@ export class DeliveryReceiptsComponent implements OnInit {
           label: 'Confirm'
       },
       accept: async () => {
-          await this.deliveryService.moveForInspection(id)
+          await this.deliveryService.moveForInspection(dr.id!)
           this.messageService.add({ severity: 'success', summary: 'Success', detail: `Successfully submitted receipt for inspection.` });
           await this.fetchItems();
-          this.filterByStatus('processing');
-          this.activeStep = 2;
+          this.progressTable.activeStep = 2;
       },
       reject: () => {
           
@@ -277,9 +237,97 @@ export class DeliveryReceiptsComponent implements OnInit {
   async proceedToStocking(){
     this.router.navigate(['/supply-management/stocking'])
   }
+
+  progressTable: ProgressTableData<DeliveryReceipt,'status'> = {
+      title: 'Delivery Receipts',
+      description: 'Track and manage delivery receipts in this section.',
+      topAction: {
+        icon: 'pi pi-plus',
+        function: ()=> this.openReceiptModal(),
+        label:'Add Receipt'
+      },
+      columns: {
+        receipt_number:'Receipt No.',
+        supplier_name: 'Supplier',
+        department_name: 'Department',
+        delivery_date: 'Delivery Date',
+        total_amount: 'Total Amount',
+        notes: 'Notes'
+      },
+      formatters:{
+        total_amount: (value)=>this.currencyPipe.transform(value?.toString(), 'PHP', 'symbol', '1.2-2') ?? '',
+        delivery_date: (value)=>this.datePipe.transform(value?.toString(),'shortDate') ?? ''
+      },
+      activeStep:0,
+      stepField:'status',
+      steps: [
+       {
+        id:'unverified',
+        label:'Unverified',
+        icon:'pi pi-inbox',
+        actions: [
+          {
+            icon:'pi pi-file-pdf',
+            shape:'rounded',
+            tooltip:'Click to export receipt PDF',
+            function: (event:Event, dr:DeliveryReceipt)=>this.pdfService.generateDeliveryReceipt(dr)
+          },
+          {
+            icon:'pi pi-pencil',
+            shape:'rounded',
+            tooltip: 'Click to edit receipt',
+            function: (event:Event, dr:DeliveryReceipt)=>this.openEditReceiptModal(dr)
+          },
+          {
+            icon:'pi pi-trash',
+            color:'danger',
+            shape:'rounded',
+            tooltip: 'Click to delete receipt',
+            function: (event:Event, dr:DeliveryReceipt)=>this.confirmDeleteReceipt(event,dr)
+          },
+          {
+            icon:'pi pi-arrow-right',
+            shape:'rounded',
+            color:'success',
+            tooltip: 'Click to submit this receipt for inspection',
+            function:  (event:Event, dr:DeliveryReceipt)=>this.confirmForInspection(event,dr)
+          }
+        ]
+       },
+       {
+          id:'processing',
+          label:'Processing',
+          icon:'pi pi-spinner-dotted pi-spin',
+       },
+       {
+        id:'verified',
+        label:'Verified',
+        icon:'pi pi-verified',
+        actions: [
+          {
+            hidden: (dr:DeliveryReceipt) => !dr.stocked,
+            disabled: (dr:DeliveryReceipt)=> true,
+            icon:'pi pi-box',
+            shape:'rounded',
+            color:'secondary',
+          },
+          {
+            hidden: (dr:DeliveryReceipt) => dr.stocked,
+            icon:'pi pi-arrow-right',
+            shape:'rounded',
+            color:'success',
+            tooltip: 'Click to submit this receipt for inspection',
+            function:  (event:Event, dr:DeliveryReceipt)=>this.proceedToStocking()
+          }
+        ]
+       },
+      ],
+      data:[]
+    }
   
   async fetchItems(){
     this.receipts = await this.deliveryService.getAll();
+    this.progressTable.data = this.receipts;
     this.suppliers = await this.supplierService.getAll();
     this.departments = await this.departmentService.getAllDepartments();
     const allRequisitions = await this.requisitionService.getAllRequisitions();
@@ -307,112 +355,9 @@ export class DeliveryReceiptsComponent implements OnInit {
         }
         return req.approvalSequenceDetails && (req.approvalSequenceDetails?.roleCode === 'supply' || req.approvalSequenceDetails?.roleCode === 'inspection')
       });
-    this.filterByStatus('unverified');
   }
 
-  generatePDF(receipt: DeliveryReceipt) {
-    const doc = new jsPDF();
-    const pageWidth = doc.internal.pageSize.width;
-    const pageHeight = doc.internal.pageSize.height;
-    const margin = 20; // Define margin for the header
+
+
   
-    // Header
-    doc.setFontSize(16);
-    doc.setTextColor(40, 40, 40);
-    doc.setFont('helvetica', 'bold');
-    doc.text('QUANBY SOLUTIONS INC', pageWidth / 2, margin - 5, { align: 'center' });
-  
-    doc.setFont('helvetica', 'normal');
-    doc.setFontSize(8);
-    doc.text('4th Flr. Dosc Bldg., Brgy. 37-Bitano, Legazpi City, Albay', pageWidth / 2, margin + 0, { align: 'center' });
-    doc.text('VAT Reg. TIN: 625-263-719-00000', pageWidth / 2, margin + 5, { align: 'center' });
-  
-    // Horizontal Line below Header
-    doc.setDrawColor(200, 200, 200); // Light gray line
-    doc.setLineWidth(0.5);
-    doc.line(margin, margin + 15, pageWidth - margin, margin + 15);
-  
-    // Title
-    doc.setFontSize(16);
-    doc.text('DELIVERY RECEIPT', pageWidth / 2, margin + 30, { align: 'center' }); // Centered title
-  
-    // Header information
-    doc.setFontSize(12);
-    doc.text(`Delivered to: ${receipt.department_name}`, margin, margin + 50);
-    doc.text(`Date: ${new Date(receipt.delivery_date).toLocaleDateString()}`, pageWidth - margin - 60, margin + 50);
-  
-    doc.text(`TIN: ${receipt.supplier_name}`, margin, margin + 60);
-    doc.text(`Terms: N/A`, pageWidth - margin - 60, margin + 60);
-  
-    doc.text(`Address: ${receipt.department_name}`, margin, margin + 70);
-  
-    // Table Headers
-    const startY = margin + 80; // Adjusted Y position
-    const rowHeight = 8; // Reduced row height
-    const numberOfRows = 10; // Reduced number of rows
-  
-    // Column widths (auto-resize based on page width and margins)
-    const col1Width = 30; // QTY (fixed width)
-    const col2Width = 40; // UNIT (fixed width)
-    const col3Width = pageWidth - 2 * margin - col1Width - col2Width; // ARTICLES (dynamic width)
-  
-    // Draw table header
-    doc.setFontSize(12);
-    doc.setFont('helvetica', 'bold');
-  
-    // Draw header cells
-    doc.rect(margin, startY, col1Width, rowHeight);
-    doc.rect(margin + col1Width, startY, col2Width, rowHeight);
-    doc.rect(margin + col1Width + col2Width, startY, col3Width, rowHeight);
-  
-    // Header text
-    doc.text('QTY', margin + 5, startY + 6); // Adjusted text position
-    doc.text('UNIT', margin + col1Width + 5, startY + 6); // Adjusted text position
-    doc.text('ARTICLES', margin + col1Width + col2Width + 5, startY + 6); // Adjusted text position
-  
-    // Draw table rows
-    doc.setFont('helvetica', 'normal');
-    for (let i = 0; i < numberOfRows; i++) {
-      const y = startY + (i + 1) * rowHeight;
-  
-      // Draw row cells
-      doc.rect(margin, y, col1Width, rowHeight);
-      doc.rect(margin + col1Width, y, col2Width, rowHeight);
-      doc.rect(margin + col1Width + col2Width, y, col3Width, rowHeight);
-  
-      // Add notes to the "ARTICLES" column in the first row
-      if (i === 0 && receipt.notes) {
-        // Split the notes into lines if they are too long
-        const notesLines = doc.splitTextToSize(receipt.notes, col3Width - 10); // Split text to fit column width
-  
-        // Add each line of notes to the cell
-        notesLines.forEach((line: string, lineIndex: number) => {
-          doc.text(
-            line,
-            margin + col1Width + col2Width + 5, // X position (left padding)
-            y + 6 + lineIndex * 5 // Y position (top padding + line spacing)
-          );
-        });
-      }
-    }
-  
-    // Signature line and text at the bottom right
-    const signatureLineLength = 80; // Length of the underline
-    const signatureY = pageHeight - margin - 20; // Positioned at the bottom with margin
-    const signatureX = pageWidth - margin - signatureLineLength; // Aligned to the right
-  
-    // Draw underline
-    doc.line(signatureX, signatureY, signatureX + signatureLineLength, signatureY);
-  
-    // Center the text relative to the underline
-    const text = "Customer's signature over printed name";
-    const textWidth = doc.getTextWidth(text);
-    const textX = signatureX + (signatureLineLength - textWidth) / 2; // Center text horizontally
-  
-    doc.setFontSize(10);
-    doc.text(text, textX, signatureY + 5); // Text below the line
-  
-    // Save PDF
-    doc.save(`delivery-receipt-${receipt.receipt_number}.pdf`);
-  }
 }

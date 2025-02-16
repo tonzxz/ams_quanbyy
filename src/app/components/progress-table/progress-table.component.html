@@ -89,15 +89,18 @@
                 <td>
                   <div class="flex gap-3">
                     @for(action of step.actions; track action.label){
-                      <p-button
+                      @if(action.hidden ? !action.hidden(row):true){
+                        <p-button
                           [severity]="action.color"
                           [pTooltip]="action.tooltip"
                           [outlined]="true"
                           size="small"
+                          [disabled]="action.disabled ? action.disabled(row):false"
                           [icon]="action.icon"
                           [rounded]="action.shape == 'rounded'"
                           (click)="action.function ? action.function($event,row):null"
                         ></p-button>
+                      }
                     }
                   </div>
                 </td>

@@ -18,9 +18,7 @@ import { MaterialModule } from 'src/app/material.module';
 /**
  * Top action configuration
  * @param icon: A string for icon
- * @param shape: A string representing buttons shape
  * @param function: A function to trigger when button is pressed
- * @param disabled: (Optional) A boolean to lock button
  * @param color: (Optional) An enum representing color
  * @param label: (Optional) A string to display as label
  * @param tooltip: (Optional) A string to display when hovered
@@ -37,7 +35,8 @@ export interface TopAction<T> {
  * @param icon: A string for icon
  * @param shape: A string representing buttons shape
  * @param function: A function to trigger when button is pressed
- * @param disabled: (Optional) A boolean to lock button
+ * @param disabled: (Optional) A function => boolean to lock button
+ * @param hidden: (Optional) A function => boolean to hide button
  * @param color: (Optional) An enum representing color
  * @param label: (Optional) A string to display as label
  * @param tooltip: (Optional) A string to display when hovered
@@ -46,7 +45,8 @@ export interface RowAction<T> {
   icon:string,
   shape:'rounded'|'default',
   function?: (event:Event,args:T)=>void
-  disabled?:boolean,
+  disabled?:(args:T)=>boolean,
+  hidden?:(args:T)=>boolean,
   color?: 'success' | 'info' | 'warn' | 'danger' | 'help' | 'primary' | 'secondary' | 'contrast',
   label?:string,
   tooltip?:string;

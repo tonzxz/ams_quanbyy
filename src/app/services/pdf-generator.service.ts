@@ -5,62 +5,116 @@ import 'jspdf-autotable';
 import { DeliveredItem } from '../pages/shared/delivered-items/delivered-items.interface';
 import { DisbursementVoucher } from './disbursement-voucher.service';
 import html2canvas from 'html2canvas';
+import { DeliveryReceipt } from './delivery-receipt.service';
 
 @Injectable({
   providedIn: 'root'
 })
 export class PdfGeneratorService {
-  generateDeliveryReceipt(item: DeliveredItem): Blob {
+  generateDeliveryReceipt(receipt: DeliveryReceipt) {
     const doc = new jsPDF();
-
+    const pageWidth = doc.internal.pageSize.width;
+    const pageHeight = doc.internal.pageSize.height;
+    const margin = 20; // Define margin for the header
+  
     // Header
-    doc.setFontSize(20);
-    doc.text('DELIVERY RECEIPT', 105, 15, { align: 'center' });
-
-    // Information
+    doc.setFontSize(16);
+    doc.setTextColor(40, 40, 40);
+    doc.setFont('helvetica', 'bold');
+    doc.text('QUANBY SOLUTIONS INC', pageWidth / 2, margin - 5, { align: 'center' });
+  
+    doc.setFont('helvetica', 'normal');
+    doc.setFontSize(8);
+    doc.text('4th Flr. Dosc Bldg., Brgy. 37-Bitano, Legazpi City, Albay', pageWidth / 2, margin + 0, { align: 'center' });
+    doc.text('VAT Reg. TIN: 625-263-719-00000', pageWidth / 2, margin + 5, { align: 'center' });
+  
+    // Horizontal Line below Header
+    doc.setDrawColor(200, 200, 200); // Light gray line
+    doc.setLineWidth(0.5);
+    doc.line(margin, margin + 15, pageWidth - margin, margin + 15);
+  
+    // Title
+    doc.setFontSize(16);
+    doc.text('DELIVERY RECEIPT', pageWidth / 2, margin + 30, { align: 'center' }); // Centered title
+  
+    // Header information
     doc.setFontSize(12);
-    doc.text(`Receipt No: ${item.id}`, 15, 30);
-    doc.text(`Date: ${new Date(item.dateDelivered).toLocaleDateString()}`, 15, 40);
-
-    // Supplier Info
-    doc.text('Supplier Information:', 15, 55);
-    doc.text(`Name: ${item.supplierName}`, 25, 65);
-    doc.text(`ID: ${item.supplierId}`, 25, 75);
-    doc.text(`Department: ${item.department}`, 25, 85);
-
-    // Items Table
-    const tableData = item.items.map(i => [
-      i.id,
-      i.name,
-      i.quantity.toString(),
-      i.isDelivered ? 'Delivered' : 'Pending'
-    ]);
-
-    (doc as any).autoTable({
-      startY: 95,
-      head: [['Item ID', 'Item Name', 'Quantity', 'Status']],
-      body: tableData,
-      theme: 'grid',
-      styles: { fontSize: 10 },
-      headStyles: { fillColor: [41, 128, 185], textColor: 255 }
-    });
-
-    // Signatures
-    const finalY = (doc as any).lastAutoTable.finalY + 30;
-
-    doc.text('Received by:', 15, finalY);
-    doc.line(15, finalY + 25, 85, finalY + 25);
-    doc.text('Signature over Printed Name', 25, finalY + 35);
-    doc.text('Position/Designation:', 25, finalY + 45);
-    doc.text('Date:', 25, finalY + 55);
-
-    doc.text('Delivered by:', 120, finalY);
-    doc.line(120, finalY + 25, 190, finalY + 25);
-    doc.text('Signature over Printed Name', 130, finalY + 35);
-    doc.text('Position/Designation:', 130, finalY + 45);
-    doc.text('Date:', 130, finalY + 55);
-
-    return doc.output('blob');
+    doc.text(`Delivered to: ${receipt.department_name}`, margin, margin + 50);
+    doc.text(`Date: ${new Date(receipt.delivery_date).toLocaleDateString()}`, pageWidth - margin - 60, margin + 50);
+  
+    doc.text(`TIN: ${receipt.supplier_name}`, margin, margin + 60);
+    doc.text(`Terms: N/A`, pageWidth - margin - 60, margin + 60);
+  
+    doc.text(`Address: ${receipt.department_name}`, margin, margin + 70);
+  
+    // Table Headers
+    const startY = margin + 80; // Adjusted Y position
+    const rowHeight = 8; // Reduced row height
+    const numberOfRows = 10; // Reduced number of rows
+  
+    // Column widths (auto-resize based on page width and margins)
+    const col1Width = 30; // QTY (fixed width)
+    const col2Width = 40; // UNIT (fixed width)
+    const col3Width = pageWidth - 2 * margin - col1Width - col2Width; // ARTICLES (dynamic width)
+  
+    // Draw table header
+    doc.setFontSize(12);
+    doc.setFont('helvetica', 'bold');
+  
+    // Draw header cells
+    doc.rect(margin, startY, col1Width, rowHeight);
+    doc.rect(margin + col1Width, startY, col2Width, rowHeight);
+    doc.rect(margin + col1Width + col2Width, startY, col3Width, rowHeight);
+  
+    // Header text
+    doc.text('QTY', margin + 5, startY + 6); // Adjusted text position
+    doc.text('UNIT', margin + col1Width + 5, startY + 6); // Adjusted text position
+    doc.text('ARTICLES', margin + col1Width + col2Width + 5, startY + 6); // Adjusted text position
+  
+    // Draw table rows
+    doc.setFont('helvetica', 'normal');
+    for (let i = 0; i < numberOfRows; i++) {
+      const y = startY + (i + 1) * rowHeight;
+  
+      // Draw row cells
+      doc.rect(margin, y, col1Width, rowHeight);
+      doc.rect(margin + col1Width, y, col2Width, rowHeight);
+      doc.rect(margin + col1Width + col2Width, y, col3Width, rowHeight);
+  
+      // Add notes to the "ARTICLES" column in the first row
+      if (i === 0 && receipt.notes) {
+        // Split the notes into lines if they are too long
+        const notesLines = doc.splitTextToSize(receipt.notes, col3Width - 10); // Split text to fit column width
+  
+        // Add each line of notes to the cell
+        notesLines.forEach((line: string, lineIndex: number) => {
+          doc.text(
+            line,
+            margin + col1Width + col2Width + 5, // X position (left padding)
+            y + 6 + lineIndex * 5 // Y position (top padding + line spacing)
+          );
+        });
+      }
+    }
+  
+    // Signature line and text at the bottom right
+    const signatureLineLength = 80; // Length of the underline
+    const signatureY = pageHeight - margin - 20; // Positioned at the bottom with margin
+    const signatureX = pageWidth - margin - signatureLineLength; // Aligned to the right
+  
+    // Draw underline
+    doc.line(signatureX, signatureY, signatureX + signatureLineLength, signatureY);
+  
+    // Center the text relative to the underline
+    const text = "Customer's signature over printed name";
+    const textWidth = doc.getTextWidth(text);
+    const textX = signatureX + (signatureLineLength - textWidth) / 2; // Center text horizontally
+  
+    doc.setFontSize(10);
+    doc.text(text, textX, signatureY + 5); // Text below the line
+  
+    // Save PDF
+    doc.save(`delivery-receipt-${receipt.receipt_number}.pdf`);
   }
 
   generateInspectionReport(item: DeliveredItem): Blob {
