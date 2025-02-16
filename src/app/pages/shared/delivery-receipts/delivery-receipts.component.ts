@@ -39,7 +39,7 @@ import { PdfGeneratorService } from 'src/app/services/pdf-generator.service';
   imports: [MaterialModule,CommonModule, StepperModule, TableModule, ButtonModule, ButtonGroupModule, 
     InputTextModule, InputIconModule,IconFieldModule, FormsModule, SelectModule,
     FileUploadModule,DatePickerModule,InputNumberModule, ToastModule, ReactiveFormsModule, TextareaModule,
-    FluidModule, TooltipModule, DialogModule, InputTextModule, ProgressTableComponent],
+    FluidModule, TooltipModule, DialogModule, InputTextModule,ConfirmPopupModule, ProgressTableComponent],
   providers:[MessageService, ConfirmationService, CurrencyPipe, DatePipe],
   templateUrl: './delivery-receipts.component.html',
   styleUrl: './delivery-receipts.component.scss'
