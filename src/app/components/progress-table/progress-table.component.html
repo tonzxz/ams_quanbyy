@@ -61,6 +61,7 @@
       <!-- Disbursement Voucher Table -->
       <p-table
         #dt
+        [rowHover]="true"
         [value]="filteredData()"
         [paginator]="true"
         [rows]="5"
