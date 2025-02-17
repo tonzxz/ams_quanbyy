@@ -29,7 +29,7 @@ export class CrudService {
   private dataCache: { [key: string]: any[] } = {}; // Cache to hold table data
   private wsService = new WebSocketService();
   private getTableName(input: string): string {
-    return input.replace(/([a-z])([A-Z])/g, '$1_$2').toLowerCase();
+    return input;
   }
 
   constructor(private http: HttpClient) {}

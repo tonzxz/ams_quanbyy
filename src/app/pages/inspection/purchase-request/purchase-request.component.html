@@ -1,200 +1,112 @@
-<p-card header="Purchase Requests">
-    <div class="flex flex-row w-full justify-between items-center mt-2 mb-2">
-        <div class="gap-3 flex flex-row w-full justify-between">
-            <p-iconfield styleClass="small">
-                <p-inputicon styleClass="pi pi-search small"/>
-                <input [size]="'small'" type="text" pInputText placeholder="Search" [(ngModel)]="searchQuery" (input)="filterRequests()"/>
-                <!-- <p-inputicon styleClass="pi pi-spinner pi-spin" /> -->
-            </p-iconfield>
-            <div class="card flex justify-center">
-                <p-buttongroup>
-                    <p-dropdown
-                        [options]="departments"
-                        [(ngModel)]="selectedDepartment"
-                        placeholder="Select Department"
-                        optionLabel="name"
-                        optionValue="value"
-                        [showClear]="true"
-                        styleClass="mr-2"
-                        (onChange)="filterRequests()">
-                    </p-dropdown>
-                    <p-button severity="secondary" icon="pi pi-refresh"  pTooltip="Refresh Table" (click)="resetFilters()"/>
-                    <p-button severity="secondary" icon="pi pi-file-pdf" pTooltip="Generate Report" (click)="generateReport(activeTabHeader)"></p-button>
-                </p-buttongroup>
+<p-card>
+    <!-- Main Container -->
+    <div class="pr-container">
+        <!-- Header -->
+        <div class="header">
+            <div class="logo-section">
+                <img src="../../../../assets/images/logos/qby.png" alt="DACSU Logo" class="logo"/>
+                <div class="header-text">
+                    <h3>DON ANTON CAESAR STATE UNIVERSITY</h3>
+                    <p>Brgy. Barangahawon, Tabaco</p>
+                    <p>Annual Procurement Plan - SUPPLEMENTAL, 4th Quarter</p>
+                    <p>Calendar Year 2025</p>
+                </div>
+                <div class="right-logos">
+                    <img src="../../../../assets/images/logos/BP.png" alt="Bagong Pilipinas Logo" class="logo"/>
+                    <img src="../../../../assets/images/logos/ISO.png" alt="ISO Certified Logo" class="logo"/>
+                </div>
+            </div>
+        </div>
+
+        <!-- Purchase Request Form -->
+        <div class="pr-form">
+            <div class="pr-header">
+                <div class="pr-title">PURCHASE REQUEST</div>
+                <div class="pr-annex">
+                    <p>Annex G-6</p>
+                    <p>COA Circular No. 2001-04, S. 2001</p>
+                </div>
+            </div>
+
+            <div class="pr-details">
+                <div class="requisition-office">
+                    <p><strong>REQUISITIONING OFFICE:</strong></p>
+                    <p>{{currentRequest.requisitioningOffice}}</p>
+                </div>
+                <div class="pr-numbers">
+                    <div class="labels">
+                        <p>P.R. No.:</p>
+                        <p>SAI No.:</p>
+                        <p>ALOBS No.:</p>
+                    </div>
+                    <div class="values">
+                        <p>{{currentRequest.prNo}}</p>
+                        <p>{{currentRequest.saiNo}}</p>
+                        <p>{{currentRequest.alobsNo}}</p>
+                    </div>
+                    <div class="dates">
+                        <p>Date: {{currentRequest.date | date}}</p>
+                        <p>Date:</p>
+                        <p>Date:</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Items Table -->
+            <table class="items-table">
+                <thead>
+                    <tr>
+                        <th>ITEM NO.</th>
+                        <th>UNIT</th>
+                        <th>ITEM / DESCRIPTION</th>
+                        <th>QTY.</th>
+                        <th>ESTIMATED UNIT COST</th>
+                        <th>ESTIMATED TOTAL</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr *ngFor="let item of currentRequest.items">
+                        <td>{{item.itemNo}}</td>
+                        <td>{{item.unit}}</td>
+                        <td>{{item.description}}</td>
+                        <td>{{item.qty}}</td>
+                        <td>{{item.unitCost | number:'1.2-2'}}</td>
+                        <td>{{item.totalCost | number:'1.2-2'}}</td>
+                    </tr>
+                </tbody>
+                <tfoot>
+                    <tr>
+                        <td colspan="5" class="text-right"><strong>TOTAL</strong></td>
+                        <td><strong>₱ {{currentRequest.totalAmount | number:'1.2-2'}}</strong></td>
+                    </tr>
+                </tfoot>
+            </table>
+
+            <!-- Purpose Section -->
+            <div class="purpose-section">
+                <p><strong>Purpose:</strong> {{currentRequest.purpose}}</p>
             </div>
         </div>
     </div>
-    <p-tabView [(activeIndex)]="activeTabIndex" (onTabChange)="onTabChange($event)">
-        <p-tabPanel header="Pending Requests">
-            <p-table [value]="filteredPendingRequests" class="mt-5" [paginator]="true" [rows]="8" [tableStyle]="{ 'min-width': '50rem' }" selectionMode="single" (onRowSelect)="onRowSelect($event)">
-                <ng-template pTemplate="header">
-                    <tr>
-                        <th>PR#</th>
-                        <th>Requestor</th>
-                        <th>Department</th>
-                        <th>Item</th>
-                        <th>Quantity</th>
-                        <th>Date</th>
-                        <th>Actions</th>
-                    </tr>
-                </ng-template>
-                <ng-template pTemplate="body" let-request>
-                    <tr pSelectableRow>
-                        <td>{{ request.prNo }}</td>
-                        <td>{{ request.requestedBy }}</td>
-                        <td>{{ request.department }}</td>
-                        <td>{{ request.items[0]?.description }}</td>
-                        <td>{{ request.items[0]?.qty }}</td>
-                        <td>{{ request.date | date }}</td>
-                        <td class="">
-                            <button pButton pTooltip="Accept Purchase Request" showDelay="600" hideDelay="300" type="button" [outlined]="true" icon="pi pi-check" [rounded]="true" size="small" class="p-button-success mr-2" (click)="confirmAcceptRequest(request)"></button>
-                            <button pButton pTooltip="Reject Purchase Request" showDelay="600" hideDelay="300" type="button" [outlined]="true" icon="pi pi-times" [rounded]="true" size="small" class="p-button-danger" (click)="confirmRejectRequest(request)"></button>
-                        </td>
-                    </tr>
-                </ng-template>    
-            </p-table>
-        </p-tabPanel>
+    <!-- Footer Section -->
+        <div class="footer">
+            <div class="footer-content">
+                <div class="footer-left">
+                    <p>Recommended by:</p>
+                    <p>{{currentRequest.recommendedBy.name}}</p>
+                    <p>{{currentRequest.recommendedBy.designation}}</p>
+                </div>
+                <div class="footer-right">
+                    <p>Approved by:</p>
+                    <p>{{currentRequest.approvedBy.name}}</p>
+                    <p>{{currentRequest.approvedBy.designation}}</p>
+                </div>
+            </div>
+        </div>
 
-        <p-tabPanel header="Validated Requests">
-            <p-table class="mt-5" [paginator]="true" [rows]="8" [value]="filteredValidatedRequests" [tableStyle]="{ 'min-width': '50rem' }" selectionMode="single" (onRowSelect)="onRowSelect($event)">
-                <ng-template pTemplate="header">
-                    <tr>
-                        <th>PR#</th>
-                        <th>Requestor</th>
-                        <th>Department</th>
-                        <th>Item</th>
-                        <th>Quantity</th>
-                        <th>Date</th>
-                        <th>Actions</th>
-                    </tr>
-                </ng-template>
-                <ng-template pTemplate="body" let-request>
-                    <tr pSelectableRow>
-                        <td>{{ request.prNo }}</td>
-                        <td>{{ request.requestedBy }}</td>
-                        <td>{{ request.department }}</td>
-                        <td>{{ request.items[0]?.description }}</td>
-                        <td>{{ request.items[0]?.qty }}</td>
-                        <td>{{ request.date | date }}</td>
-                        <td class="">
-                            <button 
-                                pButton 
-                                pTooltip="Revalidate" 
-                                (click)="revalidateRequest(request)"
-                                icon="pi pi-replay" 
-                                [rounded]="true" 
-                                size="small" 
-                                class="mr-2" 
-                                severity="secondary">
-                            </button>                        
-                        </td>
-                    </tr>
-                </ng-template>    
-            </p-table>
-        </p-tabPanel>
 
-        <p-tabPanel header="Rejected Requests">
-            <p-table class="mt-5" [paginator]="true" [rows]="8" [value]="filteredRejectedRequests" [tableStyle]="{ 'min-width': '50rem' }" selectionMode="single" (onRowSelect)="onRowSelect($event)">
-                <ng-template pTemplate="header">
-                    <tr>
-                        <th>PR#</th>
-                        <th>Requestor</th>
-                        <th>Department</th>
-                        <th>Item</th>
-                        <th>Quantity</th>
-                        <th>Date</th>
-                        <th>Actions</th>
-                    </tr>
-                </ng-template>
-                <ng-template pTemplate="body" let-request>
-                    <tr pSelectableRow>
-                        <td>{{ request.prNo }}</td>
-                        <td>{{ request.requestedBy }}</td>
-                        <td>{{ request.department }}</td>
-                        <td>{{ request.items[0]?.description }}</td>
-                        <td>{{ request.items[0]?.qty }}</td>
-                        <td>{{ request.date | date }}</td>
-                        <td class="">
-                            <button 
-                                pButton 
-                                pTooltip="Unreject" 
-                                (click)="unrejectRequest(request)"
-                                icon="pi pi-replay" 
-                                [rounded]="true" 
-                                size="small" 
-                                class="mr-2" 
-                                severity="secondary">
-                            </button>                        
-                        </td>
-                    </tr>
-                </ng-template>    
-            </p-table>
-        </p-tabPanel> 
-        
-    </p-tabView>
+    <!-- Export Button -->
+    <div class="export-button">
+        <button pButton label="Export to PDF" icon="pi pi-file-pdf" (click)="generatePDF()"></button>
+    </div>
 </p-card>
-
-<p-confirmDialog></p-confirmDialog>
-<p-toast position="bottom-right"/>
-
-<p-dialog header="Purchase Request Details"   [(visible)]="displayModal" [modal]="true" [closable]="true" [style]="{ width: '25rem' }" (onHide)="hideModal()">
-    <div class="flex justify-center mb-5"> 
-        <p-image src="https://primefaces.org/cdn/primeng/images/galleria/galleria11.jpg" [preview]="true" alt="Image" width="250">
-            <ng-template #indicator>
-                <i class="pi pi-search"></i>    
-            </ng-template>
-            <div class="flex w justify-center items-center">
-                <img src="https://primefaces.org/cdn/primeng/images/galleria/galleria11.jpg" alt="image" width="300" />
-            </div>
-        </p-image>
-    </div>
-    <div class="flex items-center gap-4 mb-4 text-base">
-        <label class="font-semibold w-24">PR#:</label>
-        <span>PR001</span>
-    </div>
-    <div class="flex flex-row">
-        <div class="flex flex-col">
-            <div class="flex items-center gap-4 mb-2 text-base">
-                <label class="font-semibold w-24">Requestor:</label>
-                <span>John Doe</span>
-            </div>
-            <div class="flex items-center gap-4 mb-2 text-base">
-                <label class="font-semibold w-24">Item:</label>
-                <span>Laptop</span>
-            </div>
-            
-        </div>
-        <div class="flex flex-col justify-between ml-5">
-            <div class="flex items-center gap-4 mb-2 text-base">
-                <label class="font-semibold w-24">Department:</label>
-                <span>IT</span>
-            </div>
-            <div class="flex items-center gap-4 mb-2 text-base">
-                <label class="font-semibold w-24">Quantity:</label>
-                <span>1</span>
-            </div>
-        </div>
-    </div>
-    <div class="flex text-base mb-5">
-        <label class="font-semibold w-24">Remarks:</label>
-        <span class="ml-7">Lorem ipsum dolor sit amet, consectetur adipiscing elit.</span>
-    </div>
-    <ng-template #footer>
-        <button *ngIf="selectedRequest && isRequestPending(selectedRequest)" 
-                pButton pTooltip="Accept Purchase Request" 
-                label="Accept" 
-                type="button" 
-                icon="pi pi-check"  
-                size="small" 
-                class="p-button-success mr-2" 
-                (click)="confirmAcceptRequest(selectedRequest)"></button>
-        <button *ngIf="selectedRequest && isRequestPending(selectedRequest)" 
-                pButton pTooltip="Reject Purchase Request" 
-                label="Reject" 
-                type="button" 
-                icon="pi pi-times"  
-                size="small" 
-                class="p-button-danger" 
-                (click)="confirmRejectRequest(selectedRequest)"></button>
-      </ng-template>
-</p-dialog>
