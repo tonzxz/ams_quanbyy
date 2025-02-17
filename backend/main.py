@@ -69,6 +69,8 @@ crud.add_logic('approved_ppmps', f'''
     SELECT * FROM ppmp_approvers pa, ppmp p WHERE p.id = pa.ppmp_id
 ''')
 
+# equivalent endpoint = /api/approved_ppmps
+
 CORS(app)
 
 if __name__ == '__main__':

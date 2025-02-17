@@ -56,21 +56,28 @@ export interface PPMP {
   current_approver_id: string
 }
 
+
+export interface PPMPProject {
+  id: string
+  ppmp_id: string  
+  procurement_mode_id: string  
+  prepared_by: string  
+  project_title: string  
+  project_code?: string 
+  project_description: string
+  funding_source_id: string  
+}
+
 export interface PPMPItem {
   id: string
-  ppmp_id: string
-  procurement_mode_id: string
-  funding_source_id: string
-  prepared_by: string
-  project_title: string
-  project_code?: string
-  item_description: string
-  technical_specification: string
-  unit_of_measurement: string
-  quantity_required: number
-  estimated_unit_cost: number
-  estimated_total_cost: number
+  ppmp_project_id: string  
+  technical_specification: string  
+  quantity_required: number  
+  unit_of_measurement: string 
+  estimated_unit_cost: number  
+  estimated_total_cost: number 
 }
+
 
 export interface Approvals { 
   id: string
