@@ -1,203 +1,97 @@
-/* app-sequence.component.scss */
-.app-document {
-  background: white;
-  padding: 20px;
-  font-family: Arial, sans-serif;
-  
-  .document-header {
-    text-align: center;
-    margin-bottom: 20px;
-
-    .header-logos {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      margin-bottom: 20px;
-    
-      .logo-left {
-        width: 80px;
-        height: auto;
-      }
-    
-      .header-text {
-        flex-grow: 1;
-        padding: 0 20px;
-      }
-    
-      .certification-logos {
-        display: flex;
-        flex-direction: row; // Changed to row to place logos side by side
-        gap: 15px; // Space between the logos
-        align-items: center;
-    
-        .logo-right {
-          &.bp-logo {
-            width: 80px;
-            height: auto;
-          }
-          
-          &.iso-logo {
-            width: 80px;
-            height: auto;
-          }
-        }
-      }
-    }
-
-    .header-text {
-      h1 {
-        font-size: 16px;
-        font-weight: bold;
-        margin: 0;
-      }
-      h2 {
-        font-size: 14px;
-        margin: 5px 0;
-      }
-      h3, h4 {
-        font-size: 14px;
-        margin: 5px 0;
-      }
-    }
-  }
-  
-  .procurement-table {
-    width: 100%;
-    border-collapse: collapse;
-    font-size: 12px;
-    margin-bottom: 20px;
-
-    th, td {
-      border: 1px solid #000;
-      padding: 6px;
-      vertical-align: middle;
-    }
-
-    th {
-      background-color: #fff;
-      font-weight: bold;
-      text-align: center;
-    }
-
-    .section-header {
-      background-color: #fff;
-      font-weight: bold;
-    }
-
-    .category-header {
-      background-color: #ffff00;
-      font-weight: bold;
-    }
-
-    .sub-header th {
-      font-weight: normal;
-    }
-
-    .data-row {
-      &:hover {
-        background-color: #f8f9fa;
-      }
-
-      &.editable td {
-        cursor: pointer;
-      }
-    }
-
-    .amount {
-      text-align: right;
-    }
-
-    .subtotal-row {
-      font-weight: bold;
-      
-      td {
-        border-top: 2px solid #000;
-      }
-    }
-  }
-
-  .document-footer {
-    margin-top: 30px;
-    font-size: 12px;
-
-    .prepared-by, .committee-section, .approval-section {
-      margin-bottom: 30px;
-    }
-
-    .signature-line {
-      margin: 20px 0;
-      text-align: center;
-      
-      p {
-        margin: 0;
-        line-height: 1.4;
-      }
-    }
-
-    .signatures-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-      gap: 20px;
-      margin-top: 20px;
-    }
-  }
-  .export-button-container {
-    display: flex;
-    justify-content: flex-end;
-    margin-bottom: 20px;
-    padding-right: 20px;
-  
-    .export-btn {
-      background-color: #007bff;
-      color: white;
-      border: none;
-      padding: 8px 16px;
-      border-radius: 4px;
-      cursor: pointer;
-      font-size: 14px;
-      transition: background-color 0.3s;
-  
-      &:hover {
-        background-color: #0056b3;
-      }
-  
-      &:active {
-        background-color: #004085;
-      }
-    }
-  }
-  
-  // Add print-specific styles
-  @media print {
-    .export-button-container {
-      display: none!important;
-    }
-  
-    .app-document {
-      width: 100%;
-      height: 100%;
-      margin: 0;
-      padding: 0;
-    }
-  
-    @page {
-      size: landscape;
-      margin: 10mm;
-    }
-  }
+/* Ensure flex container aligns the button & input */
+.flex {
+  display: flex;
+  align-items: center;
+  gap: 10px;
 }
 
-@media print {
-.app-document {
-  padding: 0;
-  
-  .procurement-table {
-    page-break-inside: avoid;
-  }
-  
-  .category-header {
-    background-color: #ffff00 !important;
-    -webkit-print-color-adjust: exact;
-  }
+/* Ensure button and search input have same height */
+.p-button {
+  height: 38px !important;
+  line-height: 38px !important;
+  padding: 8px 16px !important;
+  font-size: 14px !important;
+  border-radius: 6px !important;
 }
+
+/* Outlined Button */
+.p-button-outlined {
+  height: 38px !important;
+  border: 1px solid #d1d5db !important;
+  background: transparent !important;
+  color: #6366f1 !important;
+  font-weight: 500;
+}
+
+.p-button-outlined:hover {
+  background: #6366f1 !important;
+  color: white !important;
+}
+
+/* Search Input Container */
+.relative {
+  display: flex;
+  align-items: center;
+  width: 250px;
+  height: 38px !important; /* Matches button height */
+  border: 1px solid #d1d5db;
+  border-radius: 6px;
+  padding: 8px 12px;
+  background-color: white;
+}
+
+/* Search Icon */
+.pi-search {
+  font-size: 16px;
+  color: #6b7280;
+}
+
+/* Search Input */
+.search-input {
+  width: 100%;
+  height: 100%;
+  border: none;
+  outline: none;
+  font-size: 14px;
+  color: #4b5563;
+  background: transparent;
+}
+
+
+/* Table Styles */
+p-table tr {
+  border-bottom: 1px solid #e5e7eb;
+}
+
+p-table tr:hover {
+  background-color: #f9fafb;
+}
+
+/* Custom Styling for Buttons */
+.p-button-danger {
+  background-color: #ef4444;
+  border-color: #ef4444;
+}
+
+.p-button-danger:hover {
+  background-color: #dc2626;
+  border-color: #dc2626;
+}
+
+.text-gray-600 {
+  color: #4b5563;
+}
+
+.text-gray-800 {
+  color: #1f2937;
+}
+
+.font-semibold {
+  font-weight: 600;
+}
+
+/* Card Styling */
+.cardWithShadow {
+  box-shadow: 0px 4px 12px rgba(0, 0, 0, 0.08);
+  border-radius: 10px;
 }

@@ -1,209 +1,143 @@
-// app-sequence.component.ts
-import { Component, OnInit } from '@angular/core';
-import { CommonModule } from '@angular/common';
-import { ProcurementService } from '../../../services/procurement.service';
-import { DocumentMetadata, ProcurementCategory, ProcurementItem } from './procurement.interface';
-import html2canvas from 'html2canvas';
-import jsPDF from 'jspdf';
+import { Component, OnInit } from '@angular/core'
+import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms'
+import { MessageService, ConfirmationService } from 'primeng/api'
+import { PROCUREMENT_DATA } from '../app-shared/procurement-data'
+import { SignatureInfo } from '../app-shared/procurement.interface'
+import { ButtonModule } from 'primeng/button'
+import { TableModule } from 'primeng/table'
+import { ConfirmDialogModule } from 'primeng/confirmdialog'
+import { DialogModule } from 'primeng/dialog'
+import { DropdownModule } from 'primeng/dropdown'
+import { InputTextModule } from 'primeng/inputtext'
+import { ToastModule } from 'primeng/toast'
+import { MatCardModule } from '@angular/material/card'
+
+export class AppSequenceApprover {
+  id!: string
+  name!: string
+  approver_role!: string
+  approval_order!: number
+  title!: string
+}
 
 @Component({
   selector: 'app-sequence',
+  standalone: true,
+  imports: [
+    TableModule,
+    ButtonModule,
+    DialogModule,
+    DropdownModule,
+    InputTextModule,
+    ConfirmDialogModule,
+    ToastModule,
+    MatCardModule,
+    ReactiveFormsModule,
+  ],
   templateUrl: './app-sequence.component.html',
   styleUrls: ['./app-sequence.component.scss'],
-  standalone: true,
-  imports: [CommonModule]
+  providers: [MessageService, ConfirmationService],
 })
 export class AppSequenceComponent implements OnInit {
-  documentData: any;
-  editMode = false;
-  selectedItem: ProcurementItem | null = null;
-  currentYear: number = new Date().getFullYear();
-  isEditing = false;
-  categories: ProcurementCategory[] = [];
-  quarter: any;
-  fiscalYear: any;
-  preparedBy: any;
-  approvedBy: any;
-  committeeMembers: any[] = [];
+  sequences: AppSequenceApprover[] = []
+  approverForm!: FormGroup
+  approverDialog = false
+  isEditMode = false
+  currentApproverId: string | null = null
+  submitted = false
 
-  constructor(private procurementService: ProcurementService) {}
+  committeeMembers: SignatureInfo[] = PROCUREMENT_DATA.metadata.committeeMembers
 
-  ngOnInit() {
-    this.procurementService.getDocumentData().subscribe(data => {
-      this.documentData = data;
-      this.preparedBy = data.metadata.preparedBy;
-      this.approvedBy = data.metadata.approvedBy;
-      this.committeeMembers = data.metadata.committeeMembers;
-      this.categories = data.categories;
-      this.fiscalYear = data.metadata.fiscalYear;
-      this.quarter = data.metadata.quarter;
-    });
+  constructor(
+    private formBuilder: FormBuilder,
+    private messageService: MessageService,
+    private confirmationService: ConfirmationService
+  ) {}
 
-    this.procurementService.getEditMode().subscribe(mode => {
-      this.editMode = mode;
-      this.isEditing = mode;
-    });
-  }
- 
-  getTotalBudget(): number {
-    return this.categories.reduce((sum, category) => 
-      sum + category.items.reduce((catSum, item) => catSum + item.totalBudget, 0), 0);
+  ngOnInit(): void {
+    this.initializeForm()
+    this.loadApprovers()
   }
 
-  getTotalMOOE(): number {
-    return this.categories.reduce((sum, category) => 
-      sum + category.items.reduce((catSum, item) => catSum + item.mooe, 0), 0);
+  initializeForm(): void {
+    this.approverForm = this.formBuilder.group({
+      name: ['', Validators.required],
+      approver_role: ['', Validators.required],
+      approval_order: [1, [Validators.required, Validators.min(1)]],
+      title: ['', Validators.required],
+    })
   }
 
-  getTotalCO(): number {
-    return this.categories.reduce((sum, category) => 
-      sum + category.items.reduce((catSum, item) => catSum + item.co, 0), 0);
+  loadApprovers(): void {
+    this.sequences = this.committeeMembers.map((member, index) => ({
+      id: (index + 1).toString(),
+      name: member.name,
+      approver_role: member.role,
+      approval_order: index + 1,
+      title: member.position,
+    }))
   }
 
-  toggleEditMode(): void {
-    this.procurementService.toggleEditMode();
+  openNewApproverDialog(): void {
+    this.approverForm.reset()
+    this.approverForm.patchValue({ approval_order: this.getNextOrder() })
+    this.isEditMode = false
+    this.approverDialog = true
   }
 
-  onItemClick(category: number, item: number): void {
-    if (this.editMode) {
-      this.selectedItem = this.documentData.categories[category].items[item];
-    }
+  getNextOrder(): number {
+    return this.sequences.length > 0 ? this.sequences[this.sequences.length - 1].approval_order + 1 : 1
   }
 
-  calculateCategoryTotals(category: ProcurementCategory) {
-    const totals = {
-      totalBudget: 0,
-      totalMOOE: 0,
-      totalCO: 0
-    };
+  saveApprover(): void {
+    this.submitted = true
+    if (this.approverForm.invalid) return
 
-    if (category && category.items) {
-      category.items.forEach(item => {
-        totals.totalBudget += item.totalBudget || 0;
-        totals.totalMOOE += item.mooe || 0;
-        totals.totalCO += item.co || 0;
-      });
+    const formValue = this.approverForm.value
+    const newApprover: AppSequenceApprover = {
+      id: this.isEditMode && this.currentApproverId ? this.currentApproverId : Math.random().toString(),
+      name: formValue.name,
+      approver_role: formValue.approver_role,
+      approval_order: formValue.approval_order,
+      title: formValue.title,
     }
 
-    return totals;
-  }
-
-  calculateGrandTotal() {
-    return {
-      totalBudget: this.getTotalBudget(),
-      totalMOOE: this.getTotalMOOE(),
-      totalCO: this.getTotalCO()
-    };
-  }
-
-  formatCurrency(value: number): string {
-    return new Intl.NumberFormat('en-PH', {
-      style: 'currency',
-      currency: 'PHP',
-      minimumFractionDigits: 2
-    }).format(value || 0);
-  }
-
-  formatDate(date: Date | string): string {
-    if (!date) return '';
-    const dateObj = new Date(date);
-    return dateObj.toLocaleDateString('en-PH', {
-      month: 'short',
-      year: 'numeric'
-    });
-  }
-
-  get formattedQuarter(): string {
-    if (!this.quarter) return '';
-    
-    const num = parseInt(this.quarter);
-    if (isNaN(num)) return '';
-  
-    switch (num) {
-      case 1:
-        return '1st';
-      case 2:
-        return '2nd';
-      case 3:
-        return '3rd';
-      case 4:
-        return '4th';
-      default:
-        return '';
+    if (this.isEditMode) {
+      const index = this.sequences.findIndex(a => a.id === this.currentApproverId)
+      if (index !== -1) this.sequences[index] = newApprover
+    } else {
+      this.sequences.push(newApprover)
     }
+
+    this.messageService.add({ severity: 'success', summary: 'Success', detail: 'Approver saved successfully!' })
+    this.hideDialog()
   }
 
-  async exportToPDF(): Promise<void> {
-    const element = document.querySelector('.app-document');
-    if (!element) return;
-  
-    try {
-      // Hide export button before capturing
-      const exportBtn = document.querySelector('.export-button-container');
-      if (exportBtn) {
-        (exportBtn as HTMLElement).style.display = 'none';
-      }
-  
-      // Set background color
-      const originalBackground = (element as HTMLElement).style.background;
-      (element as HTMLElement).style.background = 'white';
-  
-      const canvas = await html2canvas(element as HTMLElement, {
-        scale: 2,
-        useCORS: true,
-        logging: false,
-        backgroundColor: '#ffffff',
-        windowWidth: element.scrollWidth,
-        windowHeight: element.scrollHeight
-      });
-  
-      // Restore styles
-      (element as HTMLElement).style.background = originalBackground;
-      if (exportBtn) {
-        (exportBtn as HTMLElement).style.display = 'flex';
-      }
-  
-      // Calculate dimensions for landscape A4
-      const imgWidth = 297; // A4 landscape width in mm
-      const imgHeight = 210; // A4 landscape height in mm
-      const aspectRatio = canvas.height / canvas.width;
-      const pdfWidth = imgWidth;
-      const pdfHeight = pdfWidth * aspectRatio;
-  
-      // Create PDF in landscape orientation
-      const pdf = new jsPDF({
-        orientation: 'landscape',
-        unit: 'mm',
-        format: 'a4'
-      });
-  
-      // Handle multiple pages if content is too long
-      let position = 0;
-      const pageHeight = pdf.internal.pageSize.getHeight();
-  
-      while (position < pdfHeight) {
-        // Add new page if needed, but not for first page
-        if (position > 0) {
-          pdf.addPage();
-        }
-  
-        // Calculate remaining height
-        const remainingHeight = pdfHeight - position;
-        const currentHeight = Math.min(pageHeight, remainingHeight);
-  
-        // Add portion of image to current page
-        const imgData = canvas.toDataURL('image/png');
-        pdf.addImage(imgData, 'PNG', 0, -position, pdfWidth, pdfHeight);
-  
-        // Move to next portion
-        position += pageHeight;
-      }
-  
-      // Save the PDF
-      pdf.save(`procurement-plan-${this.formattedQuarter}-quarter-${this.currentYear}.pdf`);
-  
-    } catch (error) {
-      console.error('Error generating PDF:', error);
-    }
+  editApprover(approver: AppSequenceApprover): void {
+    this.approverForm.patchValue({
+      name: approver.name,
+      approver_role: approver.approver_role,
+      approval_order: approver.approval_order,
+      title: approver.title,
+    })
+    this.isEditMode = true
+    this.currentApproverId = approver.id
+    this.approverDialog = true
+  }
+
+  deleteApprover(approver: AppSequenceApprover): void {
+    this.confirmationService.confirm({
+      message: 'Are you sure you want to delete this approver?',
+      accept: () => {
+        this.sequences = this.sequences.filter(a => a.id !== approver.id)
+        this.messageService.add({ severity: 'success', summary: 'Deleted', detail: 'Approver deleted' })
+      },
+    })
+  }
+
+  hideDialog(): void {
+    this.approverDialog = false
+    this.submitted = false
+    this.approverForm.reset()
   }
 }
