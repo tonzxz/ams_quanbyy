@@ -115,6 +115,7 @@ CREATE TABLE PPMPProject (
     prepared_by UUID REFERENCES Users(id) ON DELETE CASCADE,
     project_title VARCHAR(255) NOT NULL,
     project_code VARCHAR(255),
+    classification VARCHAR(255) NOT NULL,
     project_description TEXT NOT NULL,
     funding_source_id UUID REFERENCES FundSource(id) ON DELETE CASCADE
 );
