@@ -1,117 +1,207 @@
 <!-- pr-sequence.component.html -->
 <mat-card class="cardWithShadow">
   <mat-card-content>
-    <mat-card-title>Purchase Request Approval Sequence Management</mat-card-title>
-    <mat-card-subtitle class="text-sm text-gray-500">
-      Configure the sequence of approvers for Purchase Request approval workflows.
-    </mat-card-subtitle>
+    <!-- Title & Subtitle (similar to RFQ design) -->
+    <mat-card-title class="select-none font-light">
+      Purchase Request Approval Sequence
+    </mat-card-title>
+    <p class="text-sm text-gray-500 mb-4">
+      Configure and manage approval workflows for purchase requests
+    </p>
 
-    <!-- Add Sequence Button and Search Input -->
-    <div class="flex justify-between items-center mt-4">
-      <div class="flex gap-2">
-        <p-button
-          pTooltip="Add Approval Sequence"
-          (click)="openNewApproverDialog()"
-          [outlined]="true"
-          size="small"
-          label="Add Sequence"
-          icon="pi pi-plus"
-        ></p-button>
+    <!-- Search & Add Sequence Button -->
+    <div class="flex justify-between items-center mb-4">
+      <!-- PrimeNG IconField search, consistent with the RFQ design -->
+      <p-iconfield fluid class="w-full max-w-72">
+        <p-inputicon styleClass="pi pi-search"></p-inputicon>
+        <input
+          fluid
+          class="w-full"
+          pSize="small"
+          [(ngModel)]="searchValue"
+          (input)="dt.filterGlobal(searchValue, 'contains')"
+          type="text"
+          pInputText
+          placeholder="Search Sequences..."
+        />
+      </p-iconfield>
 
-        <div class="relative w-[300px]">
-          <i class="pi pi-search absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500"></i>
-          <input
-            pInputText
-            type="text"
-            #searchInput
-            (input)="dt.filterGlobal(searchInput.value, 'contains')"
-            placeholder="Search Sequences"
-            style="text-indent: 1.5rem;"
-            class="w-full border border-gray-300 rounded-md py-2 pl-10 pr-3 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 placeholder:ml-6"
-          />
-        </div>
-      </div>
+      <!-- Add Sequence Button -->
+      <p-button
+        pTooltip="Click to add a new approval sequence"
+        label="Add Sequence"
+        icon="pi pi-plus"
+        (click)="openNewApproverDialog()"
+        [outlined]="true"
+        size="small"
+        class="ml-4"
+      ></p-button>
     </div>
 
-    <!-- Approvers Table -->
+    <!-- Data Table -->
     <p-table
       #dt
-      [value]="sequences"
-      [rows]="10"
-      [paginator]="true"
-      [globalFilterFields]="['user_id', 'approver_role', 'title', 'department']"
-      [rowsPerPageOptions]="[5, 10, 20]"
-      [loading]="loading"
-      [showCurrentPageReport]="true"
-      [responsive]="true"
-      [rowHover]="true"
-      [scrollable]="true"
-      scrollHeight="400px"
-      styleClass="p-datatable-sm"
-      [tableStyle]="{'min-width': '50rem'}"
       dataKey="id"
+      [value]="sequences"
+      [rowHover]="true"
+      [paginator]="true"
+      [rows]="10"
+      [rowsPerPageOptions]="[5, 10, 20]"
+      [globalFilterFields]="['user_id', 'approver_role', 'title', 'department']"
+      sortMode="single"
+      [scrollable]="true"
+      scrollHeight="600px"
+      [tableStyle]="{ 'min-width': '60rem' }"
+      [showCurrentPageReport]="true"
+      currentPageReportTemplate="Showing {first} to {last} of {totalRecords}"
     >
+      <!-- Table Header -->
       <ng-template pTemplate="header">
         <tr>
-          <th pSortableColumn="approval_order">Order <p-sortIcon field="approval_order"></p-sortIcon></th>
-          <th pSortableColumn="user_id">User ID <p-sortIcon field="user_id"></p-sortIcon></th>
-          <th pSortableColumn="approver_role">Role <p-sortIcon field="approver_role"></p-sortIcon></th>
-          <th pSortableColumn="department">Department <p-sortIcon field="department"></p-sortIcon></th>
-          <th pSortableColumn="title">Title <p-sortIcon field="title"></p-sortIcon></th>
+          <th pSortableColumn="approval_order">
+            Order
+            <p-sortIcon field="approval_order"></p-sortIcon>
+          </th>
+          <th pSortableColumn="user_id">
+            User ID
+            <p-sortIcon field="user_id"></p-sortIcon>
+          </th>
+          <th pSortableColumn="approver_role">
+            Role
+            <p-sortIcon field="approver_role"></p-sortIcon>
+          </th>
+          <th pSortableColumn="department">
+            Department
+            <p-sortIcon field="department"></p-sortIcon>
+          </th>
+          <th pSortableColumn="title">
+            Title
+            <p-sortIcon field="title"></p-sortIcon>
+          </th>
           <th>Permissions</th>
-          <th class="w-[100px]">Actions</th>
+          <th>Actions</th>
         </tr>
       </ng-template>
 
+      <!-- Table Body -->
       <ng-template pTemplate="body" let-approver>
         <tr>
-          <td>{{ approver.approval_order }}</td>
+          <td class="text-center">{{ approver.approval_order }}</td>
           <td>{{ approver.user_id }}</td>
-          <td>{{ approver.approver_role }}</td>
-          <td>{{ approver.department }}</td>
+      <!-- Row for Role -->
+<td>
+  <span
+    class="inline-flex px-2.5 py-1 rounded-full text-sm"
+    [ngClass]="getRoleColor(approver.approver_role)"
+  >
+    {{ getRoleName(approver.approver_role) }}
+  </span>
+</td>
+
+<!-- Row for Department -->
+<td>
+  <span
+    class="inline-flex px-2.5 py-1 rounded-full text-sm"
+    [ngClass]="getDepartmentColor(approver.department)"
+  >
+    {{ getDepartmentName(approver.department) }}
+  </span>
+</td>
+
           <td>{{ approver.title }}</td>
           <td>
-            <div class="flex flex-col gap-1">
-              <span class="text-xs">
-                <i class="pi" [ngClass]="approver.can_modify ? 'pi-check-circle text-green-500' : 'pi-times-circle text-red-500'"></i>
-                Can Modify
-              </span>
-              <span class="text-xs">
-                <i class="pi" [ngClass]="approver.can_approve ? 'pi-check-circle text-green-500' : 'pi-times-circle text-red-500'"></i>
-                Can Approve
-              </span>
-              <span class="text-xs">
-                <i class="pi" [ngClass]="approver.email_notification ? 'pi-check-circle text-green-500' : 'pi-times-circle text-red-500'"></i>
-                Email Notifications
-              </span>
+            <div class="flex flex-col gap-1.5">
+              <div class="flex items-center gap-2">
+                <i
+                  class="pi"
+                  [class.pi-check-circle]="approver.can_modify"
+                  [class.pi-times-circle]="!approver.can_modify"
+                  [class.text-green-500]="approver.can_modify"
+                  [class.text-red-500]="!approver.can_modify"
+                ></i>
+                <span
+                  class="text-sm"
+                  [class.text-green-700]="approver.can_modify"
+                  [class.text-red-700]="!approver.can_modify"
+                >
+                  Modify PR
+                </span>
+              </div>
+              <div class="flex items-center gap-2">
+                <i
+                  class="pi"
+                  [class.pi-check-circle]="approver.can_approve"
+                  [class.pi-times-circle]="!approver.can_approve"
+                  [class.text-green-500]="approver.can_approve"
+                  [class.text-red-500]="!approver.can_approve"
+                ></i>
+                <span
+                  class="text-sm"
+                  [class.text-green-700]="approver.can_approve"
+                  [class.text-red-700]="!approver.can_approve"
+                >
+                  Approve/Reject
+                </span>
+              </div>
+              <div class="flex items-center gap-2">
+                <i
+                  class="pi"
+                  [class.pi-check-circle]="approver.email_notification"
+                  [class.pi-times-circle]="!approver.email_notification"
+                  [class.text-green-500]="approver.email_notification"
+                  [class.text-red-500]="!approver.email_notification"
+                ></i>
+                <span
+                  class="text-sm"
+                  [class.text-green-700]="approver.email_notification"
+                  [class.text-red-700]="!approver.email_notification"
+                >
+                  Email Notifications
+                </span>
+              </div>
             </div>
           </td>
           <td>
             <div class="flex gap-2">
-              <button
-                pButton
-                icon="pi pi-pencil"
-                class="p-button-rounded p-button-primary p-button-sm"
-                [outlined]="true"
+              <p-button
                 (click)="editApprover(approver)"
-              ></button>
-              <button
-                pButton
-                icon="pi pi-trash"
-                class="p-button-rounded p-button-danger p-button-sm"
+                pTooltip="Edit Sequence"
                 [outlined]="true"
+                icon="pi pi-pencil"
+                size="small"
+                severity="secondary"
+                rounded
+              ></p-button>
+              <p-button
                 (click)="deleteApprover(approver)"
-              ></button>
+                pTooltip="Delete Sequence"
+                [outlined]="true"
+                icon="pi pi-trash"
+                size="small"
+                severity="danger"
+                rounded
+              ></p-button>
             </div>
           </td>
         </tr>
       </ng-template>
 
+      <!-- Empty Message with Lottie Animation (optional) -->
       <ng-template pTemplate="emptymessage">
         <tr>
-          <td colspan="7">
-            <div class="flex flex-col w-full items-center justify-center py-8">
+          <td [attr.colspan]="7">
+            <div class="flex flex-col w-full items-center justify-center mb-8">
+              <div class="overflow-hidden h-52 w-52 mr-8">
+                <!-- Replace this component if you don't use Lottie or have a similar placeholder -->
+                <app-lottie-animation animation="box" class="w-60 h-60"></app-lottie-animation>
+              </div>
               <span>No approval sequences found.</span>
+              <p-button
+                label="Add New Sequence"
+                icon="pi pi-plus"
+                (click)="openNewApproverDialog()"
+                styleClass="p-button-primary p-button-sm mt-4"
+              ></p-button>
             </div>
           </td>
         </tr>
@@ -120,39 +210,60 @@
   </mat-card-content>
 </mat-card>
 
-<!-- Dialog for Adding/Editing Approval Sequence -->
+<!-- Dialog for Adding/Editing an Approver Sequence -->
 <p-dialog
   [(visible)]="approverDialog"
-  [style]="{ width: '50vw' }"
   [modal]="true"
+  [position]="'center'"
   [closable]="false"
   [resizable]="false"
-  [draggable]="false"
+  [style]="{ width: '40rem' }"
 >
-  <ng-template pTemplate="header">
-    <h3 class="text-lg font-semibold">{{ isEditMode ? 'Edit' : 'Add' }} Approval Sequence</h3>
+  <ng-template #header>
+    <div class="py-0 inline-flex items-center justify-center gap-3">
+      <i class="pi" [class.pi-pencil]="isEditMode" [class.pi-plus]="!isEditMode" style="font-size:1.25rem;"></i>
+      <span class="font-bold text-lg whitespace-nowrap">
+        {{ isEditMode ? 'Edit' : 'Add' }} Approval Sequence
+      </span>
+    </div>
   </ng-template>
+  <span class="p-text-secondary block">
+    Provide the required information below.
+  </span>
+  <small class="p-text-secondary block mb-6">
+    (Please fill out all form fields marked with *)
+  </small>
 
-  <ng-template pTemplate="content">
-    <form [formGroup]="approverForm" class="grid grid-cols-1 gap-4">
-      <!-- User ID -->
-      <div>
-        <label for="user_id" class="block text-sm font-medium text-gray-700">User ID</label>
+  <form [formGroup]="approverForm">
+    <!-- User ID -->
+    <div class="mb-4">
+      <label for="user_id" class="block text-sm font-medium mb-1"
+        >User ID <span class="text-red-500">*</span></label
+      >
+      <p-inputgroup>
         <input
           pInputText
           id="user_id"
           formControlName="user_id"
-          class="w-full"
           placeholder="Enter user ID"
+          [class.ng-invalid]="submitted && approverForm.get('user_id')?.errors"
         />
-        <small *ngIf="submitted && approverForm.controls['user_id'].errors" class="text-red-500">
-          User ID is required
-        </small>
-      </div>
+      </p-inputgroup>
+      <small
+        class="text-red-500"
+        *ngIf="submitted && approverForm.get('user_id')?.errors?.['required']"
+      >
+        User ID is required
+      </small>
+    </div>
 
+    <!-- Role & Department (Two-Column Layout) -->
+    <div class="flex gap-4 mb-4">
       <!-- Role -->
-      <div>
-        <label for="approver_role" class="block text-sm font-medium text-gray-700">Role</label>
+      <div class="flex-1">
+        <label for="approver_role" class="block text-sm font-medium mb-1"
+          >Role <span class="text-red-500">*</span></label
+        >
         <p-dropdown
           id="approver_role"
           formControlName="approver_role"
@@ -160,16 +271,21 @@
           optionLabel="name"
           optionValue="code"
           placeholder="Select role"
-          class="w-full"
+          [showClear]="true"
         ></p-dropdown>
-        <small *ngIf="submitted && approverForm.controls['approver_role'].errors" class="text-red-500">
+        <small
+          class="text-red-500"
+          *ngIf="submitted && approverForm.get('approver_role')?.errors?.['required']"
+        >
           Role is required
         </small>
       </div>
 
       <!-- Department -->
-      <div>
-        <label for="department" class="block text-sm font-medium text-gray-700">Department</label>
+      <div class="flex-1">
+        <label for="department" class="block text-sm font-medium mb-1"
+          >Department</label
+        >
         <p-dropdown
           id="department"
           formControlName="department"
@@ -177,91 +293,119 @@
           optionLabel="name"
           optionValue="code"
           placeholder="Select department"
-          class="w-full"
+          [showClear]="true"
         ></p-dropdown>
       </div>
+    </div>
 
-      <!-- Title -->
-      <div>
-        <label for="title" class="block text-sm font-medium text-gray-700">Title</label>
-        <input
-          pInputText
-          id="title"
-          formControlName="title"
-          class="w-full"
-          placeholder="Enter Title"
-        />
-        <small *ngIf="submitted && approverForm.controls['title'].errors" class="text-red-500">
-          Title is required
-        </small>
-      </div>
+    <!-- Title -->
+    <div class="mb-4">
+      <label for="title" class="block text-sm font-medium mb-1"
+        >Title <span class="text-red-500">*</span></label
+      >
+      <input
+        pInputText
+        id="title"
+        formControlName="title"
+        placeholder="Enter title"
+        [class.ng-invalid]="submitted && approverForm.get('title')?.errors"
+      />
+      <small
+        class="text-red-500"
+        *ngIf="submitted && approverForm.get('title')?.errors?.['required']"
+      >
+        Title is required
+      </small>
+    </div>
 
-      <!-- Approval Order -->
-      <div>
-        <label for="approval_order" class="block text-sm font-medium text-gray-700">Approval Order</label>
+    <!-- Approval Order -->
+    <div class="mb-6">
+      <label for="approval_order" class="block text-sm font-medium mb-1"
+        >Approval Order <span class="text-red-500">*</span></label
+      >
+      <p-inputgroup>
         <input
+          type="number"
           pInputText
           id="approval_order"
           formControlName="approval_order"
-          type="number"
-          class="w-full"
-          placeholder="Enter order"
+          min="1"
+          [class.ng-invalid]="submitted && approverForm.get('approval_order')?.errors"
         />
-        <small *ngIf="submitted && approverForm.controls['approval_order'].errors" class="text-red-500">
-          Order is required and must be at least 1
-        </small>
+      </p-inputgroup>
+      <small
+        class="text-red-500"
+        *ngIf="submitted && approverForm.get('approval_order')?.errors?.['required']"
+      >
+        Order is required
+      </small>
+      <small
+        class="text-red-500"
+        *ngIf="submitted && approverForm.get('approval_order')?.errors?.['min']"
+      >
+        Order must be at least 1
+      </small>
+    </div>
+
+    <!-- Permissions Section -->
+    <div class="flex flex-col gap-4 mb-6">
+      <div class="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+        <div class="flex items-center gap-2">
+          <i class="pi pi-pencil text-blue-500"></i>
+          <label class="text-sm text-gray-700">Can modify PR details</label>
+        </div>
+        <p-inputSwitch formControlName="can_modify"></p-inputSwitch>
       </div>
 
-      <!-- Permissions -->
-      <div class="space-y-4">
-        <label class="block text-sm font-medium text-gray-700">Permissions</label>
-        
+      <div class="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
         <div class="flex items-center gap-2">
-          <p-inputSwitch formControlName="can_modify"></p-inputSwitch>
-          <label class="text-sm text-gray-600">Can modify PR details</label>
+          <i class="pi pi-check-circle text-green-500"></i>
+          <label class="text-sm text-gray-700">Can approve/reject PR</label>
         </div>
-
-        <div class="flex items-center gap-2">
-          <p-inputSwitch formControlName="can_approve"></p-inputSwitch>
-          <label class="text-sm text-gray-600">Can approve/reject PR</label>
-        </div>
-
-        <div class="flex items-center gap-2">
-          <p-inputSwitch formControlName="email_notification"></p-inputSwitch>
-          <label class="text-sm text-gray-600">Receive email notifications</label>
-        </div>
+        <p-inputSwitch formControlName="can_approve"></p-inputSwitch>
       </div>
-    </form>
-  </ng-template>
 
-  <ng-template pTemplate="footer">
-    <div class="flex justify-end gap-2">
-      <button
-        pButton
-        type="button"
+      <div class="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+        <div class="flex items-center gap-2">
+          <i class="pi pi-envelope text-orange-500"></i>
+          <label class="text-sm text-gray-700">Receive email notifications</label>
+        </div>
+        <p-inputSwitch formControlName="email_notification"></p-inputSwitch>
+      </div>
+    </div>
+
+    <!-- Dialog Footer Buttons -->
+    <div class="flex justify-end gap-4">
+      <p-button
         label="Cancel"
         icon="pi pi-times"
-        class="p-button-text"
+        severity="secondary"
+        [outlined]="true"
+        size="small"
         (click)="hideDialog()"
-      ></button>
-      <button
-        pButton
-        type="button"
+      ></p-button>
+      <p-button
         label="Save"
         icon="pi pi-check"
-        class="p-button-success"
+        severity="primary"
+        size="small"
         (click)="saveApprover()"
-      ></button>
+      ></p-button>
     </div>
-  </ng-template>
+  </form>
 </p-dialog>
 
-<!-- Confirmation Dialog -->
+
 <p-confirmDialog
-  [style]="{width: '450px'}"
+  [style]="{ width: '600px' }"
+  header="Confirm Deletion"
+  icon="pi pi-exclamation-triangle"
+  acceptLabel="Delete"
+  rejectLabel="Cancel"
   acceptButtonStyleClass="p-button-danger"
   rejectButtonStyleClass="p-button-text"
 ></p-confirmDialog>
 
-<!-- Toast -->
-<p-toast></p-toast>
+
+<!-- Toast Notification (match bottom-right if desired) -->
+<p-toast position="bottom-right"></p-toast>
