@@ -70,6 +70,7 @@ interface SelectedProduct {
  providers: [ConfirmationService, MessageService],
 })
 export class RequisitionComponent implements OnInit {
+  [x: string]: any;
  requisitionForm: FormGroup;
  groups: Group[] = [];
  allProducts: Product[] = [];
@@ -467,24 +468,42 @@ async loadRequisitions(): Promise<void> {
    // Continued from before
 
      // Generate purchase request
-     const prData: PurchaseRequest = {
-       prNo: requisitionData.classifiedItemId!,
-       date: new Date(),
-       agency: 'CAGAYAN DE ORO STATE COLLEGE',
-       department: sequences[0]?.departmentName || 'N/A',
-       office: sequences[0]?.roleName || 'N/A',
-       items: requisitionData.products!.map(p => ({
-         qty: p.quantity,
-         unit: 'Unit',
-         description: p.name,
-         stockNo: '-',
-         unitCost: p.price,
-         totalCost: p.quantity * p.price
-       })),
-       requestedBy: requisitionData.createdByUserName || 'N/A',
-       approvedBy: sequences[0]?.userFullName || 'N/A'
-     };
+// Inside your saveRequisition method, replace the prData part with this:
 
+const prData: PurchaseRequest = {
+  id: requisitionData.id || this['generate6DigitId'](),
+  prNo: requisitionData.classifiedItemId!,
+  date: new Date(),
+  requisitioningOffice: this.currentUser?.officeId || 'N/A',
+  items: requisitionData.products!.map((p, index) => ({
+      itemNo: index + 1,
+      unit: 'Unit',
+      description: p.name,
+      qty: p.quantity,
+      unitCost: p.price,
+      totalCost: p.quantity * p.price
+  })),
+  requestedBy: {
+      name: this.currentUser?.fullname || 'N/A',
+      designation: this.currentUser?.role || 'N/A'
+  },
+  approvedBy: {
+      name: sequences[0]?.userFullName || 'N/A',
+      designation: sequences[0]?.roleName || 'N/A'
+  },
+  recommendedBy: {
+      name: this.currentUser?.fullname || 'N/A',
+      designation: 'Department Head'
+  },
+  certification: {
+      name: 'Supply Office',
+      designation: 'Head of Supply'
+  },
+  purpose: requisitionData.description || 'N/A',
+  totalAmount: requisitionData.products!.reduce((sum, p) => 
+      sum + (p.quantity * p.price), 0),
+  status: 'pending'
+};
      const prBase64 = this.purchaseRequestService.generatePurchaseRequestPdf(prData);
 
      this.tempRequisitionData = { 
