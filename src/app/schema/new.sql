@@ -46,18 +46,23 @@ CREATE TABLE PPMP (
     current_approver_id UUID REFERENCES Approver(id) ON DELETE CASCADE
 );
 
-CREATE TABLE PPMPItem (
+CREATE TABLE PPMPProject (
     id UUID PRIMARY KEY,
     ppmp_id UUID REFERENCES PPMP(id) ON DELETE CASCADE,
     procurement_mode_id UUID REFERENCES ProcurementMode(id) ON DELETE CASCADE,
-    funding_source_id UUID REFERENCES FundSource(id) ON DELETE CASCADE,
     prepared_by UUID REFERENCES User(id) ON DELETE CASCADE,
     project_title VARCHAR(255) NOT NULL,
     project_code VARCHAR(255),
-    item_description TEXT NOT NULL,
+    project_description TEXT NOT NULL,
+    funding_source_id UUID REFERENCES FundSource(id) ON DELETE CASCADE
+);
+
+CREATE TABLE PPMPItem (
+    id UUID PRIMARY KEY,
+    ppmp_project_id UUID REFERENCES PPMPProject(id) ON DELETE CASCADE,
     technical_specification TEXT NOT NULL,
-    unit_of_measurement VARCHAR(50) NOT NULL,
     quantity_required INT NOT NULL,
+    unit_of_measurement VARCHAR(50) NOT NULL,
     estimated_unit_cost DECIMAL(18,2) NOT NULL,
     estimated_total_cost DECIMAL(18,2) NOT NULL
 );
