@@ -1,5 +1,5 @@
--- Enable the uuid-ossp extension for generating UUIDs
-CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
+-- -- Enable the uuid-ossp extension for generating UUIDs
+-- CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
 
 -- Entity Table (Referenced by multiple tables)
 CREATE TABLE Entity (
@@ -141,7 +141,7 @@ CREATE TABLE PPMPSchedule (
 -- Purchase Request Table
 CREATE TABLE PurchaseRequest (
     id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
-    ppmp_id UUID REFERENCES PPMP(id) ON DELETE CASCADE,
+    ppmpproject_id UUID REFERENCES PPMPProject(id) ON DELETE CASCADE,
     approvals_id UUID REFERENCES Approvals(id) ON DELETE CASCADE,
     request_date TIMESTAMP NOT NULL
 );
