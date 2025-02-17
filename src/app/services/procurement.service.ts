@@ -2,8 +2,8 @@
 
 import { Injectable } from '@angular/core';
 import { BehaviorSubject, Observable } from 'rxjs';
-import { ProcurementItem, DocumentMetadata, ProcurementCategory } from '../../app/pages/shared/app-sequence/procurement.interface';
-import { PROCUREMENT_DATA } from '../../app/pages/shared/app-sequence/procurement-data';
+import { ProcurementItem, DocumentMetadata, ProcurementCategory } from '../pages/shared/app-shared/procurement.interface';
+import { PROCUREMENT_DATA } from '../pages/shared/app-shared/procurement-data';
 
 @Injectable({
   providedIn: 'root'

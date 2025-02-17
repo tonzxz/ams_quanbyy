@@ -141,115 +141,113 @@ export class PpmpComponent implements OnInit {
   }
 
   editPpmp(ppmp: PPMP): void {
-    this.isEditMode = true;
-    this.currentEditId = ppmp.id;
-    const item = ppmp.items[0];
+    // this.isEditMode = true;
+    // this.currentEditId = ppmp.id;
+    // const item = ppmp.items[0];
     
-    this.ppmpForm.patchValue({
-      id: ppmp.id,
-      department_id: ppmp.department_id,
-      office_id: ppmp.office_id,
-      fiscal_year: ppmp.fiscal_year,
-      prepared_by: ppmp.prepared_by,
-      project_title: item.project_title,
-      project_code: item.project_code,
-      procurement_method: item.procurement_method,
-      item_description: item.item_description,
-      technical_specification: item.technical_specification,
-      unit_of_measurement: item.unit_of_measurement,
-      quantity_required: item.quantity_required,
-      estimated_unit_cost: item.estimated_unit_cost,
-      estimated_total_cost: item.estimated_total_cost
-    });
+    // this.ppmpForm.patchValue({
+    //   id: ppmp.id,
+    //   office_id: ppmp.office_id,
+    //   fiscal_year: ppmp.fiscal_year,
+    //   project_title: item.project_title,
+    //   project_code: item.project_code,
+    //   procurement_method: item.procurement_method,
+    //   item_description: item.item_description,
+    //   technical_specification: item.technical_specification,
+    //   unit_of_measurement: item.unit_of_measurement,
+    //   quantity_required: item.quantity_required,
+    //   estimated_unit_cost: item.estimated_unit_cost,
+    //   estimated_total_cost: item.estimated_total_cost
+    // });
     
-    this.ppmpDialog = true;
+    // this.ppmpDialog = true;
   }
 
   savePpmp(): void {
-    this.submitted = true;
+    // this.submitted = true;
 
-    if (this.ppmpForm.invalid) {
-      this.messageService.add({
-        severity: 'error',
-        summary: 'Validation Error',
-        detail: 'Please check all required fields and try again.'
-      });
-      return;
-    }
+    // if (this.ppmpForm.invalid) {
+    //   this.messageService.add({
+    //     severity: 'error',
+    //     summary: 'Validation Error',
+    //     detail: 'Please check all required fields and try again.'
+    //   });
+    //   return;
+    // }
 
-    try {
-      const formValue = this.ppmpForm.getRawValue();
+    // try {
+    //   const formValue = this.ppmpForm.getRawValue();
       
-      // Create schedule array from start and end month
-      const schedule: PPMPSchedule[] = [];
-      const startMonth = formValue.start_month;
-      const endMonth = formValue.end_month;
+    //   // Create schedule array from start and end month
+    //   const schedule: PPMPSchedule[] = [];
+    //   const startMonth = formValue.start_month;
+    //   const endMonth = formValue.end_month;
       
-      for (let i = 1; i <= 12; i++) {
-        schedule.push({
-          month: this.months[i-1].label,
-          milestone: i >= startMonth && i <= endMonth
-        });
-      }
+    //   for (let i = 1; i <= 12; i++) {
+    //     schedule.push({
+    //       month: this.months[i-1].label,
+    //       milestone: i >= startMonth && i <= endMonth
+    //     });
+    //   }
 
-      // Create PPMPItem
-      const ppmpItem: PPMPItem = {
-        id: uuidv4(),
-        project_title: formValue.project_title,
-        project_code: formValue.project_code,
-        procurement_method: formValue.procurement_method,
-        item_description: formValue.item_description,
-        technical_specification: formValue.technical_specification,
-        unit_of_measurement: formValue.unit_of_measurement,
-        quantity_required: formValue.quantity_required,
-        estimated_unit_cost: formValue.estimated_unit_cost,
-        estimated_total_cost: formValue.estimated_total_cost,
-        schedule: schedule,
-        procurement_mode_id: 0,
-        funding_source_id: 0,
-        approval_status: 'Pending',
-        current_approval_stage: ''
-      };
+    //   // Create PPMPItem
+    //   const ppmpItem: PPMPItem = {
+    //     id: uuidv4(),
+    //     project_title: formValue.project_title,
+    //     project_code: formValue.project_code,
+    //     procurement_method: formValue.procurement_method,
+    //     item_description: formValue.item_description,
+    //     technical_specification: formValue.technical_specification,
+    //     unit_of_measurement: formValue.unit_of_measurement,
+    //     quantity_required: formValue.quantity_required,
+    //     estimated_unit_cost: formValue.estimated_unit_cost,
+    //     estimated_total_cost: formValue.estimated_total_cost,
+    //     schedule: schedule,
+    //     procurement_mode_id: 0,
+    //     funding_source_id: 0,
+    //     approval_status: 'Pending',
+    //     current_approval_stage: ''
+    //   };
 
-      // Create PPMP
-      const ppmpData: PPMP = {
-        id: this.isEditMode ? this.currentEditId! : uuidv4(),
-        department_id: formValue.department_id,
-        office_id: formValue.office_id,
-        fiscal_year: formValue.fiscal_year,
-        prepared_by: formValue.prepared_by,
-        approval_status: 'Pending',
-        current_approval_stage: 'Initial',
-        items: [ppmpItem]
-      };
+    //   // Create PPMP
+    //   const ppmpData: PPMP = {
+    //     id: this.isEditMode ? this.currentEditId! : uuidv4(),
+    //     department_id: formValue.department_id,
+    //     office_id: formValue.office_id,
+    //     fiscal_year: formValue.fiscal_year,
+    //     prepared_by: formValue.prepared_by,
+    //     approval_status: 'Pending',
+    //     current_approval_stage: 'Initial',
+    //     items: [ppmpItem]
+    //   };
 
-      if (this.isEditMode && this.currentEditId) {
-        this.ppmps = this.ppmps.map(p => p.id === this.currentEditId ? ppmpData : p);
-        this.messageService.add({
-          severity: 'success',
-          summary: 'Success',
-          detail: 'PPMP updated successfully'
-        });
-      } else {
-        this.ppmps.push(ppmpData);
-        this.messageService.add({
-          severity: 'success',
-          summary: 'Success',
-          detail: 'PPMP created successfully'
-        });
-      }
+    //   if (this.isEditMode && this.currentEditId) {
+    //     this.ppmps = this.ppmps.map(p => p.id === this.currentEditId ? ppmpData : p);
+    //     this.messageService.add({
+    //       severity: 'success',
+    //       summary: 'Success',
+    //       detail: 'PPMP updated successfully'
+    //     });
+    //   } else {
+    //     this.ppmps.push(ppmpData);
+    //     this.messageService.add({
+    //       severity: 'success',
+    //       summary: 'Success',
+    //       detail: 'PPMP created successfully'
+    //     });
+    //   }
 
-      this.hideDialog();
-    } catch (error) {
-      console.error('Error saving PPMP:', error);
-      this.messageService.add({
-        severity: 'error',
-        summary: 'Error',
-        detail: 'An error occurred while saving'
-      });
-    } finally {
-      this.loading = false;
-    }
+    //   this.hideDialog();
+    // } catch (error) {
+    //   console.error('Error saving PPMP:', error);
+    //   this.messageService.add({
+    //     severity: 'error',
+    //     summary: 'Error',
+    //     detail: 'An error occurred while saving'
+    //   });
+    // } finally {
+    //   this.loading = false;
+    // }
   }
 
   deletePpmp(ppmp: PPMP): void {
