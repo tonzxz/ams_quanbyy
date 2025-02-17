@@ -401,12 +401,8 @@ export class PurchaseRequestApprovers {
 // procurement-process.ts
 export class ProcurementProcess {
   id: string;
-  purchaseRequestId: string;
   processStage: string;
   processOrder: number;
-  dateStarted: string;
-  dateCompleted: string;
-  remarks: string;
 }
 
 // contracts.ts
