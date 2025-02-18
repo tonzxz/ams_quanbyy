@@ -462,7 +462,12 @@ export const navItems: NavItem[] = [
     iconName: 'solar:checklist-minimalistic-line-duotone',
     route: '/bac/purchase-orders',
       requiredRoles: ['bac'],
-    
+  },
+  {
+    displayName: 'Price Quotation',
+    iconName: 'solar:checklist-minimalistic-line-duotone',
+    route: '/bac/price-quotation',
+      requiredRoles: ['bac','supply','superadmin'],
   },
   
 
