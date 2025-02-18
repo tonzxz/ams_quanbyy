@@ -18,6 +18,8 @@ import { ButtonGroupModule } from 'primeng/buttongroup';
 import { MessageService, ConfirmationService } from 'primeng/api';
 import { PurchaseRequestService } from 'src/app/services/purchase-request.service';
 import { PurchaseRequest, PurchaseRequestStatus } from './purchase-request.interface';
+import jsPDF from 'jspdf'
+import html2canvas from 'html2canvas'
 
 @Component({
     selector: 'app-purchase-request',
@@ -200,27 +202,49 @@ export class PurchaseRequestComponent implements OnInit {
     }
 
     generatePDF() {
-        try {
-            const pdfDataUri = this.prService.generatePurchaseRequestPdf(this.currentRequest);
-            const link = document.createElement('a');
-            link.href = pdfDataUri;
-            link.download = `PR-${this.currentRequest.prNo}.pdf`;
-            link.click();
-            
-            this.messageService.add({
-                severity: 'success',
-                summary: 'Success',
-                detail: 'PDF generated successfully'
-            });
-        } catch (error) {
-            this.messageService.add({
-                severity: 'error',
-                summary: 'Error',
-                detail: 'Failed to generate PDF'
-            });
+        const element = document.querySelector('.pr-container') as HTMLElement // Ensure selection
+    
+        if (!element) {
+            console.error('PR container not found!')
+            return
         }
+    
+        html2canvas(element, { scale: 2 }).then(canvas => {
+            const imgData = canvas.toDataURL('image/png')
+            const pdf = new jsPDF('landscape', 'mm', 'a4') // Landscape mode
+    
+            const pageWidth = pdf.internal.pageSize.getWidth()
+            const pageHeight = pdf.internal.pageSize.getHeight()
+    
+            const imgWidth = pageWidth - 20 // Margin
+            const imgHeight = (canvas.height * imgWidth) / canvas.width
+    
+            let position = 10 // Start position for the first page
+    
+            if (imgHeight > pageHeight) {
+                // Multi-page handling
+                let currentHeight = imgHeight
+                let yPosition = 10
+    
+                while (currentHeight > 0) {
+                    pdf.addImage(imgData, 'PNG', 10, yPosition, imgWidth, imgHeight)
+    
+                    currentHeight -= pageHeight - 20 
+                    yPosition -= pageHeight // Move to next page
+    
+                    if (currentHeight > 0) {
+                        pdf.addPage('landscape') // Add a new page
+                        yPosition = 10 // Reset for new page
+                    }
+                }
+            } else {
+                // Single-page PDF
+                pdf.addImage(imgData, 'PNG', 10, position, imgWidth, imgHeight)
+            }
+    
+            pdf.save(`PR-${this.currentRequest.prNo}.pdf`)
+        })
     }
-
     generateReport(header: string) {
         const data = this.getReportData();
         if (data.length > 0) {

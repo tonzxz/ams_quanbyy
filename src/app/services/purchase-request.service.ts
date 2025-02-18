@@ -125,6 +125,35 @@ export class PurchaseRequestService {
                     qty: 9,
                     unitCost: 51.36,
                     totalCost: 462.25
+                },{
+                    itemNo: 13,
+                    unit: 'kg',
+                    description: 'Assorted CWN(1 kg./100 bd.ft. of Lumber)',
+                    qty: 9,
+                    unitCost: 51.36,
+                    totalCost: 462.25
+                },{
+                    itemNo: 13,
+                    unit: 'kg',
+                    description: 'Assorted CWN(1 kg./100 bd.ft. of Lumber)',
+                    qty: 9,
+                    unitCost: 51.36,
+                    totalCost: 462.25
+                },{
+                    itemNo: 13,
+                    unit: 'kg',
+                    description: 'Assorted CWN(1 kg./100 bd.ft. of Lumber)',
+                    qty: 9,
+                    unitCost: 51.36,
+                    totalCost: 462.25
+                },
+                {
+                    itemNo: 13,
+                    unit: 'kg',
+                    description: 'Assorted CWN(1 kg./100 bd.ft. of Lumber)',
+                    qty: 9,
+                    unitCost: 51.36,
+                    totalCost: 462.25
                 }
             ],
             purpose: 'For use in the Installation of Directional Signs and Tourist Destination Signs at Designated ASEAN Route',
