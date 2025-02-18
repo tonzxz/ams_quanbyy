@@ -275,6 +275,69 @@
             class="w-full">
           </textarea>
         </div>
+
+      
+        <div class="col-span-2 mt-6" formArrayName="schedules">
+  <div class="bg-gray-50 p-3 rounded-lg mb-4 flex justify-between items-center">
+    <div>
+      <h2 class="text-lg font-medium text-gray-800 mb-1">Project Schedule</h2>
+      <p class="text-sm text-gray-600">Set milestones for the project</p>
+    </div>
+    <button 
+      pButton
+      type="button"
+      label="Add Milestone"
+      icon="pi pi-plus"
+      (click)="addSchedule()"
+      class="p-button-sm">
+    </button>
+  </div>
+
+  <div *ngFor="let schedule of schedules.controls; let i=index" [formGroupName]="i" class="border rounded-lg p-4 mb-4">
+    <div class="flex justify-between items-center mb-4">
+      <h3 class="text-md font-medium">Milestone {{i + 1}}</h3>
+      <button 
+        pButton
+        type="button"
+        icon="pi pi-trash"
+        class="p-button-danger p-button-sm"
+        [outlined]="true"
+        (click)="removeSchedule(i)">
+      </button>
+    </div>
+
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+      <!-- Milestone Name -->
+      <div>
+        <label class="text-sm font-medium text-gray-700 mb-1 block">
+          Milestone <span class="text-red-500">*</span>
+        </label>
+        <input 
+          pInputText 
+          formControlName="milestone"
+          placeholder="Enter milestone name"
+          class="w-full"/>
+      </div>
+
+      <!-- Date -->
+      <div>
+        <label class="text-sm font-medium text-gray-700 mb-1 block">
+          Date <span class="text-red-500">*</span>
+        </label>
+        <p-datepicker 
+          formControlName="date"
+          [showIcon]="true"
+          dateFormat="yy-mm-dd"
+          [showTime]="false"
+          class="w-full">
+        </p-datepicker>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+
       </div>
     </div>
 
