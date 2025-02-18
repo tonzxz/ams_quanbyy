@@ -67,8 +67,8 @@ export interface PPMPProject {
   project_description: string
   classifications: string[]
   funding_source_id: string // si budget 
-  abc?: number;  // update ig optional ko lang nguna | si budget
-  contract_scope?: string
+  abc?: number;  // update ig optional ko lang nguna | si budget /add
+  contract_scope?: string // add 
 
 }
 
@@ -76,12 +76,14 @@ export interface PPMPProject {
 export interface PPMPItem {
   id: string
   ppmp_project_id: string  
-  technical_specification: string  
   quantity_required: number  
   unit_of_measurement: string 
   estimated_unit_cost: number  
   estimated_total_cost: number 
   classification: string
+   technical_specification?: string; // For Goods
+  scope_of_work?: string; // For Services and Infrastructure
+  terms_of_reference?: string; // For Consulting Services
 }
 
 export interface PPMPSchedule { // end user nguna and then i veverify ni bac if pwede.

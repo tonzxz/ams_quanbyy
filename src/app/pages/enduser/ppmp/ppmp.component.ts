@@ -23,6 +23,9 @@ import { ConfirmDialogModule } from 'primeng/confirmdialog';
 import { CardModule } from 'primeng/card';
 import { TextareaModule } from 'primeng/textarea';
 import { UserService, User } from 'src/app/services/user.service';
+import { FileUploadModule } from 'primeng/fileupload';
+import { ProgressBar } from 'primeng/progressbar';
+import { BadgeModule } from 'primeng/badge';
 
 interface PPMPWithDetails extends PPMP {
   project?: PPMPProject;
@@ -53,7 +56,10 @@ interface PPMPWithDetails extends PPMP {
     CheckboxModule,
     TooltipModule,
     ConfirmDialogModule,
-    CardModule
+    CardModule,
+    FileUploadModule,
+    ProgressBar,
+    BadgeModule,
   ]
 })
 export class PpmpComponent implements OnInit {
@@ -386,29 +392,23 @@ export class PpmpComponent implements OnInit {
   }
 }
 
-// Update your createItemFormGroup method
+  
+  
+  
+
 createItemFormGroup(): FormGroup {
-  const group = this.formBuilder.group({
+  return this.formBuilder.group({
     id: [uuidv4()],
     ppmp_project_id: [''],
-    technical_specification: ['', [Validators.required]],
+    technical_specification: [''],
+    scope_of_work: [''],
+    terms_of_reference: [''],
     classification: ['', [Validators.required]],
     quantity_required: [1, [Validators.required, Validators.min(1)]],
     unit_of_measurement: ['', [Validators.required]],
     estimated_unit_cost: [0, [Validators.required, Validators.min(0)]],
     estimated_total_cost: [{ value: 0, disabled: true }]
   });
-
-  // Set initial classification if only one is selected
-  const projectClassifications = this.ppmpForm?.get('project.classifications')?.value;
-  if (projectClassifications?.length === 1) {
-    group.patchValue({
-      classification: projectClassifications[0]
-    });
-    group.get('classification')?.disable();
-  }
-
-  return group;
 }
 
   addItem(): void {
@@ -642,5 +642,51 @@ createItemFormGroup(): FormGroup {
   viewPpmpDocument(ppmp: PPMPWithDetails) {
   this.selectedPpmp = ppmp;
   this.ppmpDocumentDialog = true;
+  }
+  
+  // upload
+
+  
+ totalSize: string = '0';
+totalSizePercent: number = 0;
+
+formatSize(bytes: number): string {
+  if (bytes === 0) return '0 B';
+  const k = 1024;
+  const sizes = ['B', 'KB', 'MB', 'GB', 'TB'];
+  const i = Math.floor(Math.log(bytes) / Math.log(k));
+  return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
 }
+
+onSelectedFiles(event: any) {
+  const files = event.files;
+  let size = 0;
+  for (const file of files) {
+    size += file.size;
+  }
+  this.totalSize = this.formatSize(size);
+  this.totalSizePercent = (size / 1000000) * 100; // 1MB = 1000000B
+}
+
+uploadEvent(uploadCallback: Function) {
+  uploadCallback();
+  this.messageService.add({ severity: 'success', summary: 'Success', detail: 'Files Uploaded' });
+}
+
+choose(event: any, chooseCallback: Function) {
+  chooseCallback();
+}
+
+onTemplatedUpload() {
+  this.messageService.add({ severity: 'success', summary: 'Success', detail: 'File Uploaded' });
+}
+
+onRemoveTemplatingFile(event: any, file: any, removeCallback: Function, index: number) {
+  removeCallback(index);
+}
+
+removeUploadedFileCallback(index: number) {
+  this.messageService.add({ severity: 'info', summary: 'Removed', detail: 'File removed from uploaded list' });
+}
+
 }
