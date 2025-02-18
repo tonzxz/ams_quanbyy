@@ -1,17 +1,12 @@
-interface PPMPWithDetails extends PPMP {
-  project?: PPMPProject;
-  item?: PPMPItem;
-}
 
-// ppmp.component.ts
 import { Component, OnInit } from '@angular/core';
-import { FormBuilder, FormGroup, Validators } from '@angular/forms';
+import { FormBuilder, FormGroup, FormArray, Validators } from '@angular/forms';
 import { MessageService, ConfirmationService } from 'primeng/api';
 import { CommonModule } from '@angular/common';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { MaterialModule } from 'src/app/material.module';
 import { v4 as uuidv4 } from 'uuid';
-import { PPMP, PPMPProject, PPMPItem } from 'src/app/schema/schema';
+import { PPMP, PPMPProject, PPMPItem, PPMPSchedule } from 'src/app/schema/schema';
 
 // PrimeNG Imports
 import { DropdownModule } from 'primeng/dropdown';
@@ -21,6 +16,7 @@ import { ButtonModule } from 'primeng/button';
 import { TableModule } from 'primeng/table';
 import { InputNumberModule } from 'primeng/inputnumber';
 import { InputTextModule } from 'primeng/inputtext';
+import { MultiSelectModule } from 'primeng/multiselect';
 import { CheckboxModule } from 'primeng/checkbox';
 import { TooltipModule } from 'primeng/tooltip';
 import { ConfirmDialogModule } from 'primeng/confirmdialog';
@@ -28,6 +24,11 @@ import { CardModule } from 'primeng/card';
 import { TextareaModule } from 'primeng/textarea';
 import { UserService, User } from 'src/app/services/user.service';
 
+interface PPMPWithDetails extends PPMP {
+  project?: PPMPProject;
+  items?: PPMPItem[];
+  schedules?: PPMPSchedule[];
+}
 
 @Component({
   selector: 'app-ppmp',
@@ -40,7 +41,6 @@ import { UserService, User } from 'src/app/services/user.service';
     FormsModule,
     ReactiveFormsModule,
     MaterialModule,
-    // PrimeNG Modules
     DropdownModule,
     DialogModule,
     ToastModule,
@@ -48,6 +48,7 @@ import { UserService, User } from 'src/app/services/user.service';
     TableModule,
     InputNumberModule,
     InputTextModule,
+    MultiSelectModule,
     TextareaModule,
     CheckboxModule,
     TooltipModule,
@@ -65,127 +66,204 @@ export class PpmpComponent implements OnInit {
   currentEditId: string | null = null;
   currentUser?: User;
   years: any[] = [];
-  filteredPpmps: PPMP[] = [];
+  filteredPpmps: PPMPWithDetails[] = [];
   ppmps: PPMPWithDetails[] = [];
+  itemClassificationOptions: any[] = [];
+  ppmpDocumentDialog: boolean = false;
+  selectedPpmp?: PPMPWithDetails;
 
-  initializeDummyData() {
-    this.ppmps = [
-      {
-        id: '1',
-        office_id: 1,
-        fiscal_year: 2024,
-        app_id: 'APP-2024-001',
-        approvals_id: 'APR-2024-001',
-        current_approver_id: '1',
-        project: {
-          id: 'PROJ-2024-001',
-          ppmp_id: '1',
-          procurement_mode_id: 'public_bidding',
-          prepared_by: 'John Doe',
-          project_title: 'Laboratory Equipment Procurement 2024',
-          project_code: 'LE-2024-001',
-          classification: 'goods',
-          project_description: 'Procurement of new laboratory equipment for Science Department',
-          funding_source_id: 'gaa'
-        },
-        item: {
+
+
+  get items() {
+    return this.ppmpForm.get('items') as FormArray;
+  }
+
+   initializeDummyData() {
+  this.ppmps = [
+    // Single Classification: Goods
+    {
+      id: '1',
+      office_id: 1,
+      fiscal_year: 2024,
+      app_id: 'APP-2024-001',
+      approvals_id: 'APR-2024-001',
+      current_approver_id: '1',
+      project: {
+        id: 'PROJ-2024-001',
+        ppmp_id: '1',
+        procurement_mode_id: 'public_bidding',
+        prepared_by: 'John Doe',
+        project_title: 'Laboratory Equipment Procurement 2024',
+        project_code: 'LE-2024-001',
+        classifications: ['goods'],
+        project_description: 'Procurement of new laboratory equipment for Science Department',
+        contract_scope: 'Supply and delivery of high-precision laboratory equipment for research purposes.',
+        funding_source_id: 'gaa',
+        abc: 750000
+      },
+      items: [
+        {
           id: 'ITEM-2024-001',
           ppmp_project_id: 'PROJ-2024-001',
           technical_specification: 'High-precision microscopes with digital imaging capability',
           quantity_required: 5,
           unit_of_measurement: 'units',
           estimated_unit_cost: 150000,
-          estimated_total_cost: 750000
+          estimated_total_cost: 750000,
+          classification: 'goods'
         }
+      ]
+    },
+    // Single Classification: Infrastructure
+    {
+      id: '2',
+      office_id: 1,
+      fiscal_year: 2024,
+      app_id: 'APP-2024-002',
+      approvals_id: 'APR-2024-002',
+      current_approver_id: '1',
+      project: {
+        id: 'PROJ-2024-002',
+        ppmp_id: '2',
+        procurement_mode_id: 'shopping',
+        prepared_by: 'Jane Smith',
+        project_title: 'Office Renovation Project 2024',
+        project_code: 'ORP-2024-001',
+        classifications: ['infrastructure'],
+        project_description: 'Renovation of administrative office spaces',
+        contract_scope: 'Complete renovation of 200 square meters of office space including installation of new flooring, painting, and procurement of office furniture.',
+        funding_source_id: 'income',
+        abc: 500000
       },
-      {
-        id: '2',
-        office_id: 1,
-        fiscal_year: 2024,
-        app_id: 'APP-2024-002',
-        approvals_id: 'APR-2024-002',
-        current_approver_id: '1',
-        project: {
-          id: 'PROJ-2024-002',
-          ppmp_id: '2',
-          procurement_mode_id: 'shopping',
-          prepared_by: 'Jane Smith',
-          project_title: 'Office Renovation Project 2024',
-          project_code: 'ORP-2024-001',
-          classification: 'infrastructure',
-          project_description: 'Renovation of administrative office spaces',
-          funding_source_id: 'income'
-        },
-        item: {
+      items: [
+        {
           id: 'ITEM-2024-002',
           ppmp_project_id: 'PROJ-2024-002',
           technical_specification: 'Complete renovation package including furniture and fixtures',
           quantity_required: 1,
           unit_of_measurement: 'lot',
           estimated_unit_cost: 500000,
-          estimated_total_cost: 500000
+          estimated_total_cost: 500000,
+          classification: 'infrastructure'
         }
+      ]
+    },
+    // Single Classification: Goods
+    {
+      id: '3',
+      office_id: 1,
+      fiscal_year: 2025,
+      app_id: 'APP-2025-001',
+      approvals_id: 'APR-2025-001',
+      current_approver_id: '1',
+      project: {
+        id: 'PROJ-2025-001',
+        ppmp_id: '3',
+        procurement_mode_id: 'limited_source_bidding',
+        prepared_by: 'Alice Johnson',
+        project_title: 'IT Infrastructure Upgrade 2025',
+        project_code: 'IT-2025-001',
+        classifications: ['goods'],
+        project_description: 'Upgrade of campus-wide IT network infrastructure',
+        contract_scope: 'Procurement and installation of enterprise-grade network switches and routers.',
+        funding_source_id: 'gaa',
+        abc: 2000000
       },
-      {
-        id: '3',
-        office_id: 1,
-        fiscal_year: 2025,
-        app_id: 'APP-2025-001',
-        approvals_id: 'APR-2025-001',
-        current_approver_id: '1',
-        project: {
-          id: 'PROJ-2025-001',
-          ppmp_id: '3',
-          procurement_mode_id: 'limited_source_bidding',
-          prepared_by: 'Alice Johnson',
-          project_title: 'IT Infrastructure Upgrade 2025',
-          project_code: 'IT-2025-001',
-          classification: 'goods',
-          project_description: 'Upgrade of campus-wide IT network infrastructure',
-          funding_source_id: 'gaa'
-        },
-        item: {
+      items: [
+        {
           id: 'ITEM-2025-001',
           ppmp_project_id: 'PROJ-2025-001',
           technical_specification: 'Enterprise-grade network switches and routers',
           quantity_required: 10,
           unit_of_measurement: 'sets',
           estimated_unit_cost: 200000,
-          estimated_total_cost: 2000000
+          estimated_total_cost: 2000000,
+          classification: 'goods'
         }
+      ]
+    },
+    // Single Classification: Consulting
+    {
+      id: '4',
+      office_id: 1,
+      fiscal_year: 2025,
+      app_id: 'APP-2025-002',
+      approvals_id: 'APR-2025-002',
+      current_approver_id: '1',
+      project: {
+        id: 'PROJ-2025-002',
+        ppmp_id: '4',
+        procurement_mode_id: 'negotiated_procurement',
+        prepared_by: 'Robert Wilson',
+        project_title: 'Research Program Development 2025',
+        project_code: 'RPD-2025-001',
+        classifications: ['consulting'],
+        project_description: 'Development of research programs and methodologies',
+        contract_scope: 'Engagement of a consultancy firm to design and implement comprehensive research programs including training sessions for staff.',
+        funding_source_id: 'trust_fund',
+        abc: 1500000
       },
-      {
-        id: '4',
-        office_id: 1,
-        fiscal_year: 2025,
-        app_id: 'APP-2025-002',
-        approvals_id: 'APR-2025-002',
-        current_approver_id: '1',
-        project: {
-          id: 'PROJ-2025-002',
-          ppmp_id: '4',
-          procurement_mode_id: 'negotiated_procurement',
-          prepared_by: 'Robert Wilson',
-          project_title: 'Research Program Development 2025',
-          project_code: 'RPD-2025-001',
-          classification: 'consulting',
-          project_description: 'Development of research programs and methodologies',
-          funding_source_id: 'trust_fund'
-        },
-        item: {
+      items: [
+        {
           id: 'ITEM-2025-002',
           ppmp_project_id: 'PROJ-2025-002',
           technical_specification: 'Comprehensive research program development consultancy',
           quantity_required: 1,
           unit_of_measurement: 'service',
           estimated_unit_cost: 1500000,
-          estimated_total_cost: 1500000
+          estimated_total_cost: 1500000,
+          classification: 'consulting'
         }
-      }
-    ];
+      ]
+    },
+    // Multiple Classification: Infrastructure & Goods
+    {
+      id: '5',
+      office_id: 2,
+      fiscal_year: 2025,
+      app_id: 'APP-2025-003',
+      approvals_id: 'APR-2025-003',
+      current_approver_id: '2',
+      project: {
+        id: 'PROJ-2025-003',
+        ppmp_id: '5',
+        procurement_mode_id: 'public_bidding',
+        prepared_by: 'Maria Garcia',
+        project_title: 'School Modernization Program 2025',
+        project_code: 'SMP-2025-001',
+        classifications: ['infrastructure', 'goods'],
+        project_description: 'Upgrading school facilities and providing new educational equipment.',
+        contract_scope: 'Renovation of classrooms, procurement of educational technology, and professional development for teachers.',
+        funding_source_id: 'gaa',
+        abc: 2500000
+      },
+      items: [
+        {
+          id: 'ITEM-2025-003',
+          ppmp_project_id: 'PROJ-2025-003',
+          technical_specification: 'Classroom Renovation (10 rooms)',
+          quantity_required: 1,
+          unit_of_measurement: 'lot',
+          estimated_unit_cost: 2000000,
+          estimated_total_cost: 2000000,
+          classification: 'infrastructure'
+        },
+        {
+          id: 'ITEM-2025-004',
+          ppmp_project_id: 'PROJ-2025-003',
+          technical_specification: 'Educational Tablets (Android, 10-inch)',
+          quantity_required: 50,
+          unit_of_measurement: 'units',
+          estimated_unit_cost: 10000,
+          estimated_total_cost: 500000,
+          classification: 'goods'
+        }
+      ]
+    }
+  ];
 
-    this.filterByYear();
-  }
+  this.filterByYear();
+}
 
   procurementModes = [
     { label: 'Public Bidding', value: 'public_bidding' },
@@ -214,40 +292,21 @@ export class PpmpComponent implements OnInit {
     private confirmationService: ConfirmationService,
     private userService: UserService
   ) {
-    // Get current user
     this.currentUser = this.userService.getUser();
-    if (!this.currentUser) {
-      this.messageService.add({
-        severity: 'error',
-        summary: 'Error',
-        detail: 'No user logged in'
-      });
-    }
-
+    
     for (let year = 2000; year <= 2050; year++) {
       this.years.push({ label: year.toString(), value: year });
     }
 
     this.selectedYear = new Date().getFullYear();
-
     this.initializeDummyData();
-
   }
 
   ngOnInit(): void {
     this.initializeForm();
-    this.filterByYear(); 
+      this.getAvailableYears();
 
-  }
-
-   filterByYear() {
-    if (this.selectedYear) {
-      this.filteredPpmps = this.ppmps.filter(ppmp => 
-        ppmp.fiscal_year === this.selectedYear
-      );
-    } else {
-      this.filteredPpmps = [...this.ppmps]; // Show all if no year selected
-    }
+    this.filterByYear();
   }
 
   initializeForm(): void {
@@ -263,7 +322,7 @@ export class PpmpComponent implements OnInit {
     this.ppmpForm = this.formBuilder.group({
       // PPMP Base Info
       id: [uuidv4()],
-      office_id: [this.currentUser.officeId], // Set from current user
+      office_id: [this.currentUser.officeId],
       fiscal_year: [this.selectedYear],
       app_id: [''],
       approvals_id: [uuidv4()],
@@ -274,55 +333,143 @@ export class PpmpComponent implements OnInit {
         id: [uuidv4()],
         ppmp_id: [''],
         procurement_mode_id: ['', [Validators.required]],
-        prepared_by: [this.currentUser.fullname, [Validators.required]], // Set from current user
+        prepared_by: [this.currentUser.fullname, [Validators.required]],
         project_title: ['', [Validators.required]],
         project_code: [''],
-        classification: ['', [Validators.required]],
+        classifications: [[], [Validators.required, Validators.minLength(1)]],
         project_description: ['', [Validators.required]],
-        funding_source_id: ['', [Validators.required]]
+        contract_scope: ['']
       }),
 
-      // PPMP Item Info
-      item: this.formBuilder.group({
-        id: [uuidv4()],
-        ppmp_project_id: [''],
-        technical_specification: ['', [Validators.required]],
-        quantity_required: [1, [Validators.required, Validators.min(1)]],
-        unit_of_measurement: ['', [Validators.required]],
-        estimated_unit_cost: [0, [Validators.required, Validators.min(0)]],
-        estimated_total_cost: [{ value: 0, disabled: true }]
-      })
+      // PPMP Items Array
+      items: this.formBuilder.array([])
     });
 
-    // Make prepared_by field readonly since it's set from logged-in user
+    // Add initial item
+    this.addItem();
+
+    // Make prepared_by field readonly
     this.ppmpForm.get('project.prepared_by')?.disable();
-
-    // Subscribe to quantity and unit cost changes for auto-calculation
-    const itemGroup = this.ppmpForm.get('item');
-    itemGroup?.get('quantity_required')?.valueChanges.subscribe(() => this.calculateTotal());
-    itemGroup?.get('estimated_unit_cost')?.valueChanges.subscribe(() => this.calculateTotal());
+    this.ppmpForm.get('project.classifications')?.valueChanges.subscribe((values: string[]) => {
+    this.updateItemClassifications(values);
+  });
   }
 
-  calculateTotal(): void {
-    const itemGroup = this.ppmpForm.get('item');
-    const quantity = itemGroup?.get('quantity_required')?.value || 0;
-    const unitCost = itemGroup?.get('estimated_unit_cost')?.value || 0;
+ updateItemClassifications(projectClassifications: string[]) {
+  if (!projectClassifications) return;
+
+  // If only one classification is selected, set it for all items
+  if (projectClassifications.length === 1) {
+    this.itemClassificationOptions = [{
+      label: projectClassifications[0].charAt(0).toUpperCase() + projectClassifications[0].slice(1),
+      value: projectClassifications[0]
+    }];
+    
+    // Update all items to use this classification
+    this.items.controls.forEach(item => {
+      item.patchValue({
+        classification: projectClassifications[0]
+      });
+      item.get('classification')?.disable();
+    });
+  } else {
+    // Multiple classifications selected, allow choice from selected ones
+    this.itemClassificationOptions = projectClassifications.map(c => ({
+      label: c.charAt(0).toUpperCase() + c.slice(1),
+      value: c
+    }));
+    
+    // Enable classification selection for all items
+    this.items.controls.forEach(item => {
+      item.get('classification')?.enable();
+    });
+  }
+}
+
+// Update your createItemFormGroup method
+createItemFormGroup(): FormGroup {
+  const group = this.formBuilder.group({
+    id: [uuidv4()],
+    ppmp_project_id: [''],
+    technical_specification: ['', [Validators.required]],
+    classification: ['', [Validators.required]],
+    quantity_required: [1, [Validators.required, Validators.min(1)]],
+    unit_of_measurement: ['', [Validators.required]],
+    estimated_unit_cost: [0, [Validators.required, Validators.min(0)]],
+    estimated_total_cost: [{ value: 0, disabled: true }]
+  });
+
+  // Set initial classification if only one is selected
+  const projectClassifications = this.ppmpForm?.get('project.classifications')?.value;
+  if (projectClassifications?.length === 1) {
+    group.patchValue({
+      classification: projectClassifications[0]
+    });
+    group.get('classification')?.disable();
+  }
+
+  return group;
+}
+
+  addItem(): void {
+    const itemForm = this.createItemFormGroup();
+    this.items.push(itemForm);
+    
+    // Subscribe to changes for total calculation
+    itemForm.get('quantity_required')?.valueChanges.subscribe(() => this.calculateItemTotal(this.items.length - 1));
+    itemForm.get('estimated_unit_cost')?.valueChanges.subscribe(() => this.calculateItemTotal(this.items.length - 1));
+  }
+
+  removeItem(index: number): void {
+    this.items.removeAt(index);
+  }
+
+  calculateItemTotal(index: number): void {
+    const itemGroup = this.items.at(index);
+    const quantity = itemGroup.get('quantity_required')?.value || 0;
+    const unitCost = itemGroup.get('estimated_unit_cost')?.value || 0;
     const total = quantity * unitCost;
-    itemGroup?.patchValue({ estimated_total_cost: total }, { emitEvent: false });
+    itemGroup.patchValue({ estimated_total_cost: total }, { emitEvent: false });
   }
 
-  openNewPpmpDialog(): void {
-    this.isEditMode = false;
-    this.currentEditId = null;
-    this.submitted = false;
-    this.initializeForm();
-    this.ppmpDialog = true;
+  filterByYear() {
+    if (this.selectedYear) {
+      this.filteredPpmps = this.ppmps.filter(ppmp => 
+        ppmp.fiscal_year === this.selectedYear
+      );
+    } else {
+      this.filteredPpmps = [...this.ppmps];
+    }
   }
 
- editPpmp(ppmp: PPMPWithDetails): void {
+  getAvailableYears() {
+  // Get unique years from actual PPMP data
+  const uniqueYears = [...new Set(this.ppmps.map(ppmp => ppmp.fiscal_year))];
+  
+  // Sort years in descending order
+  uniqueYears.sort((a, b) => b - a);
+  
+  // Create dropdown options
+  this.years = uniqueYears.map(year => ({
+    label: year.toString(),
+    value: year
+  }));
+
+  // Set default to current year if available, otherwise first year in list
+  const currentYear = new Date().getFullYear();
+  this.selectedYear = uniqueYears.includes(currentYear) ? currentYear : uniqueYears[0];
+  }
+  
+  editPpmp(ppmp: PPMPWithDetails): void {
     this.isEditMode = true;
     this.currentEditId = ppmp.id;
     
+    // Clear existing items
+    while (this.items.length !== 0) {
+      this.items.removeAt(0);
+    }
+
+    // Set form values
     this.ppmpForm.patchValue({
       id: ppmp.id,
       office_id: ppmp.office_id,
@@ -330,14 +477,20 @@ export class PpmpComponent implements OnInit {
       app_id: ppmp.app_id,
       approvals_id: ppmp.approvals_id,
       current_approver_id: ppmp.current_approver_id,
-      project: ppmp.project,
-      item: ppmp.item
+      project: ppmp.project
+    });
+
+    // Add items
+    ppmp.items?.forEach(item => {
+      const itemForm = this.createItemFormGroup();
+      itemForm.patchValue(item);
+      this.items.push(itemForm);
     });
     
     this.ppmpDialog = true;
   }
 
- savePpmp(): void {
+  savePpmp(): void {
     this.submitted = true;
 
     if (!this.currentUser) {
@@ -350,7 +503,11 @@ export class PpmpComponent implements OnInit {
     }
 
     if (this.ppmpForm.invalid) {
-      // ... existing validation logic
+      this.messageService.add({
+        severity: 'error',
+        summary: 'Validation Error',
+        detail: 'Please check all required fields'
+      });
       return;
     }
 
@@ -367,25 +524,13 @@ export class PpmpComponent implements OnInit {
         approvals_id: formValue.approvals_id,
         current_approver_id: formValue.current_approver_id,
         project: {
-          id: formValue.project.id,
-          ppmp_id: formValue.id,
-          procurement_mode_id: formValue.project.procurement_mode_id,
-          prepared_by: formValue.project.prepared_by,
-          project_title: formValue.project.project_title,
-          project_code: formValue.project.project_code || '',
-          classification: formValue.project.classification,
-          project_description: formValue.project.project_description,
-          funding_source_id: formValue.project.funding_source_id
+          ...formValue.project,
+          ppmp_id: formValue.id
         },
-        item: {
-          id: formValue.item.id,
-          ppmp_project_id: formValue.project.id,
-          technical_specification: formValue.item.technical_specification,
-          quantity_required: formValue.item.quantity_required,
-          unit_of_measurement: formValue.item.unit_of_measurement,
-          estimated_unit_cost: formValue.item.estimated_unit_cost,
-          estimated_total_cost: formValue.item.estimated_total_cost
-        }
+        items: formValue.items.map((item: any) => ({
+          ...item,
+          ppmp_project_id: formValue.project.id
+        }))
       };
 
       if (this.isEditMode && this.currentEditId) {
@@ -423,7 +568,7 @@ export class PpmpComponent implements OnInit {
       message: 'Are you sure you want to delete this PPMP?',
       accept: () => {
         this.ppmps = this.ppmps.filter(p => p.id !== ppmp.id);
-        this.filterByYear(); // Refresh filtered list
+        this.filterByYear();
         this.messageService.add({
           severity: 'success',
           summary: 'Success',
@@ -437,6 +582,14 @@ export class PpmpComponent implements OnInit {
     this.ppmpDialog = false;
     this.submitted = false;
     this.ppmpForm.reset();
+    
+    // Clear items array
+    while (this.items.length !==.0) {
+      this.items.removeAt(0);
+    }
+    
+    // Add one empty item
+    this.addItem();
   }
 
   isFieldInvalid(fieldName: string): boolean {
@@ -444,7 +597,7 @@ export class PpmpComponent implements OnInit {
     return field ? (field.invalid && (field.dirty || field.touched || this.submitted)) : false;
   }
 
-   getClassificationClass(classification?: string): string {
+  getClassificationClass(classification?: string): string {
     switch (classification) {
       case 'goods':
         return 'bg-blue-100 text-blue-800';
@@ -462,4 +615,32 @@ export class PpmpComponent implements OnInit {
     return mode ? mode.label : '';
   }
 
+  openNewPpmpDialog(): void {
+  this.isEditMode = false;
+  this.currentEditId = null;
+  this.submitted = false;
+
+  // Reset the form
+  this.initializeForm();
+
+  // Clear items array
+  while (this.items.length !== 0) {
+    this.items.removeAt(0);
+  }
+  
+  // Add one empty item
+  this.addItem();
+
+  // Show the dialog
+  this.ppmpDialog = true;
+  }
+  
+  calculateTotalEstimatedCost(ppmp: PPMPWithDetails): number {
+  return ppmp.items?.reduce((total, item) => total + (item.estimated_total_cost || 0), 0) || 0;
+  }
+  
+  viewPpmpDocument(ppmp: PPMPWithDetails) {
+  this.selectedPpmp = ppmp;
+  this.ppmpDocumentDialog = true;
+}
 }

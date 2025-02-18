@@ -64,9 +64,12 @@ export interface PPMPProject {
   prepared_by: string  
   project_title: string  
   project_code?: string 
-  classification: string
   project_description: string
-  funding_source_id: string  
+  classifications: string[]
+  funding_source_id: string // si budget 
+  abc?: number;  // update ig optional ko lang nguna | si budget
+  contract_scope?: string
+
 }
 
 
@@ -78,8 +81,15 @@ export interface PPMPItem {
   unit_of_measurement: string 
   estimated_unit_cost: number  
   estimated_total_cost: number 
+  classification: string
 }
 
+export interface PPMPSchedule { // end user nguna and then i veverify ni bac if pwede.
+  id: string
+  ppmp_id: string
+  milestone: string
+  date: Date
+}
 
 export interface Approvals { 
   id: string
@@ -103,12 +113,7 @@ export interface Entity {
   description?: string
 }
 
-export interface PPMPSchedule {
-  id: string
-  ppmp_id: string
-  milestone: string
-  date: Date
-}
+
 
 //
 

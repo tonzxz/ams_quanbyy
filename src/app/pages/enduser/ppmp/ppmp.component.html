@@ -1,117 +1,138 @@
-<!-- Main Card -->
+
+          <!-- Main Card -->
 <div class="w-full p-4">
   <p-card styleClass="shadow-lg">
     <div class="p-card-content">
       <!-- Header Section -->
       <div class="p-6">
-      <div class="flex justify-between items-center mb-2">
-        <h1 class="text-xl font-semibold text-gray-800">PPMP Management</h1>
-        <p-button 
-          label="Add PPMP" 
-          icon="pi pi-plus"
-          styleClass="p-button-primary"
-          [outlined]="true"
-          (click)="openNewPpmpDialog()">
-        </p-button>
+        <div class="flex justify-between items-center mb-2">
+          <h1 class="text-xl font-semibold text-gray-800">PPMP Management</h1>
+          <p-button 
+            label="Add PPMP" 
+            icon="pi pi-plus"
+            styleClass="p-button-primary"
+            [outlined]="true"
+            (click)="openNewPpmpDialog()">
+          </p-button>
+        </div>
+        <p class="text-gray-600 text-sm mb-6">
+          Manage Project Procurement Management Plan (PPMP)
+        </p>
+
+        <!-- Filter Section -->
+        <div class="flex justify-between items-center gap-4 mb-6">
+          <div class="flex items-center gap-3">
+            <span class="text-sm">Fiscal Year:</span>
+            <p-dropdown
+              [options]="years"
+              [(ngModel)]="selectedYear"
+              (onChange)="filterByYear()"
+              [placeholder]="'Select Year'"
+              [showClear]="false"
+              appendTo="body">
+            </p-dropdown>
+          </div>
+
+          <p-button
+            label="Finalize for Approval"
+            icon="pi pi-check-circle"
+            styleClass="p-button-success"
+            [outlined]="true">
+          </p-button>
+        </div>
+
+        <!-- Table Section -->
+        <p-table 
+          [value]="filteredPpmps" 
+          [rows]="10"
+          [paginator]="true"
+          [rowHover]="true"
+          [showCurrentPageReport]="true"
+          [loading]="loading"
+          styleClass="p-datatable-sm">
+          
+          <ng-template pTemplate="header">
+            <tr>
+              <th>Project Code</th>
+              <th>Project Title</th>
+              <th>Classifications</th>
+              <th>Procurement Mode</th>
+              <th>Estimated Total Cost</th>
+              <th>Fiscal Year</th>
+              <th style="width: 100px">Document</th>
+              <th style="width: 100px">Actions</th>
+            </tr>
+          </ng-template>
+
+          <ng-template pTemplate="body" let-ppmp>
+            <tr>
+              <td>{{ppmp.project?.project_code}}</td>
+              <td>{{ppmp.project?.project_title}}</td>
+              <td>
+                <div class="flex flex-wrap gap-1">
+                  <span *ngFor="let classification of ppmp.project?.classifications" 
+                    class="px-2 py-1 rounded-full text-xs" 
+                    [ngClass]="getClassificationClass(classification)">
+                    {{classification | titlecase}}
+                  </span>
+                </div>
+              </td>
+              <td>{{getProcurementModeLabel(ppmp.project?.procurement_mode_id)}}</td>
+              <td>₱{{calculateTotalEstimatedCost(ppmp) | number:'1.2-2'}}</td>
+              <td>{{ppmp.fiscal_year}}</td>
+              <td>
+                <div class="flex justify-center">
+                  <button 
+                    pButton
+                    type="button"
+                    icon="pi pi-file"
+                    class="p-button-rounded p-button-info p-button-sm"
+                    pTooltip="View PPMP Document"
+                    [outlined]="true"
+                    (click)="viewPpmpDocument(ppmp)">
+                  </button>
+                </div>
+              </td>
+                <td>
+                <div class="flex gap-2 justify-center">
+                  <button 
+                    pButton
+                    type="button"
+                    icon="pi pi-pencil"
+                    class="p-button-rounded p-button-primary p-button-sm"
+                    pTooltip="Edit PPMP"
+                    [outlined]="true"
+                    (click)="editPpmp(ppmp)">
+                  </button>
+                  <button 
+                    pButton
+                    type="button"
+                    icon="pi pi-trash"
+                    class="p-button-rounded p-button-danger p-button-sm"
+                    pTooltip="Delete PPMP"
+                    [outlined]="true"
+                    (click)="deletePpmp(ppmp)">
+                  </button>
+                </div>
+              </td>
+            </tr>
+          </ng-template>
+
+          <ng-template pTemplate="emptymessage">
+            <tr>
+              <td colspan="7" class="text-center p-4">
+                <div class="flex flex-col items-center justify-center text-gray-500">
+                  <i class="pi pi-folder-open text-3xl mb-2"></i>
+                  <span>No PPMP records found</span>
+                </div>
+              </td>
+            </tr>
+          </ng-template>
+        </p-table>
       </div>
-      <p class="text-gray-600 text-sm mb-6">
-        Manage Project Procurement Management Plan (PPMP)
-      </p>
-
-      <!-- Filter Section -->
-    <div class="flex items-center gap-4 mb-6">
-    <div class="flex items-center gap-3">
-      <span class="text-sm">Fiscal Year:</span>
-      <p-dropdown
-        [options]="years"
-        [(ngModel)]="selectedYear"
-        (onChange)="filterByYear()"
-        [placeholder]="'Select Year'"
-        [showClear]="false"
-        appendTo="body">
-      </p-dropdown>
     </div>
-
-    <button 
-      pButton 
-      label="Generate PDF"
-      icon="pi pi-file-pdf"
-      class="p-button-outlined">
-    </button>
-  </div>
-      <!-- Table Section -->
-       <p-table 
-        [value]="filteredPpmps" 
-        [rows]="10"
-        [paginator]="true"
-        [rowHover]="true"
-        [showCurrentPageReport]="true"
-        [loading]="loading"
-        styleClass="p-datatable-sm">
-        
-        <ng-template pTemplate="header">
-          <tr>
-            <th>Project Code</th>
-            <th>Project Title</th>
-            <th>Classification</th>
-            <th>Procurement Mode</th>
-            <th>Total Cost</th>
-            <th>Fiscal Year</th>
-            <th style="width: 100px">Actions</th>
-          </tr>
-        </ng-template>
-
-        <ng-template pTemplate="body" let-ppmp>
-          <tr>
-                        <td>{{ppmp.project?.project_code}}</td>
-
-            <td>{{ppmp.project?.project_title}}</td>
-            <td>
-              <span class="px-2 py-1 rounded-full text-xs" 
-                [ngClass]="getClassificationClass(ppmp.project?.classification)">
-                {{ppmp.project?.classification | titlecase}}
-              </span>
-            </td>
-            <td>{{getProcurementModeLabel(ppmp.project?.procurement_mode_id)}}</td>
-            <td>₱{{ppmp.item?.estimated_total_cost | number:'1.2-2'}}</td>
-            <td>{{ppmp.fiscal_year}}</td>
-            <td>
-              <div class="flex gap-2 justify-center">
-                <button 
-                  pButton
-                  type="button"
-                  icon="pi pi-pencil"
-                  class="p-button-rounded p-button-primary p-button-sm"
-                  pTooltip="Edit PPMP"
-                  [outlined]="true"
-                  (click)="editPpmp(ppmp)">
-                </button>
-                <button 
-                  pButton
-                  type="button"
-                  icon="pi pi-trash"
-                  class="p-button-rounded p-button-danger p-button-sm"
-                  pTooltip="Delete PPMP"
-                  [outlined]="true"
-                  (click)="deletePpmp(ppmp)">
-                </button>
-              </div>
-            </td>
-          </tr>
-        </ng-template>
-
-        <ng-template pTemplate="emptymessage">
-          <tr>
-            <td colspan="6" class="text-center p-4">
-              <div class="flex flex-col items-center justify-center text-gray-500">
-                <i class="pi pi-folder-open text-3xl mb-2"></i>
-                <span>No PPMP records found</span>
-              </div>
-            </td>
-          </tr>
-        </ng-template>
-      </p-table>
-    </div>
+  </p-card>
+</div>
 
 <!-- PPMP Dialog -->
 <p-dialog 
@@ -121,10 +142,9 @@
   [resizable]="false"
   [closeOnEscape]="true"
   [dismissableMask]="true"
-  [style]="{width: '700px'}"
+  [style]="{width: '80vw', maxWidth: '900px'}"
   styleClass="p-0"
-  [header]="isEditMode ? 'Edit PPMP' : 'New PPMP'"
-  >
+  [header]="isEditMode ? 'Edit PPMP' : 'New PPMP'">
 
   <form [formGroup]="ppmpForm" class="p-fluid">
     <!-- Project Information Section -->
@@ -153,7 +173,7 @@
         </div>
 
         <!-- Project Code -->
-        <div>
+        <div class="col-span-2">
           <label for="project_code" class="text-sm font-medium text-gray-700 mb-1 block">
             Project Code
           </label>
@@ -165,22 +185,23 @@
             class="w-full"/>
         </div>
 
-        <!-- Classification -->
-        <div>
-          <label for="classification" class="text-sm font-medium text-gray-700 mb-1 block">
-            Classification <span class="text-red-500">*</span>
+
+        <!-- Classifications Multiselect -->
+        <div class="col-span-1">
+          <label for="classifications" class="text-sm font-medium text-gray-700 mb-1 block">
+            Classifications <span class="text-red-500">*</span>
           </label>
-          <p-dropdown
-            id="classification"
+          <p-multiSelect
+            id="classifications"
             [options]="classifications"
-            formControlName="classification"
-            [class.ng-invalid]="isFieldInvalid('project.classification')"
-            placeholder="Select classification"
+            formControlName="classifications"
+            [class.ng-invalid]="isFieldInvalid('project.classifications')"
+            placeholder="Select classifications"
             styleClass="w-full"
-            [autoDisplayFirst]="false">
-          </p-dropdown>
-          <small class="text-red-500" *ngIf="isFieldInvalid('project.classification')">
-            Classification is required
+            [showToggleAll]="false">
+          </p-multiSelect>
+          <small class="text-red-500" *ngIf="isFieldInvalid('project.classifications')">
+            At least one classification is required
           </small>
         </div>
 
@@ -204,7 +225,7 @@
         </div>
 
         <!-- Funding Source -->
-        <div>
+        <!-- <div>
           <label for="funding_source" class="text-sm font-medium text-gray-700 mb-1 block">
             Funding Source <span class="text-red-500">*</span>
           </label>
@@ -220,7 +241,7 @@
           <small class="text-red-500" *ngIf="isFieldInvalid('project.funding_source_id')">
             Funding source is required
           </small>
-        </div>
+        </div> -->
 
         <!-- Project Description -->
         <div class="col-span-2">
@@ -228,11 +249,11 @@
             Project Description <span class="text-red-500">*</span>
           </label>
           <textarea 
-            pInputTextarea 
+                       rows="5" cols="30" pTextarea
+
             id="project_description"
             formControlName="project_description"
             [class.ng-invalid]="isFieldInvalid('project.project_description')"
-          rows="5" cols="30" pTextarea
             placeholder="Enter project description"
             class="w-full">
           </textarea>
@@ -240,106 +261,142 @@
             Project description is required
           </small>
         </div>
+
+        <!-- Contract Scope -->
+        <div class="col-span-2">
+          <label for="contract_scope" class="text-sm font-medium text-gray-700 mb-1 block">
+            Contract Scope
+          </label>
+          <textarea 
+            id="contract_scope"
+            formControlName="contract_scope"
+                       rows="5" cols="30" pTextarea
+            placeholder="Enter contract scope"
+            class="w-full">
+          </textarea>
+        </div>
       </div>
     </div>
 
-    <!-- Item Information Section -->
-    <div class="mb-6">
-      <div class="bg-gray-50 p-3 rounded-lg mb-4">
-        <h2 class="text-lg font-medium text-gray-800 mb-1">Item Information</h2>
-        <p class="text-sm text-gray-600">Specify the item details and cost estimates</p>
+    <!-- Items Section -->
+    <div class="mb-6" formArrayName="items">
+      <div class="bg-gray-50 p-3 rounded-lg mb-4 flex justify-between items-center">
+        <div>
+          <h2 class="text-lg font-medium text-gray-800 mb-1">Items</h2>
+          <p class="text-sm text-gray-600">Add items for this PPMP</p>
+        </div>
+        <button 
+          pButton
+          type="button"
+          label="Add Item"
+          icon="pi pi-plus"
+          (click)="addItem()"
+          class="p-button-sm">
+        </button>
       </div>
 
-      <div class="grid grid-cols-1 md:grid-cols-2 gap-4" formGroupName="item">
-        <!-- Technical Specification -->
-        <div class="col-span-2">
-          <label for="technical_specification" class="text-sm font-medium text-gray-700 mb-1 block">
-            Technical Specification <span class="text-red-500">*</span>
-          </label>
-          <textarea 
-            pInputTextarea 
-            id="technical_specification"
-            formControlName="technical_specification"
-            [class.ng-invalid]="isFieldInvalid('item.technical_specification')"
-            rows="5" cols="30" pTextarea
-            placeholder="Enter technical specifications"
-            class="w-full">
-          </textarea>
-          <small class="text-red-500" *ngIf="isFieldInvalid('item.technical_specification')">
-            Technical specification is required
-          </small>
+      <div *ngFor="let item of items.controls; let i=index" 
+           [formGroupName]="i" 
+           class="border rounded-lg p-4 mb-4">
+        <div class="flex justify-between items-center mb-4">
+          <h3 class="text-md font-medium">Item {{i + 1}}</h3>
+          <button 
+            pButton
+            type="button"
+            icon="pi pi-trash"
+            class="p-button-danger p-button-sm"
+            [outlined]="true"
+            (click)="removeItem(i)">
+          </button>
         </div>
 
-        <!-- Unit of Measurement -->
-        <div>
-          <label for="unit_measurement" class="text-sm font-medium text-gray-700 mb-1 block">
-            Unit of Measurement <span class="text-red-500">*</span>
-          </label>
-          <input 
-            pInputText 
-            id="unit_measurement"
-            formControlName="unit_of_measurement"
-            [class.ng-invalid]="isFieldInvalid('item.unit_of_measurement')"
-            placeholder="e.g., pieces, lot"
-            class="w-full"/>
-          <small class="text-red-500" *ngIf="isFieldInvalid('item.unit_of_measurement')">
-            Unit of measurement is required
-          </small>
-        </div>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <!-- Technical Specification -->
+          <div class="col-span-2">
+            <label class="text-sm font-medium text-gray-700 mb-1 block">
+              Technical Specification <span class="text-red-500">*</span>
+            </label>
+            <textarea 
+              formControlName="technical_specification"
+                       rows="5" cols="30" pTextarea
+              placeholder="Enter technical specifications"
+              class="w-full">
+            </textarea>
+          </div>
 
-        <!-- Quantity Required -->
-        <div>
-          <label for="quantity_required" class="text-sm font-medium text-gray-700 mb-1 block">
-            Quantity Required <span class="text-red-500">*</span>
-          </label>
-          <p-inputNumber 
-            id="quantity_required"
-            formControlName="quantity_required"
-            [showButtons]="true"
-            [min]="1"
-            [class.ng-invalid]="isFieldInvalid('item.quantity_required')"
-            placeholder="Enter quantity"
-            styleClass="w-full">
-          </p-inputNumber>
-          <small class="text-red-500" *ngIf="isFieldInvalid('item.quantity_required')">
-            Quantity is required and must be greater than 0
-          </small>
-        </div>
+          <!-- Classification -->
+         <div class="col-span-2">
+  <label class="text-sm font-medium text-gray-700 mb-1 block">
+    Classification <span class="text-red-500">*</span>
+  </label>
+  <p-dropdown
+    [options]="itemClassificationOptions"
+    formControlName="classification"
+    placeholder="Select classification"
+    styleClass="w-full"
+    [autoDisplayFirst]="false">
+  </p-dropdown>
+</div>
 
-        <!-- Estimated Unit Cost -->
-        <div>
-          <label for="estimated_unit_cost" class="text-sm font-medium text-gray-700 mb-1 block">
-            Estimated Unit Cost <span class="text-red-500">*</span>
-          </label>
-          <p-inputNumber 
-            id="estimated_unit_cost"
-            formControlName="estimated_unit_cost"
-            mode="currency" 
-            currency="PHP"
-            [min]="0"
-            [class.ng-invalid]="isFieldInvalid('item.estimated_unit_cost')"
-            placeholder="₱0.00"
-            styleClass="w-full">
-          </p-inputNumber>
-          <small class="text-red-500" *ngIf="isFieldInvalid('item.estimated_unit_cost')">
-            Unit cost is required and must be greater than 0
-          </small>
-        </div>
+          <!-- Unit of Measurement -->
+          <div>
+            <label class="text-sm font-medium text-gray-700 mb-1 block">
+              Unit of Measurement <span class="text-red-500">*</span>
+            </label>
+            <input 
+              pInputText 
+              formControlName="unit_of_measurement"
+              placeholder="e.g., pieces, lot"
+              class="w-full"/>
+          </div>
 
-        <!-- Estimated Total Cost -->
-        <div>
-          <label for="estimated_total_cost" class="text-sm font-medium text-gray-700 mb-1 block">
-            Estimated Total Cost
-          </label>
-          <p-inputNumber 
-            id="estimated_total_cost"
-            formControlName="estimated_total_cost"
-            mode="currency" 
-            currency="PHP"
-            [readonly]="true"
-            styleClass="w-full bg-gray-50">
-          </p-inputNumber>
-        </div>
+        
+
+          <!-- Estimated Unit Cost -->
+          <div>
+            <label class="text-sm font-medium text-gray-700 mb-1 block">
+              Estimated Unit Cost <span class="text-red-500">*</span>
+            </label>
+            <p-inputNumber 
+              formControlName="estimated_unit_cost"
+              mode="currency" 
+              currency="PHP"
+              [min]="0"
+              placeholder="₱0.00"
+              styleClass="w-full">
+            </p-inputNumber>
+          </div>
+
+            <!-- Quantity Required -->
+          <div>
+            <label class="text-sm font-medium text-gray-700 mb-1 block">
+              Quantity Required <span class="text-red-500">*</span>
+            </label>
+            <p-inputNumber 
+              formControlName="quantity_required"
+              [showButtons]="true"
+              [min]="1"
+              placeholder="Enter quantity"
+              styleClass="w-full">
+            </p-inputNumber>
+          </div>
+
+
+          
+          <!-- Estimated Total Cost -->
+          <div>
+            <label class="text-sm font-medium text-gray-700 mb-1 block">
+              Estimated Total Cost
+            </label>
+            <p-inputNumber 
+              formControlName="estimated_total_cost"
+              mode="currency" 
+              currency="PHP"
+              [readonly]="true"
+              styleClass="w-full bg-gray-50">
+            </p-inputNumber>
+          </div>
+          </div>
       </div>
     </div>
   </form>
@@ -366,4 +423,3 @@
 <!-- Toast & Confirm Dialog -->
 <p-toast position="top-right"></p-toast>
 <p-confirmDialog header="Confirmation" icon="pi pi-exclamation-triangle"></p-confirmDialog>
-
