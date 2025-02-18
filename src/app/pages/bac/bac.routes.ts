@@ -80,7 +80,7 @@ export const bacRoutes: Routes = [
   {
     path: 'price-quotation',
     component: PriceQuotationComponent, // Page for preparing purchase orders
-    data: { breadcrumb: 'Price Quotation', roles: ['bac','supply','superadmin'] }, // Only 'bac' and 'superadmin' can access
+    data: { breadcrumb: 'Price Quotation', roles: ['bac'] }, // Only 'bac' and 'superadmin' can access
     canActivate: [roleGuard], // Protect the route with roleGuard
   },
 ];

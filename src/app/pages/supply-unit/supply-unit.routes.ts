@@ -72,7 +72,7 @@ export const SupplyUnitRoutes: Routes = [
         path: 'price-quotation',
         component: PriceQuotationComponent,
         canActivate: [roleGuard],
-        data: { roles: ['supply', 'superadmin'], breadcrumb: 'Price Quotationn' } // specify roles here
+        data: { roles: ['supply'], breadcrumb: 'Price Quotationn' } // specify roles here
       },
     ],
   },
