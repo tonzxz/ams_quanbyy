@@ -64,9 +64,11 @@ export interface PPMPProject {
   prepared_by: string  
   project_title: string  
   project_code?: string 
+  classification: string
   project_description: string
   funding_source_id: string  
 }
+
 
 export interface PPMPItem {
   id: string
@@ -120,6 +122,7 @@ export class APP {
   date_approved?: Date
   total_quantity_required: number
   total_estimated_cost: number
+  // add 
 }
 
 export class PurchaseRequest {
@@ -140,7 +143,7 @@ export class Office {
   name: string
 }
 
-export class User {
+export class Users {
   id: string
   name: string
   username: string
