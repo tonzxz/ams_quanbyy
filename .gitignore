@@ -40,3 +40,14 @@ testem.log
 # System files
 .DS_Store
 Thumbs.db
+
+# Python Cache
+/backend/__pycache__/
+/backend/**/__pycache__/
+/backend/*.py[cod]
+/backend/*$py.class
+/backend/.pytest_cache/
+
+
+
+
