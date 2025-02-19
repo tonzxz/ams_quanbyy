@@ -2,6 +2,7 @@ from cryptography.fernet import Fernet
 from flask import request, jsonify
 import json
 from psycopg2.extras import RealDictCursor
+import re  # Add this at the top with other imports
 
 class CRUD:
     def __init__(self, app, postgres, encryption_key):
@@ -69,11 +70,11 @@ class CRUD:
         # Special validation for ICS
         if resource_name.lower() == 'ics':
             # Validate ICS number format
-            if not data.get('ics_no', '').match(r'^ICS-\d{4}-\d{3}$'):
+            if not re.match(r'^ICS-\d{4}-\d{3}$', data.get('ics_no', '')):
                 return jsonify({'error': 'Invalid ICS number format. Must be ICS-YYYY-###'}), 400
             
             # Validate Fund Cluster format
-            if not data.get('fund_cluster', '').match(r'^FC-\d{4}-\d{3}$'):
+            if not re.match(r'^FC-\d{4}-\d{3}$', data.get('fund_cluster', '')):
                 return jsonify({'error': 'Invalid Fund Cluster format. Must be FC-YYYY-###'}), 400
         
         # Encrypt sensitive columns
