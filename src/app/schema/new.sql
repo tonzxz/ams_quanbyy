@@ -221,3 +221,19 @@ CREATE TABLE Document (
     uploaded_by UUID REFERENCES Users(id) ON DELETE CASCADE,
     upload_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
+
+-- ICS Table
+CREATE TABLE ics (
+    ics_no VARCHAR(50) PRIMARY KEY,
+    entity_name VARCHAR(255) NOT NULL,
+    fund_cluster VARCHAR(50) NOT NULL,
+    date DATE NOT NULL,
+    inventory_item_no VARCHAR(50) NOT NULL,
+    quantity INTEGER NOT NULL,
+    unit VARCHAR(50) NOT NULL,
+    unit_cost DECIMAL(10,2) NOT NULL,
+    description TEXT,
+    estimated_useful_life VARCHAR(50) NOT NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);

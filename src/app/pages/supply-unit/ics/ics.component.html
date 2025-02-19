@@ -13,7 +13,7 @@
                 ></p-button>
             </div>
         </div>
-        <p-table [value]="icsReports" [paginator]="true" [rows]="5">
+        <p-table [value]="icsReports" [paginator]="true" [rows]="5" [loading]="loading">
             <ng-template pTemplate="header">
                 <tr>
                     <th>ICS No.</th>
@@ -25,9 +25,9 @@
             </ng-template>
             <ng-template pTemplate="body" let-ics>
                 <tr>
-                    <td>{{ ics.icsNo }}</td>
-                    <td>{{ ics.entityName }}</td>
-                    <td>{{ ics.fundCluster }}</td>
+                    <td>{{ ics.ics_no }}</td>
+                    <td>{{ ics.entity_name }}</td>
+                    <td>{{ ics.fund_cluster }}</td>
                     <td>{{ ics.date | date: 'mediumDate' }}</td>
                     <td>
                         <div class="flex gap-2">
@@ -206,4 +206,6 @@
             </div>
         </form>
     </p-dialog>
+
+    <p-toast></p-toast>
 </div>

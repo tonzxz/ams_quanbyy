@@ -87,30 +87,21 @@ class CRUD:
         return jsonify({'message': f'{resource_name} created successfully'}), 201
 
     def read(self, resource_name, item_id=None):
-        cursor = self.postgres.cursor(cursor_factory=RealDictCursor)
-        params = request.args or {}
-        # Start building the query
-        query = f"SELECT * FROM {resource_name.lower()}"  
-        # Handle item_id, if it's provided
-        if item_id:
-            query += f" WHERE {resource_name.lower()}.id = %s"
-            cursor.execute(query, (item_id,))
-        else:
+        try:
+            cursor = self.postgres.cursor(cursor_factory=RealDictCursor)
+            
+            query = f"SELECT * FROM {resource_name.lower()}"
+            print(f"Executing query: {query}")
+            
             cursor.execute(query)
-        
-        # Fetch the result rows and format them as a list of dictionaries
-        results = cursor.fetchall()
-        
-        # Exclude sensitive columns
-        for result in results:
-            for column in self.encrypted_columns:
-                if column in result:
-                    del result[column]
-
-        cursor.close()
-        
-        # Return the results as JSON
-        return jsonify(results), 200
+            results = cursor.fetchall()
+            print(f"Query results: {results}")
+            
+            cursor.close()
+            return jsonify(results), 200
+        except Exception as e:
+            print(f"Error in read method: {e}")
+            return jsonify({"error": str(e)}), 500
 
 
     # Update (Update an entry in the table)

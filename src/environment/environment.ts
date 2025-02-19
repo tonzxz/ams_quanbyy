@@ -1,9 +1,9 @@
 interface environmentConfig {
-    use:'assets'|'local'|'server',
-    api:string
+    use: 'assets'|'local'|'server',
+    api: string
 }
 
-export const environment:environmentConfig = {
-    use : 'server', // assets, local or server
+export const environment: environmentConfig = {
+    use: 'server',
     api: 'http://localhost:5000/api'
 }
