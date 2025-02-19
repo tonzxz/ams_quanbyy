@@ -14,6 +14,8 @@ import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { Select } from 'primeng/select';
 import { DropdownModule } from 'primeng/dropdown';
 import { CommonModule } from '@angular/common';
+import { TabsModule } from 'primeng/tabs';
+import { TabPanel, TabViewModule } from 'primeng/tabview';
 
 @Component({
   selector: 'app-conference',
@@ -34,13 +36,18 @@ import { CommonModule } from '@angular/common';
     FormsModule,
     ReactiveFormsModule,
     DropdownModule,
-    CommonModule
+    CommonModule,
+    TabsModule, 
+    TabViewModule
   ],
   templateUrl: './conference.component.html',
   styleUrl: './conference.component.scss',
   providers: [MessageService]
 })
 export class ConferenceComponent implements OnInit {
+  preProcurementEvents: any[] = [];
+  preBiddingEvents: any[] = [];
+
   eventCard: boolean = false;
   eventModal: boolean = false;
   inviteModal: boolean = false;
