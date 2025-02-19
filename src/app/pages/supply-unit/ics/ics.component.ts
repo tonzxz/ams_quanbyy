@@ -42,8 +42,8 @@ export class IcsComponent implements OnInit {
   ) {
     this.icsForm = this.fb.group({
       entityName: ['', Validators.required],
-      fundCluster: ['', Validators.required],
-      icsNo: ['', Validators.required],
+      fundCluster: [''],
+      icsNo: [''],
       date: ['', Validators.required],
       inventoryItemNo: ['', Validators.required],
       quantity: ['', [Validators.required, Validators.min(1)]],
@@ -78,10 +78,44 @@ export class IcsComponent implements OnInit {
     });
   }
 
+  private generateIcsNumber(): string {
+    const year = new Date().getFullYear();
+    const existingNumbers = this.icsReports
+      .map(ics => ics.ics_no)
+      .filter(no => no.startsWith(`ICS-${year}`))
+      .map(no => parseInt(no.split('-')[2]));
+    
+    const nextNumber = existingNumbers.length > 0 
+      ? Math.max(...existingNumbers) + 1 
+      : 1;
+    
+    return `ICS-${year}-${nextNumber.toString().padStart(3, '0')}`;
+  }
+
+  private generateFundCluster(): string {
+    const year = new Date().getFullYear();
+    const existingNumbers = this.icsReports
+      .map(ics => ics.fund_cluster)
+      .filter(fc => fc.startsWith(`FC-${year}`))
+      .map(fc => parseInt(fc.split('-')[2]));
+    
+    const nextNumber = existingNumbers.length > 0 
+      ? Math.max(...existingNumbers) + 1 
+      : 1;
+    
+    return `FC-${year}-${nextNumber.toString().padStart(3, '0')}`;
+  }
+
   showDialog() {
     this.displayDialog = true;
     this.editingIndex = -1;
     this.icsForm.reset();
+    
+    // Auto-generate numbers for new entries
+    this.icsForm.patchValue({
+      icsNo: this.generateIcsNumber(),
+      fundCluster: this.generateFundCluster()
+    });
   }
 
   editICS(ics: ICS) {
@@ -98,6 +132,11 @@ export class IcsComponent implements OnInit {
       description: ics.description,
       estimatedUsefulLife: ics.estimated_useful_life
     });
+    
+    // Disable form controls for auto-generated fields during edit
+    this.icsForm.get('icsNo')?.disable();
+    this.icsForm.get('fundCluster')?.disable();
+    
     this.displayDialog = true;
   }
 
@@ -132,9 +171,9 @@ export class IcsComponent implements OnInit {
     }
 
     const formData = {
-      ics_no: this.icsForm.value.icsNo,
+      ics_no: this.icsForm.get('icsNo')?.value || this.generateIcsNumber(),
       entity_name: this.icsForm.value.entityName,
-      fund_cluster: this.icsForm.value.fundCluster,
+      fund_cluster: this.icsForm.get('fundCluster')?.value || this.generateFundCluster(),
       date: new Date(this.icsForm.value.date),
       inventory_item_no: this.icsForm.value.inventoryItemNo,
       quantity: this.icsForm.value.quantity,

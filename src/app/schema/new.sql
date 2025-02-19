@@ -224,9 +224,9 @@ CREATE TABLE Document (
 
 -- ICS Table
 CREATE TABLE ics (
-    ics_no VARCHAR(50) PRIMARY KEY,
+    ics_no VARCHAR(50) PRIMARY KEY CHECK (ics_no ~ '^ICS-\d{4}-\d{3}$'),  -- Enforces ICS-YYYY-### format
+    fund_cluster VARCHAR(50) NOT NULL CHECK (fund_cluster ~ '^FC-\d{4}-\d{3}$'),  -- Enforces FC-YYYY-### format
     entity_name VARCHAR(255) NOT NULL,
-    fund_cluster VARCHAR(50) NOT NULL,
     date DATE NOT NULL,
     inventory_item_no VARCHAR(50) NOT NULL,
     quantity INTEGER NOT NULL,
@@ -237,3 +237,16 @@ CREATE TABLE ics (
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
+
+CREATE OR REPLACE FUNCTION update_updated_at_column()
+RETURNS TRIGGER AS $$
+BEGIN
+    NEW.updated_at = CURRENT_TIMESTAMP;
+    RETURN NEW;
+END;
+$$ language 'plpgsql';
+
+CREATE TRIGGER update_ics_updated_at
+    BEFORE UPDATE ON ics
+    FOR EACH ROW
+    EXECUTE FUNCTION update_updated_at_column();

@@ -66,6 +66,16 @@ class CRUD:
     def create(self, resource_name):
         data = request.get_json()
         
+        # Special validation for ICS
+        if resource_name.lower() == 'ics':
+            # Validate ICS number format
+            if not data.get('ics_no', '').match(r'^ICS-\d{4}-\d{3}$'):
+                return jsonify({'error': 'Invalid ICS number format. Must be ICS-YYYY-###'}), 400
+            
+            # Validate Fund Cluster format
+            if not data.get('fund_cluster', '').match(r'^FC-\d{4}-\d{3}$'):
+                return jsonify({'error': 'Invalid Fund Cluster format. Must be FC-YYYY-###'}), 400
+        
         # Encrypt sensitive columns
         data = self.encrypt_data(data)
 
@@ -79,12 +89,14 @@ class CRUD:
         
         query = f"INSERT INTO {resource_name.lower()} ({columns_str}) VALUES ({placeholders})"
         
-        cursor = self.postgres.cursor()
-        cursor.execute(query, values)
-        self.postgres.commit()
-        cursor.close()
-        
-        return jsonify({'message': f'{resource_name} created successfully'}), 201
+        try:
+            cursor = self.postgres.cursor()
+            cursor.execute(query, values)
+            self.postgres.commit()
+            cursor.close()
+            return jsonify({'message': f'{resource_name} created successfully'}), 201
+        except Exception as e:
+            return jsonify({'error': str(e)}), 400
 
     def read(self, resource_name, item_id=None):
         try:
@@ -107,15 +119,17 @@ class CRUD:
     # Update (Update an entry in the table)
     def update(self, resource_name, item_id):
         data = request.get_json()
-
-        # Encrypt sensitive columns
         data = self.encrypt_data(data)
         
         # Dynamically create SET clauses for the SQL query
         set_clauses = ', '.join([f"{column} = %s" for column in data.keys()])
         values = tuple(data.values()) + (item_id,)
         
-        query = f"UPDATE {resource_name.lower()} SET {set_clauses} WHERE id = %s"
+        # Special case for ICS table
+        if resource_name.lower() == 'ics':
+            query = f"UPDATE {resource_name.lower()} SET {set_clauses} WHERE ics_no = %s"
+        else:
+            query = f"UPDATE {resource_name.lower()} SET {set_clauses} WHERE id = %s"
         
         cursor = self.postgres.cursor()
         cursor.execute(query, values)
@@ -127,7 +141,14 @@ class CRUD:
     # Delete (Delete an entry from the table)
     def delete(self, resource_name, item_id):
         cursor = self.postgres.cursor()
-        query = f"DELETE FROM {resource_name.lower()} WHERE id = %s"
+        
+        # Special case for ICS table which uses ics_no as primary key
+        if resource_name.lower() == 'ics':
+            query = f"DELETE FROM {resource_name.lower()} WHERE ics_no = %s"
+        else:
+            # Default case for other tables using id as primary key
+            query = f"DELETE FROM {resource_name.lower()} WHERE id = %s"
+        
         cursor.execute(query, (item_id,))
         self.postgres.commit()
         cursor.close()
