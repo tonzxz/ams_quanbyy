@@ -475,6 +475,12 @@ export const navItems: NavItem[] = [
     route: '/bac/resolution-to-award',
       requiredRoles: ['bac','supply','superadmin'],
   },
+  {
+    displayName: 'Abstract of Quotation',
+    iconName: 'solar:checklist-minimalistic-line-duotone',
+    route: '/bac/abstract-quotation',
+      requiredRoles: ['bac','superadmin'],
+  },
   
 
 
