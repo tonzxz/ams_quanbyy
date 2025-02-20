@@ -13,6 +13,8 @@ import { OpeningOfBidsComponent } from './opening-of-bids/opening-of-bids.compon
 import { AppSharedComponent } from '../shared/app-shared/app-shared.component';
 import { PrSharedComponent } from '../shared/pr-shared/pr-shared.component';
 import { PriceQuotationComponent } from '../shared/price-quotation/price-quotation.component';
+import { ResolutionComponent } from './resolution/resolution.component';
+import { AbstractQuotationComponent } from './abstract-quotation/abstract-quotation.component';
 
 export const bacRoutes: Routes = [
   {
@@ -81,6 +83,18 @@ export const bacRoutes: Routes = [
     path: 'price-quotation',
     component: PriceQuotationComponent, // Page for preparing purchase orders
     data: { breadcrumb: 'Price Quotation', roles: ['bac'] }, // Only 'bac' and 'superadmin' can access
+    canActivate: [roleGuard], // Protect the route with roleGuard
+  },
+  {
+    path: 'resolution-to-award',
+    component: ResolutionComponent, // Page for preparing purchase orders
+    data: { breadcrumb: 'Resolution to Award', roles: ['bac'] }, // Only 'bac' and 'superadmin' can access
+    canActivate: [roleGuard], // Protect the route with roleGuard
+  },
+  {
+    path: 'abstract-quotation',
+    component: AbstractQuotationComponent, // Page for preparing purchase orders
+    data: { breadcrumb: 'Abstract of Quotation', roles: ['bac'] }, // Only 'bac' and 'superadmin' can access
     canActivate: [roleGuard], // Protect the route with roleGuard
   },
 ];
