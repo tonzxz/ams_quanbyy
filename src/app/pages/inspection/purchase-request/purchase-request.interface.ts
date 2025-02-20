@@ -1,3 +1,4 @@
+//purchase-request.interface
 export interface Signatory {
     name: string;
     designation: string;

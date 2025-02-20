@@ -86,27 +86,25 @@
             <div class="purpose-section">
                 <p><strong>Purpose:</strong> {{currentRequest.purpose}}</p>
             </div>
-        </div>
-    </div>
-    <!-- Footer Section -->
-        <div class="footer">
-            <div class="footer-content">
-                <div class="footer-left">
-                    <p>Recommended by:</p>
-                    <p>{{currentRequest.recommendedBy.name}}</p>
-                    <p>{{currentRequest.recommendedBy.designation}}</p>
-                </div>
-                <div class="footer-right">
-                    <p>Approved by:</p>
-                    <p>{{currentRequest.approvedBy.name}}</p>
-                    <p>{{currentRequest.approvedBy.designation}}</p>
+
+            <!-- Signature Section (Moved inside pr-container) -->
+            <div class="signature-section">
+                <div class="signature-content">
+                    <div class="signature-left">
+                        <p>Recommended by:</p>
+                        <p class="name">{{currentRequest.recommendedBy.name}}</p>
+                        <p class="designation">{{currentRequest.recommendedBy.designation}}</p>
+                    </div>
+                    <div class="signature-right">
+                        <p>Approved by:</p>
+                        <p class="name">{{currentRequest.approvedBy.name}}</p>
+                        <p class="designation">{{currentRequest.approvedBy.designation}}</p>    
+                    </div>
                 </div>
             </div>
         </div>
-
-
-    <!-- Export Button -->
+    </div>
     <div class="export-button">
-        <button pButton label="Export to PDF" icon="pi pi-file-pdf" (click)="generatePDF()"></button>
+        <button pButton label="Export to PDF" icon="pi pi-file-pdf" (click)="exportToPDF()"></button>
     </div>
 </p-card>

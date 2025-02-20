@@ -1,185 +1,219 @@
-.pr-container {
-    padding: 20px;
-    background: white;
-    font-family: Arial, sans-serif;
-}
+    .pr-container {
+        padding: 20px;
+        background: white;
+        font-family: Arial, sans-serif;
+    }
 
-/* Header Styles */
-.header {
-    margin-bottom: 30px;
-    
-    .logo-section {
-        display: flex;
-        align-items: flex-start;
-        justify-content: space-between;
+    /* Header Styles */
+    .header {
+        margin-bottom: 30px;
         
-        .logo {
-            width: 80px;
-            height: 80px;
-            object-fit: contain;
-        }
-
-        .header-text {
-            text-align: center;
-            flex: 1;
-            margin: 0 20px;
-
-            h3 {
-                font-size: 16px;
-                font-weight: bold;
-                margin: 0 0 5px 0;
-            }
-
-            p {
-                margin: 2px 0;
-                font-size: 14px;
-            }
-        }
-
-        .right-logos {
+        .logo-section {
             display: flex;
-            gap: 10px;
+            align-items: flex-start;
+            justify-content: space-between;
+            
+            .logo {
+                width: 80px;
+                height: 80px;
+                object-fit: contain;
+            }
+
+            .header-text {
+                text-align: center;
+                flex: 1;
+                margin: 0 20px;
+
+                h3 {
+                    font-size: 16px;
+                    font-weight: bold;
+                    margin: 0 0 5px 0;
+                }
+
+                p {
+                    margin: 2px 0;
+                    font-size: 14px;
+                }
+            }
+
+            .right-logos {
+                display: flex;
+                gap: 10px;
+            }
         }
     }
-}
 
-/* Purchase Request Form Styles */
-.pr-form {
-    border: 1px solid #000;
-    margin-top: 20px;
-}
-
-.pr-header {
-    display: flex;
-    justify-content: space-between;
-    padding: 10px;
-    border-bottom: 1px solid #000;
-
-    .pr-title {
-        font-size: 16px;
-        font-weight: bold;
+    /* Purchase Request Form Styles */
+    .pr-form {
+        border: 1px solid #000;
+        margin-top: 20px;
     }
 
-    .pr-annex {
-        text-align: right;
-        font-size: 12px;
+    .pr-header {
+        display: flex;
+        justify-content: space-between;
+        padding: 10px;
+        border-bottom: 1px solid #000;
+
+        .pr-title {
+            font-size: 16px;
+            font-weight: bold;
+        }
+
+        .pr-annex {
+            text-align: right;
+            font-size: 12px;
+            
+            p {
+                margin: 0;
+            }
+        }
+    }
+
+    .pr-details {
+        display: flex;
+        padding: 10px;
+        border-bottom: 1px solid #000;
+
+        .requisition-office {
+            flex: 1;
+            p {
+                margin: 0;
+            }
+        }
+
+        .pr-numbers {
+            display: grid;
+            grid-template-columns: auto auto auto;
+            gap: 20px;
+
+            .labels p, .values p, .dates p {
+                margin: 2px 0;
+            }
+        }
+    }
+
+    /* Table Styles */
+    .items-table {
+        width: 100%;
+        border-collapse: collapse;
+        
+        th, td {
+            border: 1px solid #000;
+            padding: 8px;
+            text-align: left;
+            font-size: 12px;
+        }
+
+        th {
+            background-color: #f5f5f5;
+            font-weight: bold;
+        }
+
+        tfoot td {
+            border-top: 2px solid #000;
+        }
+
+        .text-right {
+            text-align: right;
+        }
+    }
+
+    /* Purpose Section */
+    .purpose-section {
+        padding: 10px;
+        border-top: 1px solid #000;
         
         p {
             margin: 0;
         }
     }
-}
-
-.pr-details {
-    display: flex;
-    padding: 10px;
-    border-bottom: 1px solid #000;
-
-    .requisition-office {
-        flex: 1;
-        p {
-            margin: 0;
-        }
+    /* Footer Styles */
+    .footer {
+        margin-top: 40px;
+        padding: 20px;
+        border-top: 1px solid #000;
+        background-color: #f9f9f9;
     }
 
-    .pr-numbers {
-        display: grid;
-        grid-template-columns: auto auto auto;
-        gap: 20px;
-
-        .labels p, .values p, .dates p {
-            margin: 2px 0;
-        }
+    .footer-content {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
     }
-}
 
-/* Table Styles */
-.items-table {
-    width: 100%;
-    border-collapse: collapse;
-    
-    th, td {
-        border: 1px solid #000;
-        padding: 8px;
-        text-align: left;
+    .footer-left, .footer-right {
+        width: 45%;
         font-size: 12px;
+        text-align: center;
     }
 
-    th {
-        background-color: #f5f5f5;
-        font-weight: bold;
+    .footer-left p, .footer-right p {
+        margin: 5px 0;
     }
 
-    tfoot td {
-        border-top: 2px solid #000;
+
+    /* Export Button */
+    .export-button {
+        margin-top: 20px;
+        display: flex;
+        justify-content: flex-end;
+
+        button {
+            padding: 8px 16px;
+        }
     }
 
+    /* Utility Classes */
     .text-right {
         text-align: right;
     }
-}
 
-/* Purpose Section */
-.purpose-section {
-    padding: 10px;
-    border-top: 1px solid #000;
-    
-    p {
-        margin: 0;
+    .font-bold {
+        font-weight: bold;
     }
-}
-/* Footer Styles */
-.footer {
-    margin-top: 40px;
-    padding: 20px;
-    border-top: 1px solid #000;
-    background-color: #f9f9f9;
-}
 
-.footer-content {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-}
-
-.footer-left, .footer-right {
-    width: 45%;
-    font-size: 12px;
-    text-align: center;
-}
-
-.footer-left p, .footer-right p {
-    margin: 5px 0;
-}
-
-
-/* Export Button */
-.export-button {
-    margin-top: 20px;
-    display: flex;
-    justify-content: flex-end;
-
-    button {
-        padding: 8px 16px;
+    .signature-section {
+        margin-top: 30px;
+        padding: 20px;
     }
-}
 
-/* Utility Classes */
-.text-right {
-    text-align: right;
-}
+    .signature-content {
+        display: flex;
+        justify-content: space-between;
+        padding: 0 50px;
+    }
 
-.font-bold {
-    font-weight: bold;
-}
+    .signature-left, .signature-right {
+        text-align: center;
+        width: 250px;
+    }
 
-/* Print Styles */
-@media print {
-    .export-button {
+    .signature-left p, .signature-right p {
+        margin: 5px 0;
+    }
+
+    .name {
+        margin-top: 50px !important; /* Space for signature */
+        font-weight: bold;
+    }
+
+    .designation {
+        font-style: italic;
+    }
+
+    /* Remove the footer styles since we're not using it anymore */
+    .footer {
         display: none;
     }
 
-    .pr-container {
-        padding: 0;
+    /* Print Styles */
+    @media print {
+        .export-button {
+            display: none;
+        }
+
+        .pr-container {
+            padding: 0;
+        }
     }
-}

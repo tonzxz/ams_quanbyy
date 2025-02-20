@@ -15,31 +15,11 @@
             role: "Approver"
         },
         committeeMembers: [
-            {
-            name: "ARTHUR L. POBLETE, LLB",
-            position: "Vice Chair, BAC",
-            role: "Committee Member"
-            },
-            {
-            name: "RICARDO T. SEVERO, JR., Ph. D.",
-            position: "Member, BAC",
-            role: "Committee Member"
-            },
-            {
-            name: "ENGR. MEDDY S. MANGARING",
-            position: "Member, BAC",
-            role: "Committee Member"
-            },
-            {
-            name: "ENGR. MIRADOR G. LABRADOR",
-            position: "Member, BAC",
-            role: "Committee Member"
-            },
-            {
-            name: "GINA U. ESPAÑO, Ph. D.",
-            position: "Chair, BAC",
-            role: "Committee Member"
-            }
+            { name: "ARTHUR L. POBLETE, LLB", position: "Vice Chair, BAC", role: "Committee Member" },
+            { name: "RICARDO T. SEVERO, JR., Ph. D.", position: "Member, BAC", role: "Committee Member" },
+            { name: "ENGR. MEDDY S. MANGARING", position: "Member, BAC", role: "Committee Member" },
+            { name: "ENGR. MIRADOR G. LABRADOR", position: "Member, BAC", role: "Committee Member" },
+            { name: "GINA U. ESPAÑO, Ph. D.", position: "Chair, BAC", role: "Committee Member" }
         ],
         dateApproved: new Date("2022-12-27"),
         fundingSource: "RAF-CO"
