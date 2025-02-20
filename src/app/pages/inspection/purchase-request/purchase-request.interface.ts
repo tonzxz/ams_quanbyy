@@ -5,12 +5,12 @@ export interface Signatory {
 }
 
 export interface PurchaseRequestItem {
-    itemNo: number;
     unit: string;
     description: string;
     qty: number;
     unitCost: number;
     totalCost: number;
+    itemNo: string; 
 }
 
 export interface PurchaseRequest {
@@ -19,17 +19,19 @@ export interface PurchaseRequest {
     saiNo?: string;
     alobsNo?: string;
     date: Date;
+    saiDate?: Date | null;  // Made optional and nullable
+    alobsDate?: Date | null;  // Made optional and nullable
     requisitioningOffice: string;
-    ppmpId?: string;
-    appId?: string;
     items: PurchaseRequestItem[];
-    purpose: string;
     totalAmount: number;
+    purpose: string;
+    status: PurchaseRequestStatus;
     requestedBy: Signatory;
     recommendedBy: Signatory;
     approvedBy: Signatory;
-    certification: Signatory;
-    status: 'pending' | 'approved' | 'rejected';
+    certification?: Signatory;
+    ppmpId?: string;
+    appId?: string;
 }
 
 export enum PurchaseRequestStatus {

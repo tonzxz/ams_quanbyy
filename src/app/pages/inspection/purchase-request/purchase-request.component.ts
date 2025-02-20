@@ -20,6 +20,8 @@ import { PurchaseRequestService } from 'src/app/services/purchase-request.servic
 import { PurchaseRequest, PurchaseRequestStatus } from './purchase-request.interface';
 import jsPDF from 'jspdf'
 import html2canvas from 'html2canvas'
+import { CalendarModule } from 'primeng/calendar';
+
 
 @Component({
     selector: 'app-purchase-request',
@@ -31,6 +33,8 @@ import html2canvas from 'html2canvas'
         ButtonModule,
         CardModule,
         TableModule,
+        TableModule,
+        CalendarModule,
         InputTextModule,
         FormsModule,
         DropdownModule,
@@ -53,6 +57,9 @@ export class PurchaseRequestComponent implements OnInit {
     searchQuery = '';
     selectedDepartment: string | null = null;
     activeTabIndex = 0;
+    saiDate: Date;  
+    alobsDate: Date;  
+    isEditMode = false;
     activeTabHeader = 'Pending Requests';
     tabHeaders = ['Pending Requests', 'Validated Requests', 'Rejected Requests'];
 
@@ -217,6 +224,57 @@ export class PurchaseRequestComponent implements OnInit {
             severity: 'success',
             summary: 'Moved to Pending',
             detail: 'Request has been moved back to pending'
+        });
+    }
+    toggleEditMode() {
+        this.isEditMode = !this.isEditMode;
+        if (!this.isEditMode) {
+            // Save changes when exiting edit mode
+            this.saveChanges();
+        }
+    }
+    
+    async saveChanges() {
+        try {
+            await this.prService.update(this.currentRequest);
+            this.messageService.add({
+                severity: 'success',
+                summary: 'Success',
+                detail: 'Changes saved successfully'
+            });
+            await this.refreshData();
+        } catch (error) {
+            this.messageService.add({
+                severity: 'error',
+                summary: 'Error',
+                detail: 'Failed to save changes'
+            });
+        }
+    }
+    
+    addNewItem() {
+        const newItem = {
+            itemNo: (this.currentRequest.items.length + 1).toString(),
+            unit: '',
+            description: '',
+            qty: 0,
+            unitCost: 0,
+            totalCost: 0
+        };
+        this.currentRequest.items.push(newItem);
+    }
+    
+    removeItem(index: number) {
+        this.confirmationService.confirm({
+            message: 'Are you sure you want to remove this item?',
+            accept: () => {
+                this.currentRequest.items.splice(index, 1);
+                // Recalculate item numbers
+                this.currentRequest.items.forEach((item, idx) => {
+                    item.itemNo = (idx + 1).toString();
+                });
+                this.computeTotalAmount();
+            }
         });
     }
 
