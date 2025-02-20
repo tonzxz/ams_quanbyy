@@ -78,17 +78,11 @@ export class PurchaseRequestComponent implements OnInit {
     ) {}
 
     async ngOnInit() {
-        await this.loadData();
-        this.filterRequests();
+        await this.loadData()
+        this.computeTotalAmount()
+        this.filterRequests()
     }
 
-    private async loadData() {
-        this.allRequests = await this.prService.getAll();
-        if (this.allRequests.length > 0) {
-            this.currentRequest = this.allRequests[0];
-        }
-        this.categorizeRequests();
-    }
 
     private categorizeRequests() {
         this.pendingRequests = this.allRequests.filter(r => r.status === PurchaseRequestStatus.Pending);
@@ -110,6 +104,36 @@ export class PurchaseRequestComponent implements OnInit {
                 request.requisitioningOffice.toLowerCase().includes(this.searchQuery.toLowerCase())) &&
             (this.selectedDepartment === null || request.requisitioningOffice === this.selectedDepartment)
         );
+    }
+    private computeItemTotalCost(): void {
+        if (this.currentRequest?.items) {
+            this.currentRequest.items.forEach(item => {
+                item.totalCost = item.qty * item.unitCost
+            })
+        }
+    }
+    
+    // Function to compute the total amount of all items
+    private computeTotalAmount(): void {
+        if (this.currentRequest?.items) {
+            this.computeItemTotalCost() // Ensure item costs are updated first
+            this.currentRequest.totalAmount = this.currentRequest.items.reduce((sum, item) => sum + item.totalCost, 0)
+        }
+    }
+    
+    // Ensure calculations are re-run when data is loaded or modified
+    private async loadData() {
+        this.allRequests = await this.prService.getAll()
+        if (this.allRequests.length > 0) {
+            this.currentRequest = this.allRequests[0]
+        }
+        this.computeTotalAmount() // Recalculate total amounts
+        this.categorizeRequests()
+    }
+    
+    // Function to handle dynamic input changes in the table
+    onQuantityOrCostChange() {
+        this.computeTotalAmount()
     }
 
     onTabChange(event: any) {
@@ -200,51 +224,75 @@ export class PurchaseRequestComponent implements OnInit {
         await this.loadData();
         this.filterRequests();
     }
-
-    generatePDF() {
-        const element = document.querySelector('.pr-container') as HTMLElement // Ensure selection
+    async exportToPDF(): Promise<void> {
+        console.log('Export function called')
+        const element = document.querySelector('.pr-container')
     
         if (!element) {
-            console.error('PR container not found!')
+            console.error('No element found with class pr-container')
             return
         }
     
-        html2canvas(element, { scale: 2 }).then(canvas => {
-            const imgData = canvas.toDataURL('image/png')
-            const pdf = new jsPDF('landscape', 'mm', 'a4') // Landscape mode
+        try {
+            // Hide export button before capturing
+            const exportBtn = document.querySelector('.export-button')
+            if (exportBtn) (exportBtn as HTMLElement).style.display = 'none'
     
-            const pageWidth = pdf.internal.pageSize.getWidth()
-            const pageHeight = pdf.internal.pageSize.getHeight()
+            // Store original styles
+            const originalBackground = (element as HTMLElement).style.background
+            ;(element as HTMLElement).style.background = 'white'
     
-            const imgWidth = pageWidth - 20 // Margin
+            console.log('Starting html2canvas')
+    
+            const canvas = await html2canvas(element as HTMLElement, {
+                scale: 2, // Higher scale for better resolution
+                useCORS: true,
+                logging: true,
+                backgroundColor: '#ffffff',
+                windowWidth: element.scrollWidth,
+                windowHeight: element.scrollHeight
+            })
+    
+            console.log('Canvas created')
+    
+            // Restore styles
+            if (exportBtn) (exportBtn as HTMLElement).style.display = 'flex'
+            ;(element as HTMLElement).style.background = originalBackground
+    
+            const imgData = canvas.toDataURL('image/png', 1.0)
+            const pdf = new jsPDF({
+                orientation: 'landscape', // Landscape mode
+                unit: 'mm',
+                format: 'a4'
+            })
+    
+            // Calculate dimensions for A4 landscape page
+            const imgWidth = 297 // A4 width in mm (landscape)
+            const pageHeight = 210 // A4 height in mm (landscape)
             const imgHeight = (canvas.height * imgWidth) / canvas.width
+            let heightLeft = imgHeight
+            let position = 0
     
-            let position = 10 // Start position for the first page
+            console.log('Creating PDF in landscape')
     
-            if (imgHeight > pageHeight) {
-                // Multi-page handling
-                let currentHeight = imgHeight
-                let yPosition = 10
+            pdf.addImage(imgData, 'PNG', 0, position, imgWidth, imgHeight)
+            heightLeft -= pageHeight
     
-                while (currentHeight > 0) {
-                    pdf.addImage(imgData, 'PNG', 10, yPosition, imgWidth, imgHeight)
-    
-                    currentHeight -= pageHeight - 20 
-                    yPosition -= pageHeight // Move to next page
-    
-                    if (currentHeight > 0) {
-                        pdf.addPage('landscape') // Add a new page
-                        yPosition = 10 // Reset for new page
-                    }
-                }
-            } else {
-                // Single-page PDF
-                pdf.addImage(imgData, 'PNG', 10, position, imgWidth, imgHeight)
+            while (heightLeft > 0) {
+                position -= pageHeight
+                pdf.addPage()
+                pdf.addImage(imgData, 'PNG', 0, position, imgWidth, imgHeight)
+                heightLeft -= pageHeight
             }
     
-            pdf.save(`PR-${this.currentRequest.prNo}.pdf`)
-        })
+            console.log('Saving PDF in landscape')
+            pdf.save(`PR-${this.currentRequest?.prNo || Date.now()}.pdf`)
+        } catch (error) {
+            console.error('Error in exportToPDF:', error)
+        }
     }
+    
+
     generateReport(header: string) {
         const data = this.getReportData();
         if (data.length > 0) {
