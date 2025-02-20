@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
 import { CardModule } from 'primeng/card';
 import { DatePicker } from 'primeng/datepicker';
 import { InputText } from 'primeng/inputtext';
@@ -14,6 +14,9 @@ import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { Select } from 'primeng/select';
 import { DropdownModule } from 'primeng/dropdown';
 import { CommonModule } from '@angular/common';
+import { TabsModule } from 'primeng/tabs';
+import { TabPanel, TabViewModule } from 'primeng/tabview';
+import { CalendarModule } from 'primeng/calendar';
 
 @Component({
   selector: 'app-conference',
@@ -34,42 +37,55 @@ import { CommonModule } from '@angular/common';
     FormsModule,
     ReactiveFormsModule,
     DropdownModule,
-    CommonModule
+    CommonModule,
+    TabsModule, 
+    TabViewModule,
+    CalendarModule
   ],
   templateUrl: './conference.component.html',
   styleUrl: './conference.component.scss',
   providers: [MessageService]
 })
 export class ConferenceComponent implements OnInit {
+  preProcurementEvents: any[] = [];
+  preBiddingEvents: any[] = [];
+
+  invitations: any[] = [];
+
+  invitationTitle: string = '';
+  invitationDate: Date | null = null;
+  eventTime: Date | null = null;
+
   eventCard: boolean = false;
   eventModal: boolean = false;
   inviteModal: boolean = false;
+  editEventModal: boolean = false;
 
   eventName: string = '';   
-  eventDate: string = '';   
+  eventDate: Date | null = null;  
 
   selectedModeCode: string = '';
   selectedPlatformCode: string = '';
 
-  selectedMode: any = { name: 'Online', code: 'ON' }; // Example default value
+  selectedMode: any = { name: 'Online', code: 'ON' };
   selectedPlatform: any = { name: 'Zoom', code: 'ZM' };
-  selectedEvent: any;
+  selectedPPMP: any = null;
   selectedParticipants: any[] = [];
+  selectedEvent: any = {};
 
-  selectedPPMP: any;
   purchaseRequests: string = '';
 
   meetMode: any[] = [];
   platformsByMode: { [key: string]: any[] } = {};
   events: any[] = [];
   participants: any[] = [];
-  
-  ppmpList: any[] = [];  // Define ppmpList for PPMP options
-  
-  constructor(private messageService: MessageService) {}
+
+  ppmpList: any[] = [];
+
+  constructor(private messageService: MessageService, private cdr: ChangeDetectorRef) {}
 
   ngOnInit() {
-    this.selectedModeCode = 'ON'; // Default to Online mode
+    this.selectedModeCode = 'ON';
     this.selectedPPMP = this.ppmpList[0];
 
     this.meetMode = [
@@ -83,20 +99,12 @@ export class ConferenceComponent implements OnInit {
         { name: 'Google Meet', code: 'GM' },
         { name: 'Zoom', code: 'ZM' }
       ],
-      'IP': [],  // No platforms for In-Person
+      'IP': [],
       'HY': [
         { name: 'Google Meet', code: 'GM' },
         { name: 'Zoom', code: 'ZM' }
       ]
     };
-
-    console.log("platformsByMode initialized:", this.platformsByMode);
-
-    this.events = [
-      { name: 'Event 1', date: '2025-02-10', mode: { name: 'Online', code: 'ON' }, platform: { name: 'Zoom', code: 'ZM' } },
-      { name: 'Event 2', date: '2025-02-15', mode: { name: 'In-Person', code: 'IP' }, platform: null },
-      { name: 'Event 3', date: '2025-02-20', mode: { name: 'Hybrid', code: 'HY' }, platform: { name: 'Google Meet', code: 'GM' } }
-    ];
 
     this.participants = [
       { name: 'John Doe', id: 1 },
@@ -104,112 +112,160 @@ export class ConferenceComponent implements OnInit {
       { name: 'Alice Johnson', id: 3 }
     ];
 
-    // Add PPMP List (example values)
     this.ppmpList = [
       { name: 'Procurement Plan A', code: 'PA', purchaseRequests: 'Request 1, Request 2' },
       { name: 'Procurement Plan B', code: 'PB', purchaseRequests: 'Request 3, Request 4' },
-      { name: 'Procurement Plan C', code: 'PC', purchaseRequests: '' } // No purchase requests
+      { name: 'Procurement Plan C', code: 'PC', purchaseRequests: '' }
     ];
+
+    this.selectedPPMP = this.ppmpList[0];
   }
 
   onModeChange(event: any) {
-    if (!event.value || event.value === this.selectedModeCode) {
-        console.log("Mode didn't change, skipping update.");
-        return;
-    }
+    if (!event.value) return;
 
-    console.log("Mode changed:", event.value);
-
-    // Update selected mode and mode code
     this.selectedModeCode = event.value;
     this.selectedMode = this.meetMode.find(mode => mode.code === event.value) || { name: '', code: '' };
 
-    // Reset or update platform selection
     if (this.selectedModeCode === 'IP') {
-        this.selectedPlatform = null;
+      this.selectedPlatform = null;
     } else {
-        const platforms = this.getPlatformsForSelectedMode();
-        this.selectedPlatform = platforms.length > 0 ? platforms[0] : { name: '', code: '' };
+      const platforms = this.getPlatformsForSelectedMode();
+      this.selectedPlatform = platforms.length > 0 ? platforms[0] : { name: '', code: '' };
     }
-
-    console.log("Updated Selected Mode:", this.selectedMode);
-    console.log("Updated Selected Platform:", this.selectedPlatform);
   }
 
-
-
-
-  onPPMPChange() {
-    if (this.selectedPPMP) {
-      console.log('Selected PPMP:', this.selectedPPMP);
+  onPPMPChange(event: any) {
+    if (event.value) {
+      this.selectedPPMP = event.value;
       this.purchaseRequests = this.selectedPPMP.purchaseRequests || 'No purchase requests available.';
     } else {
+      this.selectedPPMP = null;
       this.purchaseRequests = 'No purchase requests available.';
     }
   }
+
+  onEventSelect(event: any) {
+    if (event?.value) {
+      this.selectedEvent = event.value;
+      this.eventName = this.selectedEvent?.name || '';  // Set event name here
+      this.eventDate = this.selectedEvent?.date || null;
+      this.eventTime = this.selectedEvent?.eventTime || null;
+      this.selectedMode = this.selectedEvent?.mode || this.selectedMode;
+      this.selectedModeCode = this.selectedEvent?.mode?.code || '';
+      this.selectedPlatform = this.selectedEvent?.platform || this.selectedPlatform;
+      this.selectedPlatformCode = this.selectedEvent?.platform?.code || '';
+      this.editEventModal = true;
+    }
+  }
+
+  saveEditedEvent() {
+    if (this.selectedEvent) {
+      this.selectedEvent.name = this.eventName;  // Save back the updated name
+      this.selectedEvent.date = this.eventDate;
+      this.selectedEvent.eventTime = this.eventTime;
+      this.selectedEvent.mode = this.selectedMode;
+      this.selectedEvent.platform = this.selectedPlatform;
   
+      this.messageService.add({
+        severity: 'success',
+        summary: 'Event Updated',
+        detail: 'The event has been successfully updated.'
+      });
+  
+      this.editEventModal = false;
+    }
+  }
 
   getPlatformsForSelectedMode() {
-    console.log("Selected Mode Code:", this.selectedModeCode);
-    console.log("Platforms Available:", this.platformsByMode[this.selectedModeCode] || []);
-
     return this.selectedModeCode ? this.platformsByMode[this.selectedModeCode] || [] : [];
   }
 
-
-
   OpenEventCard() {
-    console.log('Card clicked!');
     this.eventCard = true;
   }
 
-  addEvent() {
+  addEvent() {      
+    this.eventDate = null;           
+    this.selectedMode = null;      
+    this.selectedModeCode = '';  
+    this.selectedPlatform = null;    
+    this.selectedPPMP = null;  
+    this.purchaseRequests = '';
+    this.eventTime = null;            
     this.eventModal = true;
   }
 
   createInvite() {
+    this.invitationTitle = '';
+    this.eventTime = null;      
+    this.eventDate = null;            
+    this.selectedMode = null;        
+    this.selectedPlatform = null;    
+    this.selectedParticipants = [];
     this.inviteModal = true;
   }
 
-  onEventChange(event: any) {
-    if (!event.value) return;
-
-    console.log("Event selected:", event.value);
-
-    // Update event details
-    this.selectedEvent = event.value;
-    this.eventDate = event.value.date || ''; // Ensure it's empty if undefined
-    this.selectedMode = event.value.mode || null; // Set to null if no mode is provided
-
-    // Set platform only if mode is online or hybrid
-    if (this.selectedMode && this.selectedMode.code !== 'IP') {
-        const platforms = this.getPlatformsForSelectedMode();
-        this.selectedPlatform = platforms.length > 0 ? platforms[0] : null;
-    } else {
-        this.selectedPlatform = null;
-    }
-
-    console.log("Updated Mode:", this.selectedMode);
-    console.log("Updated Platform:", this.selectedPlatform);
-  }
-
-
   saveEvent() {
-    this.eventModal = false;
+    if (!this.eventDate || !this.selectedMode || !this.selectedPPMP || !this.eventTime) {
+      this.messageService.add({
+        severity: 'warn',
+        summary: 'Missing Fields',
+        detail: 'Please fill in all required fields before saving the event.'
+      });
+      return;
+    }
+  
+    const newEvent = {
+      ppmp: this.selectedPPMP,
+      date: this.eventDate,
+      eventTime: this.eventTime, // Save the chosen time
+      mode: this.selectedMode,
+      platform: this.selectedMode.code === 'IP' ? { name: 'N/A', code: '' } : this.selectedPlatform
+    };
+  
+    this.events = [...this.events, newEvent];
+  
     this.messageService.add({
       severity: 'success',
       summary: 'Event Saved',
       detail: 'The event has been saved successfully.'
     });
+  
+    this.eventModal = false;
   }
-
+  
   sendInvite() {
-    this.inviteModal = false;
+    if (!this.selectedEvent || !this.eventTime) {
+      this.messageService.add({
+        severity: 'warn',
+        summary: 'Missing Fields',
+        detail: 'Please select an event and specify the time before sending the invitation.'
+      });
+      return;
+    }
+
+    const invitation = {
+      title: this.selectedEvent.name,
+      ppmp: this.selectedEvent.ppmp,
+      date: this.selectedEvent.date,
+      time: this.eventTime,
+      mode: this.selectedEvent.mode,
+      platform: this.selectedEvent.platform,
+      participants: this.selectedParticipants
+    };
+
+    this.invitations = [...this.invitations, invitation];
+
     this.messageService.add({
       severity: 'success',
       summary: 'Invitation Sent',
-      detail: 'The invitation has been sent successfully.'
+      detail: `Invitation for ${this.selectedEvent.name} sent successfully.`
     });
+
+    this.inviteModal = false;
+    this.selectedEvent = null;
+    this.invitationTitle = '';
+    this.eventTime = null;
   }
 }
-

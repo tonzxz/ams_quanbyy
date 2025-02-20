@@ -38,7 +38,7 @@
                     <td>{{ doc.submittedBy }}</td>
                     <td>{{ doc.reviewer }}</td>
                     <td>
-                        <span [ngClass]="getStatusClass(doc.status)">{{ doc.status }}</span>
+                        <span [ngClass]="getStatusClass(doc.status)" class="text-white">{{ doc.status }}</span>
                     </td>
                     <td>{{ doc.approvalDate || '-' }}</td>
                     <td>
