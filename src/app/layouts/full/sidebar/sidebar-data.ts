@@ -282,6 +282,12 @@ export const navItems: NavItem[] = [
     route: '/shared/stock-transfer',
     requiredRoles: ['supply'],
   },
+  {
+    displayName: 'Suppliers',
+    iconName: 'solar:documents-broken',
+    route: '/supply-management/suppliers',
+    requiredRoles: ['supply'],
+  },
   // {
   //   displayName: 'Delivery',
   //   iconName: 'solar:inbox-archive-outline',
