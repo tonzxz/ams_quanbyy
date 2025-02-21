@@ -1,5 +1,5 @@
 
-import { Component, OnInit } from '@angular/core';
+import { Component, ElementRef, OnInit, ViewChild } from '@angular/core';
 import { FormBuilder, FormGroup, FormArray, Validators } from '@angular/forms';
 import { MessageService, ConfirmationService } from 'primeng/api';
 import { CommonModule } from '@angular/common';
@@ -7,6 +7,8 @@ import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { MaterialModule } from 'src/app/material.module';
 import { v4 as uuidv4 } from 'uuid';
 import { PPMP, PPMPProject, PPMPItem, PPMPSchedule } from 'src/app/schema/schema';
+import html2canvas from 'html2canvas';
+
 
 // PrimeNG Imports
 import { DropdownModule } from 'primeng/dropdown';
@@ -27,6 +29,9 @@ import { FileUploadModule } from 'primeng/fileupload';
 import { ProgressBar } from 'primeng/progressbar';
 import { BadgeModule } from 'primeng/badge';
 import { DatePickerModule } from 'primeng/datepicker';
+import jsPDF from 'jspdf';
+import 'jspdf-autotable';
+import autoTable from 'jspdf-autotable';
 
 interface PPMPWithDetails extends PPMP {
   project?: PPMPProject;
@@ -79,7 +84,11 @@ export class PpmpComponent implements OnInit {
   itemClassificationOptions: any[] = [];
   ppmpDocumentDialog: boolean = false;
   selectedPpmp?: PPMPWithDetails;
-
+   selectedClassifications: string[] = [];
+  selectedProcurementMode: string[] = [];
+  selectedPpmps: PPMPWithDetails[] = [];
+  isDocumentView: boolean = false; // Default is system view
+  animationClass: string;
 
 
   get items() {
@@ -92,17 +101,17 @@ export class PpmpComponent implements OnInit {
     {
       id: '1',
       office_id: 1,
-      fiscal_year: 2025,
-      app_id: 'APP-2025-001',
-      approvals_id: 'APR-2025-001',
+      fiscal_year: 2026,
+      app_id: 'APP-2026-001',
+      approvals_id: 'APR-2026-001',
       current_approver_id: '1',
       project: {
-        id: 'PROJ-2025-001',
+        id: 'PROJ-2026-001',
         ppmp_id: '1',
         procurement_mode_id: 'public_bidding',
         prepared_by: 'John Doe',
-        project_title: 'Laboratory Equipment Procurement 2025',
-        project_code: 'LE-2025-001',
+        project_title: 'Laboratory Equipment Procurement 2026',
+        project_code: 'LE-2026-001',
         classifications: ['goods'],
         project_description: 'Procurement of new laboratory equipment for Science Department',
         contract_scope: 'Supply and delivery of high-precision laboratory equipment for research purposes.',
@@ -455,7 +464,28 @@ export class PpmpComponent implements OnInit {
     
 
   this.filterByYear();
+  }
+  
+
+ filterPPMPs() {
+  this.filteredPpmps = this.ppmps.filter(ppmp => {
+    const yearMatch = this.selectedYear ? ppmp.fiscal_year === this.selectedYear : true;
+    
+    const classificationMatch = this.selectedClassifications.length === 0 ? true :
+      ppmp.project?.classifications.some(c => this.selectedClassifications.includes(c));
+    
+    const procurementMatch = this.selectedProcurementMode.length === 0 ? true :
+      this.selectedProcurementMode.includes(ppmp.project?.procurement_mode_id || '');
+
+    return yearMatch && classificationMatch && procurementMatch;
+  });
+
+  // If already in document view, update selectedPpmps dynamically
+  if (this.isDocumentView) {
+    this.selectedPpmps = this.filteredPpmps;
+  }
 }
+
 
 
   procurementModes = [
@@ -478,6 +508,11 @@ export class PpmpComponent implements OnInit {
     { label: 'Income', value: 'income' },
     { label: 'Trust Fund', value: 'trust_fund' }
   ];
+
+
+  @ViewChild('ppmpPreview', { static: false }) ppmpPreview!: ElementRef
+
+  
 
   constructor(
     private formBuilder: FormBuilder,
@@ -656,6 +691,9 @@ createItemFormGroup(): FormGroup {
     } else {
       this.filteredPpmps = [...this.ppmps];
     }
+
+        this.filterPPMPs();
+
   }
 
   getAvailableYears() {
@@ -867,9 +905,6 @@ createItemFormGroup(): FormGroup {
   this.ppmpDialog = true;
   }
   
-  calculateTotalEstimatedCost(ppmp: PPMPWithDetails): number {
-  return ppmp.items?.reduce((total, item) => total + (item.estimated_total_cost || 0), 0) || 0;
-  }
   
   viewPpmpDocument(ppmp: PPMPWithDetails) {
   this.selectedPpmp = ppmp;
@@ -885,7 +920,7 @@ totalSizePercent: number = 0;
 formatSize(bytes: number): string {
   if (bytes === 0) return '0 B';
   const k = 1024;
-  const sizes = ['B', 'KB', 'MB', 'GB', 'TB'];
+  const sizes = ['B', 'KB', 'MB', 'GB', 'TB'];  
   const i = Math.floor(Math.log(bytes) / Math.log(k));
   return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
 }
@@ -920,5 +955,99 @@ onRemoveTemplatingFile(event: any, file: any, removeCallback: Function, index: n
 removeUploadedFileCallback(index: number) {
   this.messageService.add({ severity: 'info', summary: 'Removed', detail: 'File removed from uploaded list' });
 }
+  
+    yearStatus: Map<number, boolean> = new Map(); // To track finalization status by year
+
+    
+  isYearFinalized(year: number): boolean {
+    return this.yearStatus.get(year) || false;
+  }
+
+  finalizePpmp(year: number) {
+    this.confirmationService.confirm({
+      message: `Are you sure you want to finalize all PPMPs for year ${year}? This action cannot be undone.`,
+      accept: () => {
+        this.yearStatus.set(year, true);
+        this.messageService.add({
+          severity: 'success',
+          summary: 'Success',
+          detail: `PPMPs for ${year} have been finalized`
+        });
+      }
+    });
+  }
+
+  backToSystemView() {
+  this.isDocumentView = false;
+}
+
+
+  openPreviewDialog() {
+  if (this.filteredPpmps.length > 0) {
+    this.selectedPpmps = this.filteredPpmps; // Bind to always reflect changes
+    this.isDocumentView = true; // Switch to document view
+  } else {
+    this.messageService.add({
+      severity: 'warn',
+      summary: 'No PPMP Available',
+      detail: 'There are no PPMPs available for the selected year.'
+    });
+  }
+}
+
+
+
+
+  calculateTotalEstimatedCost(ppmp?: PPMPWithDetails): number {
+  if (!ppmp || !ppmp.items) return 0;
+  return ppmp.items.reduce((total, item) => total + (item.estimated_total_cost || 0), 0);
+  }
+  
+  months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+
+
+  isMilestoneScheduled(ppmp: PPMPWithDetails, month: string): boolean {
+  if (!ppmp.schedules) return false;
+  return ppmp.schedules.some(schedule => {
+    const scheduleMonth = new Date(schedule.date).toLocaleString('en-US', { month: 'short' });
+    return scheduleMonth === month;
+  });
+}
+
+    
+ 
+
+  async downloadPPMP() {
+    if (!this.ppmpPreview) return
+
+    const exportButton = document.getElementById('download-btn')
+    if (exportButton) exportButton.style.display = 'none'
+
+    const canvas = await html2canvas(this.ppmpPreview.nativeElement, { scale: 2, useCORS: true })
+    if (exportButton) exportButton.style.display = 'block'
+
+    const imgData = canvas.toDataURL('image/png')
+    const pdf = new jsPDF('landscape', 'mm', 'a4')
+    pdf.addImage(imgData, 'PNG', 0, 0, 297, (canvas.height * 297) / canvas.width)
+    pdf.save(`PPMP_${this.selectedYear}.pdf`)
+  }
+
+ toggleView() {
+  if (this.isDocumentView) {
+    this.animationClass = 'animate-slide-out'
+    setTimeout(() => {
+      this.isDocumentView = false
+      this.animationClass = 'animate-slide-in' // Reset animation for next toggle
+    }, 200) // Match animation duration
+  } else {
+    this.isDocumentView = true
+    this.selectedPpmps = this.filteredPpmps
+    this.animationClass = 'animate-slide-in'
+  }
+}
+
+
 
 }
+
+
