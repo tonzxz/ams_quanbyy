@@ -147,14 +147,6 @@ export class ProgressTableComponent<T,K extends keyof T> {
 
   searchValue:string='';
 
-  getColumnNames():string[]{
-    if(this.config){
-      const table_names = Object.values(this.config.columns) as string[];
-      return table_names;
-    }else{
-      throw new Error('Progress Table config has not been loaded')
-    }
-  }
   
   formatValue(field: keyof T,row:T){
     if(this.config){
@@ -164,6 +156,15 @@ export class ProgressTableComponent<T,K extends keyof T> {
       }else{
         return row[field];
       }
+    }else{
+      throw new Error('Progress Table config has not been loaded')
+    }
+  }
+
+  getColumnNames():string[]{
+    if(this.config){
+      const table_names = Object.values(this.config.columns) as string[];
+      return table_names;
     }else{
       throw new Error('Progress Table config has not been loaded')
     }
@@ -180,20 +181,20 @@ export class ProgressTableComponent<T,K extends keyof T> {
       throw new Error('Progress Table config has not been loaded')
     }
   }
-
-  hasActions(){
+  
+  getFields(): (keyof T)[]{
     if(this.config){
-      const step = this.config.steps[this.config.activeStep]
-      return  step.actions?.length
+      const table_names = Object.keys(this.config.columns)  as  (keyof T)[];
+      return table_names;
     }else{
       throw new Error('Progress Table config has not been loaded')
     }
   }
 
-  getFields(): (keyof T)[]{
+  hasActions(){
     if(this.config){
-      const table_names = Object.keys(this.config.columns)  as  (keyof T)[];
-      return table_names;
+      const step = this.config.steps[this.config.activeStep]
+      return  step.actions?.length
     }else{
       throw new Error('Progress Table config has not been loaded')
     }

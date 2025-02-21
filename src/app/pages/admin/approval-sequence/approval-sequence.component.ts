@@ -76,8 +76,7 @@ export class ApprovalSequenceComponent implements OnInit {
     private formBuilder: FormBuilder,
     private messageService: MessageService,
     private confirmationService: ConfirmationService,
-    private approvalSequenceService: ApprovalSequenceService,
-    private userService: UserService
+    private approvalSequenceService: ApprovalSequenceService
   ) {}
 
   ngOnInit(): void {

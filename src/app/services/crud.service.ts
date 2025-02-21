@@ -149,6 +149,7 @@ export class CrudService {
     const table = this.getTableName(model.name);
     if (environment.use == 'local') {
       const dummyData: T[] = await this.getAll<T>(model);
+      console.log(dummyData);
       const index = dummyData.findIndex(i => (i as any).id == id); // Accessing `id` in a type-safe way
       if (index !== -1) {
         const deletedItem = dummyData.splice(index, 1)[0];
