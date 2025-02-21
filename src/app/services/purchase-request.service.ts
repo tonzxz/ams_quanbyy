@@ -1,3 +1,5 @@
+//purchase-request.service.ts
+
 import { Injectable } from '@angular/core';
 import jsPDF from 'jspdf';
 
@@ -23,7 +25,7 @@ export class PurchaseRequestService {
             requisitioningOffice: 'Maintenance Section',
             items: [
                 {
-                    itemNo: 1,
+                    itemNo: '1',
                     unit: 'pc',
                     description: 'G1-1 - Advance Direction Signs Stack Signs',
                     qty: 6,
@@ -31,7 +33,7 @@ export class PurchaseRequestService {
                     totalCost: 237724.56
                 },
                 {
-                    itemNo: 2,
+                    itemNo: '2',
                     unit: 'pc',
                     description: 'G1-2 - Advance Direction Signs Stack Signs',
                     qty: 2,
@@ -39,7 +41,7 @@ export class PurchaseRequestService {
                     totalCost: 19106.76
                 },
                 {
-                    itemNo: 3,
+                    itemNo: '3',
                     unit: 'pc',
                     description: 'G3-1 - Advance Direction Signs Stack Signs',
                     qty: 6,
@@ -47,7 +49,7 @@ export class PurchaseRequestService {
                     totalCost: 81008.07
                 },
                 {
-                    itemNo: 4,
+                    itemNo: '4',
                     unit: 'pc',
                     description: 'G8-3 - Tourist Information and Destination Signs',
                     qty: 5,
@@ -55,7 +57,7 @@ export class PurchaseRequestService {
                     totalCost: 117980.20
                 },
                 {
-                    itemNo: 5,
+                    itemNo: '5',
                     unit: 'pc',
                     description: 'G8-4 - Tourist Information and Destination Signs',
                     qty: 8,
@@ -63,7 +65,7 @@ export class PurchaseRequestService {
                     totalCost: 167597.98
                 },
                 {
-                    itemNo: 6,
+                    itemNo: '6',
                     unit: 'bag',
                     description: 'Portland Cement',
                     qty: 160,
@@ -71,7 +73,7 @@ export class PurchaseRequestService {
                     totalCost: 48000.00
                 },
                 {
-                    itemNo: 7,
+                    itemNo: '7',
                     unit: 'm³',
                     description: 'Sand',
                     qty: 8,
@@ -79,7 +81,7 @@ export class PurchaseRequestService {
                     totalCost: 11728.00
                 },
                 {
-                    itemNo: 8,
+                    itemNo: '8',
                     unit: 'm³',
                     description: 'Gravel',
                     qty: 16,
@@ -87,7 +89,7 @@ export class PurchaseRequestService {
                     totalCost: 23232.00
                 },
                 {
-                    itemNo: 9,
+                    itemNo: '9',
                     unit: 'bd.ft.',
                     description: 'Form Lumber, Good - 4 uses',
                     qty: 864,
@@ -95,7 +97,7 @@ export class PurchaseRequestService {
                     totalCost: 41940.13
                 },
                 {
-                    itemNo: 10,
+                    itemNo: '10',
                     unit: 'm',
                     description: '3" Ø G.I. Pipe',
                     qty: 335,
@@ -103,7 +105,7 @@ export class PurchaseRequestService {
                     totalCost: 213060.00
                 },
                 {
-                    itemNo: 11,
+                    itemNo: '11',
                     unit: 'kg',
                     description: 'Steel Plate',
                     qty: 216,
@@ -111,7 +113,7 @@ export class PurchaseRequestService {
                     totalCost: 14688.00
                 },
                 {
-                    itemNo: 12,
+                    itemNo: '12',
                     unit: 'kg',
                     description: 'Bolts, 5mmØ',
                     qty: 1296,
@@ -119,42 +121,35 @@ export class PurchaseRequestService {
                     totalCost: 15552.00
                 },
                 {
-                    itemNo: 13,
+                    itemNo: '13',
                     unit: 'kg',
                     description: 'Assorted CWN(1 kg./100 bd.ft. of Lumber)',
                     qty: 9,
                     unitCost: 51.36,
                     totalCost: 462.25
-                },{
-                    itemNo: 13,
+                }, {
+                    itemNo: '13',
                     unit: 'kg',
                     description: 'Assorted CWN(1 kg./100 bd.ft. of Lumber)',
                     qty: 9,
                     unitCost: 51.36,
                     totalCost: 462.25
-                },{
-                    itemNo: 13,
+                }, {
+                    itemNo: '13',
                     unit: 'kg',
                     description: 'Assorted CWN(1 kg./100 bd.ft. of Lumber)',
                     qty: 9,
                     unitCost: 51.36,
                     totalCost: 462.25
-                },{
-                    itemNo: 13,
+                }, {
+                    itemNo: '14',
                     unit: 'kg',
                     description: 'Assorted CWN(1 kg./100 bd.ft. of Lumber)',
                     qty: 9,
                     unitCost: 51.36,
                     totalCost: 462.25
                 },
-                {
-                    itemNo: 13,
-                    unit: 'kg',
-                    description: 'Assorted CWN(1 kg./100 bd.ft. of Lumber)',
-                    qty: 9,
-                    unitCost: 51.36,
-                    totalCost: 462.25
-                }
+                
             ],
             purpose: 'For use in the Installation of Directional Signs and Tourist Destination Signs at Designated ASEAN Route',
             totalAmount: 956000.00,
@@ -174,10 +169,20 @@ export class PurchaseRequestService {
             certification: {
                 name: 'SERVILLA C. MEJIAS',
                 designation: 'Head Procurement'
-            }
+            },
+            saiDate: null,  // Changed from undefined to null
+            alobsDate: null,  
         });
     }
-
+    async update(request: PurchaseRequest): Promise<void> {
+        try {
+            // Implement your update logic here
+            // For example:
+            // await this.http.put(`/api/purchase-requests/${request.id}`, request).toPromise();
+        } catch (error) {
+            throw error;
+        }
+    }
     async getAll(): Promise<PurchaseRequest[]> {
         return this.purchaseRequests;
     }
@@ -302,9 +307,17 @@ export class PurchaseRequestService {
         yPos += 5;
         doc.text('in the approved APP.', 25, yPos);
         yPos += 15;
+        // Add null check for certification
+    if (data.certification) {
         doc.text(data.certification.name, 25, yPos);
         yPos += 5;
         doc.text(data.certification.designation, 25, yPos);
+    } else {
+        // Optional: Add placeholder or skip if no certification
+        doc.text('____________________', 25, yPos);
+        yPos += 5;
+        doc.text('Supply Officer', 25, yPos);
+    }
 
         // Purpose
         yPos += 15;

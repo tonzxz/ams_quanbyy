@@ -113,10 +113,6 @@
     tfoot td {
         border-top: 2px solid #000;
     }
-
-    .text-right {
-        text-align: right;
-    }
 }
 
 /* Purpose Section */
@@ -128,39 +124,133 @@
         margin: 0;
     }
 }
-/* Footer Styles */
-.footer {
-    margin-top: 40px;
+
+/* Signature Section */
+.signature-section {
+    margin-top: 30px;
     padding: 20px;
-    border-top: 1px solid #000;
-    background-color: #f9f9f9;
 }
 
-.footer-content {
+.signature-content {
     display: flex;
     justify-content: space-between;
-    align-items: center;
+    padding: 0 50px;
 }
 
-.footer-left, .footer-right {
-    width: 45%;
-    font-size: 12px;
+.signature-left, .signature-right {
     text-align: center;
+    width: 250px;
 }
 
-.footer-left p, .footer-right p {
+.signature-left p, .signature-right p {
     margin: 5px 0;
 }
 
+.name {
+    margin-top: 50px !important; /* Space for signature */
+    font-weight: bold;
+}
 
-/* Export Button */
-.export-button {
+.designation {
+    font-style: italic;
+}
+
+/* Action Buttons */
+.action-buttons {
     margin-top: 20px;
     display: flex;
     justify-content: flex-end;
+    gap: 10px;
+}
 
-    button {
-        padding: 8px 16px;
+/* Editable Fields Styles */
+.editable-field {
+    position: relative;
+    min-height: 24px;
+
+    input, textarea {
+        width: 100%;
+        padding: 4px 8px;
+        border: 1px solid #ced4da;
+        border-radius: 4px;
+        font-size: inherit;
+        font-family: inherit;
+        transition: border-color 0.2s;
+
+        &:focus {
+            outline: none;
+            border-color: #2196F3;
+            box-shadow: 0 0 0 2px rgba(33, 150, 243, 0.2);
+        }
+    }
+
+    .p-calendar {
+        width: 100%;
+        
+        .p-inputtext {
+            width: 100%;
+        }
+    }
+}
+
+/* PrimeNG Table Custom Styles */
+:host ::ng-deep {
+    .p-datatable {
+        .p-datatable-thead > tr > th {
+            background: #f5f5f5;
+            border: 1px solid #000;
+            font-weight: bold;
+            padding: 8px;
+            font-size: 12px;
+        }
+
+        .p-datatable-tbody > tr > td {
+            border: 1px solid #000;
+            padding: 8px;
+            font-size: 12px;
+
+            input {
+                width: 100%;
+                padding: 4px;
+                border: 1px solid #ced4da;
+                border-radius: 4px;
+
+                &:focus {
+                    outline: none;
+                    border-color: #2196F3;
+                }
+            }
+        }
+    }
+
+    .p-button-sm {
+        padding: 0.4rem 0.8rem;
+        font-size: 0.875rem;
+    }
+}
+
+/* Print Styles */
+@media print {
+    .action-buttons,
+    .p-button,
+    .export-button {
+        display: none !important;
+    }
+
+    .pr-container {
+        padding: 0;
+    }
+
+    .editable-field input,
+    .editable-field textarea {
+        border: none;
+        padding: 0;
+    }
+
+    /* Force background colors to print */
+    * {
+        -webkit-print-color-adjust: exact !important;
+        print-color-adjust: exact !important;
     }
 }
 
@@ -173,13 +263,36 @@
     font-weight: bold;
 }
 
-/* Print Styles */
-@media print {
-    .export-button {
-        display: none;
+.w-full {
+    width: 100%;
+}
+
+.mt-2 {
+    margin-top: 0.5rem;
+}
+
+.mt-3 {
+    margin-top: 0.75rem;
+}
+
+.gap-2 {
+    gap: 0.5rem;
+}
+
+/* Input Sizes */
+.p-inputtext-sm {
+    padding: 0.25rem 0.5rem;
+    font-size: 0.875rem;
+}
+
+/* Calendar Specific Styles */
+:host ::ng-deep .p-calendar-sm {
+    .p-inputtext {
+        padding: 0.25rem 0.5rem;
+        font-size: 0.875rem;
     }
 
-    .pr-container {
-        padding: 0;
+    .p-button {
+        padding: 0.25rem;
     }
 }
