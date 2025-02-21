@@ -51,7 +51,6 @@ export interface PPMP {
   id: string
   office_id: number
   app_id?: string
-  fiscal_year: number
   approvals_id: string
   current_approver_id: string
 }
@@ -69,6 +68,8 @@ export interface PPMPProject {
   funding_source_id: string // si budget 
   abc?: number;  // update ig optional ko lang nguna | si budget /add
   contract_scope?: string // add 
+  fiscal_year: number
+
 
 }
 
@@ -81,7 +82,7 @@ export interface PPMPItem {
   estimated_unit_cost: number  
   estimated_total_cost: number 
   classification: string
-   technical_specification?: string; // For Goods
+  technical_specification?: string; // For Goods
   scope_of_work?: string; // For Services and Infrastructure
   terms_of_reference?: string; // For Consulting Services
 }
