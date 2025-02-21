@@ -29,6 +29,7 @@ interface Stock {
   quantity: number;
   dateAdded: Date;
   description?: string;
+  imageUrl?: string;
 }
 
 interface InventoryLocation {
@@ -78,7 +79,8 @@ export class InventoryItemComponent {
       product_name: 'Electronics',
       quantity: 5,
       dateAdded: new Date('2024-01-15'),
-      description: 'High-end laptop for developers'
+      description: 'High-end laptop for developers',
+      imageUrl: 'https://picsum.photos/200/200?random=1'
     },
     {
       id: '2',
@@ -88,7 +90,8 @@ export class InventoryItemComponent {
       product_name: 'Furniture',
       quantity: 10,
       dateAdded: new Date('2024-02-01'),
-      description: 'Ergonomic office chairs'
+      description: 'Ergonomic office chairs',
+      imageUrl: 'https://picsum.photos/200/200?random=2'
     },
     {
       id: '3',
@@ -97,7 +100,8 @@ export class InventoryItemComponent {
       storage_name: 'IT Department',
       product_name: 'Electronics',
       quantity: 3,
-      dateAdded: new Date('2024-02-15')
+      dateAdded: new Date('2024-02-15'),
+      imageUrl: 'https://picsum.photos/200/200?random=3'
     }
   ];
 
@@ -125,6 +129,7 @@ export class InventoryItemComponent {
     type: new FormControl<Product | null>(null, Validators.required),
     quantity: new FormControl<number|null>(null, [Validators.required, Validators.min(1)]),
     description: new FormControl(''),
+    imageUrl: new FormControl('')
   });
 
   constructor(
@@ -146,7 +151,8 @@ export class InventoryItemComponent {
       storage: this.inventories.find(inv => inv.name === stock.storage_name) ?? null,
       type: this.products.find(product => product.name === stock.product_name) ?? null,
       quantity: stock.quantity,
-      description: stock.description || ''
+      description: stock.description || '',
+      imageUrl: stock.imageUrl || ''
     });
     this.showStockModal = true;
   }
@@ -169,7 +175,8 @@ export class InventoryItemComponent {
       product_name: formValue.type?.name!,
       quantity: formValue.quantity!,
       dateAdded: new Date(),
-      description: formValue.description || ''
+      description: formValue.description || '',
+      imageUrl: formValue.imageUrl || ''
     };
 
     this.stocks.push(newStock);
@@ -195,7 +202,8 @@ export class InventoryItemComponent {
         storage_name: formValue.storage?.name!,
         product_name: formValue.type?.name!,
         quantity: formValue.quantity!,
-        description: formValue.description || ''
+        description: formValue.description || '',
+        imageUrl: formValue.imageUrl || ''
       };
     }
 
@@ -221,5 +229,12 @@ export class InventoryItemComponent {
         });
       }
     });
+  }
+
+  handleImageError(event: Event) {
+    const img = event.target as HTMLImageElement;
+    if (img) {
+      img.src = 'https://placehold.co/200x200?text=No+Image';
+    }
   }
 }

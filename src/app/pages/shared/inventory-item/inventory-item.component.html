@@ -41,8 +41,16 @@
             <ng-template pTemplate="body" let-stock>
                 <tr>
                     <td pFrozen="left">
-                        <i class="pi pi-box mr-2"></i>
-                        {{stock.name}}
+                        <div class="flex items-center gap-3">
+                            <img [src]="stock.imageUrl || 'https://placehold.co/200x200?text=No+Image'" 
+                                [alt]="stock.name"
+                                (error)="handleImageError($event)"
+                                class="w-12 h-12 object-cover rounded-lg shadow-sm" />
+                            <div>
+                                <i class="pi pi-box mr-2"></i>
+                                {{stock.name}}
+                            </div>
+                        </div>
                     </td>
                     <td>{{stock.ticker}}</td>
                     <td>{{stock.storage_name}}</td>
@@ -131,6 +139,12 @@
             <label for="description" class="font-medium mb-2 block">Description</label>
             <textarea pInputTextarea id="description" formControlName="description"
                 class="w-full" rows="3" placeholder="Enter description (optional)"></textarea>
+        </div>
+
+        <div class="field">
+            <label for="imageUrl" class="font-medium mb-2 block">Image URL</label>
+            <input pInputText id="imageUrl" formControlName="imageUrl" class="w-full"
+                placeholder="Enter image URL" />
         </div>
     </form>
 
