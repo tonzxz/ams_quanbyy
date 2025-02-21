@@ -282,12 +282,6 @@ export const navItems: NavItem[] = [
     route: '/shared/stock-transfer',
     requiredRoles: ['supply'],
   },
-  {
-    displayName: 'Inventory Item',
-    iconName: 'solar:documents-broken',
-    route: '/shared/inventory-item',
-    requiredRoles: ['supply','superadmin'],
-  },
   // {
   //   displayName: 'Delivery',
   //   iconName: 'solar:inbox-archive-outline',
@@ -301,8 +295,6 @@ export const navItems: NavItem[] = [
   //   requiredRoles: ['supply'],
   // },
   
-
-
    {
     navCap: 'Budget',
     divider: true,
@@ -513,6 +505,24 @@ export const navItems: NavItem[] = [
   //   iconName: 'solar:widget-add-line-duotone',
   //   route: '/shared/approvals',
   // },
+
+  {
+    navCap: 'Inventory Management',
+    divider: true,
+    requiredRoles: ['supply'],
+  },
+  {
+    displayName: 'Delivery Items',
+    iconName: 'solar:cart-check-broken',
+    route: '/shared/delivery-item',
+    requiredRoles: ['supply'],
+  },
+  {
+    displayName: 'Inventory Items',
+    iconName: 'solar:bedside-table-3-broken',
+    route: '/shared/inventory-item',
+    requiredRoles: ['supply','superadmin'],
+  },
     
      {
     navCap: 'Reports Generation',
