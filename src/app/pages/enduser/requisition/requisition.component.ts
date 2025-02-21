@@ -22,7 +22,7 @@ import { RequisitionService, Requisition } from 'src/app/services/requisition.se
 import { GroupService, Group } from 'src/app/services/group.service'; 
 import { Product, ProductsService } from 'src/app/services/products.service';
 import { UserService, User } from 'src/app/services/user.service';
-import { PurchaseRequestService, PurchaseRequest } from 'src/app/services/purchase-request.service';
+import { PurchaseRequestService, PurchaseRequest, PurchaseRequestStatus } from 'src/app/services/purchase-request.service';
 import { ApprovalSequenceService } from 'src/app/services/approval-sequence.service';
 import { NotificationService } from 'src/app/services/notifications.service';
 import { PurchaseReqComponent } from '../../shared/purchase-req/purchase-req.component';
@@ -474,9 +474,13 @@ const prData: PurchaseRequest = {
   id: requisitionData.id || this['generate6DigitId'](),
   prNo: requisitionData.classifiedItemId!,
   date: new Date(),
+  saiDate: null,  // Added as required by interface
+  alobsDate: null,  // Added as required by interface
+  saiNo: '',  // Added optional field
+  alobsNo: '', // Added optional field
   requisitioningOffice: this.currentUser?.officeId || 'N/A',
   items: requisitionData.products!.map((p, index) => ({
-      itemNo: index + 1,
+      itemNo: (index + 1).toString(), // Convert to string as required by interface
       unit: 'Unit',
       description: p.name,
       qty: p.quantity,
@@ -502,7 +506,7 @@ const prData: PurchaseRequest = {
   purpose: requisitionData.description || 'N/A',
   totalAmount: requisitionData.products!.reduce((sum, p) => 
       sum + (p.quantity * p.price), 0),
-  status: 'pending'
+  status: PurchaseRequestStatus.Pending  // Use enum instead of string literal
 };
      const prBase64 = this.purchaseRequestService.generatePurchaseRequestPdf(prData);
 
