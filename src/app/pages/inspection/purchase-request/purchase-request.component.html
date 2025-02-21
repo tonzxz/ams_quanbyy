@@ -31,7 +31,13 @@
             <div class="pr-details">
                 <div class="requisition-office">
                     <p><strong>REQUISITIONING OFFICE:</strong></p>
-                    <p>{{currentRequest.requisitioningOffice}}</p>
+                    <div class="editable-field">
+                        <span *ngIf="!isEditMode">{{currentRequest.requisitioningOffice}}</span>
+                        <input *ngIf="isEditMode" 
+                               pInputText 
+                               [(ngModel)]="currentRequest.requisitioningOffice" 
+                               class="p-inputtext-sm"/>
+                    </div>
                 </div>
                 <div class="pr-numbers">
                     <div class="labels">
@@ -40,21 +46,60 @@
                         <p>ALOBS No.:</p>
                     </div>
                     <div class="values">
-                        <p>{{currentRequest.prNo}}</p>
-                        <p>{{currentRequest.saiNo}}</p>
-                        <p>{{currentRequest.alobsNo}}</p>
+                        <div class="editable-field">
+                            <span *ngIf="!isEditMode">{{currentRequest.prNo}}</span>
+                            <input *ngIf="isEditMode" 
+                                   pInputText 
+                                   [(ngModel)]="currentRequest.prNo" 
+                                   class="p-inputtext-sm"/>
+                        </div>
+                        <div class="editable-field">
+                            <span *ngIf="!isEditMode">{{currentRequest.saiNo}}</span>
+                            <input *ngIf="isEditMode" 
+                                   pInputText 
+                                   [(ngModel)]="currentRequest.saiNo" 
+                                   class="p-inputtext-sm"/>
+                        </div>
+                        <div class="editable-field">
+                            <span *ngIf="!isEditMode">{{currentRequest.alobsNo}}</span>
+                            <input *ngIf="isEditMode" 
+                                   pInputText 
+                                   [(ngModel)]="currentRequest.alobsNo" 
+                                   class="p-inputtext-sm"/>
+                        </div>
                     </div>
                     <div class="dates">
-                        <p>Date: {{currentRequest.date | date}}</p>
-                        <p>Date:</p>
-                        <p>Date:</p>
+                        <div class="editable-field">
+                            <span *ngIf="!isEditMode">Date: {{currentRequest.date | date}}</span>
+                            <p-calendar *ngIf="isEditMode" 
+                                      [(ngModel)]="currentRequest.date" 
+                                      [showIcon]="true"
+                                      dateFormat="mm/dd/yy"
+                                      class="p-calendar-sm"></p-calendar>
+                        </div>
+                        <div class="editable-field">
+                            <span *ngIf="!isEditMode">Date: {{currentRequest.saiDate | date}}</span>
+                            <p-calendar *ngIf="isEditMode" 
+                                      [(ngModel)]="currentRequest.saiDate" 
+                                      [showIcon]="true"
+                                      dateFormat="mm/dd/yy"
+                                      class="p-calendar-sm"></p-calendar>
+                        </div>
+                        <div class="editable-field">
+                            <span *ngIf="!isEditMode">Date: {{currentRequest.alobsDate | date}}</span>
+                            <p-calendar *ngIf="isEditMode" 
+                                      [(ngModel)]="currentRequest.alobsDate" 
+                                      [showIcon]="true"
+                                      dateFormat="mm/dd/yy"
+                                      class="p-calendar-sm"></p-calendar>
+                        </div>
                     </div>
                 </div>
             </div>
 
             <!-- Items Table -->
-            <table class="items-table">
-                <thead>
+            <p-table [value]="currentRequest.items" [scrollable]="true" [responsive]="true">
+                <ng-template pTemplate="header">
                     <tr>
                         <th>ITEM NO.</th>
                         <th>UNIT</th>
@@ -62,49 +107,143 @@
                         <th>QTY.</th>
                         <th>ESTIMATED UNIT COST</th>
                         <th>ESTIMATED TOTAL</th>
+                        <th *ngIf="isEditMode" style="width: 6rem"></th>
                     </tr>
-                </thead>
-                <tbody>
-                    <tr *ngFor="let item of currentRequest.items">
-                        <td>{{item.itemNo}}</td>
-                        <td>{{item.unit}}</td>
-                        <td>{{item.description}}</td>
-                        <td>{{item.qty}}</td>
-                        <td>{{item.unitCost | number:'1.2-2'}}</td>
+                </ng-template>
+                <ng-template pTemplate="body" let-item let-index="index">
+                    <tr>
+                        <td>
+                            <span *ngIf="!isEditMode">{{item.itemNo}}</span>
+                            <input *ngIf="isEditMode" 
+                                   pInputText 
+                                   [(ngModel)]="item.itemNo" 
+                                   class="p-inputtext-sm w-full"/>
+                        </td>
+                        <td>
+                            <span *ngIf="!isEditMode">{{item.unit}}</span>
+                            <input *ngIf="isEditMode" 
+                                   pInputText 
+                                   [(ngModel)]="item.unit" 
+                                   class="p-inputtext-sm w-full"/>
+                        </td>
+                        <td>
+                            <span *ngIf="!isEditMode">{{item.description}}</span>
+                            <input *ngIf="isEditMode" 
+                                   pInputText 
+                                   [(ngModel)]="item.description" 
+                                   class="p-inputtext-sm w-full"/>
+                        </td>
+                        <td>
+                            <span *ngIf="!isEditMode">{{item.qty}}</span>
+                            <input *ngIf="isEditMode" 
+                                   pInputText 
+                                   type="number" 
+                                   [(ngModel)]="item.qty" 
+                                   (ngModelChange)="onQuantityOrCostChange()"
+                                   class="p-inputtext-sm w-full"/>
+                        </td>
+                        <td>
+                            <span *ngIf="!isEditMode">{{item.unitCost | number:'1.2-2'}}</span>
+                            <input *ngIf="isEditMode" 
+                                   pInputText 
+                                   type="number" 
+                                   [(ngModel)]="item.unitCost" 
+                                   (ngModelChange)="onQuantityOrCostChange()"
+                                   class="p-inputtext-sm w-full"/>
+                        </td>
                         <td>{{item.totalCost | number:'1.2-2'}}</td>
+                        <td *ngIf="isEditMode">
+                            <button pButton 
+                                    icon="pi pi-trash" 
+                                    class="p-button-rounded p-button-danger p-button-sm"
+                                    (click)="removeItem(index)"></button>
+                        </td>
                     </tr>
-                </tbody>
-                <tfoot>
+                </ng-template>
+                <ng-template pTemplate="footer">
                     <tr>
                         <td colspan="5" class="text-right"><strong>TOTAL</strong></td>
                         <td><strong>₱ {{currentRequest.totalAmount | number:'1.2-2'}}</strong></td>
+                        <td *ngIf="isEditMode"></td>
                     </tr>
-                </tfoot>
-            </table>
+                </ng-template>
+            </p-table>
 
-            <!-- Purpose Section -->
-            <div class="purpose-section">
-                <p><strong>Purpose:</strong> {{currentRequest.purpose}}</p>
+            <!-- Add Item Button -->
+            <div *ngIf="isEditMode" class="flex justify-content-end mt-2">
+                <button pButton 
+                        label="Add Item" 
+                        icon="pi pi-plus" 
+                        class="p-button-sm"
+                        (click)="addNewItem()"></button>
             </div>
 
-            <!-- Signature Section (Moved inside pr-container) -->
+            <!-- Purpose Section -->
+            <div class="purpose-section mt-3">
+                <p><strong>Purpose:</strong></p>
+                <div class="editable-field">
+                    <span *ngIf="!isEditMode">{{currentRequest.purpose}}</span>
+                    <textarea *ngIf="isEditMode" 
+                             pInputTextarea 
+                             [(ngModel)]="currentRequest.purpose"
+                             [rows]="3" 
+                             class="w-full"></textarea>
+                </div>
+            </div>
+
+            <!-- Signature Section -->
             <div class="signature-section">
                 <div class="signature-content">
                     <div class="signature-left">
                         <p>Recommended by:</p>
-                        <p class="name">{{currentRequest.recommendedBy.name}}</p>
-                        <p class="designation">{{currentRequest.recommendedBy.designation}}</p>
+                        <div class="editable-field">
+                            <p class="name" *ngIf="!isEditMode">{{currentRequest.recommendedBy.name}}</p>
+                            <input *ngIf="isEditMode" 
+                                   pInputText 
+                                   [(ngModel)]="currentRequest.recommendedBy.name"
+                                   class="p-inputtext-sm"/>
+                        </div>
+                        <div class="editable-field">
+                            <p class="designation" *ngIf="!isEditMode">{{currentRequest.recommendedBy.designation}}</p>
+                            <input *ngIf="isEditMode" 
+                                   pInputText 
+                                   [(ngModel)]="currentRequest.recommendedBy.designation"
+                                   class="p-inputtext-sm"/>
+                        </div>
                     </div>
                     <div class="signature-right">
                         <p>Approved by:</p>
-                        <p class="name">{{currentRequest.approvedBy.name}}</p>
-                        <p class="designation">{{currentRequest.approvedBy.designation}}</p>    
+                        <div class="editable-field">
+                            <p class="name" *ngIf="!isEditMode">{{currentRequest.approvedBy.name}}</p>
+                            <input *ngIf="isEditMode" 
+                                   pInputText 
+                                   [(ngModel)]="currentRequest.approvedBy.name"
+                                   class="p-inputtext-sm"/>
+                        </div>
+                        <div class="editable-field">
+                            <p class="designation" *ngIf="!isEditMode">{{currentRequest.approvedBy.designation}}</p>
+                            <input *ngIf="isEditMode" 
+                                   pInputText 
+                                   [(ngModel)]="currentRequest.approvedBy.designation"
+                                   class="p-inputtext-sm"/>
+                        </div>
                     </div>
                 </div>
             </div>
         </div>
     </div>
-    <div class="export-button">
-        <button pButton label="Export to PDF" icon="pi pi-file-pdf" (click)="exportToPDF()"></button>
+
+    <!-- Action Buttons -->
+    <div class="action-buttons flex justify-content-end gap-2 mt-3">
+        <button pButton 
+                label="Export to PDF" 
+                icon="pi pi-file-pdf" 
+                [disabled]="isEditMode"
+                (click)="exportToPDF()"></button>
+        <button pButton 
+                [label]="isEditMode ? 'Save Changes' : 'Edit'" 
+                [icon]="isEditMode ? 'pi pi-save' : 'pi pi-pencil'"
+                [class]="isEditMode ? 'p-button-success' : 'p-button-secondary'"
+                (click)="toggleEditMode()"></button>
     </div>
 </p-card>
