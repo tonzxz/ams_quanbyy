@@ -23,7 +23,7 @@
                     
                         <!-- Render event cards if there are events -->
                         <ng-container *ngFor="let event of events">
-                            <p-card (click)="OpenEventCard()" [style]="{ height: '5.5rem', width: '20rem', overflow: 'hidden', display: 'flex', alignItems:'start'}">
+                            <p-card (click)="onEventSelect(event, 'edit')" [style]="{ height: '5.5rem', width: '20rem', overflow: 'hidden', display: 'flex', alignItems:'start'}">
                                 <div class="flex items-center gap-4 h-full">
                                     <div class="bg-blue-500 text-white flex items-center justify-center w-12 h-12 rounded mr-2">
                                         <i class="pi pi-calendar text-2xl"></i>
@@ -266,7 +266,7 @@
                 [options]="events" 
                 optionLabel="ppmp.name" 
                 placeholder="Select Event" 
-                (onChange)="onEventSelect($event)">
+                (onChange)="onEventSelect($event, 'invite')">
             </p-dropdown>
 
         </div>
@@ -320,39 +320,75 @@
 </p-dialog>
 
 <!--EDIT EVENT MODAL-->
-<p-dialog header="Edit Event" [(visible)]="editEventModal" [modal]="true" [closable]="true" [style]="{width: '400px'}">
-    <div class="p-fluid">
-      <div class="p-field">
-        <label for="eventName">Event Name</label>
-        <input id="eventName" type="text" pInputText [(ngModel)]="eventName" placeholder="Enter event name" />
-      </div>
-  
-      <div class="p-field">
-        <label for="eventDate">Event Date</label>
-        <p-calendar [(ngModel)]="eventDate" dateFormat="mm/dd/yy"></p-calendar>
-      </div>
-  
-      <div class="p-field">
-        <label for="eventTime">Event Time</label>
-        <p-calendar [(ngModel)]="eventTime" timeOnly="true" hourFormat="12"></p-calendar>
-      </div>
-  
-      <div class="p-field">
-        <label for="Mode">Mode</label>
-        <p-dropdown [options]="meetMode" [(ngModel)]="selectedMode" optionLabel="name" placeholder="Select Mode"></p-dropdown>
-      </div>
-  
-      <div class="p-field">
-        <label for="Platform">Platform</label>
-        <p-dropdown [options]="getPlatformsForSelectedMode()" [(ngModel)]="selectedPlatform" optionLabel="name" placeholder="Select Platform"></p-dropdown>
-      </div>
+<p-dialog header="Edit Event" [(visible)]="editEventModal" [modal]="true" [closable]="true"     
+    [style]="{ width: '30vw', maxHeight: '100vh', overflow: 'visible'}" 
+    [contentStyle]="{ 'overflow': 'visible' }">
+
+    
+    <div class="p-fluid flex-col gap-3">
+        <!-- Project Title/Procurement Plan -->
+        <div class="p-field flex flex-col gap-y-2 mb-1">
+            <label for="projectTitle">Project Title</label>
+            <input id="projectTitle" type="text" pInputText 
+            [ngModel]="selectedEvent?.ppmp?.name" 
+            (ngModelChange)="selectedEvent.ppmp.name = $event" 
+            [disabled]="true"
+        />
+        </div>
+
+        <div class="flex gap-4 mb-1">
+            <!-- Event Date -->
+            <div class="p-field flex flex-col gap-1">
+                <label for="eventDate">Event Date</label>
+                <p-calendar id="eventDate" [(ngModel)]="eventDate" dateFormat="yy-mm-dd"></p-calendar>
+            </div>
+
+            <!-- Event Time -->
+            <div class="p-field flex flex-col gap-1">
+                <label for="eventTime">Event Time</label>
+                <p-datepicker id="eventTime" [(ngModel)]="eventTime" timeOnly="true"></p-datepicker>
+            </div>
+        </div>
+
+        <!-- Mode Dropdown -->
+        <div class="p-field flex flex-col gap-1 mb-1">
+            <label for="mode">Mode</label>
+            <p-dropdown id="mode" [options]="meetMode" [(ngModel)]="selectedModeCode" 
+                        (onChange)="onEditModeChange($event)" optionLabel="name" optionValue="code" placeholder="Select Mode">
+            </p-dropdown>
+        </div>
+
+        <!-- Platform Dropdown (Conditional) -->
+        <div class="p-field flex flex-col gap-1" *ngIf="selectedModeCode !== 'IP'">
+            <label for="platform">Platform</label>
+            <p-dropdown id="platform" [options]="getPlatformsForSelectedMode()" [(ngModel)]="selectedPlatform"
+                        optionLabel="name" optionValue="code" placeholder="Select Platform">
+            </p-dropdown>
+        </div>
+
+        <div class="p-field flex flex-col gap-1">
+            <label for="purchase-requests">Purchase Requests</label>
+            <textarea id="purchase-requests" disabled="true" pInputTextarea [(ngModel)]="purchaseRequests" name="purchaseRequests" readonly></textarea>
+            <div *ngIf="purchaseRequests === ''">
+                No purchase requests available for the selected PPMP.
+            </div>
+        </div>
+
+        <!-- Footer -->
+        <p-footer>
+            <div class="flex justify-end gap-2 mt-4">
+                <p-button label="Cancel" icon="pi pi-times" severity="secondary" (click)="editEventModal = false"></p-button>
+                <p-button label="Save" icon="pi pi-check" severity="success" (click)="saveEditedEvent()"></p-button>
+            </div>
+        </p-footer>
     </div>
+
+    
+
+</p-dialog>
+
+
   
-    <p-footer>
-      <button pButton type="button" label="Save" (click)="saveEditedEvent()"></button>
-      <button pButton type="button" label="Cancel" class="p-button-secondary" (click)="editEventModal = false"></button>
-    </p-footer>
-  </p-dialog>
   
   
   
