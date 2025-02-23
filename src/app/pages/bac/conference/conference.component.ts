@@ -87,6 +87,7 @@ export class ConferenceComponent implements OnInit {
   ngOnInit() {
     this.selectedModeCode = 'ON';
     this.selectedPPMP = this.ppmpList[0];
+    
 
     this.meetMode = [
       { name: 'Online', code: 'ON' },
@@ -124,16 +125,21 @@ export class ConferenceComponent implements OnInit {
   onModeChange(event: any) {
     if (!event.value) return;
 
+    // Directly use event.value as the code
     this.selectedModeCode = event.value;
-    this.selectedMode = this.meetMode.find(mode => mode.code === event.value) || { name: '', code: '' };
 
+    // Find the selected mode from meetMode array
+    this.selectedMode = this.meetMode.find(mode => mode.code === this.selectedModeCode) || null;
+
+    // Clear platform if In-Person, else select available platform
     if (this.selectedModeCode === 'IP') {
-      this.selectedPlatform = null;
+        this.selectedPlatform = null;
     } else {
-      const platforms = this.getPlatformsForSelectedMode();
-      this.selectedPlatform = platforms.length > 0 ? platforms[0] : { name: '', code: '' };
+        const platforms = this.getPlatformsForSelectedMode();
+        this.selectedPlatform = platforms.length > 0 ? platforms[0] : null;
     }
   }
+
 
   onPPMPChange(event: any) {
     if (event.value) {
@@ -145,28 +151,61 @@ export class ConferenceComponent implements OnInit {
     }
   }
 
-  onEventSelect(event: any) {
-    if (event?.value) {
-      this.selectedEvent = event.value;
-      this.eventName = this.selectedEvent?.name || '';  // Set event name here
+  onEventSelect(event: any, context: string) {
+    if (context === 'edit') {
+      // Directly assign event without .value for edit mode
+      this.selectedEvent = event;
+  
+      // Autofill all fields for edit
+      this.eventName = this.selectedEvent?.name || '';
       this.eventDate = this.selectedEvent?.date || null;
       this.eventTime = this.selectedEvent?.eventTime || null;
       this.selectedMode = this.selectedEvent?.mode || this.selectedMode;
       this.selectedModeCode = this.selectedEvent?.mode?.code || '';
       this.selectedPlatform = this.selectedEvent?.platform || this.selectedPlatform;
       this.selectedPlatformCode = this.selectedEvent?.platform?.code || '';
-      this.editEventModal = true;
+
+      this.selectedPlatform = this.selectedModeCode === 'IP'
+      ? { name: 'N/A', code: '' }
+      : (this.getPlatformsForSelectedMode()[0] || { name: 'N/A', code: '' });
+  
+      this.editEventModal = true; // Open edit modal
+    } else if (context === 'invite') {
+      // Keep using event.value for invite mode
+      this.selectedEvent = event.value;
+  
+      // Autofill for invite
+      this.eventName = this.selectedEvent?.name || '';
+      this.eventDate = this.selectedEvent?.date || null;
+      this.eventTime = this.selectedEvent?.eventTime || null;
+      this.selectedMode = this.selectedEvent?.mode || this.selectedMode;
+      this.selectedModeCode = this.selectedEvent?.mode?.code || '';
+      this.selectedPlatform = this.selectedEvent?.platform || this.selectedPlatform;
+      this.selectedPlatformCode = this.selectedEvent?.platform?.code || '';
     }
   }
 
+
   saveEditedEvent() {
     if (this.selectedEvent) {
-      this.selectedEvent.name = this.eventName;  // Save back the updated name
+      this.selectedEvent.name = this.eventName;
       this.selectedEvent.date = this.eventDate;
       this.selectedEvent.eventTime = this.eventTime;
       this.selectedEvent.mode = this.selectedMode;
-      this.selectedEvent.platform = this.selectedPlatform;
-  
+
+      
+      // Match selectedPlatform code to full platform object
+      const platforms = this.getPlatformsForSelectedMode();
+      const matchedPlatform = platforms.find(p => p.code === this.selectedPlatform);
+
+      if (this.selectedModeCode === 'IP') {
+        this.selectedEvent.platform = { name: 'N/A', code: '' };
+      } else if (matchedPlatform) {
+        this.selectedEvent.platform = matchedPlatform;
+      } else {
+        this.selectedEvent.platform = platforms[0] || { name: 'N/A', code: '' };
+      }
+
       this.messageService.add({
         severity: 'success',
         summary: 'Event Updated',
@@ -174,11 +213,12 @@ export class ConferenceComponent implements OnInit {
       });
   
       this.editEventModal = false;
+      this.cdr.detectChanges();
     }
   }
 
   getPlatformsForSelectedMode() {
-    return this.selectedModeCode ? this.platformsByMode[this.selectedModeCode] || [] : [];
+    return this.platformsByMode[this.selectedModeCode] || [];
   }
 
   OpenEventCard() {
@@ -233,6 +273,25 @@ export class ConferenceComponent implements OnInit {
     });
   
     this.eventModal = false;
+  }
+
+  onEditModeChange(event: any) {
+    if (!event.value) return;
+  
+    this.selectedModeCode = event.value;
+    this.selectedMode = this.meetMode.find(mode => mode.code === this.selectedModeCode) || null;
+  
+    if (this.selectedModeCode === 'IP') {
+        this.selectedPlatform = null;
+    } else {
+        const platforms = this.getPlatformsForSelectedMode();
+        this.selectedPlatform = platforms.length > 0 ? platforms[0] : null;
+    }
+    this.cdr.detectChanges();
+  }
+  
+  cancelEdit() {
+    this.editEventModal = false;
   }
   
   sendInvite() {

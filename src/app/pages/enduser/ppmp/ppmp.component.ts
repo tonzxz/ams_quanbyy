@@ -101,7 +101,6 @@ export class PpmpComponent implements OnInit {
     {
       id: '1',
       office_id: 1,
-      fiscal_year: 2026,
       app_id: 'APP-2026-001',
       approvals_id: 'APR-2026-001',
       current_approver_id: '1',
@@ -116,7 +115,9 @@ export class PpmpComponent implements OnInit {
         project_description: 'Procurement of new laboratory equipment for Science Department',
         contract_scope: 'Supply and delivery of high-precision laboratory equipment for research purposes.',
         funding_source_id: 'gaa',
-        abc: 750000
+        abc: 750000,
+              fiscal_year: 2026,
+
       },
       items: [
         {
@@ -139,7 +140,6 @@ export class PpmpComponent implements OnInit {
     {
       id: '2',
       office_id: 1,
-      fiscal_year: 2025,
       app_id: 'APP-2025-002',
       approvals_id: 'APR-2025-002',
       current_approver_id: '1',
@@ -154,7 +154,9 @@ export class PpmpComponent implements OnInit {
         project_description: 'Renovation of administrative office spaces',
         contract_scope: 'Complete renovation of 200 square meters of office space including installation of new flooring, painting, and procurement of office furniture.',
         funding_source_id: 'income',
-        abc: 500000
+        abc: 500000,
+              fiscal_year: 2025,
+
       },
       items: [
         {
@@ -177,7 +179,6 @@ export class PpmpComponent implements OnInit {
     {
       id: '3',
       office_id: 1,
-      fiscal_year: 2025,
       app_id: 'APP-2025-001',
       approvals_id: 'APR-2025-001',
       current_approver_id: '1',
@@ -192,7 +193,9 @@ export class PpmpComponent implements OnInit {
         project_description: 'Upgrade of campus-wide IT network infrastructure',
         contract_scope: 'Procurement and installation of enterprise-grade network switches and routers.',
         funding_source_id: 'gaa',
-        abc: 2000000
+        abc: 2000000,
+              fiscal_year: 2025,
+
       },
       items: [
         {
@@ -215,7 +218,6 @@ export class PpmpComponent implements OnInit {
     {
       id: '4',
       office_id: 1,
-      fiscal_year: 2025,
       app_id: 'APP-2025-002',
       approvals_id: 'APR-2025-002',
       current_approver_id: '1',
@@ -230,7 +232,9 @@ export class PpmpComponent implements OnInit {
         project_description: 'Development of research programs and methodologies',
         contract_scope: 'Engagement of a consultancy firm to design and implement comprehensive research programs including training sessions for staff.',
         funding_source_id: 'trust_fund',
-        abc: 1500000
+        abc: 1500000,
+              fiscal_year: 2025,
+
       },
       items: [
         {
@@ -253,7 +257,6 @@ export class PpmpComponent implements OnInit {
 {
   id: '6',
   office_id: 3,
-  fiscal_year: 2025,
   app_id: 'APP-2025-004',
   approvals_id: 'APR-2025-004',
   current_approver_id: '3',
@@ -268,7 +271,9 @@ export class PpmpComponent implements OnInit {
     project_description: 'Implementation of smart classroom technology, campus-wide networking, and AI-driven student monitoring.',
     contract_scope: 'Procurement of smart boards, networking equipment, and consultancy for AI integration.',
     funding_source_id: 'gaa',
-    abc: 3000000
+    abc: 3000000,
+      fiscal_year: 2025,
+
   },
   items: [
     {
@@ -313,7 +318,6 @@ export class PpmpComponent implements OnInit {
 {
   id: '7',
   office_id: 4,
-  fiscal_year: 2025,
   app_id: 'APP-2025-005',
   approvals_id: 'APR-2025-005',
   current_approver_id: '4',
@@ -328,7 +332,9 @@ export class PpmpComponent implements OnInit {
     project_description: 'Upgrading hospital facilities and medical equipment for better patient care.',
     contract_scope: 'Procurement of MRI machines, hospital beds, and renovation of patient wards.',
     funding_source_id: 'trust_fund',
-    abc: 5000000
+    abc: 5000000,
+      fiscal_year: 2025,
+
   },
   items: [
     {
@@ -363,7 +369,6 @@ export class PpmpComponent implements OnInit {
 {
   id: '8',
   office_id: 5,
-  fiscal_year: 2025,
   app_id: 'APP-2025-001',
   approvals_id: 'APR-2025-001',
   current_approver_id: '5',
@@ -378,7 +383,9 @@ export class PpmpComponent implements OnInit {
     project_description: 'Expansion of digital library resources, including e-books and research databases.',
     contract_scope: 'Procurement of e-book licenses, research database access, and consultancy for AI-powered library recommendations.',
     funding_source_id: 'gaa',
-    abc: 2000000
+    abc: 2000000,
+      fiscal_year: 2025,
+
   },
   items: [
     {
@@ -413,7 +420,6 @@ export class PpmpComponent implements OnInit {
 {
   id: '9',
   office_id: 6,
-  fiscal_year: 2025,
   app_id: 'APP-2025-002',
   approvals_id: 'APR-2025-002',
   current_approver_id: '6',
@@ -428,7 +434,9 @@ export class PpmpComponent implements OnInit {
     project_description: 'Deployment of smart traffic lights, AI-driven congestion analysis, and infrastructure upgrades.',
     contract_scope: 'Procurement of AI-powered traffic cameras, construction of smart intersections, and consultancy for predictive traffic analytics.',
     funding_source_id: 'income',
-    abc: 4500000
+    abc: 4500000,
+      fiscal_year: 2025,
+
   },
   items: [
     {
@@ -469,22 +477,22 @@ export class PpmpComponent implements OnInit {
 
  filterPPMPs() {
   this.filteredPpmps = this.ppmps.filter(ppmp => {
-    const yearMatch = this.selectedYear ? ppmp.fiscal_year === this.selectedYear : true;
-    
+    const yearMatch = this.selectedYear ? ppmp.project?.fiscal_year === this.selectedYear : true; // Access from project
+
     const classificationMatch = this.selectedClassifications.length === 0 ? true :
       ppmp.project?.classifications.some(c => this.selectedClassifications.includes(c));
-    
+
     const procurementMatch = this.selectedProcurementMode.length === 0 ? true :
       this.selectedProcurementMode.includes(ppmp.project?.procurement_mode_id || '');
 
     return yearMatch && classificationMatch && procurementMatch;
   });
 
-  // If already in document view, update selectedPpmps dynamically
   if (this.isDocumentView) {
     this.selectedPpmps = this.filteredPpmps;
   }
 }
+
 
 
 
@@ -547,31 +555,30 @@ export class PpmpComponent implements OnInit {
     return;
   }
 
-  this.ppmpForm = this.formBuilder.group({
+this.ppmpForm = this.formBuilder.group({
+  id: [uuidv4()],
+  office_id: [this.currentUser.officeId],
+  fiscal_year: [this.selectedYear, [Validators.required]], // Add fiscal year
+  app_id: [''],
+  approvals_id: [uuidv4()],
+  current_approver_id: [''],
+
+  project: this.formBuilder.group({
     id: [uuidv4()],
-    office_id: [this.currentUser.officeId],
-    fiscal_year: [this.selectedYear],
-    app_id: [''],
-    approvals_id: [uuidv4()],
-    current_approver_id: [''],
+    ppmp_id: [''],
+    procurement_mode_id: ['', [Validators.required]],
+    prepared_by: [this.currentUser.fullname, [Validators.required]],
+    project_title: ['', [Validators.required]],
+    project_code: [''],
+    classifications: [[], [Validators.required, Validators.minLength(1)]],
+    project_description: ['', [Validators.required]],
+    contract_scope: [''],
+    fiscal_year: [this.selectedYear, [Validators.required]], // Add this
+    schedules: this.formBuilder.array([])
+  }),
 
-    project: this.formBuilder.group({
-      id: [uuidv4()],
-      ppmp_id: [''],
-      procurement_mode_id: ['', [Validators.required]],
-      prepared_by: [this.currentUser.fullname, [Validators.required]],
-      project_title: ['', [Validators.required]],
-      project_code: [''],
-      classifications: [[], [Validators.required, Validators.minLength(1)]],
-      project_description: ['', [Validators.required]],
-      contract_scope: [''],
-
-      // 🔹 Initialize schedules as a FormArray
-      schedules: this.formBuilder.array([])  
-    }),
-
-    items: this.formBuilder.array([])
-  });
+  items: this.formBuilder.array([])
+});
 
   // 🔹 Add an initial empty schedule
   this.addSchedule();
@@ -684,35 +691,37 @@ createItemFormGroup(): FormGroup {
   }
 
   filterByYear() {
-    if (this.selectedYear) {
-      this.filteredPpmps = this.ppmps.filter(ppmp => 
-        ppmp.fiscal_year === this.selectedYear
-      );
-    } else {
-      this.filteredPpmps = [...this.ppmps];
-    }
-
-        this.filterPPMPs();
-
+  if (this.selectedYear) {
+    this.filteredPpmps = this.ppmps.filter(ppmp => 
+      ppmp.project?.fiscal_year === this.selectedYear // Update to project.fiscal_year
+    );
+  } else {
+    this.filteredPpmps = [...this.ppmps];
   }
 
-  getAvailableYears() {
-  // Get unique years from actual PPMP data
-  const uniqueYears = [...new Set(this.ppmps.map(ppmp => ppmp.fiscal_year))];
-  
-  // Sort years in descending order
-  uniqueYears.sort((a, b) => b - a);
-  
-  // Create dropdown options
+  this.filterPPMPs();
+}
+
+
+ getAvailableYears() {
+  // Get unique years from PPMP projects, filtering out undefined values
+  const uniqueYears = [...new Set(this.ppmps.map(ppmp => ppmp.project?.fiscal_year).filter((year): year is number => year !== undefined))];
+
+  // Sort years in descending order, ensuring they are numbers
+  uniqueYears.sort((a, b) => (b ?? 0) - (a ?? 0));
+
+  // Create dropdown options, ensuring `year` is defined
   this.years = uniqueYears.map(year => ({
-    label: year.toString(),
-    value: year
+    label: (year ?? '').toString(),
+    value: year ?? new Date().getFullYear()
   }));
 
   // Set default to current year if available, otherwise first year in list
   const currentYear = new Date().getFullYear();
-  this.selectedYear = uniqueYears.includes(currentYear) ? currentYear : uniqueYears[0];
-  }
+  this.selectedYear = uniqueYears.includes(currentYear) ? currentYear : uniqueYears[0] ?? currentYear;
+}
+
+
   
  editPpmp(ppmp: PPMPWithDetails): void {
   this.isEditMode = true;
@@ -726,16 +735,18 @@ createItemFormGroup(): FormGroup {
     this.schedules.removeAt(0);
   }
 
-  // Set form values
-  this.ppmpForm.patchValue({
-    id: ppmp.id,
-    office_id: ppmp.office_id,
-    fiscal_year: ppmp.fiscal_year,
-    app_id: ppmp.app_id,
-    approvals_id: ppmp.approvals_id,
-    current_approver_id: ppmp.current_approver_id,
-    project: ppmp.project
-  });
+ this.ppmpForm.patchValue({
+  id: ppmp.id,
+  office_id: ppmp.office_id,
+  app_id: ppmp.app_id,
+  approvals_id: ppmp.approvals_id,
+  current_approver_id: ppmp.current_approver_id,
+  project: {
+    ...ppmp.project,
+    fiscal_year: ppmp.project?.fiscal_year // Ensure this is populated correctly
+  }
+});
+
 
   // Add items
   ppmp.items?.forEach(item => {
@@ -781,26 +792,27 @@ createItemFormGroup(): FormGroup {
     const formValue = this.ppmpForm.getRawValue();
     
     // Create PPMP with nested data
-    const ppmpData: PPMPWithDetails = {
-      id: this.isEditMode ? this.currentEditId! : formValue.id,
-      office_id: formValue.office_id,
-      fiscal_year: formValue.fiscal_year,
-      app_id: formValue.app_id || undefined,
-      approvals_id: formValue.approvals_id,
-      current_approver_id: formValue.current_approver_id,
-      project: {
-        ...formValue.project,
-        ppmp_id: formValue.id
-      },
-      items: formValue.items.map((item: any) => ({
-        ...item,
-        ppmp_project_id: formValue.project.id
-      })),
-      schedules: formValue.schedules.map((schedule: any) => ({
-        ...schedule,
-        ppmp_id: formValue.id
-      }))
-    };
+   const ppmpData: PPMPWithDetails = {
+  id: this.isEditMode ? this.currentEditId! : formValue.id,
+  office_id: formValue.office_id,
+  app_id: formValue.app_id || undefined,
+  approvals_id: formValue.approvals_id,
+  current_approver_id: formValue.current_approver_id,
+  project: {
+    ...formValue.project,
+    ppmp_id: formValue.id,
+    fiscal_year: formValue.project.fiscal_year // Ensure fiscal year is saved correctly
+  },
+  items: formValue.items.map((item: any) => ({
+    ...item,
+    ppmp_project_id: formValue.project.id
+  })),
+  schedules: formValue.schedules.map((schedule: any) => ({
+    ...schedule,
+    ppmp_id: formValue.id
+  }))
+};
+
 
     if (this.isEditMode && this.currentEditId) {
       this.ppmps = this.ppmps.map(p => p.id === this.currentEditId ? ppmpData : p);
@@ -958,10 +970,9 @@ removeUploadedFileCallback(index: number) {
   
     yearStatus: Map<number, boolean> = new Map(); // To track finalization status by year
 
-    
-  isYearFinalized(year: number): boolean {
-    return this.yearStatus.get(year) || false;
-  }
+    isYearFinalized(year: number): boolean {
+  return this.filteredPpmps.some(ppmp => ppmp.project?.fiscal_year === year && this.yearStatus.get(year));
+}
 
   finalizePpmp(year: number) {
     this.confirmationService.confirm({
@@ -1040,7 +1051,7 @@ removeUploadedFileCallback(index: number) {
       this.animationClass = 'animate-slide-in' // Reset animation for next toggle
     }, 200) // Match animation duration
   } else {
-    this.isDocumentView = true
+    this.isDocumentView = true  
     this.selectedPpmps = this.filteredPpmps
     this.animationClass = 'animate-slide-in'
   }

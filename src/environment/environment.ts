@@ -4,6 +4,6 @@ interface environmentConfig {
 }
 
 export const environment:environmentConfig = {
-    use : 'server', // assets, local or server
+    use : 'local', // assets, local or server
     api: 'http://localhost:5000/api'
 }
