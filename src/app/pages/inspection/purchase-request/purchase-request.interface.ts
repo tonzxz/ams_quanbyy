@@ -13,7 +13,11 @@ export interface PurchaseRequestItem {
     itemNo: string; 
 }
 
-export interface PurchaseRequest {
+export interface PurchaseRequest {  
+    coaInfo?: {
+        annexNo: string;
+        circularNo: string;
+    };
     id: string;
     prNo: string;
     saiNo?: string;
@@ -32,6 +36,35 @@ export interface PurchaseRequest {
     certification?: Signatory;
     ppmpId?: string;
     appId?: string;
+}
+// Add this just above your PurchaseRequest interface
+export interface PurchaseRequestBase {
+    id: string;
+    prNo: string;
+    saiNo?: string;
+    alobsNo?: string;
+    date: Date;
+    saiDate?: Date | null;
+    alobsDate?: Date | null;
+    requisitioningOffice: string;
+    items: PurchaseRequestItem[];
+    totalAmount: number;
+    purpose: string;
+    status: PurchaseRequestStatus;
+    requestedBy: Signatory;
+    recommendedBy: Signatory;
+    approvedBy: Signatory;
+    certification?: Signatory;
+    ppmpId?: string;
+    appId?: string;
+}
+
+// And then modify your PurchaseRequest interface
+export interface PurchaseRequest extends PurchaseRequestBase {
+    coaInfo?: {
+        annexNo: string;
+        circularNo: string;
+    };
 }
 
 export enum PurchaseRequestStatus {

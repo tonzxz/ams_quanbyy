@@ -21,6 +21,7 @@ import { PurchaseRequest, PurchaseRequestStatus } from './purchase-request.inter
 import jsPDF from 'jspdf'
 import html2canvas from 'html2canvas'
 import { CalendarModule } from 'primeng/calendar';
+import { ActivatedRoute, Router, RouterModule } from '@angular/router';
 
 
 @Component({
@@ -32,6 +33,7 @@ import { CalendarModule } from 'primeng/calendar';
         CommonModule,
         ButtonModule,
         CardModule,
+        RouterModule,
         TableModule,
         TableModule,
         CalendarModule,
@@ -46,14 +48,16 @@ import { CalendarModule } from 'primeng/calendar';
         ImageModule,
         IconFieldModule,
         InputIconModule,
-        ButtonGroupModule
+        ButtonGroupModule,
+        
     ],
     providers: [MessageService, ConfirmationService, PurchaseRequestService]
 })
 export class PurchaseRequestComponent implements OnInit {
+    [x: string]: any;
+    
     displayModal = false;
     selectedRequest: PurchaseRequest | null = null;
-    currentRequest: PurchaseRequest;
     searchQuery = '';
     selectedDepartment: string | null = null;
     activeTabIndex = 0;
@@ -62,7 +66,7 @@ export class PurchaseRequestComponent implements OnInit {
     isEditMode = false;
     activeTabHeader = 'Pending Requests';
     tabHeaders = ['Pending Requests', 'Validated Requests', 'Rejected Requests'];
-
+    currentRequest!: PurchaseRequest;
     allRequests: PurchaseRequest[] = [];
     pendingRequests: PurchaseRequest[] = [];
     validatedRequests: PurchaseRequest[] = [];
@@ -79,18 +83,91 @@ export class PurchaseRequestComponent implements OnInit {
     ];
 
     constructor(
+        private activatedRoute: ActivatedRoute,
+        private router: Router,
         private messageService: MessageService,
         private confirmationService: ConfirmationService,
         private prService: PurchaseRequestService
     ) {}
-
-    async ngOnInit() {
-        await this.loadData()
-        this.computeTotalAmount()
-        this.filterRequests()
+    goBack(): void {
+        this.router.navigate(['/shared/app-pr-shared']);
     }
 
+    async ngOnInit() {
+        try {
+            await this.loadData();
 
+            this.activatedRoute.queryParams.subscribe(async (params: { [x: string]: string; }) => {
+                if (params['prNo']) {
+                    const foundRequest = this.allRequests.find(pr => pr.prNo === params['prNo']);
+                    
+                    if (foundRequest) {
+                        this.currentRequest = foundRequest;
+                        if (params['view'] === 'true') {
+                            this.isEditMode = false;
+                        }
+                        this.computeTotalAmount();
+                    } else {
+                        this.messageService.add({
+                            severity: 'error',
+                            summary: 'Error',
+                            detail: 'Purchase request not found'
+                        });
+                    }
+                }
+            });
+            
+
+            this.computeTotalAmount();
+            
+            if (!this.currentRequest.coaInfo) {
+                this.currentRequest.coaInfo = {
+                    annexNo: 'Annex G-6',
+                    circularNo: 'COA Circular No. 2001-04, S. 2001'
+                };
+            }
+        } catch (error) {
+            console.error('Error in ngOnInit:', error);
+            this.messageService.add({
+                severity: 'error',
+                summary: 'Error',
+                detail: 'Failed to initialize component'
+            });
+        }
+    }
+
+    private async loadData() {
+        try {
+            this.allRequests = await this.prService.getAll();
+            if (this.allRequests.length > 0) {
+                this.currentRequest = this.allRequests[0];
+            } else {
+                // Initialize with default values if no data
+                this.currentRequest = {
+                    id: '',
+                    prNo: '',
+                    date: new Date(),
+                    requisitioningOffice: '',
+                    items: [],
+                    purpose: '',
+                    totalAmount: 0,
+                    requestedBy: { name: '', designation: '' },
+                    recommendedBy: { name: '', designation: '' },
+                    approvedBy: { name: '', designation: '' },
+                    status: PurchaseRequestStatus.Pending,
+                    coaInfo: {
+                        annexNo: 'Annex G-6',
+                        circularNo: 'COA Circular No. 2001-04, S. 2001'
+                    }
+                };
+            }
+            this.categorizeRequests();
+        } catch (error) {
+            console.error('Error loading data:', error);
+            throw error;
+        }
+    }
+    
     private categorizeRequests() {
         this.pendingRequests = this.allRequests.filter(r => r.status === PurchaseRequestStatus.Pending);
         this.validatedRequests = this.allRequests.filter(r => r.status === PurchaseRequestStatus.Approved);
@@ -129,14 +206,14 @@ export class PurchaseRequestComponent implements OnInit {
     }
     
     // Ensure calculations are re-run when data is loaded or modified
-    private async loadData() {
-        this.allRequests = await this.prService.getAll()
-        if (this.allRequests.length > 0) {
-            this.currentRequest = this.allRequests[0]
-        }
-        this.computeTotalAmount() // Recalculate total amounts
-        this.categorizeRequests()
-    }
+    // private async loadData() {
+    //     this.allRequests = await this.prService.getAll()
+    //     if (this.allRequests.length > 0) {
+    //         this.currentRequest = this.allRequests[0]
+    //     }
+    //     this.computeTotalAmount() // Recalculate total amounts
+    //     this.categorizeRequests()
+    // }
     
     // Function to handle dynamic input changes in the table
     onQuantityOrCostChange() {
@@ -228,8 +305,16 @@ export class PurchaseRequestComponent implements OnInit {
     }
     toggleEditMode() {
         this.isEditMode = !this.isEditMode;
+        
+        // Initialize coaInfo if entering edit mode and it doesn't exist
+        if (this.isEditMode && !this.currentRequest.coaInfo) {
+            this.currentRequest.coaInfo = {
+                annexNo: 'Annex G-6',
+                circularNo: 'COA Circular No. 2001-04, S. 2001'
+            };
+        }
+        
         if (!this.isEditMode) {
-            // Save changes when exiting edit mode
             this.saveChanges();
         }
     }
@@ -412,4 +497,5 @@ export class PurchaseRequestComponent implements OnInit {
     isRequestPending(request: PurchaseRequest): boolean {
         return request.status === PurchaseRequestStatus.Pending;
     }
+    
 }
