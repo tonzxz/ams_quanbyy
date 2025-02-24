@@ -49,8 +49,14 @@ import { CalendarModule } from 'primeng/calendar';
 export class ConferenceComponent implements OnInit {
   preProcurementEvents: any[] = [];
   preBiddingEvents: any[] = [];
+  preProcurementInvitations: any[] = [];
+  preBiddingInvitations: any[] = [];
+
+  activeTabIndex: number = 0;
 
   invitations: any[] = [];
+
+  availableEvents: any[] = [];
 
   invitationTitle: string = '';
   invitationDate: Date | null = null;
@@ -85,6 +91,8 @@ export class ConferenceComponent implements OnInit {
   constructor(private messageService: MessageService, private cdr: ChangeDetectorRef) {}
 
   ngOnInit() {
+    this.preProcurementEvents = [];
+    this.preBiddingEvents = [];
     this.selectedModeCode = 'ON';
     this.selectedPPMP = this.ppmpList[0];
     
@@ -225,7 +233,9 @@ export class ConferenceComponent implements OnInit {
     this.eventCard = true;
   }
 
-  addEvent() {      
+  addEvent(tabIndex: number) {      
+    console.log('Add Event - Tab Index:', tabIndex);
+    this.activeTabIndex = tabIndex;
     this.eventDate = null;           
     this.selectedMode = null;      
     this.selectedModeCode = '';  
@@ -236,14 +246,27 @@ export class ConferenceComponent implements OnInit {
     this.eventModal = true;
   }
 
-  createInvite() {
+  createInvite(tabIndex: number) {
+    console.log('Create Invite - Tab Index:', tabIndex);   
+    this.selectedEvent = null; 
+    this.activeTabIndex = tabIndex;
     this.invitationTitle = '';
-    this.eventTime = null;      
-    this.eventDate = null;            
-    this.selectedMode = null;        
-    this.selectedPlatform = null;    
+    this.eventTime = null;
+    this.eventDate = null;
+    this.selectedMode = null;
+    this.selectedPlatform = null;
     this.selectedParticipants = [];
+
+    console.log('Active Tab Index on Create Invite:', this.activeTabIndex); 
+    // Populate dropdown with created events based on active tab
+    this.availableEvents = this.activeTabIndex === 0 ? this.preProcurementEvents : this.preBiddingEvents;
+    console.log('Available Events:', this.availableEvents);
+
+    this.inviteModal = false; // Briefly hide to reset state
+    setTimeout(() => {
     this.inviteModal = true;
+    this.cdr.detectChanges();
+    }, 0);
   }
 
   saveEvent() {
@@ -255,23 +278,37 @@ export class ConferenceComponent implements OnInit {
       });
       return;
     }
-  
+
     const newEvent = {
       ppmp: this.selectedPPMP,
       date: this.eventDate,
-      eventTime: this.eventTime, // Save the chosen time
+      eventTime: this.eventTime,
       mode: this.selectedMode,
       platform: this.selectedMode.code === 'IP' ? { name: 'N/A', code: '' } : this.selectedPlatform
     };
-  
-    this.events = [...this.events, newEvent];
-  
+
+    console.log('Saving event on tab index:', this.activeTabIndex);
+    console.log('New Event:', newEvent);
+    console.log('Pre-Procurement Events before:', this.preProcurementEvents);
+    console.log('Pre-Bidding Events before:', this.preBiddingEvents);
+
+    // Add event to the appropriate array based on the active tab
+    if (this.activeTabIndex === 0) {
+      this.preProcurementEvents = [...this.preProcurementEvents, newEvent];
+      console.log('Saved to Pre-Procurement Events:', this.preProcurementEvents);
+    } else if (this.activeTabIndex === 1) {
+      this.preBiddingEvents = [...this.preBiddingEvents, newEvent];
+      console.log('Saved to Pre-Bidding Events:', this.preBiddingEvents);
+    } else {
+      console.error('Invalid tab index:', this.activeTabIndex); 
+    }
+
     this.messageService.add({
       severity: 'success',
       summary: 'Event Saved',
       detail: 'The event has been saved successfully.'
     });
-  
+
     this.eventModal = false;
   }
 
@@ -305,7 +342,7 @@ export class ConferenceComponent implements OnInit {
     }
 
     const invitation = {
-      title: this.selectedEvent.name,
+      title: this.selectedEvent.ppmp.name,
       ppmp: this.selectedEvent.ppmp,
       date: this.selectedEvent.date,
       time: this.eventTime,
@@ -314,7 +351,11 @@ export class ConferenceComponent implements OnInit {
       participants: this.selectedParticipants
     };
 
-    this.invitations = [...this.invitations, invitation];
+    if (this.activeTabIndex === 0) {
+      this.preProcurementInvitations = [...this.preProcurementInvitations, invitation];
+    } else if (this.activeTabIndex === 1) {
+      this.preBiddingInvitations = [...this.preBiddingInvitations, invitation];
+    }
 
     this.messageService.add({
       severity: 'success',
@@ -327,4 +368,11 @@ export class ConferenceComponent implements OnInit {
     this.invitationTitle = '';
     this.eventTime = null;
   }
+
+  onTabChange(event: any) {
+    this.activeTabIndex = event.index;
+    console.log('Active Tab Index:', this.activeTabIndex);
+    this.cdr.detectChanges();
+  }
+  
 }
