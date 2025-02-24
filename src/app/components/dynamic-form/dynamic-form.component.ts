@@ -10,6 +10,8 @@ import { ButtonModule } from 'primeng/button';
 import { TooltipModule } from 'primeng/tooltip';
 import { CommonModule } from '@angular/common';
 import { SelectModule } from 'primeng/select';
+import { MessageService } from 'primeng/api';
+import { ToastModule } from 'primeng/toast';
 
 interface Validation {
   validator: ValidatorFn,
@@ -62,15 +64,17 @@ export interface DynamicFormData <T> {
     FileUploadModule,
     ButtonModule,
     SelectModule,
-    TooltipModule
+    TooltipModule,
+    ToastModule,
   ],
+  providers:[MessageService],
   templateUrl: './dynamic-form.component.html',
   styleUrl: './dynamic-form.component.scss'
 })
 export class DynamicFormComponent<T> implements OnInit {
   @Input() config: DynamicFormData<T>;
   form: FormGroup;
-  constructor(){}
+  constructor(private messageService:MessageService){}
   ngOnInit(){
     this.form = new FormGroup({})
     this.config.formfields.forEach(field => {
@@ -91,6 +95,13 @@ export class DynamicFormComponent<T> implements OnInit {
   }
   
   onSubmit(){
+    if(this.form.invalid){
+      Object.keys(this.form.controls).forEach(controlName => {
+        this.form.controls[controlName].markAsTouched();
+      });
+      this.messageService.add({ severity: 'error', summary: 'Form is invalid!', detail: `Please check your form is its valid.` });
+      return;
+    }
     const value = this.form.value;
     for (const key in value) {
       if (value.hasOwnProperty(key)) {

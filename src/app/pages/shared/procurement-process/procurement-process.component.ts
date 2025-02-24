@@ -186,7 +186,7 @@ export class ProcurementProcessComponent implements OnInit {
           ],
           validators: [
             {
-              'message':'Method is required.',
+              'message':'Method type is required.',
               'validator': Validators.required,
             }
           ]
@@ -198,7 +198,7 @@ export class ProcurementProcessComponent implements OnInit {
           type: 'input',
           validators: [
             {
-              'message':'Method is required.',
+              'message':'Mode name is required.',
               'validator': Validators.required,
             }
           ]
@@ -219,6 +219,7 @@ export class ProcurementProcessComponent implements OnInit {
           await this.crudService.create(ProcurementProcess, {
             ...value as Omit<ProcurementProcess,'id'>,
             procurement_mode_id: this.procurementProcess.tabs?.[this.procurementProcess.activeTab!].id!,
+            process_order: this.procurementProcess.data.length + 1
           }) // await this.loadData();
         }
         this.loadData();
