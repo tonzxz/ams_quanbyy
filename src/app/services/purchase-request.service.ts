@@ -19,10 +19,14 @@ export class PurchaseRequestService {
 
     private initializeSampleData() {
         this.purchaseRequests.push({
+            coaInfo: {
+                annexNo: 'Annex G-6',
+                circularNo: 'COA Circular No. 2001-04, S. 2001'
+            },
             id: '1',
             prNo: '13-10-246',
             date: new Date('2017-10-06'),
-            requisitioningOffice: 'Maintenance Section',
+            requisitioningOffice: 'INFORMATION TECHNOLOGY SERVICES DEPARTMENT',
             items: [
                 {
                     itemNo: '1',
@@ -174,6 +178,7 @@ export class PurchaseRequestService {
             alobsDate: null,  
         });
     }
+    
     async update(request: PurchaseRequest): Promise<void> {
         try {
             // Implement your update logic here
@@ -227,9 +232,18 @@ export class PurchaseRequestService {
         doc.text('Bohol 1st District Engineering Office', 105, 35, { align: 'center' });
         doc.text('Tagbilaran City, Bohol', 105, 40, { align: 'center' });
 
-        // Title
+       // Title
         doc.setFontSize(16);
         doc.text('PURCHASE REQUEST', 105, 50, { align: 'center' });
+        doc.setFontSize(10);
+        // Check if coaInfo is an object or string and handle accordingly
+        if (data.coaInfo && typeof data.coaInfo === 'object') {
+            doc.text(data.coaInfo.annexNo, 170, 45);
+            doc.text(data.coaInfo.circularNo, 170, 50);
+        } else {
+            doc.text('Annex G-6', 170, 45);
+            doc.text('COA Circular No. ' + (data.coaInfo || '2001-04, S. 2001'), 170, 50);
+        }
 
         // PR Details
         doc.setFontSize(10);
