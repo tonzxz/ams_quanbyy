@@ -1,1 +1,187 @@
-<p>document-management works!</p>
+<p-card>
+    <h1 class="text-xl font-semibold">Document Management</h1>
+  
+    <div class="flex justify-between mb-4 items-center">
+      <p class="text-sm">Manage documents and their details</p>
+      <div class="flex flex-row gap-2">
+        <p-iconfield styleClass="small">
+          <p-inputicon styleClass="pi pi-search small" />
+          <input
+            type="text"
+            pInputText
+            placeholder="Search"
+            [(ngModel)]="searchQuery"
+            (input)="filterDocuments()"
+          />
+        </p-iconfield>
+        <p-button
+          label="New Document"
+          icon="pi pi-plus"
+          [outlined]="true"
+          (click)="showDialog()"
+        ></p-button>
+      </div>
+    </div>
+  
+    <p-table
+      [value]="filteredDocuments"
+      responsiveLayout="scroll"
+      [paginator]="true"
+      [rows]="5"
+    >
+      <ng-template pTemplate="header">
+        <tr>
+          <th>Document ID</th>
+          <th>Procurement Process</th>
+          <th>Entity</th>
+          <th>Record</th>
+          <th>File Path</th>
+          <th>Uploaded By</th>
+          <th>Upload Date</th>
+          <th>Actions</th> <!-- Add Actions column -->
+        </tr>
+      </ng-template>
+      <ng-template pTemplate="body" let-doc>
+        <tr>
+          <td>{{ doc.id }}</td>
+          <td>{{ doc.procurementProcessName }}</td>
+          <td>{{ doc.entityName }}</td>
+          <td>{{ doc.recordName }}</td>
+          <td>{{ doc.filePath }}</td>
+          <td>{{ doc.uploadedByName }}</td>
+          <td>{{ doc.uploadDate | date }}</td>
+          <td>
+            <div class="flex gap-2">
+              <!-- Delete Button -->
+              <p-button
+                icon="pi pi-trash"
+                severity="danger"
+                [text]="true"
+                [plain]="true"
+                (click)="deleteDocument(doc)"
+              ></p-button>
+              <!-- View Button -->
+              <p-button
+                icon="pi pi-eye"
+                severity="info"
+                [text]="true"
+                [plain]="true"
+                (click)="viewDocument(doc)"
+              ></p-button>
+            </div>
+          </td>
+        </tr>
+      </ng-template>
+    </p-table>
+  </p-card>
+  
+  <p-dialog
+    header="Create New Document"
+    [(visible)]="displayDialog"
+    [modal]="true"
+    [style]="{ width: '40vw' }"
+  >
+    <form (ngSubmit)="submitDocument()">
+      <div class="grid gap-4">
+        <!-- Procurement Process Dropdown -->
+        <div class="flex flex-col gap-1">
+          <label for="procurementProcessName">Procurement Process</label>
+          <p-dropdown
+            id="procurementProcessName"
+            [(ngModel)]="newDocument.procurementProcessName"
+            name="procurementProcessName"
+            [options]="procurementProcessOptions"
+            placeholder="Select a process"
+            required
+          ></p-dropdown>
+        </div>
+  
+        <!-- Entity Dropdown -->
+        <div class="flex flex-col gap-1">
+          <label for="entityName">Entity</label>
+          <p-dropdown
+            id="entityName"
+            [(ngModel)]="newDocument.entityName"
+            name="entityName"
+            [options]="entityOptions"
+            placeholder="Select an entity"
+            (onChange)="updateRecordOptions()"
+            required
+          ></p-dropdown>
+        </div>
+  
+        <!-- Record Dropdown -->
+        <div class="flex flex-col gap-1">
+          <label for="recordName">Record</label>
+          <p-dropdown
+            id="recordName"
+            [(ngModel)]="newDocument.recordName"
+            name="recordName"
+            [options]="recordOptions"
+            placeholder="Select a record"
+            required
+          ></p-dropdown>
+        </div>
+  
+        <!-- Uploaded By -->
+        <div class="flex flex-col gap-1">
+          <label for="uploadedByName">Uploaded By</label>
+          <input
+            pInputText
+            id="uploadedByName"
+            [(ngModel)]="newDocument.uploadedByName"
+            name="uploadedByName"
+            required
+          />
+        </div>
+  
+        <!-- Upload Date -->
+        <div class="flex flex-col gap-1">
+          <label for="uploadDate">Upload Date</label>
+          <p-calendar
+            id="uploadDate"
+            [(ngModel)]="newDocument.uploadDate"
+            name="uploadDate"
+            [showIcon]="true"
+            required
+          ></p-calendar>
+        </div>
+  
+        <!-- File Upload -->
+        <div class="flex flex-col gap-1">
+          <label>File Upload</label>
+          <p-fileUpload
+            mode="basic"
+            accept=".pdf,.jpg,.png"
+            chooseLabel="Upload File"
+            [auto]="true"
+            (onUpload)="onFileUpload($event)"
+          ></p-fileUpload>
+        </div>
+      </div>
+  
+      <div class="flex justify-end gap-2 mt-4">
+        <p-button
+          label="Cancel"
+          icon="pi pi-times"
+          [outlined]="true"
+          severity="secondary"
+          (click)="displayDialog = false"
+        ></p-button>
+        <p-button
+          label="Submit"
+          icon="pi pi-check"
+          type="submit"
+          [outlined]="true"
+          severity="success"
+          [disabled]="
+            !newDocument.procurementProcessName ||
+            !newDocument.entityName ||
+            !newDocument.recordName
+          "
+        ></p-button>
+      </div>
+    </form>
+  </p-dialog>
+  
+  <p-toast position="bottom-right"></p-toast>
