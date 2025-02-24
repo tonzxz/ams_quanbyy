@@ -56,40 +56,45 @@
                 <div class="flex flex-col gap-4 h-full w-full">
                     <h1 class="font-semibold text-base">Recent Invitations</h1>
                     <div class="flex flex-row gap-6 overflow-x-auto h-full mt-2 p-1 whitespace-nowrap">
-                        <p-card *ngFor="let invite of preProcurementInvitations" 
-                            [style]="{ height: '30vh', width: '18rem', overflow: 'hidden', display: 'flex', flexDirection: 'column' }">
-                            <div class="flex flex-col gap-4 pb-1 h-full">
-                                <div class="flex flex-col">
-                                    <span class="font-semibold text-xl text-gray-800">{{ invite.ppmp.name }}</span>
-                                </div>
-                                <div class="flex flex-row items-center gap-5">
-                                    <span class="text-sm font-semibold">{{ invite.date | date: 'mediumDate' }}</span>
-                                    <span class="text-sm font-semibold">
-                                        {{ invite.time | date: 'shortTime' }}
-                                    </span>
-                                </div>
-                                <div class="flex flex-col gap-2">
-                                    <div class="flex flex-row items-center gap-2">
-                                        <span class="text-sm text-gray-600">Mode:</span>
-                                        <span class="font-semibold text-sm">{{ invite.mode?.name }}</span>
+                        <div *ngIf="preProcurementInvitations.length === 0" class="flex items-center justify-center w-full h-full text-gray-500 italic">
+                            No invitation yet.
+                        </div>
+                        <ng-container *ngIf="preProcurementInvitations.length > 0">
+                            <p-card *ngFor="let invite of preProcurementInvitations" 
+                                [style]="{ height: '30vh', width: '18rem', overflow: 'hidden', display: 'flex', flexDirection: 'column' }">
+                                <div class="flex flex-col gap-4 pb-1 h-full">
+                                    <div class="flex flex-col">
+                                        <span class="font-semibold text-xl text-gray-800">{{ invite.ppmp.name }}</span>
                                     </div>
-                                    <div class="flex flex-row items-center gap-2">
-                                        <span class="text-sm text-gray-600">Platform:</span>
-                                        <span class="font-semibold text-sm">{{ invite.platform?.name || 'N/A' }}</span>
+                                    <div class="flex flex-row items-center gap-5">
+                                        <span class="text-sm font-semibold">{{ invite.date | date: 'mediumDate' }}</span>
+                                        <span class="text-sm font-semibold">
+                                            {{ invite.time | date: 'shortTime' }}
+                                        </span>
+                                    </div>
+                                    <div class="flex flex-col gap-2">
+                                        <div class="flex flex-row items-center gap-2">
+                                            <span class="text-sm text-gray-600">Mode:</span>
+                                            <span class="font-semibold text-sm">{{ invite.mode?.name }}</span>
+                                        </div>
+                                        <div class="flex flex-row items-center gap-2">
+                                            <span class="text-sm text-gray-600">Platform:</span>
+                                            <span class="font-semibold text-sm">{{ invite.platform?.name || 'N/A' }}</span>
+                                        </div>
+                                    </div>
+                                    <div class="flex flex-col gap-2 mt-2">
+                                        <span class="text-sm text-gray-600">Participants:</span>
+                                        <div class="flex flex-row gap-3">
+                                            <ng-container *ngFor="let participant of invite.participants">
+                                                <div class="bg-blue-500 text-white flex items-center justify-center w-8 h-8 rounded-full">
+                                                    <i class="pi pi-user text-xl"></i>
+                                                </div>
+                                            </ng-container>
+                                        </div>
                                     </div>
                                 </div>
-                                <div class="flex flex-col gap-2 mt-2">
-                                    <span class="text-sm text-gray-600">Participants:</span>
-                                    <div class="flex flex-row gap-3">
-                                        <ng-container *ngFor="let participant of invite.participants">
-                                            <div class="bg-blue-500 text-white flex items-center justify-center w-8 h-8 rounded-full">
-                                                <i class="pi pi-user text-xl"></i>
-                                            </div>
-                                        </ng-container>
-                                    </div>
-                                </div>
-                            </div>
-                        </p-card>
+                            </p-card>
+                        </ng-container>
                     </div>
                 </div>
             </div>
@@ -151,40 +156,48 @@
                         Recent Invitations
                     </h1>
                     <div class="flex flex-row gap-6 overflow-clip overflow-x-auto h-full mt-2 p-1">
-                        <p-card *ngFor="let invite of preBiddingInvitations" 
-                            [style]="{ height: '30vh', width: '18rem', overflow: 'hidden', display: 'flex', flexDirection: 'column' }">
-                            <div class="flex flex-col gap-4 pb-1 h-full">
-                                <div class="flex flex-col">
-                                    <span class="font-semibold text-xl text-gray-800">{{ invite.ppmp.name }}</span>
-                                </div>
-                                <div class="flex flex-row items-center gap-5">
-                                    <span class="text-sm font-semibold">{{ invite.date | date: 'mediumDate' }}</span>
-                                    <span class="text-sm font-semibold">
-                                        {{ invite.time | date: 'shortTime' }}
-                                    </span>
-                                </div>
-                                <div class="flex flex-col gap-2">
-                                    <div class="flex flex-row items-center gap-2">
-                                        <span class="text-sm text-gray-600">Mode:</span>
-                                        <span class="font-semibold text-sm">{{ invite.mode?.name }}</span>
+                        <!-- Show "No invitation yet" when empty -->
+                        <div *ngIf="preBiddingInvitations.length === 0" class="flex items-center justify-center w-full h-full text-gray-500 italic">
+                            No invitation yet.
+                        </div>
+                      
+                        <!-- Show invitation cards when there are invitations -->
+                        <ng-container *ngIf="preBiddingInvitations.length > 0">
+                            <p-card *ngFor="let invite of preBiddingInvitations" 
+                                  [style]="{ height: '30vh', width: '18rem', overflow: 'hidden', display: 'flex', flexDirection: 'column' }">
+                                <div class="flex flex-col gap-4 pb-1 h-full">
+                                    <div class="flex flex-col">
+                                        <span class="font-semibold text-xl text-gray-800">{{ invite.ppmp.name }}</span>
                                     </div>
-                                    <div class="flex flex-row items-center gap-2">
-                                        <span class="text-sm text-gray-600">Platform:</span>
-                                        <span class="font-semibold text-sm">{{ invite.platform?.name || 'N/A' }}</span>
+                                    <div class="flex flex-row items-center gap-5">
+                                        <span class="text-sm font-semibold">{{ invite.date | date: 'mediumDate' }}</span>
+                                        <span class="text-sm font-semibold">
+                                            {{ invite.time | date: 'shortTime' }}
+                                        </span>
                                     </div>
-                                </div>
-                                <div class="flex flex-col gap-2 mt-2">
-                                    <span class="text-sm text-gray-600">Participants:</span>
-                                    <div class="flex flex-row gap-3">
-                                        <ng-container *ngFor="let participant of invite.participants">
-                                            <div class="bg-blue-500 text-white flex items-center justify-center w-8 h-8 rounded-full">
+                                    <div class="flex flex-col gap-2">
+                                        <div class="flex flex-row items-center gap-2">
+                                            <span class="text-sm text-gray-600">Mode:</span>
+                                            <span class="font-semibold text-sm">{{ invite.mode?.name }}</span>
+                                        </div>
+                                        <div class="flex flex-row items-center gap-2">
+                                            <span class="text-sm text-gray-600">Platform:</span>
+                                            <span class="font-semibold text-sm">{{ invite.platform?.name || 'N/A' }}</span>
+                                        </div>
+                                    </div>
+                                    <div class="flex flex-col gap-2 mt-2">
+                                        <span class="text-sm text-gray-600">Participants:</span>
+                                        <div class="flex flex-row gap-3">
+                                            <ng-container *ngFor="let participant of invite.participants">
+                                                <div class="bg-blue-500 text-white flex items-center justify-center w-8 h-8 rounded-full">
                                                 <i class="pi pi-user text-xl"></i>
-                                            </div>
-                                        </ng-container>
+                                                </div>
+                                            </ng-container>
+                                        </div>
                                     </div>
                                 </div>
-                            </div>
-                        </p-card>
+                          </p-card>
+                        </ng-container>
                     </div>
                 </div>
             </div>
