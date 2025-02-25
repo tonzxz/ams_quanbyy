@@ -67,8 +67,16 @@ export class DeliveryReceiptService {
   }
 
   async moveForInspection(id: string) {
-    const data = { status: 'processing' };
-    return this.http.patch(`${this.apiUrl}/${id}`, data).toPromise();
+    try {
+      console.log(`Moving receipt ${id} to inspection`);  // Debug log
+      const data = { status: 'processing' };
+      const response = await this.http.patch(`${this.apiUrl}/${id}`, data).toPromise();
+      console.log('Response:', response);  // Debug log
+      return response;
+    } catch (error) {
+      console.error('Error in moveForInspection:', error);
+      throw error;  // Re-throw to allow component to handle it
+    }
   }
 
   async moveToVerified(id: string) {

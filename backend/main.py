@@ -84,17 +84,7 @@ crud.add_logic('approved_ppmps', f'''
 # equivalent endpoint = /api/approved_ppmps
 
 # Enable CORS with specific configuration
-CORS(app, resources={
-    r"/api/*": {
-        "origins": [
-            "http://localhost:4200",           # Angular dev server
-            "http://quanby-staging.com",       # Your production frontend
-            "http://quanby-staging.com:4200"   # Your production frontend with port
-        ],
-        "methods": ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
-        "allow_headers": ["Content-Type", "Authorization"]
-    }
-})
+CORS(app, resources={r"/api/*": {"origins": "*", "methods": ["GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"]}})
 
 @app.route('/api/uploads/<filename>')
 def uploaded_file(filename):

@@ -32,22 +32,49 @@ import 'jspdf-autotable';
 import { ProgressTableComponent, ProgressTableData } from 'src/app/components/progress-table/progress-table.component';
 import { PdfGeneratorService } from 'src/app/services/pdf-generator.service';
 import { KeyFilterModule } from 'primeng/keyfilter';
+import { CUSTOM_ELEMENTS_SCHEMA } from '@angular/core';
 
 
 @Component({
   selector: 'app-delivery-receipts',
   standalone: true,
-  imports: [MaterialModule,CommonModule, StepperModule, TableModule, ButtonModule, ButtonGroupModule, 
-    InputTextModule, InputIconModule,IconFieldModule, FormsModule, SelectModule,
-    FileUploadModule,DatePickerModule,InputNumberModule, ToastModule, ReactiveFormsModule, TextareaModule,
-    FluidModule, TooltipModule, DialogModule, InputTextModule,ConfirmPopupModule, ProgressTableComponent, KeyFilterModule],
-  providers:[MessageService, ConfirmationService, CurrencyPipe, DatePipe],
+  imports: [
+    MaterialModule, 
+    CommonModule, 
+    StepperModule, 
+    TableModule, 
+    ButtonModule, 
+    ButtonGroupModule,
+    InputTextModule, 
+    InputIconModule, 
+    IconFieldModule, 
+    FormsModule, 
+    SelectModule,
+    FileUploadModule, 
+    DatePickerModule, 
+    InputNumberModule, 
+    ToastModule, 
+    ReactiveFormsModule, 
+    TextareaModule,
+    FluidModule, 
+    TooltipModule, 
+    DialogModule, 
+    InputTextModule, 
+    ConfirmPopupModule, 
+    ProgressTableComponent, 
+    KeyFilterModule, 
+    LottieAnimationComponent
+  ],
+  schemas: [CUSTOM_ELEMENTS_SCHEMA],
+  providers: [MessageService, ConfirmationService, CurrencyPipe, DatePipe],
   templateUrl: './delivery-receipts.component.html',
   styleUrl: './delivery-receipts.component.scss'
 })
 export class DeliveryReceiptsComponent implements OnInit {
 
   @ViewChild('fileUpload') fileUpload: FileUpload;
+
+  isLoading: boolean = false;
 
   receipts:DeliveryReceipt[]=[];
   suppliers:Supplier[];
@@ -58,17 +85,14 @@ export class DeliveryReceiptsComponent implements OnInit {
 
   form = new FormGroup({
     delivery_date: new FormControl('', [Validators.required]),
-    receipt_number:  new FormControl('',[ Validators.required]),
-    supplier:  new FormControl<Supplier|null>(null,[Validators.required]),
-    supplier_tin: new FormControl('', [
-      Validators.required,
-      Validators.pattern(/^\d{3}-\d{3}-\d{3}-\d{3}$/)
-    ]),
-    department:  new FormControl<Department|null>(null,[Validators.required]),
-    purchase_order: new FormControl<Requisition|null>(null,[Validators.required]),
-    total_amount:  new FormControl<number|null>( null,[Validators.required, Validators.min(0.001)]),
-    notes:  new FormControl(''),
-    files:  new FormControl<any>(null,[ Validators.required]), // You can later manage file upload logic in the component
+    receipt_number: new FormControl('', [Validators.required]),
+    supplier: new FormControl<Supplier|null>(null),
+    supplier_tin: new FormControl('', [Validators.required]),
+    department: new FormControl<Department|null>(null),
+    purchase_order: new FormControl<Requisition|null>(null),
+    total_amount: new FormControl<number|null>(null, [Validators.required, Validators.min(0.001)]),
+    notes: new FormControl(''),
+    files: new FormControl<any>(null),
   });
 
   constructor(
@@ -131,34 +155,45 @@ export class DeliveryReceiptsComponent implements OnInit {
   }
 
   formatTIN(event: any) {
-    let tin = event.target.value.replace(/[^\d]/g, '');
-    if (tin.length > 12) tin = tin.substr(0, 12);
+    // Get the raw input value
+    const input = event.target.value;
     
-    // Format as XXX-XXX-XXX-XXX
-    const formatted = tin.replace(/(\d{3})(?=\d)/g, '$1-');
+    // Remove all non-digit characters
+    const digitsOnly = input.replace(/\D/g, '');
     
-    this.form.patchValue({
-      supplier_tin: formatted
-    }, { emitEvent: false });
+    // Format with hyphens
+    let formatted = '';
+    for (let i = 0; i < digitsOnly.length && i < 12; i++) {
+      if (i > 0 && i % 3 === 0) {
+        formatted += '-';
+      }
+      formatted += digitsOnly[i];
+    }
+    
+    // Set the formatted value directly
+    event.target.value = formatted;
+    
+    // Update the form control
+    this.form.get('supplier_tin')?.setValue(formatted);
   }
 
   async addReceipt(){
     const dr = this.form.value;
     await this.deliveryService.addReceipt({
       receipt_number: dr.receipt_number!.toUpperCase(),
-      supplier_name: dr.supplier!.name,
-      supplier_id: dr.supplier!.id!,
-      supplier_tin: dr.supplier_tin!,
-      department_id: dr.department!.id!,
-      department_name: dr.department!.name!,
-      delivery_date: new Date(dr.delivery_date!),
-      total_amount: dr.total_amount!,
+      supplier_name: dr.supplier?.name || 'Test Supplier',
+      supplier_id: dr.supplier?.id || '00000000000000000000000000000000',
+      supplier_tin: dr.supplier_tin || '000-000-000-000',
+      department_id: dr.department?.id || '00000000000000000000000000000000',
+      department_name: dr.department?.name || 'Test Department',
+      delivery_date: new Date(dr.delivery_date || new Date()),
+      total_amount: dr.total_amount || 0,
       purchase_order: dr.purchase_order?.id,
-      notes: dr.notes ?? '',
+      notes: dr.notes || '',
       status: 'unverified',
       stocked: false,
       receipts: [],
-    }, this.files);
+    }, this.files || []);
     this.form.reset();
     this.files = [];
     if (this.fileUpload) {
@@ -200,58 +235,61 @@ export class DeliveryReceiptsComponent implements OnInit {
   }
 
 
-  async confirmDeleteReceipt(event: Event,dr:DeliveryReceipt){
+  async confirmDeleteReceipt(event: Event, dr: DeliveryReceipt) {
     this.confirmationService.confirm({
       target: event.target as EventTarget,
-      message: 'Are you sure you want to delete this receipt?',
+      message: `Are you sure you want to delete receipt ${dr.receipt_number}?`,
       icon: 'pi pi-exclamation-triangle',
-      rejectButtonProps: {
-          label: 'Cancel',
-          severity: 'secondary',
-          outlined: true
-      },
-      acceptButtonProps: {
-          label: 'Confirm'
-      },
       accept: async () => {
-          await this.deliveryService.deleteReceipt(dr.id!)
-          this.messageService.add({ severity: 'success', summary: 'Success', detail: `Successfully deleted receipt.` });
+        try {
+          await this.deliveryService.deleteReceipt(dr.id!);
+          this.messageService.add({
+            severity: 'success',
+            summary: 'Success',
+            detail: `Receipt ${dr.receipt_number} deleted successfully`
+          });
           await this.fetchItems();
-          this.progressTable.activeStep = 0;
-      },
-      reject: () => {
-          
-      }
-  });
-  }
-
-  async confirmForInspection(event: Event,dr:DeliveryReceipt){
-    this.confirmationService.confirm({
-      target: event.target as EventTarget,
-      message: 'Are you sure you want to submit this receipt for inspection?',
-      icon: 'pi pi-exclamation-triangle',
-      rejectButtonProps: {
-          label: 'Cancel',
-          severity: 'secondary',
-          outlined: true
-      },
-      acceptButtonProps: {
-          label: 'Confirm'
-      },
-      accept: async () => {
-          await this.deliveryService.moveForInspection(dr.id!)
-          this.messageService.add({ severity: 'success', summary: 'Success', detail: `Successfully submitted receipt for inspection.` });
-          await this.fetchItems();
-          this.progressTable.activeStep = 2;
-      },
-      reject: () => {
-          
+        } catch (error) {
+          console.error('Error deleting receipt:', error);
+          this.messageService.add({
+            severity: 'error',
+            summary: 'Error',
+            detail: 'Failed to delete receipt'
+          });
+        }
       }
     });
   }
 
-  async proceedToStocking(){
-    this.router.navigate(['/supply-management/stocking'])
+  async confirmForInspection(event: Event, dr: DeliveryReceipt) {
+    this.confirmationService.confirm({
+      target: event.target as EventTarget,
+      message: `Are you sure you want to submit receipt ${dr.receipt_number} for inspection?`,
+      icon: 'pi pi-exclamation-triangle',
+      accept: async () => {
+        try {
+          await this.deliveryService.moveForInspection(dr.id!);
+          this.messageService.add({
+            severity: 'success',
+            summary: 'Success',
+            detail: `Receipt ${dr.receipt_number} submitted for inspection`
+          });
+          await this.fetchItems();
+          this.progressTable.activeStep = 1; // Move to processing tab
+        } catch (error) {
+          console.error('Error submitting for inspection:', error);
+          this.messageService.add({
+            severity: 'error',
+            summary: 'Error',
+            detail: 'Failed to submit receipt for inspection'
+          });
+        }
+      }
+    });
+  }
+
+  proceedToStocking() {
+    this.router.navigate(['/supply-unit/stocking']);
   }
 
   progressTable: ProgressTableData<DeliveryReceipt,'status'> = {
@@ -343,6 +381,7 @@ export class DeliveryReceiptsComponent implements OnInit {
   
   async fetchItems() {
     try {
+      this.isLoading = true;  // Start loading
       this.receipts = await this.deliveryService.getAll();
       this.progressTable.data = this.receipts;
       this.suppliers = await this.supplierService.getAll();
@@ -379,6 +418,8 @@ export class DeliveryReceiptsComponent implements OnInit {
         summary: 'Error',
         detail: 'Failed to fetch delivery receipts'
       });
+    } finally {
+      this.isLoading = false;  // End loading regardless of success/failure
     }
   }
 

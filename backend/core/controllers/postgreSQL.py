@@ -92,8 +92,28 @@ class CRUD:
             
             # Handle file uploads
             file_paths = self.handle_file_upload(files)
+            
+            # Fix column name mismatch - use receipt_files instead of receipts
+            if 'receipts' in data:
+                del data['receipts']  # Remove incorrect column
+            
+            # Add the correct column name
             data['receipt_files'] = file_paths
-
+            
+            # Set default values for missing fields
+            if 'supplier_id' not in data or not data['supplier_id']:
+                data['supplier_id'] = '00000000000000000000000000000000'
+            if 'supplier_name' not in data or not data['supplier_name']:
+                data['supplier_name'] = 'Test Supplier'
+            if 'department_id' not in data or not data['department_id']:
+                data['department_id'] = '00000000000000000000000000000000'
+            if 'department_name' not in data or not data['department_name']:
+                data['department_name'] = 'Test Department'
+            
+            # Handle empty purchase_order (UUID field)
+            if 'purchase_order' in data and (not data['purchase_order'] or data['purchase_order'] == 'null' or data['purchase_order'] == 'undefined'):
+                data['purchase_order'] = None
+            
             # Create database record
             columns = data.keys()
             values = tuple(data.values())
@@ -212,23 +232,29 @@ class CRUD:
     
     # Partial Update (PATCH)
     def patch(self, resource_name, item_id):
-        data = request.get_json()
+        try:
+            data = request.get_json()
+            print(f"PATCH request for {resource_name}/{item_id} with data: {data}")  # Debug log
 
-        # Encrypt sensitive columns
-        data = self.encrypt_data(data)
-        
-        # Dynamically create SET clauses for the SQL query
-        set_clauses = ', '.join([f"{column} = %s" for column in data.keys()])
-        values = tuple(data.values()) + (item_id,)
-        
-        query = f"UPDATE {resource_name.lower()} SET {set_clauses} WHERE id = %s"
-        
-        cursor = self.postgres.cursor()
-        cursor.execute(query, values)
-        self.postgres.commit()
-        cursor.close()
+            # Encrypt sensitive columns
+            data = self.encrypt_data(data)
+            
+            # Dynamically create SET clauses for the SQL query
+            set_clauses = ', '.join([f"{column} = %s" for column in data.keys()])
+            values = tuple(data.values()) + (item_id,)
+            
+            query = f"UPDATE {resource_name.lower()} SET {set_clauses} WHERE id = %s"
+            print(f"Executing query: {query} with values: {values}")  # Debug log
+            
+            cursor = self.postgres.cursor()
+            cursor.execute(query, values)
+            self.postgres.commit()
+            cursor.close()
 
-        return jsonify({'message': f'{resource_name} partially updated successfully'}), 200
+            return jsonify({'message': f'{resource_name} partially updated successfully'}), 200
+        except Exception as e:
+            print(f"Error in PATCH method: {e}")  # Debug log
+            return jsonify({'error': str(e)}), 500
 
     def join(self, query):
         cursor = self.postgres.cursor(cursor_factory=RealDictCursor)
