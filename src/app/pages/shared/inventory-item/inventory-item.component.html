@@ -19,7 +19,25 @@
                 icon="pi pi-plus" />
         </div>
 
-        <p-table #dt dataKey="id" [rowHover]="true" [value]="stocks"
+        <div class="flex gap-2 mb-4">
+            <p-button 
+                label="All Items" 
+                (click)="showAllItems()" 
+                [ngClass]="{'p-button-warning': currentTable === 'all', 'p-button-secondary': currentTable !== 'all'}">
+            </p-button>
+            <p-button 
+                label="Low Stock" 
+                (click)="showLowStock()" 
+                [ngClass]="{'p-button-warning': currentTable === 'low', 'p-button-secondary': currentTable !== 'low'}">
+            </p-button>
+            <p-button 
+                label="Out of Stock" 
+                (click)="showOutOfStock()" 
+                [ngClass]="{'p-button-warning': currentTable === 'out', 'p-button-secondary': currentTable !== 'out'}">
+            </p-button>
+        </div>
+
+        <p-table #dt dataKey="id" [rowHover]="true" [value]="currentTable === 'all' ? stocks : (currentTable === 'low' ? lowStockItems : outOfStockItems)"
             [paginator]="true" [rows]="5" [rowsPerPageOptions]="[5, 10, 20]"
             sortField="name" sortMode="single" [scrollable]="true" 
             scrollHeight="600px" [tableStyle]="{'min-width': '60rem'}"
@@ -60,6 +78,8 @@
                     <td>{{stock.description || 'No description set.'}}</td>
                     <td>
                         <div class="flex gap-2">
+                            <p-button icon="pi pi-eye" (click)="viewStockDetails(stock)"
+                                [outlined]="true" severity="info" size="small" />
                             <p-button icon="pi pi-pencil" (click)="openEditStockModal(stock)"
                                 [outlined]="true" severity="primary" size="small" />
                             <p-button icon="pi pi-trash" (click)="confirmDeleteStock($event, stock.id)"
@@ -142,9 +162,9 @@
         </div>
 
         <div class="field">
-            <label for="imageUrl" class="font-medium mb-2 block">Image URL</label>
-            <input pInputText id="imageUrl" formControlName="imageUrl" class="w-full"
-                placeholder="Enter image URL" />
+            <label for="image" class="font-medium mb-2 block">Image Upload</label>
+            <input type="file" id="image" (change)="onImageSelected($event)" class="w-full" />
+            <small class="text-gray-500">Upload an image file (optional)</small>
         </div>
     </form>
 
@@ -155,6 +175,89 @@
             <p-button [label]="selectedStock ? 'Save Changes' : 'Add Item'" 
                 icon="pi pi-check" (click)="selectedStock ? editStock() : addStock()"
                 [disabled]="!stockForm.valid"></p-button>
+        </div>
+    </ng-template>
+</p-dialog>
+
+<p-dialog header="Product Details" [(visible)]="showDetailsModal" 
+    [modal]="true" [style]="{width: '800px'}" [draggable]="false" [resizable]="false">
+    <div *ngIf="selectedStock" class="p-4">
+        <!-- Barcode Section -->
+        <div class="flex justify-between items-start mb-6">
+            <div>
+                <svg id="barcode"></svg>
+            </div>
+            <button pButton icon="pi pi-print" 
+                    class="p-button-outlined"
+                    (click)="printDetails()">
+            </button>
+        </div>
+
+        <!-- Details Grid -->
+        <div class="grid grid-cols-2 gap-4">
+            <div class="border rounded p-3">
+                <div class="font-bold mb-2">Product</div>
+                <div>{{selectedStock.name}}</div>
+            </div>
+            <div class="border rounded p-3">
+                <div class="font-bold mb-2">Category</div>
+                <div>{{selectedStock.product_name}}</div>
+            </div>
+            <div class="border rounded p-3">
+                <div class="font-bold mb-2">Sub Category</div>
+                <div>{{selectedStock.subCategory || 'None'}}</div>
+            </div>
+            <div class="border rounded p-3">
+                <div class="font-bold mb-2">Brand</div>
+                <div>{{selectedStock.brand || 'None'}}</div>
+            </div>
+            <div class="border rounded p-3">
+                <div class="font-bold mb-2">Unit</div>
+                <div>{{selectedStock.unit}}</div>
+            </div>
+            <div class="border rounded p-3">
+                <div class="font-bold mb-2">SKU</div>
+                <div>{{selectedStock.sku}}</div>
+            </div>
+            <div class="border rounded p-3">
+                <div class="font-bold mb-2">Minimum Qty</div>
+                <div>{{selectedStock.minimumQty}}</div>
+            </div>
+            <div class="border rounded p-3">
+                <div class="font-bold mb-2">Quantity</div>
+                <div>{{selectedStock.quantity}}</div>
+            </div>
+            <div class="border rounded p-3">
+                <div class="font-bold mb-2">Tax</div>
+                <div>{{selectedStock.tax}}</div>
+            </div>
+            <div class="border rounded p-3">
+                <div class="font-bold mb-2">Discount Type</div>
+                <div>{{selectedStock.discountType}}</div>
+            </div>
+            <div class="border rounded p-3">
+                <div class="font-bold mb-2">Price</div>
+                <div>{{selectedStock.price | currency}}</div>
+            </div>
+            <div class="border rounded p-3">
+                <div class="font-bold mb-2">Status</div>
+                <div>{{selectedStock.status}}</div>
+            </div>
+        </div>
+
+        <!-- Description -->
+        <div class="border rounded p-3 mt-4">
+            <div class="font-bold mb-2">Description</div>
+            <div>{{selectedStock.description}}</div>
+        </div>
+    </div>
+
+    <ng-template pTemplate="footer">
+        <div class="flex justify-end">
+            <p-button label="Close" icon="pi pi-times" 
+                (click)="showDetailsModal = false" 
+                [outlined]="true">
+            </p-button>
         </div>
     </ng-template>
 </p-dialog>

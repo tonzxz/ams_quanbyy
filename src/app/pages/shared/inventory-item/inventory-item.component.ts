@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, AfterViewInit, ViewChild } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormControl, FormGroup, FormsModule, ReactiveFormsModule, Validators } from '@angular/forms';
 import { MaterialModule } from 'src/app/material.module';
@@ -19,6 +19,8 @@ import { ToastModule } from 'primeng/toast';
 import { TextareaModule } from 'primeng/textarea';
 import { BadgeModule } from 'primeng/badge';
 import { ConfirmationService, MessageService } from 'primeng/api';
+import JsBarcode from 'jsbarcode';
+import { Table } from 'primeng/table';
 
 interface Stock {
   id: string;
@@ -30,6 +32,17 @@ interface Stock {
   dateAdded: Date;
   description?: string;
   imageUrl?: string;
+  imageFile?: File;
+  barcode: string;
+  sku: string;
+  minimumQty: number;
+  unit: string;
+  tax: string;
+  discountType: string;
+  price: number;
+  status: string;
+  brand?: string;
+  subCategory?: string;
 }
 
 interface InventoryLocation {
@@ -67,9 +80,11 @@ interface Product {
   ],
   providers: [ConfirmationService, MessageService],
   templateUrl: './inventory-item.component.html',
-  styleUrl: './inventory-item.component.scss'
+  styleUrls: ['./inventory-item.component.scss']
 })
-export class InventoryItemComponent {
+export class InventoryItemComponent implements AfterViewInit {
+  @ViewChild('dt') dt!: Table;
+
   stocks: Stock[] = [
     {
       id: '1',
@@ -77,10 +92,20 @@ export class InventoryItemComponent {
       ticker: 'LAP001',
       storage_name: 'Main Warehouse',
       product_name: 'Electronics',
-      quantity: 5,
+      quantity: 50,
       dateAdded: new Date('2024-01-15'),
       description: 'High-end laptop for developers',
-      imageUrl: 'https://picsum.photos/200/200?random=1'
+      imageUrl: 'https://i.dell.com/is/image/DellContent//content/dam/ss2/product-images/dell-client-products/notebooks/xps-notebooks/xps-13-9315/media-gallery/notebook-xps-13-9315-silver-gallery-3.psd?fmt=png-alpha&pscan=auto&scl=1&wid=3000&hei=2000&qlt=100,1&resMode=sharp2&size=3000,2000',
+      barcode: '86102192',
+      sku: 'PT0001',
+      minimumQty: 5,
+      unit: 'Piece',
+      tax: '0.00 %',
+      discountType: 'Percentage',
+      price: 1500.00,
+      status: 'Active',
+      brand: 'Dell',
+      subCategory: 'Laptops'
     },
     {
       id: '2',
@@ -91,7 +116,17 @@ export class InventoryItemComponent {
       quantity: 10,
       dateAdded: new Date('2024-02-01'),
       description: 'Ergonomic office chairs',
-      imageUrl: 'https://picsum.photos/200/200?random=2'
+      imageUrl: 'https://img.freepik.com/free-photo/home-appliance-seat-interior-ergonomic-sign_1172-512.jpg?t=st=1740443561~exp=1740447161~hmac=eaa89ac47ff5af512611e3ed5106ae6cbdd0d6c1f232f41fd4be4861bfe112f2&w=740',
+      barcode: '86102193',
+      sku: 'PT0002',
+      minimumQty: 2,
+      unit: 'Piece',
+      tax: '0.00 %',
+      discountType: 'Percentage',
+      price: 200.00,
+      status: 'Active',
+      brand: 'IKEA',
+      subCategory: 'Chairs'
     },
     {
       id: '3',
@@ -99,9 +134,20 @@ export class InventoryItemComponent {
       ticker: 'PRT003',
       storage_name: 'IT Department',
       product_name: 'Electronics',
-      quantity: 3,
+      quantity: 0, // Out of stock
       dateAdded: new Date('2024-02-15'),
-      imageUrl: 'https://picsum.photos/200/200?random=3'
+      description: 'High-speed printer for office use',
+      imageUrl: 'https://electronicparadise.in/cdn/shop/files/81gU9g9R4GL._SX679.jpg?v=1707465857&width=800',
+      barcode: '86102194',
+      sku: 'PT0003',
+      minimumQty: 1,
+      unit: 'Piece',
+      tax: '0.00 %',
+      discountType: 'Percentage',
+      price: 300.00,
+      status: 'Active',
+      brand: 'HP',
+      subCategory: 'Printers'
     }
   ];
 
@@ -121,21 +167,46 @@ export class InventoryItemComponent {
   searchValue: string = '';
   showStockModal: boolean = false;
   selectedStock?: Stock;
+  showDetailsModal: boolean = false;
+
+  // State variable to track which table to display
+  currentTable: 'all' | 'low' | 'out' = 'all';
+
+  // Rename these properties to avoid conflicts
+  showLowStockFlag: boolean = true; // Renamed from showLowStock
+  showOutOfStockFlag: boolean = false; // Renamed from showOutOfStock
 
   stockForm = new FormGroup({
     name: new FormControl('', Validators.required),
     ticker: new FormControl('', Validators.required),
     storage: new FormControl<InventoryLocation | null>(null, Validators.required),
     type: new FormControl<Product | null>(null, Validators.required),
-    quantity: new FormControl<number|null>(null, [Validators.required, Validators.min(1)]),
+    quantity: new FormControl<number | null>(null, [Validators.required, Validators.min(1)]),
     description: new FormControl(''),
     imageUrl: new FormControl('')
   });
+
+  quantity: number = 1; // Initialize with a default value
 
   constructor(
     private messageService: MessageService,
     private confirmationService: ConfirmationService
   ) {}
+
+  ngAfterViewInit() {
+    this.generateBarcode();
+  }
+
+  generateBarcode() {
+    if (this.selectedStock) {
+      JsBarcode("#barcode", this.selectedStock.barcode, {
+        format: "CODE128",
+        width: 2,
+        height: 50,
+        displayValue: true
+      });
+    }
+  }
 
   openAddStockModal() {
     this.selectedStock = undefined;
@@ -163,29 +234,81 @@ export class InventoryItemComponent {
     this.showStockModal = false;
   }
 
+  onImageSelected(event: Event) {
+    const input = event.target as HTMLInputElement;
+    if (input.files && input.files[0]) {
+      const file = input.files[0];
+      
+      // Only allow image files
+      if (!file.type.startsWith('image/')) {
+        this.messageService.add({
+          severity: 'error',
+          summary: 'Error',
+          detail: 'Please select an image file'
+        });
+        return;
+      }
+
+      // Create a preview URL
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        this.stockForm.patchValue({
+          imageUrl: e.target?.result as string
+        });
+      };
+      reader.readAsDataURL(file);
+      
+      // Store the file for later upload
+      if (this.selectedStock) {
+        this.selectedStock.imageFile = file;
+      }
+    }
+  }
+
   async addStock() {
     if (!this.stockForm.valid) return;
     
     const formValue = this.stockForm.value;
-    const newStock: Stock = {
-      id: (this.stocks.length + 1).toString(),
-      name: formValue.name!,
-      ticker: formValue.ticker!,
-      storage_name: formValue.storage?.name!,
-      product_name: formValue.type?.name!,
-      quantity: formValue.quantity!,
-      dateAdded: new Date(),
-      description: formValue.description || '',
-      imageUrl: formValue.imageUrl || ''
-    };
+    
+    try {
+      const imageUrl = formValue.imageUrl || '';
+      
+      const newStock: Stock = {
+        id: (this.stocks.length + 1).toString(),
+        name: formValue.name!,
+        ticker: formValue.ticker!,
+        storage_name: formValue.storage?.name!,
+        product_name: formValue.type?.name!,
+        quantity: formValue.quantity!,
+        dateAdded: new Date(),
+        description: formValue.description || '',
+        imageUrl: imageUrl,
+        barcode: '',
+        sku: '',
+        minimumQty: 0,
+        unit: '',
+        tax: '',
+        discountType: '',
+        price: 0,
+        status: '',
+        brand: undefined,
+        subCategory: undefined
+      };
 
-    this.stocks.push(newStock);
-    this.messageService.add({ 
-      severity: 'success', 
-      summary: 'Success', 
-      detail: 'Item successfully added!' 
-    });
-    this.closeStockModal();
+      this.stocks.push(newStock);
+      this.messageService.add({ 
+        severity: 'success', 
+        summary: 'Success', 
+        detail: 'Item successfully added!' 
+      });
+      this.closeStockModal();
+    } catch (error) {
+      this.messageService.add({
+        severity: 'error',
+        summary: 'Error',
+        detail: 'Failed to add item. Please try again.'
+      });
+    }
   }
 
   async editStock() {
@@ -203,7 +326,17 @@ export class InventoryItemComponent {
         product_name: formValue.type?.name!,
         quantity: formValue.quantity!,
         description: formValue.description || '',
-        imageUrl: formValue.imageUrl || ''
+        imageUrl: formValue.imageUrl || '',
+        barcode: '',
+        sku: '',
+        minimumQty: 0,
+        unit: '',
+        tax: '',
+        discountType: '',
+        price: 0,
+        status: '',
+        brand: undefined,
+        subCategory: undefined
       };
     }
 
@@ -236,5 +369,58 @@ export class InventoryItemComponent {
     if (img) {
       img.src = 'https://placehold.co/200x200?text=No+Image';
     }
+  }
+
+  viewStockDetails(stock: Stock) {
+    this.selectedStock = stock;
+    this.showDetailsModal = true;
+    setTimeout(() => {
+      this.generateBarcode();
+    });
+  }
+
+  printDetails() {
+    window.print();
+  }
+
+  get filteredStocks() {
+    return this.stocks.filter(stock => {
+      if (this.showLowStockFlag && stock.quantity < stock.minimumQty) {
+        return true;
+      }
+      if (this.showOutOfStockFlag && stock.quantity === 0) {
+        return true;
+      }
+      return false;
+    });
+  }
+
+  toggleLowStock() {
+    this.showLowStockFlag = !this.showLowStockFlag;
+  }
+
+  toggleOutOfStock() {
+    this.showOutOfStockFlag = !this.showOutOfStockFlag;
+  }
+
+  // Methods to switch between tables
+  showAllItems() {
+    this.currentTable = 'all';
+  }
+
+  showLowStock() {
+    this.currentTable = 'low';
+  }
+
+  showOutOfStock() {
+    this.currentTable = 'out';
+  }
+
+  get lowStockItems() {
+    return this.stocks.filter(stock => stock.quantity < stock.minimumQty);
+  }
+
+  get outOfStockItems() {
+    return this.stocks.filter(stock => stock.quantity === 0);
   }
 }

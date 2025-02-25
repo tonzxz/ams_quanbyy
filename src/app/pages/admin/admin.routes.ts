@@ -13,7 +13,7 @@ import { AdminDashboardComponent } from './admin-dashboard/admin-dashboard.compo
 import { PurchaseOrdersAdminComponent } from './purchase-orders-admin/purchase-orders-admin.component';
 import { AccountSetupComponent } from './account-setup/account-setup.component';
 import { InventoryItemComponent } from '../shared/inventory-item/inventory-item.component';
-import { DeliveryItemComponent } from '../shared/delivery-item/delivery-item.component';
+
 export const AdminRoutes: Routes = [
   {
     path: '',
@@ -111,13 +111,6 @@ export const AdminRoutes: Routes = [
         component: InventoryItemComponent,
         canActivate: [roleGuard],
         data: { roles: ['admin', 'superadmin'], breadcrumb: 'Inventory Item' } 
-      },
-
-      {
-        path: 'delivery-item',
-        component: DeliveryItemComponent,
-        canActivate: [roleGuard],
-        data: { roles: ['admin', 'superadmin'], breadcrumb: 'Delivery Item' } 
       },
     ],
   },
