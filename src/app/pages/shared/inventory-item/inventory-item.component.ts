@@ -21,6 +21,7 @@ import { BadgeModule } from 'primeng/badge';
 import { ConfirmationService, MessageService } from 'primeng/api';
 import JsBarcode from 'jsbarcode';
 import { Table } from 'primeng/table';
+import { v4 as uuidv4 } from 'uuid';
 
 interface Stock {
   id: string;
@@ -183,7 +184,8 @@ export class InventoryItemComponent implements AfterViewInit {
     type: new FormControl<Product | null>(null, Validators.required),
     quantity: new FormControl<number | null>(null, [Validators.required, Validators.min(1)]),
     description: new FormControl(''),
-    imageUrl: new FormControl('')
+    imageUrl: new FormControl(''),
+    barcode: new FormControl('')
   });
 
   quantity: number = 1; // Initialize with a default value
@@ -191,27 +193,41 @@ export class InventoryItemComponent implements AfterViewInit {
   constructor(
     private messageService: MessageService,
     private confirmationService: ConfirmationService
-  ) {}
+  ) {
+    // Subscribe to changes in the ticker field
+    this.stockForm.get('ticker')?.valueChanges.subscribe(value => {
+      if (value) {
+        this.generateBarcode(); // Generate barcode when ticker is set
+      }
+    });
+  }
 
   ngAfterViewInit() {
     this.generateBarcode();
   }
 
-  generateBarcode() {
-    if (this.selectedStock) {
-      JsBarcode("#barcode", this.selectedStock.barcode, {
-        format: "CODE128",
-        width: 2,
-        height: 50,
-        displayValue: true
-      });
-    }
+  generateBarcode(): string {
+    const barcodeValue = uuidv4();
+    this.stockForm.patchValue({ barcode: barcodeValue });
+    this.updateBarcodeImage(barcodeValue);
+    return barcodeValue;
+  }
+
+  updateBarcodeImage(barcodeValue: string) {
+    const canvas = document.getElementById('barcodeCanvas') as HTMLCanvasElement;
+    JsBarcode(canvas, barcodeValue, {
+      format: "CODE128",
+      width: 2,
+      height: 100,
+      displayValue: true
+    });
   }
 
   openAddStockModal() {
     this.selectedStock = undefined;
     this.stockForm.reset();
     this.showStockModal = true;
+    this.generateBarcode();
   }
 
   openEditStockModal(stock: Stock) {
@@ -223,7 +239,8 @@ export class InventoryItemComponent implements AfterViewInit {
       type: this.products.find(product => product.name === stock.product_name) ?? null,
       quantity: stock.quantity,
       description: stock.description || '',
-      imageUrl: stock.imageUrl || ''
+      imageUrl: stock.imageUrl || '',
+      barcode: stock.barcode
     });
     this.showStockModal = true;
   }
@@ -283,7 +300,7 @@ export class InventoryItemComponent implements AfterViewInit {
         dateAdded: new Date(),
         description: formValue.description || '',
         imageUrl: imageUrl,
-        barcode: '',
+        barcode: this.generateBarcode(),
         sku: '',
         minimumQty: 0,
         unit: '',

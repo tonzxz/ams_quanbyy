@@ -107,7 +107,17 @@
     [(visible)]="showStockModal" [modal]="true" [style]="{width: '450px'}"
     [draggable]="false" [resizable]="false">
     
+    <div class="flex flex-col items-center">
+        <canvas id="barcodeCanvas"></canvas>
+    </div>
+
     <form [formGroup]="stockForm" class="flex flex-col gap-4">
+        <div class="field">
+            <label for="barcode" class="font-medium mb-2 block">Barcode</label>
+            <input pInputText id="barcode" formControlName="barcode" class="w-full" 
+                placeholder="Generated barcode" readonly />
+        </div>
+        
         <div class="field">
             <label for="name" class="font-medium mb-2 block">Item Name</label>
             <input pInputText id="name" formControlName="name" class="w-full"
@@ -121,9 +131,7 @@
             <label for="ticker" class="font-medium mb-2 block">Ticker</label>
             <input pInputText id="ticker" formControlName="ticker" class="w-full"
                 placeholder="Enter ticker" />
-            @if (stockForm.get('ticker')?.invalid && stockForm.get('ticker')?.touched) {
-                <small class="text-red-500">Ticker is required</small>
-            }
+            <small class="text-red-500" *ngIf="stockForm.get('ticker')?.invalid && stockForm.get('ticker')?.touched">Ticker is required</small>
         </div>
 
         <div class="field">
