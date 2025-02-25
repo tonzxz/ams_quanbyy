@@ -250,3 +250,29 @@ CREATE TRIGGER update_ics_updated_at
     BEFORE UPDATE ON ics
     FOR EACH ROW
     EXECUTE FUNCTION update_updated_at_column();
+
+-- Delivery Receipts Table
+CREATE TABLE delivery_receipts (
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    receipt_number VARCHAR(50) NOT NULL UNIQUE,
+    supplier_id UUID NOT NULL,
+    supplier_name VARCHAR(255) NOT NULL,
+    supplier_tin VARCHAR(20) NOT NULL,  -- Added TIN field
+    department_id UUID NOT NULL,
+    department_name VARCHAR(255) NOT NULL,
+    delivery_date DATE NOT NULL,
+    total_amount DECIMAL(10,2) NOT NULL,
+    purchase_order UUID,
+    receipts TEXT[],  -- Array of receipt image URLs
+    notes TEXT,
+    status VARCHAR(20) CHECK (status IN ('unverified', 'processing', 'verified')) NOT NULL,
+    stocked BOOLEAN DEFAULT false,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+-- Add trigger for updated_at
+CREATE TRIGGER update_delivery_receipts_updated_at
+    BEFORE UPDATE ON delivery_receipts
+    FOR EACH ROW
+    EXECUTE FUNCTION update_updated_at_column();

@@ -39,6 +39,19 @@
       </p-select>
     </div>
 
+    <div class="flex items-center gap-4 mb-2">
+      <label for="supplier_tin" class="font-semibold w-32">TIN Number</label>
+      <input 
+        placeholder="XXX-XXX-XXX-XXX" 
+        pInputText 
+        formControlName="supplier_tin"
+        [pKeyFilter]="'num'" 
+        class="flex-auto"
+        maxlength="15"
+        (input)="formatTIN($event)"
+      />
+    </div>
+
      <div class="flex items-center gap-4 mb-2">
       <label for="purchase_order" class="font-semibold w-32">Purchase Order</label>
       <p-select [options]="requisitions" formControlName="purchase_order" optionLabel="id" [filter]="true"

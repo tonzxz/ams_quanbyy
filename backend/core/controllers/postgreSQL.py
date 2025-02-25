@@ -3,6 +3,9 @@ from flask import request, jsonify
 import json
 from psycopg2.extras import RealDictCursor
 import re  # Add this at the top with other imports
+import os
+from werkzeug.utils import secure_filename
+from datetime import datetime
 
 class CRUD:
     def __init__(self, app, postgres, encryption_key):
@@ -13,6 +16,11 @@ class CRUD:
         
         # Columns to encrypt, like password, secret, etc.
         self.encrypted_columns = ['password']
+
+        # Add upload folder configuration
+        self.app.config['UPLOAD_FOLDER'] = 'uploads/receipts'
+        if not os.path.exists(self.app.config['UPLOAD_FOLDER']):
+            os.makedirs(self.app.config['UPLOAD_FOLDER'])
 
     def encrypt_data(self, data):
         """Encrypt sensitive data before saving to the database."""
@@ -63,52 +71,98 @@ class CRUD:
         def delete(item_id):
             return self.delete(resource_name, item_id)
 
+    def handle_file_upload(self, files):
+        """Handle file uploads and return array of file paths"""
+        file_paths = []
+        for file in files:
+            if file:
+                filename = secure_filename(file.filename)
+                # Add timestamp to filename to make it unique
+                unique_filename = f"{datetime.now().strftime('%Y%m%d_%H%M%S')}_{filename}"
+                file_path = os.path.join(self.app.config['UPLOAD_FOLDER'], unique_filename)
+                file.save(file_path)
+                file_paths.append(f"/api/uploads/{unique_filename}")
+        return file_paths
+
     # Create (Insert a new entry)
     def create(self, resource_name):
-        data = request.get_json()
-        
-        # Special validation for ICS
-        if resource_name.lower() == 'ics':
-            # Validate ICS number format
-            if not re.match(r'^ICS-\d{4}-\d{3}$', data.get('ics_no', '')):
-                return jsonify({'error': 'Invalid ICS number format. Must be ICS-YYYY-###'}), 400
+        if resource_name.lower() == 'delivery_receipts':
+            data = request.form.to_dict()  # Get form data
+            files = request.files.getlist('files')  # Get files
             
-            # Validate Fund Cluster format
-            if not re.match(r'^FC-\d{4}-\d{3}$', data.get('fund_cluster', '')):
-                return jsonify({'error': 'Invalid Fund Cluster format. Must be FC-YYYY-###'}), 400
-        
-        # Encrypt sensitive columns
-        data = self.encrypt_data(data)
+            # Handle file uploads
+            file_paths = self.handle_file_upload(files)
+            data['receipt_files'] = file_paths
 
-        # Extract column names and values dynamically
-        columns = data.keys()
-        values = tuple(data.values())
-        
-        # Generate the SQL query dynamically
-        columns_str = ', '.join(columns)
-        placeholders = ', '.join(['%s'] * len(columns))
-        
-        query = f"INSERT INTO {resource_name.lower()} ({columns_str}) VALUES ({placeholders})"
-        
-        try:
+            # Create database record
+            columns = data.keys()
+            values = tuple(data.values())
+            
+            query = f"INSERT INTO {resource_name.lower()} ({','.join(columns)}) VALUES ({','.join(['%s']*len(columns))})"
+            
             cursor = self.postgres.cursor()
             cursor.execute(query, values)
             self.postgres.commit()
             cursor.close()
-            return jsonify({'message': f'{resource_name} created successfully'}), 201
-        except Exception as e:
-            return jsonify({'error': str(e)}), 400
+            
+            return jsonify({'message': 'Delivery receipt created successfully', 'files': file_paths}), 201
+        else:
+            data = request.get_json()
+            
+            # Special validation for ICS
+            if resource_name.lower() == 'ics':
+                # Validate ICS number format
+                if not re.match(r'^ICS-\d{4}-\d{3}$', data.get('ics_no', '')):
+                    return jsonify({'error': 'Invalid ICS number format. Must be ICS-YYYY-###'}), 400
+                
+                # Validate Fund Cluster format
+                if not re.match(r'^FC-\d{4}-\d{3}$', data.get('fund_cluster', '')):
+                    return jsonify({'error': 'Invalid Fund Cluster format. Must be FC-YYYY-###'}), 400
+            
+            # Encrypt sensitive columns
+            data = self.encrypt_data(data)
+
+            # Extract column names and values dynamically
+            columns = data.keys()
+            values = tuple(data.values())
+            
+            # Generate the SQL query dynamically
+            columns_str = ', '.join(columns)
+            placeholders = ', '.join(['%s'] * len(columns))
+            
+            query = f"INSERT INTO {resource_name.lower()} ({columns_str}) VALUES ({placeholders})"
+            
+            try:
+                cursor = self.postgres.cursor()
+                cursor.execute(query, values)
+                self.postgres.commit()
+                cursor.close()
+                return jsonify({'message': f'{resource_name} created successfully'}), 201
+            except Exception as e:
+                return jsonify({'error': str(e)}), 400
 
     def read(self, resource_name, item_id=None):
         try:
             cursor = self.postgres.cursor(cursor_factory=RealDictCursor)
             
-            query = f"SELECT * FROM {resource_name.lower()}"
-            print(f"Executing query: {query}")
+            if item_id:
+                query = f"SELECT * FROM {resource_name.lower()} WHERE id = %s"
+                cursor.execute(query, (item_id,))
+            else:
+                query = f"SELECT * FROM {resource_name.lower()}"
+                cursor.execute(query)
             
-            cursor.execute(query)
             results = cursor.fetchall()
-            print(f"Query results: {results}")
+            
+            # Convert date strings to proper format
+            if resource_name.lower() == 'delivery_receipts':
+                for row in results:
+                    if 'delivery_date' in row:
+                        row['delivery_date'] = row['delivery_date'].isoformat()
+                    if 'created_at' in row:
+                        row['created_at'] = row['created_at'].isoformat()
+                    if 'updated_at' in row:
+                        row['updated_at'] = row['updated_at'].isoformat()
             
             cursor.close()
             return jsonify(results), 200

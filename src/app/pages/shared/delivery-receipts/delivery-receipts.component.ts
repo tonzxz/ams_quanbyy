@@ -31,6 +31,7 @@ import jsPDF from 'jspdf';
 import 'jspdf-autotable';
 import { ProgressTableComponent, ProgressTableData } from 'src/app/components/progress-table/progress-table.component';
 import { PdfGeneratorService } from 'src/app/services/pdf-generator.service';
+import { KeyFilterModule } from 'primeng/keyfilter';
 
 
 @Component({
@@ -39,7 +40,7 @@ import { PdfGeneratorService } from 'src/app/services/pdf-generator.service';
   imports: [MaterialModule,CommonModule, StepperModule, TableModule, ButtonModule, ButtonGroupModule, 
     InputTextModule, InputIconModule,IconFieldModule, FormsModule, SelectModule,
     FileUploadModule,DatePickerModule,InputNumberModule, ToastModule, ReactiveFormsModule, TextareaModule,
-    FluidModule, TooltipModule, DialogModule, InputTextModule,ConfirmPopupModule, ProgressTableComponent],
+    FluidModule, TooltipModule, DialogModule, InputTextModule,ConfirmPopupModule, ProgressTableComponent, KeyFilterModule],
   providers:[MessageService, ConfirmationService, CurrencyPipe, DatePipe],
   templateUrl: './delivery-receipts.component.html',
   styleUrl: './delivery-receipts.component.scss'
@@ -59,6 +60,10 @@ export class DeliveryReceiptsComponent implements OnInit {
     delivery_date: new FormControl('', [Validators.required]),
     receipt_number:  new FormControl('',[ Validators.required]),
     supplier:  new FormControl<Supplier|null>(null,[Validators.required]),
+    supplier_tin: new FormControl('', [
+      Validators.required,
+      Validators.pattern(/^\d{3}-\d{3}-\d{3}-\d{3}$/)
+    ]),
     department:  new FormControl<Department|null>(null,[Validators.required]),
     purchase_order: new FormControl<Requisition|null>(null,[Validators.required]),
     total_amount:  new FormControl<number|null>( null,[Validators.required, Validators.min(0.001)]),
@@ -102,15 +107,16 @@ export class DeliveryReceiptsComponent implements OnInit {
     }
     const date = dr.delivery_date.toString().split('T')[0].split('-');
     this.form.patchValue({
-      files:dr.receipts,
+      files: dr.receipts,
       receipt_number: dr.receipt_number,
-      supplier: this.suppliers.find(supplier => supplier.id ==dr.supplier_id),
-      department: this.departments.find(department => department.id ==dr.department_id),
-      purchase_order: this.requisitions.find(req=>req.id == dr.purchase_order),
+      supplier: this.suppliers.find(supplier => supplier.id == dr.supplier_id),
+      supplier_tin: dr.supplier_tin,
+      department: this.departments.find(department => department.id == dr.department_id),
+      purchase_order: this.requisitions.find(req => req.id == dr.purchase_order),
       delivery_date: `${date[1]}/${date[2]}/${date[0]}`,
       total_amount: Number(dr.total_amount!),
-      notes:dr.notes ?? '',
-    })
+      notes: dr.notes ?? '',
+    });
     this.selectedDeliveryReceipt = dr;
     this.showReceiptModal = true;
   }
@@ -124,24 +130,35 @@ export class DeliveryReceiptsComponent implements OnInit {
     });
   }
 
+  formatTIN(event: any) {
+    let tin = event.target.value.replace(/[^\d]/g, '');
+    if (tin.length > 12) tin = tin.substr(0, 12);
+    
+    // Format as XXX-XXX-XXX-XXX
+    const formatted = tin.replace(/(\d{3})(?=\d)/g, '$1-');
+    
+    this.form.patchValue({
+      supplier_tin: formatted
+    }, { emitEvent: false });
+  }
+
   async addReceipt(){
     const dr = this.form.value;
     await this.deliveryService.addReceipt({
-      receipts:[
-        'assets/images/products/sample-receipt.png'
-      ],
       receipt_number: dr.receipt_number!.toUpperCase(),
       supplier_name: dr.supplier!.name,
       supplier_id: dr.supplier!.id!,
+      supplier_tin: dr.supplier_tin!,
       department_id: dr.department!.id!,
       department_name: dr.department!.name!,
       delivery_date: new Date(dr.delivery_date!),
       total_amount: dr.total_amount!,
       purchase_order: dr.purchase_order?.id,
-      notes:dr.notes ?? '',
-      status:'unverified',
-      stocked:false,
-    })
+      notes: dr.notes ?? '',
+      status: 'unverified',
+      stocked: false,
+      receipts: [],
+    }, this.files);
     this.form.reset();
     this.files = [];
     if (this.fileUpload) {
@@ -157,21 +174,20 @@ export class DeliveryReceiptsComponent implements OnInit {
     const dr = this.form.value;
     await this.deliveryService.editReceipt({
       id: this.selectedDeliveryReceipt!.id,
-      receipts:[
-        'assets/images/products/sample-receipt.png'
-      ],
       receipt_number: dr.receipt_number!.toUpperCase(),
       supplier_name: dr.supplier!.name,
       supplier_id: dr.supplier!.id!,
+      supplier_tin: dr.supplier_tin!,
       department_id: dr.department!.id!,
       department_name: dr.department!.name!,
       delivery_date: new Date(dr.delivery_date!),
       total_amount: dr.total_amount!,
       purchase_order: dr.purchase_order?.id,
-      notes:dr.notes ?? '',
-      status:'unverified',
-      stocked:false
-    })
+      notes: dr.notes ?? '',
+      status: 'unverified',
+      stocked: false,
+      receipts: [],
+    });
     this.form.reset();
     this.files = [];
     if (this.fileUpload) {
@@ -325,36 +341,45 @@ export class DeliveryReceiptsComponent implements OnInit {
       data:[]
     }
   
-  async fetchItems(){
-    this.receipts = await this.deliveryService.getAll();
-    this.progressTable.data = this.receipts;
-    this.suppliers = await this.supplierService.getAll();
-    this.departments = await this.departmentService.getAllDepartments();
-    const allRequisitions = await this.requisitionService.getAllRequisitions();
-    const allSequences = await this.requisitionService.getAllApprovalSequences();
+  async fetchItems() {
+    try {
+      this.receipts = await this.deliveryService.getAll();
+      this.progressTable.data = this.receipts;
+      this.suppliers = await this.supplierService.getAll();
+      this.departments = await this.departmentService.getAllDepartments();
+      const allRequisitions = await this.requisitionService.getAllRequisitions();
+      const allSequences = await this.requisitionService.getAllApprovalSequences();
 
-    this.requisitions = allRequisitions
-      .map((req) => {
-        // const typeSequences = allSequences.filter(
-        //   (seq) => seq.type === (req.currentApprovalLevel <= 4 ? 'procurement' : 'supply')
-        // );
+      this.requisitions = allRequisitions
+        .map((req) => {
+          // const typeSequences = allSequences.filter(
+          //   (seq) => seq.type === (req.currentApprovalLevel <= 4 ? 'procurement' : 'supply')
+          // );
 
-        const currentSequence = allSequences.find(
-          (seq) => seq.id === req.approvalSequenceId
-        );
+          const currentSequence = allSequences.find(
+            (seq) => seq.id === req.approvalSequenceId
+          );
 
-        return {
-          ...req,
-          approvalSequenceDetails: currentSequence
+          return {
+            ...req,
+            approvalSequenceDetails: currentSequence
 ,
-        };
-      })
-      .filter((req) => {
-        if(this.receipts.find(dr=>dr.purchase_order == req.id)){
-          return false;
-        }
-        return req.approvalSequenceDetails && (req.approvalSequenceDetails?.roleCode === 'supply' || req.approvalSequenceDetails?.roleCode === 'inspection')
+          };
+        })
+        .filter((req) => {
+          if(this.receipts.find(dr=>dr.purchase_order == req.id)){
+            return false;
+          }
+          return req.approvalSequenceDetails && (req.approvalSequenceDetails?.roleCode === 'supply' || req.approvalSequenceDetails?.roleCode === 'inspection')
+        });
+    } catch (error) {
+      console.error('Error fetching items:', error);
+      this.messageService.add({
+        severity: 'error',
+        summary: 'Error',
+        detail: 'Failed to fetch delivery receipts'
       });
+    }
   }
 
 
