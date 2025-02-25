@@ -214,13 +214,16 @@ export class InventoryItemComponent implements AfterViewInit {
   }
 
   updateBarcodeImage(barcodeValue: string) {
-    const canvas = document.getElementById('barcodeCanvas') as HTMLCanvasElement;
-    JsBarcode(canvas, barcodeValue, {
-      format: "CODE128",
-      width: 2,
-      height: 100,
-      displayValue: true
-    });
+    const canvasId = this.showDetailsModal ? 'viewBarcodeCanvas' : 'barcodeCanvas';
+    const canvas = document.getElementById(canvasId) as HTMLCanvasElement;
+    if (canvas) {
+      JsBarcode(canvas, barcodeValue, {
+        format: "CODE128",
+        width: 2,
+        height: 100,
+        displayValue: true
+      });
+    }
   }
 
   openAddStockModal() {
@@ -391,8 +394,9 @@ export class InventoryItemComponent implements AfterViewInit {
   viewStockDetails(stock: Stock) {
     this.selectedStock = stock;
     this.showDetailsModal = true;
+    
     setTimeout(() => {
-      this.generateBarcode();
+      this.updateBarcodeImage(stock.barcode);
     });
   }
 

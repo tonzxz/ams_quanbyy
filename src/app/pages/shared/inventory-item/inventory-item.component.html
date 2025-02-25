@@ -191,14 +191,8 @@
     [modal]="true" [style]="{width: '800px'}" [draggable]="false" [resizable]="false">
     <div *ngIf="selectedStock" class="p-4">
         <!-- Barcode Section -->
-        <div class="flex justify-between items-start mb-6">
-            <div>
-                <svg id="barcode"></svg>
-            </div>
-            <button pButton icon="pi pi-print" 
-                    class="p-button-outlined"
-                    (click)="printDetails()">
-            </button>
+        <div class="flex flex-col items-center mb-6">
+            <canvas id="viewBarcodeCanvas"></canvas>
         </div>
 
         <!-- Details Grid -->
@@ -262,6 +256,7 @@
 
     <ng-template pTemplate="footer">
         <div class="flex justify-end">
+            <p-button label="Print" icon="pi pi-print" (click)="printDetails()" [outlined]="true"></p-button>
             <p-button label="Close" icon="pi pi-times" 
                 (click)="showDetailsModal = false" 
                 [outlined]="true">
