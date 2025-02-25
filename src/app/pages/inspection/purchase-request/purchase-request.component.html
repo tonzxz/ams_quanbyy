@@ -23,8 +23,20 @@
             <div class="pr-header">
                 <div class="pr-title">PURCHASE REQUEST</div>
                 <div class="pr-annex">
-                    <p>Annex G-6</p>
-                    <p>COA Circular No. 2001-04, S. 2001</p>
+                    <div class="editable-field">
+                        <p *ngIf="!isEditMode">{{currentRequest.coaInfo?.annexNo || 'Annex G-6'}}</p>
+                        <input *ngIf="isEditMode && currentRequest.coaInfo" 
+                               pInputText 
+                               [(ngModel)]="currentRequest.coaInfo.annexNo" 
+                               class="p-inputtext-sm"/>
+                    </div>
+                    <div class="editable-field">
+                        <p *ngIf="!isEditMode">{{currentRequest.coaInfo?.circularNo || 'COA Circular No. 2001-04, S. 2001'}}</p>
+                        <input *ngIf="isEditMode && currentRequest.coaInfo" 
+                               pInputText 
+                               [(ngModel)]="currentRequest.coaInfo.circularNo" 
+                               class="p-inputtext-sm"/>
+                    </div>
                 </div>
             </div>
 
@@ -245,5 +257,11 @@
                 [icon]="isEditMode ? 'pi pi-save' : 'pi pi-pencil'"
                 [class]="isEditMode ? 'p-button-success' : 'p-button-secondary'"
                 (click)="toggleEditMode()"></button>
+        <button pButton 
+                icon="pi pi-arrow-left" 
+                label="Back" 
+                class="p-button-secondary"
+                (click)="goBack()">
+    </button>
     </div>
 </p-card>

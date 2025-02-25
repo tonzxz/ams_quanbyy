@@ -49,8 +49,14 @@ import { CalendarModule } from 'primeng/calendar';
 export class ConferenceComponent implements OnInit {
   preProcurementEvents: any[] = [];
   preBiddingEvents: any[] = [];
+  preProcurementInvitations: any[] = [];
+  preBiddingInvitations: any[] = [];
+
+  activeTabIndex: number = 0;
 
   invitations: any[] = [];
+
+  availableEvents: any[] = [];
 
   invitationTitle: string = '';
   invitationDate: Date | null = null;
@@ -85,8 +91,11 @@ export class ConferenceComponent implements OnInit {
   constructor(private messageService: MessageService, private cdr: ChangeDetectorRef) {}
 
   ngOnInit() {
+    this.preProcurementEvents = [];
+    this.preBiddingEvents = [];
     this.selectedModeCode = 'ON';
     this.selectedPPMP = this.ppmpList[0];
+    
 
     this.meetMode = [
       { name: 'Online', code: 'ON' },
@@ -124,16 +133,21 @@ export class ConferenceComponent implements OnInit {
   onModeChange(event: any) {
     if (!event.value) return;
 
+    // Directly use event.value as the code
     this.selectedModeCode = event.value;
-    this.selectedMode = this.meetMode.find(mode => mode.code === event.value) || { name: '', code: '' };
 
+    // Find the selected mode from meetMode array
+    this.selectedMode = this.meetMode.find(mode => mode.code === this.selectedModeCode) || null;
+
+    // Clear platform if In-Person, else select available platform
     if (this.selectedModeCode === 'IP') {
-      this.selectedPlatform = null;
+        this.selectedPlatform = null;
     } else {
-      const platforms = this.getPlatformsForSelectedMode();
-      this.selectedPlatform = platforms.length > 0 ? platforms[0] : { name: '', code: '' };
+        const platforms = this.getPlatformsForSelectedMode();
+        this.selectedPlatform = platforms.length > 0 ? platforms[0] : null;
     }
   }
+
 
   onPPMPChange(event: any) {
     if (event.value) {
@@ -145,28 +159,61 @@ export class ConferenceComponent implements OnInit {
     }
   }
 
-  onEventSelect(event: any) {
-    if (event?.value) {
-      this.selectedEvent = event.value;
-      this.eventName = this.selectedEvent?.name || '';  // Set event name here
+  onEventSelect(event: any, context: string) {
+    if (context === 'edit') {
+      // Directly assign event without .value for edit mode
+      this.selectedEvent = event;
+  
+      // Autofill all fields for edit
+      this.eventName = this.selectedEvent?.name || '';
       this.eventDate = this.selectedEvent?.date || null;
       this.eventTime = this.selectedEvent?.eventTime || null;
       this.selectedMode = this.selectedEvent?.mode || this.selectedMode;
       this.selectedModeCode = this.selectedEvent?.mode?.code || '';
       this.selectedPlatform = this.selectedEvent?.platform || this.selectedPlatform;
       this.selectedPlatformCode = this.selectedEvent?.platform?.code || '';
-      this.editEventModal = true;
+
+      this.selectedPlatform = this.selectedModeCode === 'IP'
+      ? { name: 'N/A', code: '' }
+      : (this.getPlatformsForSelectedMode()[0] || { name: 'N/A', code: '' });
+  
+      this.editEventModal = true; // Open edit modal
+    } else if (context === 'invite') {
+      // Keep using event.value for invite mode
+      this.selectedEvent = event.value;
+  
+      // Autofill for invite
+      this.eventName = this.selectedEvent?.name || '';
+      this.eventDate = this.selectedEvent?.date || null;
+      this.eventTime = this.selectedEvent?.eventTime || null;
+      this.selectedMode = this.selectedEvent?.mode || this.selectedMode;
+      this.selectedModeCode = this.selectedEvent?.mode?.code || '';
+      this.selectedPlatform = this.selectedEvent?.platform || this.selectedPlatform;
+      this.selectedPlatformCode = this.selectedEvent?.platform?.code || '';
     }
   }
 
+
   saveEditedEvent() {
     if (this.selectedEvent) {
-      this.selectedEvent.name = this.eventName;  // Save back the updated name
+      this.selectedEvent.name = this.eventName;
       this.selectedEvent.date = this.eventDate;
       this.selectedEvent.eventTime = this.eventTime;
       this.selectedEvent.mode = this.selectedMode;
-      this.selectedEvent.platform = this.selectedPlatform;
-  
+
+      
+      // Match selectedPlatform code to full platform object
+      const platforms = this.getPlatformsForSelectedMode();
+      const matchedPlatform = platforms.find(p => p.code === this.selectedPlatform);
+
+      if (this.selectedModeCode === 'IP') {
+        this.selectedEvent.platform = { name: 'N/A', code: '' };
+      } else if (matchedPlatform) {
+        this.selectedEvent.platform = matchedPlatform;
+      } else {
+        this.selectedEvent.platform = platforms[0] || { name: 'N/A', code: '' };
+      }
+
       this.messageService.add({
         severity: 'success',
         summary: 'Event Updated',
@@ -174,18 +221,21 @@ export class ConferenceComponent implements OnInit {
       });
   
       this.editEventModal = false;
+      this.cdr.detectChanges();
     }
   }
 
   getPlatformsForSelectedMode() {
-    return this.selectedModeCode ? this.platformsByMode[this.selectedModeCode] || [] : [];
+    return this.platformsByMode[this.selectedModeCode] || [];
   }
 
   OpenEventCard() {
     this.eventCard = true;
   }
 
-  addEvent() {      
+  addEvent(tabIndex: number) {      
+    console.log('Add Event - Tab Index:', tabIndex);
+    this.activeTabIndex = tabIndex;
     this.eventDate = null;           
     this.selectedMode = null;      
     this.selectedModeCode = '';  
@@ -196,14 +246,27 @@ export class ConferenceComponent implements OnInit {
     this.eventModal = true;
   }
 
-  createInvite() {
+  createInvite(tabIndex: number) {
+    console.log('Create Invite - Tab Index:', tabIndex);   
+    this.selectedEvent = null; 
+    this.activeTabIndex = tabIndex;
     this.invitationTitle = '';
-    this.eventTime = null;      
-    this.eventDate = null;            
-    this.selectedMode = null;        
-    this.selectedPlatform = null;    
+    this.eventTime = null;
+    this.eventDate = null;
+    this.selectedMode = null;
+    this.selectedPlatform = null;
     this.selectedParticipants = [];
+
+    console.log('Active Tab Index on Create Invite:', this.activeTabIndex); 
+    // Populate dropdown with created events based on active tab
+    this.availableEvents = this.activeTabIndex === 0 ? this.preProcurementEvents : this.preBiddingEvents;
+    console.log('Available Events:', this.availableEvents);
+
+    this.inviteModal = false; // Briefly hide to reset state
+    setTimeout(() => {
     this.inviteModal = true;
+    this.cdr.detectChanges();
+    }, 0);
   }
 
   saveEvent() {
@@ -215,24 +278,57 @@ export class ConferenceComponent implements OnInit {
       });
       return;
     }
-  
+
     const newEvent = {
       ppmp: this.selectedPPMP,
       date: this.eventDate,
-      eventTime: this.eventTime, // Save the chosen time
+      eventTime: this.eventTime,
       mode: this.selectedMode,
       platform: this.selectedMode.code === 'IP' ? { name: 'N/A', code: '' } : this.selectedPlatform
     };
-  
-    this.events = [...this.events, newEvent];
-  
+
+    console.log('Saving event on tab index:', this.activeTabIndex);
+    console.log('New Event:', newEvent);
+    console.log('Pre-Procurement Events before:', this.preProcurementEvents);
+    console.log('Pre-Bidding Events before:', this.preBiddingEvents);
+
+    // Add event to the appropriate array based on the active tab
+    if (this.activeTabIndex === 0) {
+      this.preProcurementEvents = [...this.preProcurementEvents, newEvent];
+      console.log('Saved to Pre-Procurement Events:', this.preProcurementEvents);
+    } else if (this.activeTabIndex === 1) {
+      this.preBiddingEvents = [...this.preBiddingEvents, newEvent];
+      console.log('Saved to Pre-Bidding Events:', this.preBiddingEvents);
+    } else {
+      console.error('Invalid tab index:', this.activeTabIndex); 
+    }
+
     this.messageService.add({
       severity: 'success',
       summary: 'Event Saved',
       detail: 'The event has been saved successfully.'
     });
-  
+
     this.eventModal = false;
+  }
+
+  onEditModeChange(event: any) {
+    if (!event.value) return;
+  
+    this.selectedModeCode = event.value;
+    this.selectedMode = this.meetMode.find(mode => mode.code === this.selectedModeCode) || null;
+  
+    if (this.selectedModeCode === 'IP') {
+        this.selectedPlatform = null;
+    } else {
+        const platforms = this.getPlatformsForSelectedMode();
+        this.selectedPlatform = platforms.length > 0 ? platforms[0] : null;
+    }
+    this.cdr.detectChanges();
+  }
+  
+  cancelEdit() {
+    this.editEventModal = false;
   }
   
   sendInvite() {
@@ -246,7 +342,7 @@ export class ConferenceComponent implements OnInit {
     }
 
     const invitation = {
-      title: this.selectedEvent.name,
+      title: this.selectedEvent.ppmp.name,
       ppmp: this.selectedEvent.ppmp,
       date: this.selectedEvent.date,
       time: this.eventTime,
@@ -255,7 +351,11 @@ export class ConferenceComponent implements OnInit {
       participants: this.selectedParticipants
     };
 
-    this.invitations = [...this.invitations, invitation];
+    if (this.activeTabIndex === 0) {
+      this.preProcurementInvitations = [...this.preProcurementInvitations, invitation];
+    } else if (this.activeTabIndex === 1) {
+      this.preBiddingInvitations = [...this.preBiddingInvitations, invitation];
+    }
 
     this.messageService.add({
       severity: 'success',
@@ -268,4 +368,11 @@ export class ConferenceComponent implements OnInit {
     this.invitationTitle = '';
     this.eventTime = null;
   }
+
+  onTabChange(event: any) {
+    this.activeTabIndex = event.index;
+    console.log('Active Tab Index:', this.activeTabIndex);
+    this.cdr.detectChanges();
+  }
+  
 }

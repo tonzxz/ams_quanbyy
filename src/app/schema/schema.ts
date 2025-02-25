@@ -8,12 +8,11 @@ export class ProcurementProcess {
   id: string
   name: string
   process_order: number
+  procurement_mode_id:'Public' | 'Alternative'
 }
 
-
 export class ProcurementMode {
-  id: string
-  procurement_process_id: string
+  id: string 
   mode_name: string
   method: 'Public' | 'Alternative'
 }
@@ -34,8 +33,6 @@ export class Budget {
   used_amount: number
   date_created: Date
 }
-
-
 
 export class UserBudget {
   id: string

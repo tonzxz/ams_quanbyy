@@ -1,0 +1,70 @@
+<p-dialog [modal]="true" [(visible)]="config.show!"
+    [style]="{ width: '25rem' }">
+    <ng-template #header>
+        <div class="py-0 inline-flex items-center justify-center gap-3">
+            <i class="pi pi-box text-lg"></i>
+            <span class="font-bold text-lg whitespace-nowrap">{{config.title}}</span>
+        </div>
+    </ng-template>
+    <span class="p-text-secondary block">
+        {{config.description}}
+    </span>
+    <small class="p-text-secondary block mb-6">(Please fill out all form fields)</small>
+
+    <form class="flex flex-col gap-3 mb-4" [formGroup]="form" (submit)="onSubmit()">
+        @for(field of config.formfields; track field){
+            <div class="flex flex-col gap-2">
+                <label class="font-semibold" for="{{ field.id }}">{{ field.label }}</label>
+                <div class="flex-auto flex-col flex">
+                    @switch(field.type){
+                        @case('input'){
+                            <input [placeholder]="field.placeholder" [formControlName]="field.id.toString()" pSize="small" pInputText [id]="field.id.toString()"
+                            autocomplete="off" />
+                        }
+                        @case('number'){
+                            <p-inputnumber [placeholder]="field.placeholder" [formControlName]="field.id.toString()" size="small" [showButtons]="true"
+                            [inputId]="field.id.toString()" class="flex-auto" mode="decimal" autocomplete="off" />
+                        }
+                        @case('currency'){
+                            <p-inputnumber [placeholder]="field.placeholder" [formControlName]="field.id.toString()" [inputId]="field.id.toString()" size="small"
+                            mode="currency" currency="PHP" locale="en-PH" class="flex-auto" autocomplete="off" />
+                        }
+                        @case('select'){
+                            <p-select [options]="field.options??[]" [formControlName]="field.id.toString()" optionLabel="label" [filter]="true"
+                                filterBy="label" [showClear]="true" [placeholder]="field.placeholder" class="flex-auto">
+                                <ng-template #selectedItem let-selectedOption>
+                                    <div class="flex items-center gap-2">
+                                    <div>{{ selectedOption.label }}</div>
+                                    </div>
+                                </ng-template>
+                                <ng-template let-inventory #item>
+                                    <div class="flex items-center gap-2">
+                                    <div>{{ inventory.label }}</div>
+                                    </div>
+                                </ng-template>
+                            </p-select>
+                        }
+                        @case('textarea'){
+                            <textarea [placeholder]="field.placeholder" [formControlName]="field.id.toString()" pSize="small"
+                            [name]="field.id.toString()" rows="5" cols="25" pTextarea [id]="field.id.toString()" class="flex-auto"
+                            autocomplete="off"></textarea>
+                        }
+                    }    
+                    @for(validator of field.validators; track validator){
+                        @if(form.get(field.id.toString())?.hasError(validator.validator.name) && form.get(field.id.toString())?.touched){
+                            <small class="self-end text-red-500 mt-2">{{validator.message}}</small>
+                        }
+                    }
+                </div>
+            </div>
+        }
+
+        <div class="flex justify-end gap-6 mt-6">
+            <p-button size="small" [label]="config.cancelDecoration ? config.cancelDecoration.label : 'Cancel'" [icon]="config.submitDecoration ? config.submitDecoration.label : 'pi pi-times'" severity="secondary" (click)="config.show = false" />
+            <p-button size="small" [label]="config.submitDecoration ? config.submitDecoration.label : 'Submit'" [icon]="config.submitDecoration ? config.submitDecoration.icon : 'pi pi-check'"
+                (click)="onSubmit()" [disabled]="!form.valid" />
+        </div>
+    </form>
+</p-dialog>
+  
+<p-toast position="bottom-left"></p-toast>

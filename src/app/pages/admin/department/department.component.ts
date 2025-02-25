@@ -12,6 +12,7 @@ import { DropdownModule } from 'primeng/dropdown';
 import { ToastModule } from 'primeng/toast';
 import { MessageService, ConfirmationService } from 'primeng/api';
 import { DepartmentService, Department, Building, Office } from 'src/app/services/departments.service';
+import { CardModule } from 'primeng/card';
 
 @Component({
   selector: 'app-department',
@@ -29,6 +30,7 @@ import { DepartmentService, Department, Building, Office } from 'src/app/service
     TabViewModule,
     DropdownModule,
     ToastModule,
+    CardModule
   ],
   providers: [MessageService, ConfirmationService],
   templateUrl: './department.component.html',
@@ -59,8 +61,8 @@ export class DepartmentComponent implements OnInit {
   loading = false;
 
   deleteDialogVisible: boolean = false;
-deleteItemId: string | null = null;
-deleteItemType: 'department' | 'building' | 'office' | null = null;
+  deleteItemId: string | null = null;
+  deleteItemType: 'department' | 'building' | 'office' | null = null;
 
   
   currentDepartmentId: string | null = null;
@@ -90,39 +92,21 @@ deleteItemType: 'department' | 'building' | 'office' | null = null;
     }
   }
 
-  initializeForms(): void {
-  this.departmentForm = this.formBuilder.group({
-    name: ['', Validators.required],
-    code: ['', [Validators.required, Validators.minLength(2)]],
-    head: ['', Validators.required],
-    budget: [0, [Validators.required, Validators.min(0)]],
-    contactEmail: ['', [Validators.required, Validators.email]],
-    contactPhone: ['', [Validators.required, Validators.pattern(/^\d{10,}$/)]],
-    description: [''],
-  });
-
-  this.buildingForm = this.formBuilder.group({
-    name: ['', Validators.required],
-    address: ['', Validators.required],
-    numberOfFloors: [1, [Validators.required, Validators.min(1)]],
-    notes: [''],
-  });
-
-  this.officeForm = this.formBuilder.group({
-    name: ['', Validators.required],
-    roomNumber: ['', Validators.required],
-    capacity: [1, [Validators.required, Validators.min(1)]],
-    floor: [0, [Validators.required, Validators.min(0)]],
-    extension: [''],
-    departmentId: ['', Validators.required],
-    buildingId: ['', Validators.required],
-    notes: [''],
-  });
-
-  this.officeForm.get('departmentId')?.valueChanges.subscribe((departmentId) => {
-    this.filteredBuildings = this.buildings; // Show all buildings
-  });
-}
+  initializeForms(): void { 
+    this.departmentForm = this.formBuilder.group({
+      name: ['', Validators.required]
+    });
+    // this.buildingForm = this.formBuilder.group({
+    //   name: ['', Validators.required],
+    //   address: ['', Validators.required],
+    //   numberOfFloors: [1, [Validators.required, Validators.min(1)]],
+    //   notes: ['']
+    // });
+    this.officeForm = this.formBuilder.group({
+      name: ['', Validators.required],
+      departmentId: ['', Validators.required]
+    });
+  }
 
 
   openNewDepartment(): void {
@@ -167,87 +151,119 @@ deleteItemType: 'department' | 'building' | 'office' | null = null;
     }
   }
 
-  openNewBuilding(): void {
-    this.buildingForm.reset({ numberOfFloors: 1 });
-    this.isEditingBuilding = false;
-    this.currentBuildingId = null;
-    this.buildingSubmitted = false;
-    this.buildingDialog = true;
-  }
+  // openNewBuilding(): void {
+  //   this.buildingForm.reset({ numberOfFloors: 1 });
+  //   this.isEditingBuilding = false;
+  //   this.currentBuildingId = null;
+  //   this.buildingSubmitted = false;
+  //   this.buildingDialog = true;
+  // }
 
-  editBuilding(building: Building): void {
-    this.isEditingBuilding = true;
-    this.currentBuildingId = building.id ?? null;
-    this.buildingForm.patchValue(building);
-    this.buildingDialog = true;
-  }
+  // editBuilding(building: Building): void {
+  //   this.isEditingBuilding = true;
+  //   this.currentBuildingId = building.id ?? null;
+  //   this.buildingForm.patchValue(building);
+  //   this.buildingDialog = true;
+  // }
 
-  async saveBuilding(): Promise<void> {
-    this.buildingSubmitted = true;
-    if (this.buildingForm.invalid) return;
+  // async saveBuilding(): Promise<void> {
+  //   this.buildingSubmitted = true;
+  //   if (this.buildingForm.invalid) return;
 
-    const buildingData = {
-      ...this.buildingForm.value,
-      dateConstructed: new Date(),
-    };
+  //   const buildingData = {
+  //     ...this.buildingForm.value,
+  //     dateConstructed: new Date(),
+  //   };
 
-    try {
-      if (this.isEditingBuilding && this.currentBuildingId) {
-        await this.departmentService.editBuilding({
-          ...buildingData,
-          id: this.currentBuildingId,
-        });
-        this.messageService.add({ severity: 'success', summary: 'Success', detail: 'Building updated successfully' });
-      } else {
-        await this.departmentService.addBuilding(buildingData);
-        this.messageService.add({ severity: 'success', summary: 'Success', detail: 'Building added successfully' });
-      }
-      this.buildingDialog = false;
-      this.loadAll();
-    } catch (error) {
-      this.messageService.add({ severity: 'error', summary: 'Error', detail: 'Failed to save building' });
-    }
-  }
+  //   try {
+  //     if (this.isEditingBuilding && this.currentBuildingId) {
+  //       await this.departmentService.editBuilding({
+  //         ...buildingData,
+  //         id: this.currentBuildingId,
+  //       });
+  //       this.messageService.add({ severity: 'success', summary: 'Success', detail: 'Building updated successfully' });
+  //     } else {
+  //       await this.departmentService.addBuilding(buildingData);
+  //       this.messageService.add({ severity: 'success', summary: 'Success', detail: 'Building added successfully' });
+  //     }
+  //     this.buildingDialog = false;
+  //     this.loadAll();
+  //   } catch (error) {
+  //     this.messageService.add({ severity: 'error', summary: 'Error', detail: 'Failed to save building' });
+  //   }
+  // }
 
   openNewOffice(): void {
-    this.officeForm.reset({ capacity: 1, floor: 0 });
+    this.officeForm.reset({
+      name: '',
+      departmentId: ''
+    });
     this.isEditingOffice = false;
     this.currentOfficeId = null;
     this.officeSubmitted = false;
     this.officeDialog = true;
   }
 
- editOffice(office: Office): void {
-  this.isEditingOffice = true;
-  this.currentOfficeId = office.id ?? null;
-  this.officeForm.patchValue(office);
-
-  // No filtering based on departmentId, as buildings are independent of departments
-  this.filteredBuildings = this.buildings;
-  
-  this.officeDialog = true;
-}
+  editOffice(office: Office): void {
+    this.isEditingOffice = true;
+    this.currentOfficeId = office.id ?? null;
+    this.officeForm.patchValue({
+      name: office.name,
+      departmentId: office.departmentId  // Changed to match form control name
+    });
+    this.officeDialog = true;
+  }
 
 
   async saveOffice(): Promise<void> {
     this.officeSubmitted = true;
-    if (this.officeForm.invalid) return;
-
+    
+    console.log('Form value:', this.officeForm.value);  // Debug log
+    console.log('Form valid:', this.officeForm.valid);  // Debug log
+    
+    if (this.officeForm.invalid) {
+      console.log('Form errors:', this.officeForm.errors);  // Debug log
+      this.messageService.add({ 
+        severity: 'warn', 
+        summary: 'Validation Error', 
+        detail: 'Please fill in all required fields' 
+      });
+      return;
+    }
+  
+    const officeData = {
+      ...this.officeForm.value,
+      department_id: this.officeForm.value.departmentId  // Map to correct API field name
+    };
+  
     try {
       if (this.isEditingOffice && this.currentOfficeId) {
         await this.departmentService.editOffice({
-          ...this.officeForm.value,
-          id: this.currentOfficeId,
+          ...officeData,
+          id: this.currentOfficeId
         });
-        this.messageService.add({ severity: 'success', summary: 'Success', detail: 'Office updated successfully' });
+        this.messageService.add({ 
+          severity: 'success', 
+          summary: 'Success', 
+          detail: 'Office updated successfully' 
+        });
       } else {
-        await this.departmentService.addOffice(this.officeForm.value);
-        this.messageService.add({ severity: 'success', summary: 'Success', detail: 'Office added successfully' });
+        await this.departmentService.addOffice(officeData);
+        this.messageService.add({ 
+          severity: 'success', 
+          summary: 'Success', 
+          detail: 'Office added successfully' 
+        });
       }
       this.officeDialog = false;
       this.loadAll();
-    } catch (error) {
-      this.messageService.add({ severity: 'error', summary: 'Error', detail: 'Failed to save office' });
+    } catch (error: any) {
+      console.error('Save office error:', error);  // Debug log
+      this.messageService.add({ 
+        severity: 'error', 
+        summary: 'Error', 
+        detail: 'Failed to save office: ' + (error.message || 'Unknown error') 
+      });
     }
   }
 

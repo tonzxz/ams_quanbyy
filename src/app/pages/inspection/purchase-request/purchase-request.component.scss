@@ -49,15 +49,27 @@
     margin-top: 20px;
 }
 
+/* Update to your existing .pr-header styles */
 .pr-header {
     display: flex;
     justify-content: space-between;
     padding: 10px;
     border-bottom: 1px solid #000;
 
+    .pr-title-container {
+        display: flex;
+        flex-direction: column;
+        align-items: flex-start;
+    }
+
     .pr-title {
         font-size: 16px;
         font-weight: bold;
+    }
+    
+    .pr-subtitle {
+        font-size: 14px;
+        margin-top: 4px;
     }
 
     .pr-annex {
