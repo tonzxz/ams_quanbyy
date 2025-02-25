@@ -14,6 +14,11 @@ import { InputTextarea } from 'primeng/inputtextarea';
 import { CommonModule } from '@angular/common';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { LottieAnimationComponent } from "../../ui-components/lottie-animation/lottie-animation.component";
+import { MaterialModule } from 'src/app/material.module';
+import { IconFieldModule } from 'primeng/iconfield';
+import { InputIconModule } from 'primeng/inputicon';
+import { TooltipModule } from 'primeng/tooltip';
+import { CUSTOM_ELEMENTS_SCHEMA } from '@angular/core';
 
 @Component({
   selector: 'app-suppliers',
@@ -34,8 +39,13 @@ import { LottieAnimationComponent } from "../../ui-components/lottie-animation/l
     ToastModule,
     ConfirmPopupModule,
     InputTextarea,
-    LottieAnimationComponent
+    LottieAnimationComponent,
+    MaterialModule,
+    IconFieldModule,
+    InputIconModule,
+    TooltipModule
   ],
+  schemas: [CUSTOM_ELEMENTS_SCHEMA],
   providers: [MessageService, ConfirmationService]
 })
 export class SuppliersComponent implements OnInit {

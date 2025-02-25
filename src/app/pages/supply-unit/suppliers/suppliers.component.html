@@ -1,22 +1,20 @@
-<p-card class="cardWithShadow">
-    <div class="p-4">
-        <h2 class="select-none font-light text-2xl mb-4">Suppliers</h2>
-        <div class="flex justify-between items-center mb-4">
-            <span class="p-input-icon-left w-64">
-                <i class="pi pi-search text-gray-400"></i>
-                <input 
-                    class="w-full px-3 py-2 rounded-md border border-gray-200" 
-                    pInputText 
-                    [(ngModel)]="searchValue" 
-                    (input)="dt.filterGlobal(searchValue,'contains')" 
-                    placeholder="Search suppliers..." />
-            </span>
-            <p-button 
-                (click)="openAddSupplierModal()" 
-                icon="pi pi-plus"
-                label="Add Supplier"
-                size="small"
-                styleClass="p-button-primary" />
+<mat-card class="cardWithShadow">
+    <mat-card-content>
+        <mat-card-title class="select-none font-light">Suppliers</mat-card-title>
+        
+        <div class="flex justify-between items-center">
+            <p>View and manage suppliers in this section.</p>
+
+            <div class="flex-1"></div>
+            
+            <p-iconfield fluid class="w-full max-w-72 mr-2">
+                <p-inputicon styleClass="pi pi-search" />
+                <input fluid class="w-full" pSize="small" [(ngModel)]="searchValue" (input)="dt.filterGlobal(searchValue,'contains')" 
+                    type="text" pInputText placeholder="Search" />
+            </p-iconfield>
+            
+            <p-button pTooltip="Click to add new supplier" [outlined]="true" size="small" 
+                label="Add Supplier" (click)="openAddSupplierModal()" icon="pi pi-plus" />
         </div>
 
         <p-table #dt [value]="suppliers" [rowHover]="true"
@@ -42,12 +40,12 @@
                     <td>{{supplier.contact}}</td>
                     <td>{{supplier.address}}</td>
                     <td>{{supplier.description || 'No description'}}</td>
-                    <td>
-                        <div class="flex gap-2">
+                    <td class="w-16">
+                        <div class="flex gap-4">
                             <p-button icon="pi pi-pencil" (click)="openEditSupplierModal(supplier)" 
-                                [outlined]="true" size="small" />
+                                [outlined]="true" size="small" rounded />
                             <p-button icon="pi pi-trash" (click)="confirmDeleteSupplier($event, supplier.id)" 
-                                severity="danger" [outlined]="true" size="small" />
+                                severity="danger" [outlined]="true" size="small" rounded />
                         </div>
                     </td>
                 </tr>
@@ -128,8 +126,8 @@
                 </div>
             </form>
         </p-dialog>
-    </div>
-</p-card>
+    </mat-card-content>
+</mat-card>
 
 <p-toast position="bottom-right" />
 <p-confirmPopup />

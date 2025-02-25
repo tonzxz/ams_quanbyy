@@ -68,14 +68,24 @@ export class DeliveryReceiptService {
 
   async moveForInspection(id: string) {
     try {
-      console.log(`Moving receipt ${id} to inspection`);  // Debug log
-      const data = { status: 'processing' };
-      const response = await this.http.patch(`${this.apiUrl}/${id}`, data).toPromise();
-      console.log('Response:', response);  // Debug log
+      // First get the current receipt
+      const receipts = await this.getAll();
+      const receipt = receipts.find(r => r.id === id);
+      
+      if (!receipt) {
+        throw new Error('Receipt not found');
+      }
+      
+      // Update the status
+      receipt.status = 'processing';
+      
+      // Use PUT instead of PATCH
+      const response = await this.http.put(`${this.apiUrl}/${id}`, receipt).toPromise();
+      console.log('Response:', response);
       return response;
     } catch (error) {
       console.error('Error in moveForInspection:', error);
-      throw error;  // Re-throw to allow component to handle it
+      throw error;
     }
   }
 
