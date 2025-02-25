@@ -44,6 +44,18 @@ export const navItems: NavItem[] = [
     route: '/admin/department',
     requiredRoles: ['admin', 'superadmin'],
   },
+  {
+    displayName: 'Inventory Management',
+    iconName: 'solar:box-minimalistic-line-duotone',
+    route: '/admin/inventory-management',
+    requiredRoles: ['admin', 'superadmin'],
+  },
+  {
+    displayName: 'Item Classification',
+    iconName: 'solar:tag-horizontal-line-duotone',
+    route: '/admin/item-classification',
+    requiredRoles: ['admin', 'superadmin'],
+  },
   // {
   //   displayName: 'Supplier List',
   //   iconName: 'solar:widget-add-line-duotone',
@@ -73,12 +85,6 @@ export const navItems: NavItem[] = [
   //   displayName: 'Inventory Count',
   //   iconName: 'solar:widget-add-line-duotone',
   //   route: '/admin/inventory',
-  //   requiredRoles: ['admin', 'superadmin'],
-  // },
-  // {
-  //   displayName: 'Item Classification',
-  //   iconName: 'solar:widget-add-line-duotone',
-  //   route: '/admin/item-classification',
   //   requiredRoles: ['admin', 'superadmin'],
   // },
   
@@ -280,6 +286,12 @@ export const navItems: NavItem[] = [
     displayName: 'Stock Transfer',
     iconName: 'solar:documents-broken',
     route: '/shared/stock-transfer',
+    requiredRoles: ['supply'],
+  },
+  {
+    displayName: 'Suppliers',
+    iconName: 'solar:documents-broken',
+    route: '/supply-management/suppliers',
     requiredRoles: ['supply'],
   },
   // {

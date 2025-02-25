@@ -12,8 +12,8 @@ import { EndUserListComponent } from './end-user-list/end-user-list.component';
 import { AdminDashboardComponent } from './admin-dashboard/admin-dashboard.component';
 import { PurchaseOrdersAdminComponent } from './purchase-orders-admin/purchase-orders-admin.component';
 import { AccountSetupComponent } from './account-setup/account-setup.component';
-import { InventoryItemComponent } from '../shared/inventory-item/inventory-item.component';
-import { DeliveryItemComponent } from '../shared/delivery-item/delivery-item.component';
+import { InventoryManagementComponent } from './inventory-management/inventory-management.component';
+
 export const AdminRoutes: Routes = [
   {
     path: '',
@@ -106,18 +106,14 @@ export const AdminRoutes: Routes = [
         canActivate: [roleGuard],
         data: { roles: ['admin', 'superadmin'], breadcrumb: 'Account Setup' } 
       },
-                                                                   {
-        path: 'inventory-item',
-        component: InventoryItemComponent,
-        canActivate: [roleGuard],
-        data: { roles: ['admin', 'superadmin'], breadcrumb: 'Inventory Item' } 
-      },
-
       {
-        path: 'delivery-item',
-        component: DeliveryItemComponent,
+        path: 'inventory-management',
+        component: InventoryManagementComponent,
         canActivate: [roleGuard],
-        data: { roles: ['admin', 'superadmin'], breadcrumb: 'Delivery Item' } 
+        data: { 
+          roles: ['admin', 'superadmin'], 
+          breadcrumb: 'Inventory Management' 
+        }
       },
     ],
   },
