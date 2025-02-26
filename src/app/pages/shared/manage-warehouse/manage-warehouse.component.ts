@@ -65,6 +65,22 @@ export class ManageWarehouseComponent implements OnInit {
     { label: 'Custom Range', value: 'custom' }
   ];
 
+  addStockDialog: boolean = false;
+  selectedPerson: any = null;
+  persons: any[] = [
+    { name: 'James Kirwin', id: 1 },
+    { name: 'Francis Chang', id: 2 },
+    { name: 'Steven Parker', id: 3 }
+    // Add more persons as needed
+  ];
+
+  addTransferDialog: boolean = false;
+  referenceNumber: string = '';
+  searchProduct: string = '';
+  notes: string = '';
+
+  addAdjustmentDialog: boolean = false;
+
   constructor() {}
 
   ngOnInit() {
@@ -228,7 +244,37 @@ export class ManageWarehouseComponent implements OnInit {
   }
 
   openNewStock() {
-    console.log('Opening new stock form');
+    this.selectedWarehouse = null;
+    this.selectedStore = null;
+    this.selectedPerson = null;
+    this.selectedProduct = null;
+    this.addStockDialog = true;
+  }
+
+  hideAddStockDialog() {
+    this.addStockDialog = false;
+  }
+
+  isStockFormValid(): boolean {
+    return !!(
+      this.selectedWarehouse &&
+      this.selectedStore &&
+      this.selectedPerson &&
+      this.selectedProduct
+    );
+  }
+
+  saveStock() {
+    if (this.isStockFormValid()) {
+      // Implement save logic here
+      console.log('Saving stock:', {
+        warehouse: this.selectedWarehouse,
+        store: this.selectedStore,
+        person: this.selectedPerson,
+        product: this.selectedProduct
+      });
+      this.hideAddStockDialog();
+    }
   }
 
   editStock(stock: any) {
@@ -260,7 +306,43 @@ export class ManageWarehouseComponent implements OnInit {
   }
 
   openNewAdjustment() {
-    console.log('Opening new adjustment form');
+    this.selectedWarehouse = null;
+    this.selectedStore = null;
+    this.selectedPerson = null;
+    this.searchProduct = '';
+    this.referenceNumber = '';
+    this.notes = '';
+    this.addAdjustmentDialog = true;
+  }
+
+  hideAddAdjustmentDialog() {
+    this.addAdjustmentDialog = false;
+  }
+
+  isAdjustmentFormValid(): boolean {
+    return !!(
+      this.searchProduct &&
+      this.selectedWarehouse &&
+      this.referenceNumber &&
+      this.selectedStore &&
+      this.selectedPerson &&
+      this.notes
+    );
+  }
+
+  saveAdjustment() {
+    if (this.isAdjustmentFormValid()) {
+      // Implement save logic here
+      console.log('Saving adjustment:', {
+        product: this.searchProduct,
+        warehouse: this.selectedWarehouse,
+        referenceNumber: this.referenceNumber,
+        store: this.selectedStore,
+        person: this.selectedPerson,
+        notes: this.notes
+      });
+      this.hideAddAdjustmentDialog();
+    }
   }
 
   filterAdjustments() {
@@ -302,7 +384,40 @@ export class ManageWarehouseComponent implements OnInit {
   }
 
   openNewTransfer() {
-    console.log('Opening new transfer form');
+    this.selectedFromWarehouse = null;
+    this.selectedToWarehouse = null;
+    this.referenceNumber = '';
+    this.searchProduct = '';
+    this.notes = '';
+    this.addTransferDialog = true;
+  }
+
+  hideAddTransferDialog() {
+    this.addTransferDialog = false;
+  }
+
+  isTransferFormValid(): boolean {
+    return !!(
+      this.selectedFromWarehouse &&
+      this.selectedToWarehouse &&
+      this.referenceNumber &&
+      this.searchProduct &&
+      this.notes
+    );
+  }
+
+  saveTransfer() {
+    if (this.isTransferFormValid()) {
+      // Implement save logic here
+      console.log('Saving transfer:', {
+        fromWarehouse: this.selectedFromWarehouse,
+        toWarehouse: this.selectedToWarehouse,
+        referenceNumber: this.referenceNumber,
+        product: this.searchProduct,
+        notes: this.notes
+      });
+      this.hideAddTransferDialog();
+    }
   }
 
   importTransfer() {

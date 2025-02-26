@@ -403,3 +403,337 @@
     ></button>
   </div>
 </ng-template>
+
+<!-- Add Stock Dialog -->
+<p-dialog 
+  [(visible)]="addStockDialog" 
+  [modal]="true" 
+  [style]="{width: '450px'}" 
+  header="Add Stock"
+  [draggable]="false"
+  [resizable]="false"
+  styleClass="p-fluid"
+>
+  <div class="flex flex-col gap-4">
+    <!-- Warehouse -->
+    <div class="field">
+      <label class="font-medium">
+        Warehouse
+        <span class="text-red-500">*</span>
+      </label>
+      <p-dropdown
+        [options]="warehouses"
+        [(ngModel)]="selectedWarehouse"
+        placeholder="Select"
+        optionLabel="name"
+        [showClear]="true"
+        styleClass="w-full"
+      ></p-dropdown>
+    </div>
+
+    <!-- Store -->
+    <div class="field">
+      <label class="font-medium">
+        Store
+        <span class="text-red-500">*</span>
+      </label>
+      <p-dropdown
+        [options]="stores"
+        [(ngModel)]="selectedStore"
+        placeholder="Select"
+        optionLabel="name"
+        [showClear]="true"
+        styleClass="w-full"
+      ></p-dropdown>
+    </div>
+
+    <!-- Responsible Person -->
+    <div class="field">
+      <label class="font-medium">
+        Responsible Person
+        <span class="text-red-500">*</span>
+      </label>
+      <p-dropdown
+        [options]="persons"
+        [(ngModel)]="selectedPerson"
+        placeholder="Select"
+        optionLabel="name"
+        [showClear]="true"
+        styleClass="w-full"
+      ></p-dropdown>
+    </div>
+
+    <!-- Product -->
+    <div class="field">
+      <label class="font-medium">
+        Product
+        <span class="text-red-500">*</span>
+      </label>
+      <div class="relative">
+        <i class="pi pi-search absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500"></i>
+        <input 
+          type="text" 
+          pInputText 
+          [(ngModel)]="searchProduct"
+          placeholder="Search Product"
+          style="text-indent: 1.5rem;"
+          class="w-full pl-10"
+        >
+      </div>
+    </div>
+  </div>
+
+  <!-- Dialog Footer -->
+  <ng-template pTemplate="footer">
+    <div class="flex gap-2 justify-end">
+      <p-button 
+        label="Cancel" 
+        (click)="hideAddStockDialog()"
+        styleClass="p-button-outlined"
+      ></p-button>
+      <p-button 
+        label="Add Stock" 
+        (click)="saveStock()"
+        [disabled]="!isStockFormValid()"
+      ></p-button>
+    </div>
+  </ng-template>
+</p-dialog>
+
+<!-- Add Transfer Dialog -->
+<p-dialog 
+  [(visible)]="addTransferDialog" 
+  [modal]="true" 
+  [style]="{width: '450px'}" 
+  header="Add Transfer"
+  [draggable]="false"
+  [resizable]="false"
+  styleClass="p-fluid"
+>
+  <div class="flex flex-col gap-4">
+    <!-- Warehouse From and To in same row -->
+    <div class="grid grid-cols-2 gap-4">
+      <!-- Warehouse From -->
+      <div class="field">
+        <label class="font-medium">
+          Warehouse From
+          <span class="text-red-500">*</span>
+        </label>
+        <p-dropdown
+          [options]="warehouses"
+          [(ngModel)]="selectedFromWarehouse"
+          placeholder="Select"
+          optionLabel="name"
+          [showClear]="true"
+          styleClass="w-full"
+        ></p-dropdown>
+      </div>
+
+      <!-- Warehouse To -->
+      <div class="field">
+        <label class="font-medium">
+          Warehouse To
+          <span class="text-red-500">*</span>
+        </label>
+        <p-dropdown
+          [options]="warehouses"
+          [(ngModel)]="selectedToWarehouse"
+          placeholder="Select"
+          optionLabel="name"
+          [showClear]="true"
+          styleClass="w-full"
+        ></p-dropdown>
+      </div>
+    </div>
+
+    <!-- Reference Number -->
+    <div class="field">
+      <label class="font-medium">
+        Reference Number
+        <span class="text-red-500">*</span>
+      </label>
+      <input 
+        type="text" 
+        pInputText 
+        [(ngModel)]="referenceNumber"
+        class="w-full"
+      >
+    </div>
+
+    <!-- Product -->
+    <div class="field">
+      <label class="font-medium">
+        Product
+        <span class="text-red-500">*</span>
+      </label>
+      <div class="relative">
+        <i class="pi pi-search absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500"></i>
+        <input 
+          type="text" 
+          pInputText 
+          [(ngModel)]="searchProduct"
+          placeholder="Search Product"
+          style="text-indent: 1.5rem;"
+          class="w-full pl-10"
+        >
+      </div>
+    </div>
+
+    <!-- Notes -->
+    <div class="field">
+      <label class="font-medium">
+        Notes
+        <span class="text-red-500">*</span>
+      </label>
+      <textarea 
+        pInputTextarea 
+        [(ngModel)]="notes"
+        [rows]="3"
+        class="w-full"
+      ></textarea>
+    </div>
+  </div>
+
+  <!-- Dialog Footer -->
+  <ng-template pTemplate="footer">
+    <div class="flex gap-2 justify-end">
+      <p-button 
+        label="Cancel" 
+        (click)="hideAddTransferDialog()"
+        styleClass="p-button-outlined"
+      ></p-button>
+      <p-button 
+        label="Create" 
+        (click)="saveTransfer()"
+        [disabled]="!isTransferFormValid()"
+      ></p-button>
+    </div>
+  </ng-template>
+</p-dialog>
+
+<!-- Add Adjustment Dialog -->
+<p-dialog 
+  [(visible)]="addAdjustmentDialog" 
+  [modal]="true" 
+  [style]="{width: '450px'}" 
+  header="Add Adjustment"
+  [draggable]="false"
+  [resizable]="false"
+  styleClass="p-fluid"
+>
+  <div class="flex flex-col gap-4">
+    <!-- Product -->
+    <div class="field">
+      <label class="font-medium">
+        Product
+        <span class="text-red-500">*</span>
+      </label>
+      <div class="relative">
+        <i class="pi pi-search absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500"></i>
+        <input 
+          type="text" 
+          pInputText 
+          [(ngModel)]="searchProduct"
+          placeholder="Search Product"
+          style="text-indent: 1.5rem;"
+          class="w-full pl-10"
+        >
+      </div>
+    </div>
+
+    <!-- Warehouse and Reference Number in same row -->
+    <div class="grid grid-cols-2 gap-4">
+      <!-- Warehouse -->
+      <div class="field">
+        <label class="font-medium">
+          Warehouse
+          <span class="text-red-500">*</span>
+        </label>
+        <p-dropdown
+          [options]="warehouses"
+          [(ngModel)]="selectedWarehouse"
+          placeholder="Select"
+          optionLabel="name"
+          [showClear]="true"
+          styleClass="w-full"
+        ></p-dropdown>
+      </div>
+
+      <!-- Reference Number -->
+      <div class="field">
+        <label class="font-medium">
+          Reference Number
+          <span class="text-red-500">*</span>
+        </label>
+        <input 
+          type="text" 
+          pInputText 
+          [(ngModel)]="referenceNumber"
+          class="w-full"
+        >
+      </div>
+    </div>
+
+    <!-- Store -->
+    <div class="field">
+      <label class="font-medium">
+        Store
+        <span class="text-red-500">*</span>
+      </label>
+      <p-dropdown
+        [options]="stores"
+        [(ngModel)]="selectedStore"
+        placeholder="Select"
+        optionLabel="name"
+        [showClear]="true"
+        styleClass="w-full"
+      ></p-dropdown>
+    </div>
+
+    <!-- Responsible Person -->
+    <div class="field">
+      <label class="font-medium">
+        Responsible Person
+        <span class="text-red-500">*</span>
+      </label>
+      <p-dropdown
+        [options]="persons"
+        [(ngModel)]="selectedPerson"
+        placeholder="Select"
+        optionLabel="name"
+        [showClear]="true"
+        styleClass="w-full"
+      ></p-dropdown>
+    </div>
+
+    <!-- Notes -->
+    <div class="field">
+      <label class="font-medium">
+        Notes
+        <span class="text-red-500">*</span>
+      </label>
+      <textarea 
+        pInputTextarea 
+        [(ngModel)]="notes"
+        [rows]="3"
+        class="w-full"
+      ></textarea>
+    </div>
+  </div>
+
+  <!-- Dialog Footer -->
+  <ng-template pTemplate="footer">
+    <div class="flex gap-2 justify-end">
+      <p-button 
+        label="Cancel" 
+        (click)="hideAddAdjustmentDialog()"
+        styleClass="p-button-outlined"
+      ></p-button>
+      <p-button 
+        label="Create Adjustment" 
+        (click)="saveAdjustment()"
+        [disabled]="!isAdjustmentFormValid()"
+      ></p-button>
+    </div>
+  </ng-template>
+</p-dialog>
