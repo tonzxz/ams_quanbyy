@@ -1,0 +1,154 @@
+<mat-card class="cardWithShadow">
+    <mat-card-content>
+        <mat-card-title class="select-none font-light">Suppliers</mat-card-title>
+        
+        <div class="flex justify-between items-center">
+            <p>View and manage suppliers in this section.</p>
+
+            <div class="flex-1"></div>
+            
+            <p-iconfield fluid class="w-full max-w-72 mr-2">
+                <p-inputicon styleClass="pi pi-search" />
+                <input fluid class="w-full" pSize="small" [(ngModel)]="searchValue" 
+                    (input)="dt?.filterGlobal(searchValue,'contains')" 
+                    type="text" pInputText placeholder="Search" />
+            </p-iconfield>
+            
+            <p-button pTooltip="Click to add new supplier" [outlined]="true" size="small" 
+                label="Add Supplier" (click)="openAddSupplierModal()" icon="pi pi-plus" />
+        </div>
+
+        <!-- Loading indicator -->
+        <div *ngIf="isLoading" class="flex justify-center items-center py-8">
+            <i class="pi pi-spin pi-spinner text-4xl"></i>
+        </div>
+
+        <p-table #dt [value]="suppliers" [rowHover]="true" *ngIf="!isLoading"
+            [paginator]="true" [rows]="10" [rowsPerPageOptions]="[5, 10, 20]"
+            [globalFilterFields]="['name', 'email', 'contact_person', 'contact_number']"
+            [tableStyle]="{'min-width': '60rem'}">
+
+            <ng-template pTemplate="header">
+                <tr>
+                    <th>Name</th>
+                    <th>Contact Person</th>
+                    <th>Contact Number</th>
+                    <th>Email</th>
+                    <th>TIN Number</th>
+                    <th>Address</th>
+                    <th>Description</th>
+                    <th>Actions</th>
+                </tr>
+            </ng-template>
+
+            <ng-template pTemplate="body" let-supplier>
+                <tr>
+                    <td>{{supplier.name}}</td>
+                    <td>{{supplier.contact_person || 'N/A'}}</td>
+                    <td>{{supplier.contact_number || 'N/A'}}</td>
+                    <td>{{supplier.email || 'N/A'}}</td>
+                    <td>{{supplier.tin_number || 'N/A'}}</td>
+                    <td>{{supplier.address || 'N/A'}}</td>
+                    <td>{{supplier.description || 'No description available'}}</td>
+                    <td class="w-16">
+                        <div class="flex gap-4">
+                            <p-button icon="pi pi-pencil" (click)="openEditSupplierModal(supplier)" 
+                                [outlined]="true" size="small" rounded />
+                            <p-button icon="pi pi-trash" (click)="confirmDeleteSupplier($event, supplier.id!)" 
+                                severity="danger" [outlined]="true" size="small" rounded />
+                        </div>
+                    </td>
+                </tr>
+            </ng-template>
+
+            <ng-template pTemplate="emptymessage">
+                <tr>
+                    <td colspan="7">
+                        <div class="flex flex-col w-full items-center justify-center mb-8">
+                            <div class="overflow-hidden h-52 w-52 mr-8">
+                                <app-lottie-animation animation="box" class="w-60 h-60"></app-lottie-animation>
+                            </div>
+                            <span>No suppliers found.</span>
+                        </div>
+                    </td>
+                </tr>
+            </ng-template>
+        </p-table>
+
+        <p-dialog [position]="'right'" [(visible)]="showSupplierModal" [style]="{ width: '25rem' }">
+            <ng-template pTemplate="header">
+                <div class="py-0 inline-flex items-center justify-center gap-3">
+                    <i class="pi pi-user text-lg"></i>
+                    <span class="font-bold text-lg whitespace-nowrap">{{selectedSupplier ? 'Edit' : 'Add'}} Supplier</span>
+                </div>
+            </ng-template>
+
+            <form [formGroup]="supplierForm" (submit)="selectedSupplier ? editSupplier() : addSupplier()">
+                <div class="flex flex-col gap-4">
+                    <div class="flex flex-col">
+                        <label for="name" class="font-semibold mb-2">Name</label>
+                        <input id="name" type="text" pInputText formControlName="name" placeholder="Enter supplier name"/>
+                        @if(supplierForm.get('name')?.hasError('required') && supplierForm.get('name')?.touched){
+                            <small class="text-red-500">Name is required</small>
+                        }
+                    </div>
+
+                    <div class="flex flex-col">
+                        <label for="contact_person" class="font-semibold mb-2">Contact Person</label>
+                        <input id="contact_person" type="text" pInputText formControlName="contact_person" placeholder="Enter contact person"/>
+                    </div>
+
+                    <div class="flex flex-col">
+                        <label for="contact_number" class="font-semibold mb-2">Contact Number</label>
+                        <input id="contact_number" type="text" pInputText formControlName="contact_number" 
+                               maxlength="13" 
+                               placeholder="Enter contact number (format: +639XXXXXXXXX)"/>
+                        @if(supplierForm.get('contact_number')?.hasError('invalidPhoneNumber') && supplierForm.get('contact_number')?.touched){
+                            <small class="text-red-500">Please enter a valid phone number in format +639XXXXXXXXX</small>
+                        }
+                    </div>
+
+                    <div class="flex flex-col">
+                        <label for="email" class="font-semibold mb-2">Email</label>
+                        <input id="email" type="email" pInputText formControlName="email" placeholder="Enter email address"/>
+                        @if(supplierForm.get('email')?.hasError('email') && supplierForm.get('email')?.touched){
+                            <small class="text-red-500">Please enter a valid email</small>
+                        }
+                    </div>
+
+                    <div class="flex flex-col">
+                        <label for="address" class="font-semibold mb-2">Address</label>
+                        <textarea id="address" rows="3" pInputTextarea formControlName="address" 
+                            placeholder="Enter supplier address"></textarea>
+                    </div>
+
+                    <div class="flex flex-col">
+                        <label for="description" class="font-semibold mb-2">Description</label>
+                        <textarea id="description" rows="3" pInputTextarea formControlName="description"
+                            placeholder="Enter description"></textarea>
+                    </div>
+
+                    <div class="flex flex-col">
+                        <label for="tin_number" class="font-semibold mb-2">TIN Number</label>
+                        <input id="tin_number" type="text" pInputText formControlName="tin_number" 
+                               maxlength="15" 
+                               placeholder="Enter TIN number (XXX-XXX-XXX-XXX)"/>
+                        @if(supplierForm.get('tin_number')?.hasError('required') && supplierForm.get('tin_number')?.touched){
+                            <small class="text-red-500">TIN number is required</small>
+                        }
+                    </div>
+                </div>
+
+                <div class="flex justify-end gap-2 mt-4">
+                    <p-button type="button" label="Cancel" (click)="closeSupplierModal()" 
+                        severity="secondary" [outlined]="true" />
+                    <p-button type="submit" [label]="selectedSupplier ? 'Update' : 'Add'"
+                        [disabled]="!supplierForm.valid" />
+                </div>
+            </form>
+        </p-dialog>
+    </mat-card-content>
+</mat-card>
+
+<p-toast position="bottom-right" />
+<p-confirmPopup />

@@ -9,6 +9,7 @@ import { CompileReportsComponent } from './compile-reports/compile-reports.compo
 import { SupplyDashboardComponent } from './supply-dashboard/supply-dashboard.component';
 import { DeliveryComponent } from './delivery/delivery.component';
 import { PriceQuotationComponent } from '../shared/price-quotation/price-quotation.component';
+import { SuppliersComponent } from './suppliers/suppliers.component';
 
 
 export const SupplyUnitRoutes: Routes = [
@@ -73,6 +74,12 @@ export const SupplyUnitRoutes: Routes = [
         component: PriceQuotationComponent,
         canActivate: [roleGuard],
         data: { roles: ['supply'], breadcrumb: 'Price Quotationn' } // specify roles here
+      },
+      {
+        path: 'suppliers',
+        component: SuppliersComponent,
+        canActivate: [roleGuard],
+        data: { roles: ['supply', 'superadmin'], breadcrumb: 'Suppliers' } // specify roles here
       },
     ],
   },

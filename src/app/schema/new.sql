@@ -221,3 +221,86 @@ CREATE TABLE Document (
     uploaded_by UUID REFERENCES Users(id) ON DELETE CASCADE,
     upload_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
+
+-- ICS Table
+CREATE TABLE ics (
+    ics_no VARCHAR(50) PRIMARY KEY CHECK (ics_no ~ '^ICS-\d{4}-\d{3}$'),  -- Enforces ICS-YYYY-### format
+    fund_cluster VARCHAR(50) NOT NULL CHECK (fund_cluster ~ '^FC-\d{4}-\d{3}$'),  -- Enforces FC-YYYY-### format
+    entity_name VARCHAR(255) NOT NULL,
+    date DATE NOT NULL,
+    inventory_item_no VARCHAR(50) NOT NULL,
+    quantity INTEGER NOT NULL,
+    unit VARCHAR(50) NOT NULL,
+    unit_cost DECIMAL(10,2) NOT NULL,
+    description TEXT,
+    estimated_useful_life VARCHAR(50) NOT NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE OR REPLACE FUNCTION update_updated_at_column()
+RETURNS TRIGGER AS $$
+BEGIN
+    NEW.updated_at = CURRENT_TIMESTAMP;
+    RETURN NEW;
+END;
+$$ language 'plpgsql';
+
+CREATE TRIGGER update_ics_updated_at
+    BEFORE UPDATE ON ics
+    FOR EACH ROW
+    EXECUTE FUNCTION update_updated_at_column();
+
+-- Delivery Receipts Table
+CREATE TABLE delivery_receipts (
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    receipt_number VARCHAR(50) NOT NULL UNIQUE,
+    supplier_id UUID NOT NULL,
+    supplier_name VARCHAR(255) NOT NULL,
+    supplier_tin VARCHAR(20) NOT NULL,  -- Added TIN field
+    department_id UUID NOT NULL,
+    department_name VARCHAR(255) NOT NULL,
+    delivery_date DATE NOT NULL,
+    total_amount DECIMAL(10,2) NOT NULL,
+    purchase_order UUID,
+    receipts TEXT[],  -- Array of receipt image URLs
+    notes TEXT,
+    status VARCHAR(20) CHECK (status IN ('unverified', 'processing', 'verified')) NOT NULL,
+    stocked BOOLEAN DEFAULT false,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+-- Add trigger for updated_at
+CREATE TRIGGER update_delivery_receipts_updated_at
+    BEFORE UPDATE ON delivery_receipts
+    FOR EACH ROW
+    EXECUTE FUNCTION update_updated_at_column();
+
+-- Supplier table definition
+CREATE TABLE IF NOT EXISTS supplier (
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    name VARCHAR(255) NOT NULL,
+    contact_person VARCHAR(255),
+    contact_number VARCHAR(20),
+    email VARCHAR(255),
+    address TEXT,
+    description TEXT,
+    tin_number VARCHAR(20),
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+-- Trigger to update the updated_at timestamp
+CREATE OR REPLACE FUNCTION update_supplier_updated_at()
+RETURNS TRIGGER AS $$
+BEGIN
+    NEW.updated_at = CURRENT_TIMESTAMP;
+    RETURN NEW;
+END;
+$$ language 'plpgsql';
+
+CREATE TRIGGER update_supplier_updated_at
+    BEFORE UPDATE ON supplier
+    FOR EACH ROW
+    EXECUTE FUNCTION update_updated_at_column();

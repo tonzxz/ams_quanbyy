@@ -36,13 +36,25 @@ elif args.db == 'psql':
     app.config['POSTGRES_PASSWORD'] = os.getenv('DB_PASSWORD')
     app.config['POSTGRES_DB'] = os.getenv('DB_NAME')
     app.config['POSTGRES_PORT'] = os.getenv('DB_PORT')
-    db = psycopg2.connect(
-        host=app.config['POSTGRES_HOST'],
-        user=app.config['POSTGRES_USER'],
-        password=app.config['POSTGRES_PASSWORD'],
-        dbname=app.config['POSTGRES_DB'],
-        port= app.config['POSTGRES_PORT'] or 5432
-    )
+    try:
+        print(f"Attempting to connect to PostgreSQL at {os.getenv('DB_HOST')}:{os.getenv('DB_PORT')}")
+        db = psycopg2.connect(
+            host=app.config['POSTGRES_HOST'],
+            user=app.config['POSTGRES_USER'],
+            password=app.config['POSTGRES_PASSWORD'],
+            dbname=app.config['POSTGRES_DB'],
+            port=app.config['POSTGRES_PORT'] or 5432
+        )
+        print('Successfully connected to PostgreSQL')
+        
+        # Test the connection
+        cursor = db.cursor()
+        cursor.execute('SELECT 1')
+        cursor.close()
+        
+    except Exception as e:
+        print(f'Error connecting to PostgreSQL: {e}')
+        exit()
     from core.controllers.postgreSQL import CRUD
     print('Server running on PostgreSQL')
 else:
@@ -55,7 +67,7 @@ resources = [
     'funding_sources', 'budgets', 'user_budgets', 'ppmp', 
     'ppmp_approvers', 'app', 'app_approvers', 'purchase_requests', 
     'purchase_request_approvers', 'procurement_process', 'contracts', 
-    'inspection_acceptance', 'payments'
+    'inspection_acceptance', 'payments', 'ics', 'delivery_receipts'
 ]
 
 key = Fernet.generate_key()
@@ -71,7 +83,37 @@ crud.add_logic('approved_ppmps', f'''
 
 # equivalent endpoint = /api/approved_ppmps
 
-CORS(app)
+# Enable CORS with specific configuration
+CORS(app, resources={r"/api/*": {"origins": "*", "methods": ["GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"]}})
+
+@app.route('/api/uploads/<filename>')
+def uploaded_file(filename):
+    return send_from_directory(app.config['UPLOAD_FOLDER'], filename)
+
+# Suppliers endpoints
+@app.route('/api/suppliers', methods=['GET'])
+def get_suppliers():
+    return crud.read('supplier')
+
+@app.route('/api/suppliers/<item_id>', methods=['GET'])
+def get_supplier(item_id):
+    return crud.read('supplier', item_id)
+
+@app.route('/api/suppliers', methods=['POST'])
+def create_supplier():
+    return crud.create('supplier')
+
+@app.route('/api/suppliers/<item_id>', methods=['PUT'])
+def update_supplier(item_id):
+    return crud.update('supplier', item_id)
+
+@app.route('/api/suppliers/<item_id>', methods=['DELETE'])
+def delete_supplier(item_id):
+    return crud.delete('supplier', item_id)
 
 if __name__ == '__main__':
-    app.run(host='0.0.0.0', debug=True)
+    app.run(
+        host='0.0.0.0',  # Allow external connections
+        port=5000,       # Specify port explicitly
+        debug=True
+    )

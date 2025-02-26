@@ -23,7 +23,7 @@ import { PurchaseOrderService } from 'src/app/services/purchase-order.service';
 import { LottieAnimationComponent } from '../../ui-components/lottie-animation/lottie-animation.component';
 import {  IconFieldModule } from 'primeng/iconfield';
 import { InputIconModule } from 'primeng/inputicon';
-import { Supplier, SuppliersService } from 'src/app/services/suppliers.service';
+import { Supplier, SupplierService } from 'src/app/services/supplier.service';
 import { SelectModule } from 'primeng/select';
 import { Department, DepartmentService } from 'src/app/services/departments.service';
 import { Requisition, RequisitionService } from 'src/app/services/requisition.service';
@@ -31,22 +31,51 @@ import jsPDF from 'jspdf';
 import 'jspdf-autotable';
 import { ProgressTableComponent, ProgressTableData } from 'src/app/components/progress-table/progress-table.component';
 import { PdfGeneratorService } from 'src/app/services/pdf-generator.service';
+import { KeyFilterModule } from 'primeng/keyfilter';
+import { CUSTOM_ELEMENTS_SCHEMA } from '@angular/core';
+import { firstValueFrom } from 'rxjs';
 
 
 @Component({
   selector: 'app-delivery-receipts',
   standalone: true,
-  imports: [MaterialModule,CommonModule, StepperModule, TableModule, ButtonModule, ButtonGroupModule, 
-    InputTextModule, InputIconModule,IconFieldModule, FormsModule, SelectModule,
-    FileUploadModule,DatePickerModule,InputNumberModule, ToastModule, ReactiveFormsModule, TextareaModule,
-    FluidModule, TooltipModule, DialogModule, InputTextModule,ConfirmPopupModule, ProgressTableComponent],
-  providers:[MessageService, ConfirmationService, CurrencyPipe, DatePipe],
+  imports: [
+    MaterialModule, 
+    CommonModule, 
+    StepperModule, 
+    TableModule, 
+    ButtonModule, 
+    ButtonGroupModule,
+    InputTextModule, 
+    InputIconModule, 
+    IconFieldModule, 
+    FormsModule, 
+    SelectModule,
+    FileUploadModule, 
+    DatePickerModule, 
+    InputNumberModule, 
+    ToastModule, 
+    ReactiveFormsModule, 
+    TextareaModule,
+    FluidModule, 
+    TooltipModule, 
+    DialogModule, 
+    InputTextModule, 
+    ConfirmPopupModule, 
+    ProgressTableComponent, 
+    KeyFilterModule, 
+    LottieAnimationComponent
+  ],
+  schemas: [CUSTOM_ELEMENTS_SCHEMA],
+  providers: [MessageService, ConfirmationService, CurrencyPipe, DatePipe],
   templateUrl: './delivery-receipts.component.html',
   styleUrl: './delivery-receipts.component.scss'
 })
 export class DeliveryReceiptsComponent implements OnInit {
 
   @ViewChild('fileUpload') fileUpload: FileUpload;
+
+  isLoading: boolean = false;
 
   receipts:DeliveryReceipt[]=[];
   suppliers:Supplier[];
@@ -57,13 +86,14 @@ export class DeliveryReceiptsComponent implements OnInit {
 
   form = new FormGroup({
     delivery_date: new FormControl('', [Validators.required]),
-    receipt_number:  new FormControl('',[ Validators.required]),
-    supplier:  new FormControl<Supplier|null>(null,[Validators.required]),
-    department:  new FormControl<Department|null>(null,[Validators.required]),
-    purchase_order: new FormControl<Requisition|null>(null,[Validators.required]),
-    total_amount:  new FormControl<number|null>( null,[Validators.required, Validators.min(0.001)]),
-    notes:  new FormControl(''),
-    files:  new FormControl<any>(null,[ Validators.required]), // You can later manage file upload logic in the component
+    receipt_number: new FormControl('', [Validators.required]),
+    supplier: new FormControl<Supplier|null>(null),
+    supplier_tin: new FormControl(''),
+    department: new FormControl<Department|null>(null),
+    purchase_order: new FormControl<Requisition|null>(null),
+    total_amount: new FormControl<number|null>(null, [Validators.required, Validators.min(0.001)]),
+    notes: new FormControl(''),
+    files: new FormControl<any>(null),
   });
 
   constructor(
@@ -74,7 +104,7 @@ export class DeliveryReceiptsComponent implements OnInit {
     private currencyPipe:CurrencyPipe,
     private messageService:MessageService,
     private departmentService:DepartmentService,
-    private supplierService:SuppliersService,
+    private supplierService:SupplierService,
     private pdfService:PdfGeneratorService,
     private deliveryService:DeliveryReceiptService){}
 
@@ -102,15 +132,15 @@ export class DeliveryReceiptsComponent implements OnInit {
     }
     const date = dr.delivery_date.toString().split('T')[0].split('-');
     this.form.patchValue({
-      files:dr.receipts,
+      files: dr.receipts,
       receipt_number: dr.receipt_number,
-      supplier: this.suppliers.find(supplier => supplier.id ==dr.supplier_id),
-      department: this.departments.find(department => department.id ==dr.department_id),
-      purchase_order: this.requisitions.find(req=>req.id == dr.purchase_order),
+      supplier: this.suppliers.find(supplier => supplier.id == dr.supplier_id),
+      department: this.departments.find(department => department.id == dr.department_id),
+      purchase_order: this.requisitions.find(req => req.id == dr.purchase_order),
       delivery_date: `${date[1]}/${date[2]}/${date[0]}`,
       total_amount: Number(dr.total_amount!),
-      notes:dr.notes ?? '',
-    })
+      notes: dr.notes ?? '',
+    });
     this.selectedDeliveryReceipt = dr;
     this.showReceiptModal = true;
   }
@@ -124,54 +154,79 @@ export class DeliveryReceiptsComponent implements OnInit {
     });
   }
 
-  async addReceipt(){
-    const dr = this.form.value;
-    await this.deliveryService.addReceipt({
-      receipts:[
-        'assets/images/products/sample-receipt.png'
-      ],
-      receipt_number: dr.receipt_number!.toUpperCase(),
-      supplier_name: dr.supplier!.name,
-      supplier_id: dr.supplier!.id!,
-      department_id: dr.department!.id!,
-      department_name: dr.department!.name!,
-      delivery_date: new Date(dr.delivery_date!),
-      total_amount: dr.total_amount!,
-      purchase_order: dr.purchase_order?.id,
-      notes:dr.notes ?? '',
-      status:'unverified',
-      stocked:false,
-    })
-    this.form.reset();
-    this.files = [];
-    if (this.fileUpload) {
-      this.fileUpload.clear(); 
+  formatTIN(event: any) {
+    // Get the raw input value
+    const input = event.target.value;
+    
+    // Remove all non-digit characters
+    const digitsOnly = input.replace(/\D/g, '');
+    
+    // Format with hyphens
+    let formatted = '';
+    for (let i = 0; i < digitsOnly.length && i < 12; i++) {
+      if (i > 0 && i % 3 === 0) {
+        formatted += '-';
+      }
+      formatted += digitsOnly[i];
     }
-    this.showReceiptModal = false;
-    this.messageService.add({ severity: 'success', summary: 'Success', detail: `Successfully added receipt no. ${dr.receipt_number?.toUpperCase()}` });
-    await this.fetchItems();
-    this.progressTable.activeStep = 0;
+    
+    // Set the formatted value directly
+    event.target.value = formatted;
+    
+    // Update the form control
+    this.form.get('supplier_tin')?.setValue(formatted);
+  }
+
+  async addReceipt(){
+    if (this.form.valid) {
+      const formData = this.form.value;
+      const newReceipt: DeliveryReceipt = {
+        receipt_number: formData.receipt_number!.toUpperCase(),
+        supplier_name: formData.supplier?.name || 'Test Supplier',
+        supplier_id: formData.supplier?.id || '00000000000000000000000000000000',
+        supplier_tin: formData.supplier_tin || '000-000-000-000',
+        department_id: formData.department?.id || '00000000000000000000000000000000',
+        department_name: formData.department?.name || 'Test Department',
+        delivery_date: new Date(formData.delivery_date || new Date()),
+        total_amount: formData.total_amount || 0,
+        purchase_order: formData.purchase_order?.id,
+        notes: formData.notes || '',
+        status: 'unverified',
+        stocked: false,
+        receipts: [],
+      };
+      
+      await this.deliveryService.addReceipt(newReceipt, this.files || []);
+      this.form.reset();
+      this.files = [];
+      if (this.fileUpload) {
+        this.fileUpload.clear(); 
+      }
+      this.showReceiptModal = false;
+      this.messageService.add({ severity: 'success', summary: 'Success', detail: `Successfully added receipt no. ${formData.receipt_number?.toUpperCase()}` });
+      await this.fetchItems();
+      this.progressTable.activeStep = 0;
+    }
   }
 
   async editReceipt(){
     const dr = this.form.value;
     await this.deliveryService.editReceipt({
       id: this.selectedDeliveryReceipt!.id,
-      receipts:[
-        'assets/images/products/sample-receipt.png'
-      ],
       receipt_number: dr.receipt_number!.toUpperCase(),
       supplier_name: dr.supplier!.name,
       supplier_id: dr.supplier!.id!,
+      supplier_tin: dr.supplier_tin!,
       department_id: dr.department!.id!,
       department_name: dr.department!.name!,
       delivery_date: new Date(dr.delivery_date!),
       total_amount: dr.total_amount!,
       purchase_order: dr.purchase_order?.id,
-      notes:dr.notes ?? '',
-      status:'unverified',
-      stocked:false
-    })
+      notes: dr.notes ?? '',
+      status: 'unverified',
+      stocked: false,
+      receipts: [],
+    });
     this.form.reset();
     this.files = [];
     if (this.fileUpload) {
@@ -184,58 +239,61 @@ export class DeliveryReceiptsComponent implements OnInit {
   }
 
 
-  async confirmDeleteReceipt(event: Event,dr:DeliveryReceipt){
+  async confirmDeleteReceipt(event: Event, dr: DeliveryReceipt) {
     this.confirmationService.confirm({
       target: event.target as EventTarget,
-      message: 'Are you sure you want to delete this receipt?',
+      message: `Are you sure you want to delete receipt ${dr.receipt_number}?`,
       icon: 'pi pi-exclamation-triangle',
-      rejectButtonProps: {
-          label: 'Cancel',
-          severity: 'secondary',
-          outlined: true
-      },
-      acceptButtonProps: {
-          label: 'Confirm'
-      },
       accept: async () => {
-          await this.deliveryService.deleteReceipt(dr.id!)
-          this.messageService.add({ severity: 'success', summary: 'Success', detail: `Successfully deleted receipt.` });
+        try {
+          await this.deliveryService.deleteReceipt(dr.id!);
+          this.messageService.add({
+            severity: 'success',
+            summary: 'Success',
+            detail: `Receipt ${dr.receipt_number} deleted successfully`
+          });
           await this.fetchItems();
-          this.progressTable.activeStep = 0;
-      },
-      reject: () => {
-          
-      }
-  });
-  }
-
-  async confirmForInspection(event: Event,dr:DeliveryReceipt){
-    this.confirmationService.confirm({
-      target: event.target as EventTarget,
-      message: 'Are you sure you want to submit this receipt for inspection?',
-      icon: 'pi pi-exclamation-triangle',
-      rejectButtonProps: {
-          label: 'Cancel',
-          severity: 'secondary',
-          outlined: true
-      },
-      acceptButtonProps: {
-          label: 'Confirm'
-      },
-      accept: async () => {
-          await this.deliveryService.moveForInspection(dr.id!)
-          this.messageService.add({ severity: 'success', summary: 'Success', detail: `Successfully submitted receipt for inspection.` });
-          await this.fetchItems();
-          this.progressTable.activeStep = 2;
-      },
-      reject: () => {
-          
+        } catch (error) {
+          console.error('Error deleting receipt:', error);
+          this.messageService.add({
+            severity: 'error',
+            summary: 'Error',
+            detail: 'Failed to delete receipt'
+          });
+        }
       }
     });
   }
 
-  async proceedToStocking(){
-    this.router.navigate(['/supply-management/stocking'])
+  async confirmForInspection(event: Event, dr: DeliveryReceipt) {
+    this.confirmationService.confirm({
+      target: event.target as EventTarget,
+      message: `Are you sure you want to submit receipt ${dr.receipt_number} for inspection?`,
+      icon: 'pi pi-exclamation-triangle',
+      accept: async () => {
+        try {
+          await this.deliveryService.moveForInspection(dr.id!);
+          this.messageService.add({
+            severity: 'success',
+            summary: 'Success',
+            detail: `Receipt ${dr.receipt_number} submitted for inspection`
+          });
+          await this.fetchItems();
+          this.progressTable.activeStep = 1; // Move to processing tab
+        } catch (error) {
+          console.error('Error submitting for inspection:', error);
+          this.messageService.add({
+            severity: 'error',
+            summary: 'Error',
+            detail: 'Failed to submit receipt for inspection'
+          });
+        }
+      }
+    });
+  }
+
+  proceedToStocking() {
+    this.router.navigate(['/supply-unit/stocking']);
   }
 
   progressTable: ProgressTableData<DeliveryReceipt,'status'> = {
@@ -325,39 +383,56 @@ export class DeliveryReceiptsComponent implements OnInit {
       data:[]
     }
   
-  async fetchItems(){
-    this.receipts = await this.deliveryService.getAll();
-    this.progressTable.data = this.receipts;
-    this.suppliers = await this.supplierService.getAll();
-    this.departments = await this.departmentService.getAllDepartments();
-    const allRequisitions = await this.requisitionService.getAllRequisitions();
-    const allSequences = await this.requisitionService.getAllApprovalSequences();
+  async fetchItems() {
+    try {
+      this.isLoading = true;  // Start loading
+      this.receipts = await this.deliveryService.getAll();
+      this.progressTable.data = this.receipts;
+      this.suppliers = await firstValueFrom(this.supplierService.getAllSuppliers());
+      this.departments = await this.departmentService.getAllDepartments();
+      const allRequisitions = await this.requisitionService.getAllRequisitions();
+      const allSequences = await this.requisitionService.getAllApprovalSequences();
 
-    this.requisitions = allRequisitions
-      .map((req) => {
-        // const typeSequences = allSequences.filter(
-        //   (seq) => seq.type === (req.currentApprovalLevel <= 4 ? 'procurement' : 'supply')
-        // );
+      this.requisitions = allRequisitions
+        .map((req) => {
+          // const typeSequences = allSequences.filter(
+          //   (seq) => seq.type === (req.currentApprovalLevel <= 4 ? 'procurement' : 'supply')
+          // );
 
-        const currentSequence = allSequences.find(
-          (seq) => seq.id === req.approvalSequenceId
-        );
+          const currentSequence = allSequences.find(
+            (seq) => seq.id === req.approvalSequenceId
+          );
 
-        return {
-          ...req,
-          approvalSequenceDetails: currentSequence
+          return {
+            ...req,
+            approvalSequenceDetails: currentSequence
 ,
-        };
-      })
-      .filter((req) => {
-        if(this.receipts.find(dr=>dr.purchase_order == req.id)){
-          return false;
-        }
-        return req.approvalSequenceDetails && (req.approvalSequenceDetails?.roleCode === 'supply' || req.approvalSequenceDetails?.roleCode === 'inspection')
+          };
+        })
+        .filter((req) => {
+          if(this.receipts.find(dr=>dr.purchase_order == req.id)){
+            return false;
+          }
+          return req.approvalSequenceDetails && (req.approvalSequenceDetails?.roleCode === 'supply' || req.approvalSequenceDetails?.roleCode === 'inspection')
+        });
+    } catch (error) {
+      console.error('Error fetching items:', error);
+      this.messageService.add({
+        severity: 'error',
+        summary: 'Error',
+        detail: 'Failed to fetch delivery receipts'
       });
+    } finally {
+      this.isLoading = false;  // End loading regardless of success/failure
+    }
   }
 
-
-
-  
+  onSupplierChange(event: any) {
+    const selectedSupplier = event.value;
+    if (selectedSupplier && selectedSupplier.tin_number) {
+      this.form.patchValue({
+        supplier_tin: selectedSupplier.tin_number
+      });
+    }
+  }
 }

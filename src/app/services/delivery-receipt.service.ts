@@ -6,6 +6,8 @@ import { UserService } from './user.service';
 import { firstValueFrom } from 'rxjs';
 import { NotificationService } from './notifications.service';
 import { MessageService } from 'primeng/api';
+import { HttpClient } from '@angular/common/http';
+import { environment } from 'src/environment/environment';
 
 export const deliveryReceiptSchema = z.object({
   id: z.string().length(32, "ID must be exactly 32 characters").optional(),
@@ -22,6 +24,9 @@ export const deliveryReceiptSchema = z.object({
   purchase_order: z.string().optional(),
   stocked: z.boolean(),
   receipts: z.array(z.string()),
+  supplier_tin: z.string().length(20, "Supplier TIN must be exactly 20 characters"),
+  created_at: z.date().optional(),
+  updated_at: z.date().optional(),
 });
 
 export type DeliveryReceipt = z.infer<typeof deliveryReceiptSchema>;
@@ -36,240 +41,117 @@ export type DeliveryReceiptItems = {
   providedIn: 'root'
 })
 export class DeliveryReceiptService {
-  private receiptData: DeliveryReceipt[] = [
-    {
-      id: '12345678901234567890123456789012',  // 32 characters ID
-      receipt_number: 'REC0012345',
-      supplier_name: 'John Doe',
-      supplier_id: '23456789012345678901234567890123',  // Example Supplier ID
-      delivery_date: new Date('2023-01-15'),
-      receipts: [
-        'assets/images/products/sample-receipt.png'
-      ],
-      total_amount: 1051.00,
-      notes: 'Customer requested expedited shipping.',
-      status: 'unverified',
-      stocked: false,
-    },
-    {
-      id: '23456789012345678901234567890123',
-      receipt_number: 'REC0012346',
-      supplier_name: 'Jane Smith',
-      supplier_id: '23456789012345678901234567890123',  // Added Supplier ID for Jane Smith
-      delivery_date: new Date('2023-02-20'),
-      receipts: [
-        'assets/images/products/sample-receipt.png'
-      ],
-      total_amount: 815.00,
-      notes: 'Delivery on the 20th.',
-      status: 'unverified',
-      stocked: false,
-    },
-    {
-      id: '34567890123456789012345678901234',
-      receipt_number: 'REC0012347',
-      supplier_name: 'Alice Johnson',
-      supplier_id: '34567890123456789012345678901234',  // Example Supplier ID for Alice Johnson
-      delivery_date: new Date('2023-03-05'),
-      receipts: [
-        'assets/images/products/sample-receipt.png'
-      ],
-      total_amount: 1250.75,
-      notes: 'Customer requested special handling.',
-      status: 'unverified',
-      stocked: false,
-    },
-    {
-      id: '45678901234567890123456789012345',
-      receipt_number: 'REC0012348',
-      supplier_name: 'Bob Williams',
-      supplier_id: '45678901234567890123456789012345',  // Example Supplier ID for Bob Williams
-      delivery_date: new Date('2023-03-10'),
-      receipts: [
-        'assets/images/products/sample-receipt.png'
-      ],
-      total_amount: 980.40,
-      notes: 'Delayed due to weather conditions.',
-      status: 'verified',
-      stocked: false,
-    },
-    {
-      id: '56789012345678901234567890123456',
-      receipt_number: 'REC0012349',
-      supplier_name: 'Cathy Brown',
-      supplier_id: '56789012345678901234567890123456',  // Example Supplier ID for Cathy Brown
-      delivery_date: new Date('2023-03-12'),
-      receipts: [
-        'assets/images/products/sample-receipt.png'
-      ],
-      total_amount: 340.50,
-      notes: 'Urgent delivery, needs confirmation.',
-      status: 'verified',
-      stocked: false,
-    },
-    {
-      id: '67890123456789012345678901234567',
-      receipt_number: 'REC0012350',
-      supplier_name: 'David Clark',
-      supplier_id: '67890123456789012345678901234567',  // Example Supplier ID for David Clark
-      delivery_date: new Date('2023-03-15'),
-      receipts: [
-        'assets/images/products/sample-receipt.png'
-      ],
-      total_amount: 1500.00,
-      notes: 'Payment confirmed.',
-      status: 'verified',
-      stocked: true,
-    },
-    {
-      id: '78901234567890123456789012345678',
-      receipt_number: 'REC0012351',
-      supplier_name: 'Emily White',
-      supplier_id: '78901234567890123456789012345678',  // Example Supplier ID for Emily White
-      delivery_date: new Date('2023-03-18'),
-      receipts: [
-        'assets/images/products/sample-receipt.png'
-      ],
-      total_amount: 920.00,
-      notes: 'Verified and completed.',
-      status: 'verified',
-      stocked: true,
-    }
-  ];
-  
+  private apiUrl = `${environment.api}/delivery_receipts`;
 
   constructor(
-    private notifService:NotificationService,
-    private stockService:StocksService,private userService:UserService) { }
+    private notifService: NotificationService,
+    private stockService: StocksService,
+    private userService: UserService,
+    private http: HttpClient
+  ) {}
 
-
-  async getAllDRItems():Promise<DeliveryReceiptItems[]>{
-        const stocks = await this.stockService.getAll(); 
-        const joined:DeliveryReceiptItems[] = [];
-        const local_dr_items = localStorage.getItem('deliveryReceipts');
-        if(local_dr_items){
-          this.receiptData = JSON.parse(local_dr_items) as DeliveryReceipt[];
-        }
-    
-        this.receiptData = this.receiptData.filter(dr=>dr.status == 'verified');
-        for(let dr of this.receiptData){
-          joined.push({
-            deliveryReceipt: dr,
-            items:stocks.filter(stock=>stock.dr_id == dr.receipt_number)
-          })
-        }
-        return joined;
-  }
   async getAll(): Promise<DeliveryReceipt[]> {
-    const local_receipts = localStorage.getItem('deliveryReceipts');
-    if (local_receipts) {
-      this.receiptData = JSON.parse(local_receipts) as DeliveryReceipt[];
+    // Replace localStorage with HTTP request
+    try {
+      const response = await this.http.get<DeliveryReceipt[]>(this.apiUrl).toPromise();
+      return response || [];
+    } catch (error) {
+      console.error('Error fetching delivery receipts:', error);
+      return [];
     }
-    return this.receiptData;
   }
 
-  // delivery-receipt.service.ts
-async addReceipt(receipt: DeliveryReceipt) {
-  const id = (Math.random().toString(36) + Math.random().toString(36) + Date.now().toString(36)).substring(2, 34);
-  this.receiptData.push({
-    id: id,
-    ...receipt
-  });
-  localStorage.setItem('deliveryReceipts', JSON.stringify(this.receiptData));
-}
-
-async editReceipt(receipt: DeliveryReceipt) {
-  const receiptIndex = this.receiptData.findIndex(item => item.id == receipt.id);
-  if (receiptIndex !== -1) {
-    this.receiptData[receiptIndex] = receipt;
-    localStorage.setItem('deliveryReceipts', JSON.stringify(this.receiptData));
+  async editReceipt(receipt: DeliveryReceipt): Promise<any> {
+    // Replace localStorage with HTTP PUT request
+    return this.http.put(`${this.apiUrl}/${receipt.id}`, receipt).toPromise();
   }
-}
 
   async moveForInspection(id: string) {
-    const receiptIndex = this.receiptData.findIndex(item => item.id == id);
-    if (receiptIndex !== -1) {
-      this.receiptData[receiptIndex].status = 'processing';
-      localStorage.setItem('deliveryReceipts', JSON.stringify(this.receiptData));
-      const users = await firstValueFrom(this.userService.getAllUsers());
-      for(let user of users){
-        if(user.role == 'superadmin' || user.role == 'inspection' || user.role == 'supply'){
-          this.notifService.addNotification(
-          `Receipt No. ${this.receiptData[receiptIndex].receipt_number} has been moved for inspection.`,
-          'info',
-          user.id
-          )
-        }
+    try {
+      // First get the current receipt
+      const receipts = await this.getAll();
+      const receipt = receipts.find(r => r.id === id);
+      
+      if (!receipt) {
+        throw new Error('Receipt not found');
       }
+      
+      // Update the status
+      receipt.status = 'processing';
+      
+      // Use PUT instead of PATCH
+      const response = await this.http.put(`${this.apiUrl}/${id}`, receipt).toPromise();
+      console.log('Response:', response);
+      return response;
+    } catch (error) {
+      console.error('Error in moveForInspection:', error);
+      throw error;
     }
-
-   
   }
 
   async moveToVerified(id: string) {
-    const receiptIndex = this.receiptData.findIndex(item => item.id == id);
-    if (receiptIndex !== -1) {
-      this.receiptData[receiptIndex].status = 'verified';
-      localStorage.setItem('deliveryReceipts', JSON.stringify(this.receiptData));
-      const users = await firstValueFrom(this.userService.getAllUsers());
-      for(let user of users){
-        if(user.role == 'superadmin' || user.role == 'inspection' || user.role == 'supply'){
-          this.notifService.addNotification(
-          `Receipt No. ${this.receiptData[receiptIndex].receipt_number} has been inspected and verified.`,
-          'success',
-          user.id
-          )
-        }
-      }
-    }
+    const data = { status: 'verified' };
+    return this.http.patch(`${this.apiUrl}/${id}`, data).toPromise();
   }
 
   async moveToRejected(id: string) {
-    const receiptIndex = this.receiptData.findIndex(item => item.id == id);
-    if (receiptIndex !== -1) {
-      this.receiptData[receiptIndex].status = 'unverified';
-      localStorage.setItem('deliveryReceipts', JSON.stringify(this.receiptData));
-      const users = await firstValueFrom(this.userService.getAllUsers());
-      for(let user of users){
-        if(user.role == 'superadmin' || user.role == 'inspection' || user.role == 'supply'){
-          this.notifService.addNotification(
-          `Receipt No. ${this.receiptData[receiptIndex].receipt_number} has been rejected by the inspection team.`,
-          'error',
-          user.id
-          )
-        }
-      }
-    }
+    const data = { status: 'unverified' };
+    return this.http.patch(`${this.apiUrl}/${id}`, data).toPromise();
   }
 
-  async markAsStocked(id:string){
-    const drIndex = this.receiptData.findIndex(dr => dr.id==id);
-    this.receiptData[drIndex].stocked = true;
-    localStorage.setItem('deliveryReceipts', JSON.stringify(this.receiptData));
-    const users = await firstValueFrom(this.userService.getAllUsers());
-    for(let user of users){
-      if(user.role == 'superadmin' || user.role == 'inspection' || user.role == 'supply'){
-        this.notifService.addNotification(
-        `Receipt No. ${this.receiptData[drIndex].receipt_number} has been stocked.`,
-        'info',
-        user.id
-        )
-      }
-    }
+  async markAsStocked(id: string) {
+    const data = { stocked: true };
+    return this.http.patch(`${this.apiUrl}/${id}`, data).toPromise();
   }
 
   async deleteReceipt(id: string) {
-    this.receiptData = this.receiptData.filter(item => item.id !== id);
-    localStorage.setItem('deliveryReceipts', JSON.stringify(this.receiptData));
+    return this.http.delete(`${this.apiUrl}/${id}`).toPromise();
+  }
+
+  async getAllDRItems(): Promise<DeliveryReceiptItems[]> {
+    const [stocks, receipts] = await Promise.all([
+      this.stockService.getAll(),
+      this.getAll()
+    ]);
+
+    const verifiedReceipts = receipts.filter(dr => dr.status === 'verified');
+    
+    return verifiedReceipts.map(dr => ({
+      deliveryReceipt: dr,
+      items: stocks.filter(stock => stock.dr_id === dr.receipt_number)
+    }));
+  }
+
+  async addReceipt(receipt: DeliveryReceipt, files: File[]): Promise<any> {
+    const formData = new FormData();
+    
+    // Convert receipt data to plain object
+    const receiptData = {
+      ...receipt,
+      receipts: [],  // Initialize empty array, will be populated by backend
+      delivery_date: receipt.delivery_date.toISOString()  // Format date for API
+    };
+    
+    // Add receipt data
+    Object.entries(receiptData).forEach(([key, value]) => {
+      formData.append(key, value?.toString() ?? '');
+    });
+    
+    // Add files
+    files.forEach(file => {
+      formData.append('files', file);
+    });
+
+    return this.http.post(this.apiUrl, formData).toPromise();
   }
 
   async getVerifiedReceipts(): Promise<DeliveryReceipt[]> {
-    const local_receipts = localStorage.getItem('deliveryReceipts');
-    if (local_receipts) {
-      this.receiptData = JSON.parse(local_receipts) as DeliveryReceipt[];
+    try {
+      const receipts = await this.getAll();
+      return receipts.filter(receipt => receipt.status === 'verified');
+    } catch (error) {
+      console.error('Error fetching verified receipts:', error);
+      return [];
     }
-    // Only return receipts with the exact status we want based on the current step
-    return this.receiptData;
-}
-  
+  }
 }

@@ -28,6 +28,8 @@ import { DocumentManagementComponent } from './document-management/document-mana
 import { AuditTrailsComponent } from './audit-trails/audit-trails.component';
 import { AppSharedComponent } from './app-shared/app-shared.component';
 import { PrSharedComponent } from './pr-shared/pr-shared.component';
+import { InventoryItemComponent } from './inventory-item/inventory-item.component';
+import { DeliveryItemComponent } from './delivery-item/delivery-item.component';
 
 export const SharedRoutes: Routes = [
   {
@@ -192,6 +194,17 @@ export const SharedRoutes: Routes = [
         path: 'audit-trails',
         component: AuditTrailsComponent,
         data: {breadcrumb:'Audit Trails'}
+      },
+
+      {
+        path: 'inventory-item',
+        component: InventoryItemComponent,
+        data: {breadcrumb:'Inventory Item'}
+      },
+      {
+        path: 'delivery-item',
+        component: DeliveryItemComponent,
+        data: {breadcrumb:'Delivery Items'}
       },
     ],
   },

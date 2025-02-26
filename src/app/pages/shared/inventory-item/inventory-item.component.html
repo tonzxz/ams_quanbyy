@@ -1,0 +1,163 @@
+<mat-card class="cardWithShadow">
+    <mat-card-content>
+        <mat-card-title class="select-none font-light">Inventory Items</mat-card-title>
+       
+        <div class="flex justify-between items-center">
+            <p>View and manage inventory items in this section.</p>
+            <div class="flex-1"></div>
+         
+            <div class="relative w-full max-w-72 mr-2">
+                <i class="pi pi-search absolute left-3 top-1/2 -translate-y-1/2 z-10 text-gray-500"></i>
+                <input class="w-full p-inputtext p-component pl-10 rounded-lg border border-gray-300 
+                    focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all duration-200" 
+                    pInputText [(ngModel)]="searchValue" 
+                    (input)="dt.filterGlobal(searchValue,'contains')" type="text"
+                    placeholder="Search items..." style="padding-left: 2.5rem"/>
+            </div>
+            <p-button pTooltip="Click to add new item" [outlined]="true" 
+                size="small" label="Add Item" (click)="openAddStockModal()" 
+                icon="pi pi-plus" />
+        </div>
+
+        <p-table #dt dataKey="id" [rowHover]="true" [value]="stocks"
+            [paginator]="true" [rows]="5" [rowsPerPageOptions]="[5, 10, 20]"
+            sortField="name" sortMode="single" [scrollable]="true" 
+            scrollHeight="600px" [tableStyle]="{'min-width': '60rem'}"
+            [globalFilterFields]="['name', 'ticker', 'storage_name', 'product_name']">
+
+            <ng-template pTemplate="header">
+                <tr>
+                    <th pSortableColumn="name" pFrozen="left">Name <p-sortIcon field="name"></p-sortIcon></th>
+                    <th pSortableColumn="ticker">Ticker <p-sortIcon field="ticker"></p-sortIcon></th>
+                    <th pSortableColumn="storage_name">Storage <p-sortIcon field="storage_name"></p-sortIcon></th>
+                    <th pSortableColumn="product_name">Type <p-sortIcon field="product_name"></p-sortIcon></th>
+                    <th pSortableColumn="quantity">Quantity <p-sortIcon field="quantity"></p-sortIcon></th>
+                    <th pSortableColumn="dateAdded">Date Added <p-sortIcon field="dateAdded"></p-sortIcon></th>
+                    <th>Description</th>
+                    <th>Actions</th>
+                </tr>
+            </ng-template>
+
+            <ng-template pTemplate="body" let-stock>
+                <tr>
+                    <td pFrozen="left">
+                        <div class="flex items-center gap-3">
+                            <img [src]="stock.imageUrl || 'https://placehold.co/200x200?text=No+Image'" 
+                                [alt]="stock.name"
+                                (error)="handleImageError($event)"
+                                class="w-12 h-12 object-cover rounded-lg shadow-sm" />
+                            <div>
+                                <i class="pi pi-box mr-2"></i>
+                                {{stock.name}}
+                            </div>
+                        </div>
+                    </td>
+                    <td>{{stock.ticker}}</td>
+                    <td>{{stock.storage_name}}</td>
+                    <td>{{stock.product_name}}</td>
+                    <td>{{stock.quantity | number}}</td>
+                    <td>{{stock.dateAdded | date: 'yyyy-MM-dd'}}</td>
+                    <td>{{stock.description || 'No description set.'}}</td>
+                    <td>
+                        <div class="flex gap-2">
+                            <p-button icon="pi pi-pencil" (click)="openEditStockModal(stock)"
+                                [outlined]="true" severity="primary" size="small" />
+                            <p-button icon="pi pi-trash" (click)="confirmDeleteStock($event, stock.id)"
+                                [outlined]="true" severity="danger" size="small" />
+                        </div>
+                    </td>
+                </tr>
+            </ng-template>
+
+            <ng-template pTemplate="emptymessage">
+                <tr>
+                    <td colspan="8">
+                        <div class="flex flex-col items-center justify-center py-6">
+                            <i class="pi pi-box text-6xl text-gray-300 mb-4"></i>
+                            <span>No inventory items found.</span>
+                        </div>
+                    </td>
+                </tr>
+            </ng-template>
+        </p-table>
+    </mat-card-content>
+</mat-card>
+
+<p-dialog [header]="selectedStock ? 'Edit Item' : 'Add New Item'" 
+    [(visible)]="showStockModal" [modal]="true" [style]="{width: '450px'}"
+    [draggable]="false" [resizable]="false">
+    
+    <form [formGroup]="stockForm" class="flex flex-col gap-4">
+        <div class="field">
+            <label for="name" class="font-medium mb-2 block">Item Name</label>
+            <input pInputText id="name" formControlName="name" class="w-full"
+                placeholder="Enter item name" />
+            @if (stockForm.get('name')?.invalid && stockForm.get('name')?.touched) {
+                <small class="text-red-500">Name is required</small>
+            }
+        </div>
+
+        <div class="field">
+            <label for="ticker" class="font-medium mb-2 block">Ticker</label>
+            <input pInputText id="ticker" formControlName="ticker" class="w-full"
+                placeholder="Enter ticker" />
+            @if (stockForm.get('ticker')?.invalid && stockForm.get('ticker')?.touched) {
+                <small class="text-red-500">Ticker is required</small>
+            }
+        </div>
+
+        <div class="field">
+            <label for="storage" class="font-medium mb-2 block">Storage Location</label>
+            <p-select id="storage" [options]="inventories" formControlName="storage"
+                optionLabel="name" [filter]="true" filterBy="name" [showClear]="true"
+                placeholder="Select storage location" class="w-full"></p-select>
+            @if (stockForm.get('storage')?.invalid && stockForm.get('storage')?.touched) {
+                <small class="text-red-500">Storage location is required</small>
+            }
+        </div>
+
+        <div class="field">
+            <label for="type" class="font-medium mb-2 block">Item Type</label>
+            <p-select id="type" [options]="products" formControlName="type"
+                optionLabel="name" [filter]="true" filterBy="name" [showClear]="true"
+                placeholder="Select item type" class="w-full"></p-select>
+            @if (stockForm.get('type')?.invalid && stockForm.get('type')?.touched) {
+                <small class="text-red-500">Item type is required</small>
+            }
+        </div>
+
+        <div class="field">
+            <label for="quantity" class="font-medium mb-2 block">Quantity</label>
+            <p-inputNumber id="quantity" formControlName="quantity" 
+                [showButtons]="true" [min]="1" class="w-full"></p-inputNumber>
+            @if (stockForm.get('quantity')?.invalid && stockForm.get('quantity')?.touched) {
+                <small class="text-red-500">Valid quantity is required</small>
+            }
+        </div>
+
+        <div class="field">
+            <label for="description" class="font-medium mb-2 block">Description</label>
+            <textarea pInputTextarea id="description" formControlName="description"
+                class="w-full" rows="3" placeholder="Enter description (optional)"></textarea>
+        </div>
+
+        <div class="field">
+            <label for="imageUrl" class="font-medium mb-2 block">Image URL</label>
+            <input pInputText id="imageUrl" formControlName="imageUrl" class="w-full"
+                placeholder="Enter image URL" />
+        </div>
+    </form>
+
+    <ng-template pTemplate="footer">
+        <div class="flex justify-end gap-2">
+            <p-button label="Cancel" icon="pi pi-times" (click)="closeStockModal()"
+                [outlined]="true" severity="secondary"></p-button>
+            <p-button [label]="selectedStock ? 'Save Changes' : 'Add Item'" 
+                icon="pi pi-check" (click)="selectedStock ? editStock() : addStock()"
+                [disabled]="!stockForm.valid"></p-button>
+        </div>
+    </ng-template>
+</p-dialog>
+
+<p-toast position="bottom-right"></p-toast>
+<p-confirmPopup></p-confirmPopup>

@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { ButtonModule } from 'primeng/button';
 import { TableModule } from 'primeng/table';
@@ -8,52 +8,42 @@ import { ReactiveFormsModule } from '@angular/forms';
 import jsPDF from 'jspdf';
 import html2canvas from 'html2canvas';
 import { CommonModule } from '@angular/common';
+import { IcsService, ICS } from 'src/app/services/ics.service';
+import { MessageService } from 'primeng/api';
+import { ToastModule } from 'primeng/toast';
 
 @Component({
   selector: 'app-ics',
   standalone: true,
-  imports: [ButtonModule, TableModule, DialogModule, CardModule, ReactiveFormsModule, CommonModule],
+  imports: [
+    ButtonModule, 
+    TableModule, 
+    DialogModule, 
+    CardModule, 
+    ReactiveFormsModule, 
+    CommonModule,
+    ToastModule
+  ],
+  providers: [MessageService],
   templateUrl: './ics.component.html',
   styleUrls: ['./ics.component.scss'],
 })
-export class IcsComponent {
+export class IcsComponent implements OnInit {
   icsForm: FormGroup;
   displayDialog: boolean = false;
   editingIndex: number = -1;
+  loading: boolean = true;
+  icsReports: ICS[] = [];
 
-  // Realistic mock data
-  icsReports = [
-    {
-      icsNo: 'ICS-2023-001',
-      entityName: 'Department of Education - Central Office',
-      fundCluster: 'FC-1001',
-      date: new Date('2023-10-15'),
-      inventoryItemNo: 'INV-IT-001',
-      quantity: 5,
-      unit: 'Units',
-      unitCost: 45000,
-      description: 'Laptop Computer (Serial: XPS-12345)',
-      estimatedUsefulLife: '5 years'
-    },
-    {
-      icsNo: 'ICS-2023-002',
-      entityName: 'Department of Education - Regional Office',
-      fundCluster: 'FC-2001',
-      date: new Date('2023-10-20'),
-      inventoryItemNo: 'INV-IT-002',
-      quantity: 10,
-      unit: 'Pieces',
-      unitCost: 3500,
-      description: 'Office Chairs (Brand: Ergomech)',
-      estimatedUsefulLife: '7 years'
-    }
-  ];
-
-  constructor(private fb: FormBuilder) {
+  constructor(
+    private fb: FormBuilder,
+    private icsService: IcsService,
+    private messageService: MessageService
+  ) {
     this.icsForm = this.fb.group({
       entityName: ['', Validators.required],
-      fundCluster: ['', Validators.required],
-      icsNo: ['', Validators.required],
+      fundCluster: [''],
+      icsNo: [''],
       date: ['', Validators.required],
       inventoryItemNo: ['', Validators.required],
       quantity: ['', [Validators.required, Validators.min(1)]],
@@ -64,47 +54,179 @@ export class IcsComponent {
     });
   }
 
+  ngOnInit() {
+    this.loadIcsReports();
+  }
+
+  loadIcsReports() {
+    this.loading = true;
+    this.icsService.getAllIcs().subscribe({
+      next: (data) => {
+        console.log('Received ICS data:', data);
+        this.icsReports = data;
+        this.loading = false;
+      },
+      error: (error) => {
+        console.error('Error loading ICS reports:', error);
+        this.messageService.add({
+          severity: 'error',
+          summary: 'Error',
+          detail: 'Failed to load ICS reports: ' + error.message
+        });
+        this.loading = false;
+      }
+    });
+  }
+
+  private generateIcsNumber(): string {
+    const year = new Date().getFullYear();
+    const existingNumbers = this.icsReports
+      .map(ics => ics.ics_no)
+      .filter(no => no.startsWith(`ICS-${year}`))
+      .map(no => parseInt(no.split('-')[2]));
+    
+    const nextNumber = existingNumbers.length > 0 
+      ? Math.max(...existingNumbers) + 1 
+      : 1;
+    
+    return `ICS-${year}-${nextNumber.toString().padStart(3, '0')}`;
+  }
+
+  private generateFundCluster(): string {
+    const year = new Date().getFullYear();
+    const existingNumbers = this.icsReports
+      .map(ics => ics.fund_cluster)
+      .filter(fc => fc.startsWith(`FC-${year}`))
+      .map(fc => parseInt(fc.split('-')[2]));
+    
+    const nextNumber = existingNumbers.length > 0 
+      ? Math.max(...existingNumbers) + 1 
+      : 1;
+    
+    return `FC-${year}-${nextNumber.toString().padStart(3, '0')}`;
+  }
+
   showDialog() {
     this.displayDialog = true;
     this.editingIndex = -1;
     this.icsForm.reset();
+    
+    // Auto-generate numbers for new entries
+    this.icsForm.patchValue({
+      icsNo: this.generateIcsNumber(),
+      fundCluster: this.generateFundCluster()
+    });
   }
 
-  editICS(ics: any) {
+  editICS(ics: ICS) {
     this.editingIndex = this.icsReports.indexOf(ics);
     this.icsForm.patchValue({
-      ...ics,
-      date: ics.date.toISOString().split('T')[0]
+      entityName: ics.entity_name,
+      fundCluster: ics.fund_cluster,
+      icsNo: ics.ics_no,
+      date: new Date(ics.date).toISOString().split('T')[0],
+      inventoryItemNo: ics.inventory_item_no,
+      quantity: ics.quantity,
+      unit: ics.unit,
+      unitCost: ics.unit_cost,
+      description: ics.description,
+      estimatedUsefulLife: ics.estimated_useful_life
     });
+    
+    // Disable form controls for auto-generated fields during edit
+    this.icsForm.get('icsNo')?.disable();
+    this.icsForm.get('fundCluster')?.disable();
+    
     this.displayDialog = true;
   }
 
-  deleteICS(ics: any) {
-    const index = this.icsReports.indexOf(ics);
-    if (index !== -1) {
-      this.icsReports.splice(index, 1);
-    }
+  deleteICS(ics: ICS) {
+    this.icsService.deleteIcs(ics.ics_no).subscribe({
+      next: () => {
+        this.messageService.add({
+          severity: 'success',
+          summary: 'Success',
+          detail: 'ICS deleted successfully'
+        });
+        this.loadIcsReports();
+      },
+      error: (error) => {
+        this.messageService.add({
+          severity: 'error',
+          summary: 'Error',
+          detail: 'Failed to delete ICS'
+        });
+      }
+    });
   }
 
   saveICS() {
     if (this.icsForm.invalid) {
-      alert('Please fill out all required fields.');
+      this.messageService.add({
+        severity: 'error',
+        summary: 'Validation Error',
+        detail: 'Please fill out all required fields.'
+      });
       return;
     }
 
-    const newICS = {
-      ...this.icsForm.value,
-      date: new Date(this.icsForm.value.date)
+    const formData = {
+      ics_no: this.icsForm.get('icsNo')?.value || this.generateIcsNumber(),
+      entity_name: this.icsForm.value.entityName,
+      fund_cluster: this.icsForm.get('fundCluster')?.value || this.generateFundCluster(),
+      date: new Date(this.icsForm.value.date),
+      inventory_item_no: this.icsForm.value.inventoryItemNo,
+      quantity: this.icsForm.value.quantity,
+      unit: this.icsForm.value.unit,
+      unit_cost: this.icsForm.value.unitCost,
+      description: this.icsForm.value.description,
+      estimated_useful_life: this.icsForm.value.estimatedUsefulLife
     };
 
     if (this.editingIndex === -1) {
-      this.icsReports.push(newICS);
+      // Create new ICS
+      this.icsService.createIcs(formData).subscribe({
+        next: () => {
+          this.messageService.add({
+            severity: 'success',
+            summary: 'Success',
+            detail: 'ICS created successfully'
+          });
+          this.loadIcsReports();
+          this.displayDialog = false;
+          this.icsForm.reset();
+        },
+        error: (error) => {
+          this.messageService.add({
+            severity: 'error',
+            summary: 'Error',
+            detail: 'Failed to create ICS'
+          });
+        }
+      });
     } else {
-      this.icsReports[this.editingIndex] = newICS;
+      // Update existing ICS
+      const id = this.icsReports[this.editingIndex].ics_no;
+      this.icsService.updateIcs(id, formData).subscribe({
+        next: () => {
+          this.messageService.add({
+            severity: 'success',
+            summary: 'Success',
+            detail: 'ICS updated successfully'
+          });
+          this.loadIcsReports();
+          this.displayDialog = false;
+          this.icsForm.reset();
+        },
+        error: (error) => {
+          this.messageService.add({
+            severity: 'error',
+            summary: 'Error',
+            detail: 'Failed to update ICS'
+          });
+        }
+      });
     }
-
-    this.displayDialog = false;
-    this.icsForm.reset();
   }
 
   exportPdf() {
