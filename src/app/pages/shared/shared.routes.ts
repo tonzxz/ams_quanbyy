@@ -29,6 +29,7 @@ import { AuditTrailsComponent } from './audit-trails/audit-trails.component';
 import { AppSharedComponent } from './app-shared/app-shared.component';
 import { PrSharedComponent } from './pr-shared/pr-shared.component';
 import { InventoryItemComponent } from './inventory-item/inventory-item.component';
+import { ManageWarehouseComponent } from './manage-warehouse/manage-warehouse.component';
 
 export const SharedRoutes: Routes = [
   {
@@ -199,6 +200,11 @@ export const SharedRoutes: Routes = [
         path: 'inventory-item',
         component: InventoryItemComponent,
         data: {breadcrumb:'Inventory Item'}
+      },
+      {
+        path: 'manage-warehouse',
+        component: ManageWarehouseComponent,
+        data: {breadcrumb:'Manage Warehouse'}
       },
     ],
   },

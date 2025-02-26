@@ -519,7 +519,7 @@ export const navItems: NavItem[] = [
   },
   {
     displayName: 'Manage Warehouse',
-    iconName: 'solar:bedside-table-3-broken',
+    iconName: 'solar:archive-line-duotone',
     route: '/shared/manage-warehouse',
     requiredRoles: ['supply','superadmin'],
   },
