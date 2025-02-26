@@ -1,8 +1,8 @@
-import { Component, OnInit } from '@angular/core';  
-import { FormBuilder, FormGroup, Validators } from '@angular/forms';
+import { Component, OnInit, ViewChild } from '@angular/core';  
+import { FormBuilder, FormGroup, Validators, ValidatorFn, AbstractControl, ValidationErrors } from '@angular/forms';
 import { ConfirmationService, MessageService } from 'primeng/api';
 import { CardModule } from 'primeng/card';
-import { TableModule } from 'primeng/table';
+import { TableModule, Table } from 'primeng/table';
 import { ButtonModule } from 'primeng/button';
 import { InputTextModule } from 'primeng/inputtext';
 import { DialogModule } from 'primeng/dialog';
@@ -19,6 +19,19 @@ import { IconFieldModule } from 'primeng/iconfield';
 import { InputIconModule } from 'primeng/inputicon';
 import { TooltipModule } from 'primeng/tooltip';
 import { CUSTOM_ELEMENTS_SCHEMA } from '@angular/core';
+import { Supplier, SupplierService } from 'src/app/services/supplier.service';
+
+function phoneNumberValidator(): ValidatorFn {
+  return (control: AbstractControl): ValidationErrors | null => {
+    const value = control.value;
+    if (!value) {
+      return null; // Allow empty values
+    }
+    
+    const valid = /^\+639\d{9}$/.test(value);
+    return valid ? null : { invalidPhoneNumber: true };
+  };
+}
 
 @Component({
   selector: 'app-suppliers',
@@ -49,82 +62,156 @@ import { CUSTOM_ELEMENTS_SCHEMA } from '@angular/core';
   providers: [MessageService, ConfirmationService]
 })
 export class SuppliersComponent implements OnInit {
-  suppliers: any[] = [];
-  searchValue: string = '';
+  @ViewChild('dt') dt: Table | undefined;
+  
+  suppliers: Supplier[] = [];
+  selectedSupplier: Supplier | undefined;
   showSupplierModal: boolean = false;
+  searchValue: string = '';
+  isLoading: boolean = false;
+
   supplierForm: FormGroup;
-  selectedSupplier: any = null;
 
   constructor(
     private fb: FormBuilder,
+    private supplierService: SupplierService,
     private messageService: MessageService,
     private confirmationService: ConfirmationService
   ) {
     this.supplierForm = this.fb.group({
       name: ['', Validators.required],
-      email: ['', [Validators.required, Validators.email]],
-      contact: ['', Validators.required],
-      address: ['', Validators.required],
+      contact_person: [''],
+      contact_number: ['', [phoneNumberValidator()]],
+      email: ['', [Validators.email]],
+      address: [''],
       description: ['']
     });
   }
 
   ngOnInit(): void {
-    this.loadSuppliers();
+    this.fetchSuppliers();
   }
 
-  loadSuppliers() {
-    // TODO: Implement API call to fetch suppliers
-    this.suppliers = [];
+  fetchSuppliers(): void {
+    this.isLoading = true;
+    this.supplierService.getAllSuppliers().subscribe({
+      next: (data) => {
+        this.suppliers = data;
+        this.isLoading = false;
+      },
+      error: (error) => {
+        console.error('Error fetching suppliers:', error);
+        this.messageService.add({
+          severity: 'error',
+          summary: 'Error',
+          detail: 'Failed to load suppliers'
+        });
+        this.isLoading = false;
+      }
+    });
   }
 
-  openAddSupplierModal() {
-    this.selectedSupplier = null;
+  openAddSupplierModal(): void {
+    this.selectedSupplier = undefined;
     this.supplierForm.reset();
     this.showSupplierModal = true;
   }
 
-  openEditSupplierModal(supplier: any) {
+  openEditSupplierModal(supplier: Supplier): void {
     this.selectedSupplier = supplier;
     this.supplierForm.patchValue({
       name: supplier.name,
+      contact_person: supplier.contact_person,
+      contact_number: supplier.contact_number,
       email: supplier.email,
-      contact: supplier.contact,
       address: supplier.address,
       description: supplier.description
     });
     this.showSupplierModal = true;
   }
 
-  closeSupplierModal() {
+  closeSupplierModal(): void {
     this.showSupplierModal = false;
-    this.selectedSupplier = null;
-    this.supplierForm.reset();
   }
 
-  addSupplier() {
+  addSupplier(): void {
     if (this.supplierForm.valid) {
-      // TODO: Implement API call to add supplier
-      this.messageService.add({ severity: 'success', summary: 'Success', detail: 'Supplier added successfully' });
-      this.closeSupplierModal();
+      const newSupplier: Supplier = this.supplierForm.value;
+      this.supplierService.createSupplier(newSupplier).subscribe({
+        next: () => {
+          this.messageService.add({
+            severity: 'success',
+            summary: 'Success',
+            detail: 'Supplier added successfully'
+          });
+          this.closeSupplierModal();
+          this.fetchSuppliers();
+        },
+        error: (error) => {
+          console.error('Error adding supplier:', error);
+          this.messageService.add({
+            severity: 'error',
+            summary: 'Error',
+            detail: 'Failed to add supplier'
+          });
+        }
+      });
     }
   }
 
-  editSupplier() {
-    if (this.supplierForm.valid) {
-      // TODO: Implement API call to edit supplier
-      this.messageService.add({ severity: 'success', summary: 'Success', detail: 'Supplier updated successfully' });
-      this.closeSupplierModal();
+  editSupplier(): void {
+    if (this.supplierForm.valid && this.selectedSupplier) {
+      const updatedSupplier: Supplier = {
+        ...this.selectedSupplier,
+        ...this.supplierForm.value
+      };
+      
+      this.supplierService.updateSupplier(this.selectedSupplier.id!, updatedSupplier).subscribe({
+        next: () => {
+          this.messageService.add({
+            severity: 'success',
+            summary: 'Success',
+            detail: 'Supplier updated successfully'
+          });
+          this.closeSupplierModal();
+          this.fetchSuppliers();
+        },
+        error: (error) => {
+          console.error('Error updating supplier:', error);
+          this.messageService.add({
+            severity: 'error',
+            summary: 'Error',
+            detail: 'Failed to update supplier'
+          });
+        }
+      });
     }
   }
 
-  confirmDeleteSupplier(event: Event, supplierId: number) {
+  confirmDeleteSupplier(event: Event, id: string): void {
     this.confirmationService.confirm({
       target: event.target as EventTarget,
       message: 'Are you sure you want to delete this supplier?',
+      icon: 'pi pi-exclamation-triangle',
       accept: () => {
-        // TODO: Implement API call to delete supplier
-        this.messageService.add({ severity: 'success', summary: 'Success', detail: 'Supplier deleted successfully' });
+        this.supplierService.deleteSupplier(id).subscribe({
+          next: () => {
+            this.messageService.add({
+              severity: 'success',
+              summary: 'Success',
+              detail: 'Supplier deleted successfully'
+            });
+            this.fetchSuppliers();
+          },
+          error: (error) => {
+            console.error('Error deleting supplier:', error);
+            this.messageService.add({
+              severity: 'error',
+              summary: 'Error',
+              detail: 'Failed to delete supplier'
+            });
+          }
+        });
       }
     });
   }

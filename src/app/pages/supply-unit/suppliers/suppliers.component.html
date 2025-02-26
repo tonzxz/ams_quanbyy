@@ -9,7 +9,8 @@
             
             <p-iconfield fluid class="w-full max-w-72 mr-2">
                 <p-inputicon styleClass="pi pi-search" />
-                <input fluid class="w-full" pSize="small" [(ngModel)]="searchValue" (input)="dt.filterGlobal(searchValue,'contains')" 
+                <input fluid class="w-full" pSize="small" [(ngModel)]="searchValue" 
+                    (input)="dt?.filterGlobal(searchValue,'contains')" 
                     type="text" pInputText placeholder="Search" />
             </p-iconfield>
             
@@ -17,16 +18,22 @@
                 label="Add Supplier" (click)="openAddSupplierModal()" icon="pi pi-plus" />
         </div>
 
-        <p-table #dt [value]="suppliers" [rowHover]="true"
+        <!-- Loading indicator -->
+        <div *ngIf="isLoading" class="flex justify-center items-center py-8">
+            <i class="pi pi-spin pi-spinner text-4xl"></i>
+        </div>
+
+        <p-table #dt [value]="suppliers" [rowHover]="true" *ngIf="!isLoading"
             [paginator]="true" [rows]="10" [rowsPerPageOptions]="[5, 10, 20]"
-            [globalFilterFields]="['name', 'email', 'contact']"
+            [globalFilterFields]="['name', 'email', 'contact_person', 'contact_number']"
             [tableStyle]="{'min-width': '60rem'}">
 
             <ng-template pTemplate="header">
                 <tr>
                     <th>Name</th>
+                    <th>Contact Person</th>
+                    <th>Contact Number</th>
                     <th>Email</th>
-                    <th>Contact</th>
                     <th>Address</th>
                     <th>Description</th>
                     <th>Actions</th>
@@ -36,15 +43,16 @@
             <ng-template pTemplate="body" let-supplier>
                 <tr>
                     <td>{{supplier.name}}</td>
-                    <td>{{supplier.email}}</td>
-                    <td>{{supplier.contact}}</td>
-                    <td>{{supplier.address}}</td>
-                    <td>{{supplier.description || 'No description'}}</td>
+                    <td>{{supplier.contact_person || 'N/A'}}</td>
+                    <td>{{supplier.contact_number || 'N/A'}}</td>
+                    <td>{{supplier.email || 'N/A'}}</td>
+                    <td>{{supplier.address || 'N/A'}}</td>
+                    <td>{{supplier.products || 'No description available'}}</td>
                     <td class="w-16">
                         <div class="flex gap-4">
                             <p-button icon="pi pi-pencil" (click)="openEditSupplierModal(supplier)" 
                                 [outlined]="true" size="small" rounded />
-                            <p-button icon="pi pi-trash" (click)="confirmDeleteSupplier($event, supplier.id)" 
+                            <p-button icon="pi pi-trash" (click)="confirmDeleteSupplier($event, supplier.id!)" 
                                 severity="danger" [outlined]="true" size="small" rounded />
                         </div>
                     </td>
@@ -53,7 +61,7 @@
 
             <ng-template pTemplate="emptymessage">
                 <tr>
-                    <td colspan="6">
+                    <td colspan="7">
                         <div class="flex flex-col w-full items-center justify-center mb-8">
                             <div class="overflow-hidden h-52 w-52 mr-8">
                                 <app-lottie-animation animation="box" class="w-60 h-60"></app-lottie-animation>
@@ -84,21 +92,25 @@
                     </div>
 
                     <div class="flex flex-col">
-                        <label for="email" class="font-semibold mb-2">Email</label>
-                        <input id="email" type="email" pInputText formControlName="email" placeholder="Enter email address"/>
-                        @if(supplierForm.get('email')?.hasError('required') && supplierForm.get('email')?.touched){
-                            <small class="text-red-500">Email is required</small>
-                        }
-                        @if(supplierForm.get('email')?.hasError('email') && supplierForm.get('email')?.touched){
-                            <small class="text-red-500">Please enter a valid email</small>
+                        <label for="contact_person" class="font-semibold mb-2">Contact Person</label>
+                        <input id="contact_person" type="text" pInputText formControlName="contact_person" placeholder="Enter contact person"/>
+                    </div>
+
+                    <div class="flex flex-col">
+                        <label for="contact_number" class="font-semibold mb-2">Contact Number</label>
+                        <input id="contact_number" type="text" pInputText formControlName="contact_number" 
+                               maxlength="13" 
+                               placeholder="Enter contact number (format: +639XXXXXXXXX)"/>
+                        @if(supplierForm.get('contact_number')?.hasError('invalidPhoneNumber') && supplierForm.get('contact_number')?.touched){
+                            <small class="text-red-500">Please enter a valid phone number in format +639XXXXXXXXX</small>
                         }
                     </div>
 
                     <div class="flex flex-col">
-                        <label for="contact" class="font-semibold mb-2">Contact</label>
-                        <input id="contact" type="text" pInputText formControlName="contact" placeholder="Enter contact number"/>
-                        @if(supplierForm.get('contact')?.hasError('required') && supplierForm.get('contact')?.touched){
-                            <small class="text-red-500">Contact is required</small>
+                        <label for="email" class="font-semibold mb-2">Email</label>
+                        <input id="email" type="email" pInputText formControlName="email" placeholder="Enter email address"/>
+                        @if(supplierForm.get('email')?.hasError('email') && supplierForm.get('email')?.touched){
+                            <small class="text-red-500">Please enter a valid email</small>
                         }
                     </div>
 
@@ -106,15 +118,12 @@
                         <label for="address" class="font-semibold mb-2">Address</label>
                         <textarea id="address" rows="3" pInputTextarea formControlName="address" 
                             placeholder="Enter supplier address"></textarea>
-                        @if(supplierForm.get('address')?.hasError('required') && supplierForm.get('address')?.touched){
-                            <small class="text-red-500">Address is required</small>
-                        }
                     </div>
 
                     <div class="flex flex-col">
-                        <label for="description" class="font-semibold mb-2">Description</label>
-                        <textarea id="description" rows="3" pInputTextarea formControlName="description"
-                            placeholder="Enter description (optional)"></textarea>
+                        <label for="products" class="font-semibold mb-2">Description</label>
+                        <textarea id="products" rows="3" pInputTextarea formControlName="products"
+                            placeholder="Enter description"></textarea>
                     </div>
                 </div>
 

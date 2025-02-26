@@ -90,6 +90,27 @@ CORS(app, resources={r"/api/*": {"origins": "*", "methods": ["GET", "POST", "PUT
 def uploaded_file(filename):
     return send_from_directory(app.config['UPLOAD_FOLDER'], filename)
 
+# Suppliers endpoints
+@app.route('/api/suppliers', methods=['GET'])
+def get_suppliers():
+    return crud.read('supplier')
+
+@app.route('/api/suppliers/<item_id>', methods=['GET'])
+def get_supplier(item_id):
+    return crud.read('supplier', item_id)
+
+@app.route('/api/suppliers', methods=['POST'])
+def create_supplier():
+    return crud.create('supplier')
+
+@app.route('/api/suppliers/<item_id>', methods=['PUT'])
+def update_supplier(item_id):
+    return crud.update('supplier', item_id)
+
+@app.route('/api/suppliers/<item_id>', methods=['DELETE'])
+def delete_supplier(item_id):
+    return crud.delete('supplier', item_id)
+
 if __name__ == '__main__':
     app.run(
         host='0.0.0.0',  # Allow external connections
