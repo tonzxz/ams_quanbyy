@@ -29,17 +29,18 @@
     </div>
 
     <div class="flex items-center gap-4 mb-2">
-      <label for="supplier_id" class="font-semibold w-32">Supplier</label>
+      <label for="supplier" class="font-semibold w-32">Supplier</label>
       <p-select [options]="suppliers" formControlName="supplier" optionLabel="name" [filter]="true"
-        filterBy="name" [showClear]="true" placeholder="Select a supplier" class="flex-auto">
-        <ng-template #selectedItem let-selectedOption>
+        filterBy="name,contact_person" [showClear]="true" placeholder="Select a supplier" class="flex-auto"
+        (onChange)="onSupplierChange($event)" [virtualScroll]="true" [virtualScrollItemSize]="38">
+        <ng-template pTemplate="selectedItem" let-selectedOption>
           <div class="flex items-center gap-2">
-            <div>{{ selectedOption.name }}</div>
+            <div>{{ selectedOption.name }} - {{ selectedOption.contact_person || 'No contact person' }}</div>
           </div>
         </ng-template>
-        <ng-template let-supplier #item>
+        <ng-template pTemplate="item" let-supplier>
           <div class="flex items-center gap-2">
-            <div>{{ supplier.name }}</div>
+            <div>{{ supplier.name }} - {{ supplier.contact_person || 'No contact person' }}</div>
           </div>
         </ng-template>
       </p-select>
@@ -53,7 +54,7 @@
         formControlName="supplier_tin"
         class="flex-auto"
         maxlength="15"
-        (input)="formatTIN($event)"
+        readonly
         autocomplete="off"
       />
     </div>

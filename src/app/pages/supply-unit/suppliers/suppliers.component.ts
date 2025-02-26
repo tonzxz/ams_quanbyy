@@ -84,7 +84,8 @@ export class SuppliersComponent implements OnInit {
       contact_number: ['', [phoneNumberValidator()]],
       email: ['', [Validators.email]],
       address: [''],
-      description: ['']
+      description: [''],
+      tin_number: ['', Validators.required]
     });
   }
 
@@ -125,7 +126,8 @@ export class SuppliersComponent implements OnInit {
       contact_number: supplier.contact_number,
       email: supplier.email,
       address: supplier.address,
-      description: supplier.description
+      description: supplier.description,
+      tin_number: supplier.tin_number
     });
     this.showSupplierModal = true;
   }

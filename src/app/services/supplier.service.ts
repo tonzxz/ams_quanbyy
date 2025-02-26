@@ -13,6 +13,7 @@ export interface Supplier {
   email?: string;
   address?: string;
   description?: string;
+  tin_number?: string;
   created_at?: Date;
   updated_at?: Date;
 }

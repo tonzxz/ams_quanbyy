@@ -23,7 +23,7 @@ import { PurchaseOrderService } from 'src/app/services/purchase-order.service';
 import { LottieAnimationComponent } from '../../ui-components/lottie-animation/lottie-animation.component';
 import {  IconFieldModule } from 'primeng/iconfield';
 import { InputIconModule } from 'primeng/inputicon';
-import { Supplier, SuppliersService } from 'src/app/services/suppliers.service';
+import { Supplier, SupplierService } from 'src/app/services/supplier.service';
 import { SelectModule } from 'primeng/select';
 import { Department, DepartmentService } from 'src/app/services/departments.service';
 import { Requisition, RequisitionService } from 'src/app/services/requisition.service';
@@ -33,6 +33,7 @@ import { ProgressTableComponent, ProgressTableData } from 'src/app/components/pr
 import { PdfGeneratorService } from 'src/app/services/pdf-generator.service';
 import { KeyFilterModule } from 'primeng/keyfilter';
 import { CUSTOM_ELEMENTS_SCHEMA } from '@angular/core';
+import { firstValueFrom } from 'rxjs';
 
 
 @Component({
@@ -87,7 +88,7 @@ export class DeliveryReceiptsComponent implements OnInit {
     delivery_date: new FormControl('', [Validators.required]),
     receipt_number: new FormControl('', [Validators.required]),
     supplier: new FormControl<Supplier|null>(null),
-    supplier_tin: new FormControl('', [Validators.required]),
+    supplier_tin: new FormControl(''),
     department: new FormControl<Department|null>(null),
     purchase_order: new FormControl<Requisition|null>(null),
     total_amount: new FormControl<number|null>(null, [Validators.required, Validators.min(0.001)]),
@@ -103,7 +104,7 @@ export class DeliveryReceiptsComponent implements OnInit {
     private currencyPipe:CurrencyPipe,
     private messageService:MessageService,
     private departmentService:DepartmentService,
-    private supplierService:SuppliersService,
+    private supplierService:SupplierService,
     private pdfService:PdfGeneratorService,
     private deliveryService:DeliveryReceiptService){}
 
@@ -134,7 +135,6 @@ export class DeliveryReceiptsComponent implements OnInit {
       files: dr.receipts,
       receipt_number: dr.receipt_number,
       supplier: this.suppliers.find(supplier => supplier.id == dr.supplier_id),
-      supplier_tin: dr.supplier_tin,
       department: this.departments.find(department => department.id == dr.department_id),
       purchase_order: this.requisitions.find(req => req.id == dr.purchase_order),
       delivery_date: `${date[1]}/${date[2]}/${date[0]}`,
@@ -178,31 +178,35 @@ export class DeliveryReceiptsComponent implements OnInit {
   }
 
   async addReceipt(){
-    const dr = this.form.value;
-    await this.deliveryService.addReceipt({
-      receipt_number: dr.receipt_number!.toUpperCase(),
-      supplier_name: dr.supplier?.name || 'Test Supplier',
-      supplier_id: dr.supplier?.id || '00000000000000000000000000000000',
-      supplier_tin: dr.supplier_tin || '000-000-000-000',
-      department_id: dr.department?.id || '00000000000000000000000000000000',
-      department_name: dr.department?.name || 'Test Department',
-      delivery_date: new Date(dr.delivery_date || new Date()),
-      total_amount: dr.total_amount || 0,
-      purchase_order: dr.purchase_order?.id,
-      notes: dr.notes || '',
-      status: 'unverified',
-      stocked: false,
-      receipts: [],
-    }, this.files || []);
-    this.form.reset();
-    this.files = [];
-    if (this.fileUpload) {
-      this.fileUpload.clear(); 
+    if (this.form.valid) {
+      const formData = this.form.value;
+      const newReceipt: DeliveryReceipt = {
+        receipt_number: formData.receipt_number!.toUpperCase(),
+        supplier_name: formData.supplier?.name || 'Test Supplier',
+        supplier_id: formData.supplier?.id || '00000000000000000000000000000000',
+        supplier_tin: formData.supplier_tin || '000-000-000-000',
+        department_id: formData.department?.id || '00000000000000000000000000000000',
+        department_name: formData.department?.name || 'Test Department',
+        delivery_date: new Date(formData.delivery_date || new Date()),
+        total_amount: formData.total_amount || 0,
+        purchase_order: formData.purchase_order?.id,
+        notes: formData.notes || '',
+        status: 'unverified',
+        stocked: false,
+        receipts: [],
+      };
+      
+      await this.deliveryService.addReceipt(newReceipt, this.files || []);
+      this.form.reset();
+      this.files = [];
+      if (this.fileUpload) {
+        this.fileUpload.clear(); 
+      }
+      this.showReceiptModal = false;
+      this.messageService.add({ severity: 'success', summary: 'Success', detail: `Successfully added receipt no. ${formData.receipt_number?.toUpperCase()}` });
+      await this.fetchItems();
+      this.progressTable.activeStep = 0;
     }
-    this.showReceiptModal = false;
-    this.messageService.add({ severity: 'success', summary: 'Success', detail: `Successfully added receipt no. ${dr.receipt_number?.toUpperCase()}` });
-    await this.fetchItems();
-    this.progressTable.activeStep = 0;
   }
 
   async editReceipt(){
@@ -384,7 +388,7 @@ export class DeliveryReceiptsComponent implements OnInit {
       this.isLoading = true;  // Start loading
       this.receipts = await this.deliveryService.getAll();
       this.progressTable.data = this.receipts;
-      this.suppliers = await this.supplierService.getAll();
+      this.suppliers = await firstValueFrom(this.supplierService.getAllSuppliers());
       this.departments = await this.departmentService.getAllDepartments();
       const allRequisitions = await this.requisitionService.getAllRequisitions();
       const allSequences = await this.requisitionService.getAllApprovalSequences();
@@ -423,7 +427,12 @@ export class DeliveryReceiptsComponent implements OnInit {
     }
   }
 
-
-
-  
+  onSupplierChange(event: any) {
+    const selectedSupplier = event.value;
+    if (selectedSupplier && selectedSupplier.tin_number) {
+      this.form.patchValue({
+        supplier_tin: selectedSupplier.tin_number
+      });
+    }
+  }
 }
