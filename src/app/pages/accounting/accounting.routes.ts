@@ -14,6 +14,7 @@ import { IssueSlipComponent } from './issue-slip/issue-slip.component';
 import { FinalVerificationComponent } from './final-verification/final-verification.component';
 import { AppApprovalComponent } from './app-approval/app-approval.component';
 import { OrsComponent } from './ors/ors.component';
+import { FundingSourceComponent } from './funding-source/funding-source.component';
 
 export const AccountingRoutes: Routes = [
   {
@@ -106,7 +107,14 @@ export const AccountingRoutes: Routes = [
         canActivate: [roleGuard],
         data: { roles: ['accounting'], breadcrumb: 'Obligation Request and Status' } 
       },
-    
+
+       
+       {
+        path: 'funding-source',
+        component: FundingSourceComponent,
+        canActivate: [roleGuard],
+        data: { roles: ['accounting'], breadcrumb: 'Funding Source' } 
+      },
     ],
   },
 ];

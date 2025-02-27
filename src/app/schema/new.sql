@@ -77,6 +77,8 @@ CREATE TABLE ppmp_schedule (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     ppmp_id UUID NOT NULL REFERENCES ppmp(id),
     milestone TEXT NOT NULL,
+    edit_from TEXT NOT NULL,
+    created_by TEXT NOT NULL,
     date TIMESTAMP NOT NULL
 );
 
@@ -194,7 +196,7 @@ CREATE TABLE notification (
 CREATE TABLE document (
     id SERIAL PRIMARY KEY,
     procurement_process_id UUID NOT NULL REFERENCES procurement_process(id),
-    entity_id UUID NOT NULL REFERENCES entity(id),
+    entity_id UUID NOT NULL REFERENCES entity(id), 
     record_id UUID NOT NULL,
     file_path TEXT NOT NULL,
     uploaded_by UUID NOT NULL REFERENCES users(id),
