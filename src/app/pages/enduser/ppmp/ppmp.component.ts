@@ -6,7 +6,7 @@ import { CommonModule } from '@angular/common';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { MaterialModule } from 'src/app/material.module';
 import { v4 as uuidv4 } from 'uuid';
-import { PPMP, PPMPProject, PPMPItem, PPMPSchedule } from 'src/app/schema/schema';
+import { PPMP, PPMPProject, PPMPItem, PPMPSchedule, ProcurementMode, ProcurementProcess } from 'src/app/schema/schema';
 import html2canvas from 'html2canvas';
 
 
@@ -32,6 +32,7 @@ import { DatePickerModule } from 'primeng/datepicker';
 import jsPDF from 'jspdf';
 import 'jspdf-autotable';
 import autoTable from 'jspdf-autotable';
+import { CrudService } from 'src/app/services/crud.service';
 
 interface PPMPWithDetails extends PPMP {
   project?: PPMPProject;
@@ -96,385 +97,437 @@ export class PpmpComponent implements OnInit {
     return this.ppmpForm.get('items') as FormArray;
   }
 
-  initializeDummyData() {
-  this.ppmps = [
-    // Single Classification: Goods
-    {
-      id: '1',
-      office_id: 1,
-      app_id: 'APP-2026-001',
-      approvals_id: 'APR-2026-001',
-      current_approver_id: '1',
-      project: {
-        id: 'PROJ-2026-001',
-        ppmp_id: '1',
-        procurement_mode_id: 'public_bidding',
-        prepared_by: 'John Doe',
-        project_title: 'Laboratory Equipment Procurement 2026',
-        project_code: 'LE-2026-001',
-        classifications: ['goods'],
-        project_description: 'Procurement of new laboratory equipment for Science Department',
-        contract_scope: 'Supply and delivery of high-precision laboratory equipment for research purposes.',
-        funding_source_id: 'gaa',
-        abc: 750000,
-              fiscal_year: 2026,
+  async initializeData() {
+    this.ppmps = [
+      // Single Classification: Goods
+      {
+        id: '1',
+        office_id: 1,
+        app_id: 'APP-2026-001',
+        approvals_id: 'APR-2026-001',
+        current_approver_id: '1',
+        project: {
+          id: 'PROJ-2026-001',
+          ppmp_id: '1',
+          procurement_mode_id: 'public_bidding',
+          prepared_by: 'John Doe',
+          project_title: 'Laboratory Equipment Procurement 2026',
+          project_code: 'LE-2026-001',
+          classifications: ['goods'],
+          project_description: 'Procurement of new laboratory equipment for Science Department',
+          contract_scope: 'Supply and delivery of high-precision laboratory equipment for research purposes.',
+          funding_source_id: 'gaa',
+          abc: 750000,
+                fiscal_year: 2026,
 
+        },
+        items: [
+          {
+            id: 'ITEM-2025-001',
+            ppmp_project_id: 'PROJ-2025-001',
+            technical_specification: 'High-precision microscopes with digital imaging capability',
+            quantity_required: 5,
+            unit_of_measurement: 'units',
+            estimated_unit_cost: 150000,
+            estimated_total_cost: 750000,
+            classification: 'goods'
+          }
+        ],
+        schedules: [
+          { id: 'SCH-2025-001', ppmp_id: '1', quarter: 'q1', milestone: 'Bid Submission', date: new Date('2025-03-10') },
+          { id: 'SCH-2025-002', ppmp_id: '1', quarter: 'q1', milestone: 'Delivery of Equipment', date: new Date('2025-06-20') }
+        ]
       },
-      items: [
-        {
-          id: 'ITEM-2025-001',
-          ppmp_project_id: 'PROJ-2025-001',
-          technical_specification: 'High-precision microscopes with digital imaging capability',
-          quantity_required: 5,
-          unit_of_measurement: 'units',
-          estimated_unit_cost: 150000,
-          estimated_total_cost: 750000,
-          classification: 'goods'
-        }
-      ],
-      schedules: [
-        { id: 'SCH-2025-001', ppmp_id: '1', milestone: 'Bid Submission', date: new Date('2025-03-10') },
-        { id: 'SCH-2025-002', ppmp_id: '1', milestone: 'Delivery of Equipment', date: new Date('2025-06-20') }
-      ]
-    },
-    // Single Classification: Infrastructure
-    {
-      id: '2',
-      office_id: 1,
-      app_id: 'APP-2025-002',
-      approvals_id: 'APR-2025-002',
-      current_approver_id: '1',
-      project: {
-        id: 'PROJ-2025-002',
-        ppmp_id: '2',
-        procurement_mode_id: 'shopping',
-        prepared_by: 'Jane Smith',
-        project_title: 'Office Renovation Project 2025',
-        project_code: 'ORP-2025-001',
-        classifications: ['infrastructure'],
-        project_description: 'Renovation of administrative office spaces',
-        contract_scope: 'Complete renovation of 200 square meters of office space including installation of new flooring, painting, and procurement of office furniture.',
-        funding_source_id: 'income',
-        abc: 500000,
-              fiscal_year: 2025,
+      // Single Classification: Infrastructure
+      {
+        id: '2',
+        office_id: 1,
+        app_id: 'APP-2025-002',
+        approvals_id: 'APR-2025-002',
+        current_approver_id: '1',
+        project: {
+          id: 'PROJ-2025-002',
+          ppmp_id: '2',
+          procurement_mode_id: 'shopping',
+          prepared_by: 'Jane Smith',
+          project_title: 'Office Renovation Project 2025',
+          project_code: 'ORP-2025-001',
+          classifications: ['infrastructure'],
+          project_description: 'Renovation of administrative office spaces',
+          contract_scope: 'Complete renovation of 200 square meters of office space including installation of new flooring, painting, and procurement of office furniture.',
+          funding_source_id: 'income',
+          abc: 500000,
+                fiscal_year: 2025,
 
+        },
+        items: [
+          {
+            id: 'ITEM-2025-002',
+            ppmp_project_id: 'PROJ-2025-002',
+            technical_specification: 'Complete renovation package including furniture and fixtures',
+            quantity_required: 1,
+            unit_of_measurement: 'lot',
+            estimated_unit_cost: 500000,
+            estimated_total_cost: 500000,
+            classification: 'infrastructure'
+          }
+        ],
+        schedules: [
+          { id: 'SCH-2025-003', ppmp_id: '2', quarter: 'q1', milestone: 'Start of Renovation', date: new Date('2025-05-01') },
+          { id: 'SCH-2025-004', ppmp_id: '2', quarter: 'q1', milestone: 'Project Completion', date: new Date('2025-08-30') }
+        ]
       },
-      items: [
-        {
-          id: 'ITEM-2025-002',
-          ppmp_project_id: 'PROJ-2025-002',
-          technical_specification: 'Complete renovation package including furniture and fixtures',
-          quantity_required: 1,
-          unit_of_measurement: 'lot',
-          estimated_unit_cost: 500000,
-          estimated_total_cost: 500000,
-          classification: 'infrastructure'
-        }
-      ],
-      schedules: [
-        { id: 'SCH-2025-003', ppmp_id: '2', milestone: 'Start of Renovation', date: new Date('2025-05-01') },
-        { id: 'SCH-2025-004', ppmp_id: '2', milestone: 'Project Completion', date: new Date('2025-08-30') }
-      ]
-    },
-    // Single Classification: Goods
-    {
-      id: '3',
-      office_id: 1,
-      app_id: 'APP-2025-001',
-      approvals_id: 'APR-2025-001',
-      current_approver_id: '1',
-      project: {
-        id: 'PROJ-2025-001',
-        ppmp_id: '3',
-        procurement_mode_id: 'limited_source_bidding',
-        prepared_by: 'Alice Johnson',
-        project_title: 'IT Infrastructure Upgrade 2025',
-        project_code: 'IT-2025-001',
-        classifications: ['goods'],
-        project_description: 'Upgrade of campus-wide IT network infrastructure',
-        contract_scope: 'Procurement and installation of enterprise-grade network switches and routers.',
-        funding_source_id: 'gaa',
-        abc: 2000000,
-              fiscal_year: 2025,
+      // Single Classification: Goods
+      {
+        id: '3',
+        office_id: 1,
+        app_id: 'APP-2025-001',
+        approvals_id: 'APR-2025-001',
+        current_approver_id: '1',
+        project: {
+          id: 'PROJ-2025-001',
+          ppmp_id: '3',
+          procurement_mode_id: 'limited_source_bidding',
+          prepared_by: 'Alice Johnson',
+          project_title: 'IT Infrastructure Upgrade 2025',
+          project_code: 'IT-2025-001',
+          classifications: ['goods'],
+          project_description: 'Upgrade of campus-wide IT network infrastructure',
+          contract_scope: 'Procurement and installation of enterprise-grade network switches and routers.',
+          funding_source_id: 'gaa',
+          abc: 2000000,
+                fiscal_year: 2025,
 
+        },
+        items: [
+          {
+            id: 'ITEM-2025-001',
+            ppmp_project_id: 'PROJ-2025-001',
+            technical_specification: 'Enterprise-grade network switches and routers',
+            quantity_required: 10,
+            unit_of_measurement: 'sets',
+            estimated_unit_cost: 200000,
+            estimated_total_cost: 2000000,
+            classification: 'goods'
+          }
+        ],
+        schedules: [
+          { id: 'SCH-2025-001', ppmp_id: '3', quarter: 'q1', milestone: 'Supplier Selection', date: new Date('2025-02-15') },
+          { id: 'SCH-2025-002', ppmp_id: '3', quarter: 'q1', milestone: 'Installation', date: new Date('2025-06-30') }
+        ]
       },
-      items: [
-        {
-          id: 'ITEM-2025-001',
-          ppmp_project_id: 'PROJ-2025-001',
-          technical_specification: 'Enterprise-grade network switches and routers',
-          quantity_required: 10,
-          unit_of_measurement: 'sets',
-          estimated_unit_cost: 200000,
-          estimated_total_cost: 2000000,
-          classification: 'goods'
-        }
-      ],
-      schedules: [
-        { id: 'SCH-2025-001', ppmp_id: '3', milestone: 'Supplier Selection', date: new Date('2025-02-15') },
-        { id: 'SCH-2025-002', ppmp_id: '3', milestone: 'Installation', date: new Date('2025-06-30') }
-      ]
-    },
-    // Single Classification: Consulting
-    {
-      id: '4',
-      office_id: 1,
-      app_id: 'APP-2025-002',
-      approvals_id: 'APR-2025-002',
-      current_approver_id: '1',
-      project: {
-        id: 'PROJ-2025-002',
-        ppmp_id: '4',
-        procurement_mode_id: 'negotiated_procurement',
-        prepared_by: 'Robert Wilson',
-        project_title: 'Research Program Development 2025',
-        project_code: 'RPD-2025-001',
-        classifications: ['consulting'],
-        project_description: 'Development of research programs and methodologies',
-        contract_scope: 'Engagement of a consultancy firm to design and implement comprehensive research programs including training sessions for staff.',
-        funding_source_id: 'trust_fund',
-        abc: 1500000,
-              fiscal_year: 2025,
+      // Single Classification: Consulting
+      {
+        id: '4',
+        office_id: 1,
+        app_id: 'APP-2025-002',
+        approvals_id: 'APR-2025-002',
+        current_approver_id: '1',
+        project: {
+          id: 'PROJ-2025-002',
+          ppmp_id: '4',
+          procurement_mode_id: 'negotiated_procurement',
+          prepared_by: 'Robert Wilson',
+          project_title: 'Research Program Development 2025',
+          project_code: 'RPD-2025-001',
+          classifications: ['consulting'],
+          project_description: 'Development of research programs and methodologies',
+          contract_scope: 'Engagement of a consultancy firm to design and implement comprehensive research programs including training sessions for staff.',
+          funding_source_id: 'trust_fund',
+          abc: 1500000,
+                fiscal_year: 2025,
 
+        },
+        items: [
+          {
+            id: 'ITEM-2025-002',
+            ppmp_project_id: 'PROJ-2025-002',
+            technical_specification: 'Comprehensive research program development consultancy',
+            quantity_required: 1,
+            unit_of_measurement: 'service',
+            estimated_unit_cost: 1500000,
+            estimated_total_cost: 1500000,
+            classification: 'consulting'
+          }
+        ],
+        schedules: [
+          { id: 'SCH-2025-003', ppmp_id: '4', quarter: 'q1', milestone: 'Consultant Hiring', date: new Date('2025-03-20') },
+          { id: 'SCH-2025-004', ppmp_id: '4', quarter: 'q1', milestone: 'Program Launch', date: new Date('2025-09-15') }
+        ]
       },
-      items: [
-        {
-          id: 'ITEM-2025-002',
-          ppmp_project_id: 'PROJ-2025-002',
-          technical_specification: 'Comprehensive research program development consultancy',
-          quantity_required: 1,
-          unit_of_measurement: 'service',
-          estimated_unit_cost: 1500000,
-          estimated_total_cost: 1500000,
-          classification: 'consulting'
-        }
-      ],
-      schedules: [
-        { id: 'SCH-2025-003', ppmp_id: '4', milestone: 'Consultant Hiring', date: new Date('2025-03-20') },
-        { id: 'SCH-2025-004', ppmp_id: '4', milestone: 'Program Launch', date: new Date('2025-09-15') }
-      ]
+
+  {
+    id: '6',
+    office_id: 3,
+    app_id: 'APP-2025-004',
+    approvals_id: 'APR-2025-004',
+    current_approver_id: '3',
+    project: {
+      id: 'PROJ-2025-004',
+      ppmp_id: '6',
+      procurement_mode_id: 'public_bidding',
+      prepared_by: 'Michael Cruz',
+      project_title: 'Smart Campus Development',
+      project_code: 'SCD-2025-001',
+      classifications: ['infrastructure', 'goods', 'consulting'],
+      project_description: 'Implementation of smart classroom technology, campus-wide networking, and AI-driven student monitoring.',
+      contract_scope: 'Procurement of smart boards, networking equipment, and consultancy for AI integration.',
+      funding_source_id: 'gaa',
+      abc: 3000000,
+        fiscal_year: 2025,
+
     },
-
-{
-  id: '6',
-  office_id: 3,
-  app_id: 'APP-2025-004',
-  approvals_id: 'APR-2025-004',
-  current_approver_id: '3',
-  project: {
-    id: 'PROJ-2025-004',
-    ppmp_id: '6',
-    procurement_mode_id: 'public_bidding',
-    prepared_by: 'Michael Cruz',
-    project_title: 'Smart Campus Development',
-    project_code: 'SCD-2025-001',
-    classifications: ['infrastructure', 'goods', 'consulting'],
-    project_description: 'Implementation of smart classroom technology, campus-wide networking, and AI-driven student monitoring.',
-    contract_scope: 'Procurement of smart boards, networking equipment, and consultancy for AI integration.',
-    funding_source_id: 'gaa',
-    abc: 3000000,
-      fiscal_year: 2025,
-
+    items: [
+      {
+        id: 'ITEM-2025-005',
+        ppmp_project_id: 'PROJ-2025-004',
+        technical_specification: 'Smart Interactive Boards with AI Integration',
+        quantity_required: 15,
+        unit_of_measurement: 'units',
+        estimated_unit_cost: 50000,
+        estimated_total_cost: 750000,
+        classification: 'goods'
+      },
+      {
+        id: 'ITEM-2025-006',
+        ppmp_project_id: 'PROJ-2025-004',
+        technical_specification: 'Campus-wide High-Speed Networking Upgrade',
+        quantity_required: 1,
+        unit_of_measurement: 'lot',
+        estimated_unit_cost: 1500000,
+        estimated_total_cost: 1500000,
+        classification: 'infrastructure'
+      },
+      {
+        id: 'ITEM-2025-007',
+        ppmp_project_id: 'PROJ-2025-004',
+        technical_specification: 'Consulting Services for AI-driven Student Monitoring',
+        quantity_required: 1,
+        unit_of_measurement: 'service',
+        estimated_unit_cost: 750000,
+        estimated_total_cost: 750000,
+        classification: 'consulting'
+      }
+    ],
+    schedules: [
+      { id: 'SCH-2025-005', ppmp_id: '6', quarter: 'q1', milestone: 'Procurement Start', date: new Date('2025-02-10') },
+      { id: 'SCH-2025-006', ppmp_id: '6', quarter: 'q1', milestone: 'Installation Phase', date: new Date('2025-05-01') },
+      { id: 'SCH-2025-007', ppmp_id: '6', quarter: 'q1', milestone: 'Training & Implementation', date: new Date('2025-07-15') }
+    ]
   },
-  items: [
-    {
-      id: 'ITEM-2025-005',
-      ppmp_project_id: 'PROJ-2025-004',
-      technical_specification: 'Smart Interactive Boards with AI Integration',
-      quantity_required: 15,
-      unit_of_measurement: 'units',
-      estimated_unit_cost: 50000,
-      estimated_total_cost: 750000,
-      classification: 'goods'
-    },
-    {
-      id: 'ITEM-2025-006',
-      ppmp_project_id: 'PROJ-2025-004',
-      technical_specification: 'Campus-wide High-Speed Networking Upgrade',
-      quantity_required: 1,
-      unit_of_measurement: 'lot',
-      estimated_unit_cost: 1500000,
-      estimated_total_cost: 1500000,
-      classification: 'infrastructure'
-    },
-    {
-      id: 'ITEM-2025-007',
-      ppmp_project_id: 'PROJ-2025-004',
-      technical_specification: 'Consulting Services for AI-driven Student Monitoring',
-      quantity_required: 1,
-      unit_of_measurement: 'service',
-      estimated_unit_cost: 750000,
-      estimated_total_cost: 750000,
-      classification: 'consulting'
-    }
-  ],
-  schedules: [
-    { id: 'SCH-2025-005', ppmp_id: '6', milestone: 'Procurement Start', date: new Date('2025-02-10') },
-    { id: 'SCH-2025-006', ppmp_id: '6', milestone: 'Installation Phase', date: new Date('2025-05-01') },
-    { id: 'SCH-2025-007', ppmp_id: '6', milestone: 'Training & Implementation', date: new Date('2025-07-15') }
-  ]
-},
 
-// Project 2: Hospital Modernization Program
-{
-  id: '7',
-  office_id: 4,
-  app_id: 'APP-2025-005',
-  approvals_id: 'APR-2025-005',
-  current_approver_id: '4',
-  project: {
-    id: 'PROJ-2025-005',
-    ppmp_id: '7',
-    procurement_mode_id: 'direct_contracting',
-    prepared_by: 'Sarah Mendoza',
-    project_title: 'Hospital Modernization Program',
-    project_code: 'HMP-2025-001',
-    classifications: ['goods', 'infrastructure'],
-    project_description: 'Upgrading hospital facilities and medical equipment for better patient care.',
-    contract_scope: 'Procurement of MRI machines, hospital beds, and renovation of patient wards.',
-    funding_source_id: 'trust_fund',
-    abc: 5000000,
-      fiscal_year: 2025,
+  // Project 2: Hospital Modernization Program
+  {
+    id: '7',
+    office_id: 4,
+    app_id: 'APP-2025-005',
+    approvals_id: 'APR-2025-005',
+    current_approver_id: '4',
+    project: {
+      id: 'PROJ-2025-005',
+      ppmp_id: '7',
+      procurement_mode_id: 'direct_contracting',
+      prepared_by: 'Sarah Mendoza',
+      project_title: 'Hospital Modernization Program',
+      project_code: 'HMP-2025-001',
+      classifications: ['goods', 'infrastructure'],
+      project_description: 'Upgrading hospital facilities and medical equipment for better patient care.',
+      contract_scope: 'Procurement of MRI machines, hospital beds, and renovation of patient wards.',
+      funding_source_id: 'trust_fund',
+      abc: 5000000,
+        fiscal_year: 2025,
 
+    },
+    items: [
+      {
+        id: 'ITEM-2025-008',
+        ppmp_project_id: 'PROJ-2025-005',
+        technical_specification: 'MRI Machines - High Precision',
+        quantity_required: 3,
+        unit_of_measurement: 'units',
+        estimated_unit_cost: 1200000,
+        estimated_total_cost: 3600000,
+        classification: 'goods'
+      },
+      {
+        id: 'ITEM-2025-009',
+        ppmp_project_id: 'PROJ-2025-005',
+        technical_specification: 'Renovation of Patient Wards',
+        quantity_required: 1,
+        unit_of_measurement: 'lot',
+        estimated_unit_cost: 1400000,
+        estimated_total_cost: 1400000,
+        classification: 'infrastructure'
+      }
+    ],
+    schedules: [
+      { id: 'SCH-2025-008', ppmp_id: '7', quarter: 'q1', milestone: 'Supplier Selection', date: new Date('2025-03-05') },
+      { id: 'SCH-2025-009', ppmp_id: '7', quarter: 'q1', milestone: 'Equipment Delivery', date: new Date('2025-06-20') },
+      { id: 'SCH-2025-010', ppmp_id: '7', quarter: 'q1', milestone: 'Ward Renovation Completion', date: new Date('2025-09-15') }
+    ]
   },
-  items: [
-    {
-      id: 'ITEM-2025-008',
-      ppmp_project_id: 'PROJ-2025-005',
-      technical_specification: 'MRI Machines - High Precision',
-      quantity_required: 3,
-      unit_of_measurement: 'units',
-      estimated_unit_cost: 1200000,
-      estimated_total_cost: 3600000,
-      classification: 'goods'
+
+  // Project 3: Digital Library Expansion
+  {
+    id: '8',
+    office_id: 5,
+    app_id: 'APP-2025-001',
+    approvals_id: 'APR-2025-001',
+    current_approver_id: '5',
+    project: {
+      id: 'PROJ-2025-001',
+      ppmp_id: '8',
+      procurement_mode_id: 'limited_source_bidding',
+      prepared_by: 'Robert Lee',
+      project_title: 'Digital Library Expansion',
+      project_code: 'DLE-2025-001',
+      classifications: ['goods', 'consulting'],
+      project_description: 'Expansion of digital library resources, including e-books and research databases.',
+      contract_scope: 'Procurement of e-book licenses, research database access, and consultancy for AI-powered library recommendations.',
+      funding_source_id: 'gaa',
+      abc: 2000000,
+        fiscal_year: 2025,
+
     },
-    {
-      id: 'ITEM-2025-009',
-      ppmp_project_id: 'PROJ-2025-005',
-      technical_specification: 'Renovation of Patient Wards',
-      quantity_required: 1,
-      unit_of_measurement: 'lot',
-      estimated_unit_cost: 1400000,
-      estimated_total_cost: 1400000,
-      classification: 'infrastructure'
-    }
-  ],
-  schedules: [
-    { id: 'SCH-2025-008', ppmp_id: '7', milestone: 'Supplier Selection', date: new Date('2025-03-05') },
-    { id: 'SCH-2025-009', ppmp_id: '7', milestone: 'Equipment Delivery', date: new Date('2025-06-20') },
-    { id: 'SCH-2025-010', ppmp_id: '7', milestone: 'Ward Renovation Completion', date: new Date('2025-09-15') }
-  ]
-},
-
-// Project 3: Digital Library Expansion
-{
-  id: '8',
-  office_id: 5,
-  app_id: 'APP-2025-001',
-  approvals_id: 'APR-2025-001',
-  current_approver_id: '5',
-  project: {
-    id: 'PROJ-2025-001',
-    ppmp_id: '8',
-    procurement_mode_id: 'limited_source_bidding',
-    prepared_by: 'Robert Lee',
-    project_title: 'Digital Library Expansion',
-    project_code: 'DLE-2025-001',
-    classifications: ['goods', 'consulting'],
-    project_description: 'Expansion of digital library resources, including e-books and research databases.',
-    contract_scope: 'Procurement of e-book licenses, research database access, and consultancy for AI-powered library recommendations.',
-    funding_source_id: 'gaa',
-    abc: 2000000,
-      fiscal_year: 2025,
-
+    items: [
+      {
+        id: 'ITEM-2025-001',
+        ppmp_project_id: 'PROJ-2025-001',
+        technical_specification: 'E-book Licenses for Academic Use',
+        quantity_required: 500,
+        unit_of_measurement: 'licenses',
+        estimated_unit_cost: 2000,
+        estimated_total_cost: 1000000,
+        classification: 'goods'
+      },
+      {
+        id: 'ITEM-2025-002',
+        ppmp_project_id: 'PROJ-2025-001',
+        technical_specification: 'Consultancy for AI-powered Library Recommendations',
+        quantity_required: 1,
+        unit_of_measurement: 'service',
+        estimated_unit_cost: 1000000,
+        estimated_total_cost: 1000000,
+        classification: 'consulting'
+      }
+    ],
+    schedules: [
+      { id: 'SCH-2025-001', ppmp_id: '8', quarter:'q1', milestone: 'License Procurement', date: new Date('2025-02-15') },
+      { id: 'SCH-2025-002', ppmp_id: '8', quarter:'q1', milestone: 'Database Integration', date: new Date('2025-06-10') },
+      { id: 'SCH-2025-003', ppmp_id: '8', quarter:'q1', milestone: 'AI System Implementation', date: new Date('2025-09-01') }
+    ]
   },
-  items: [
-    {
-      id: 'ITEM-2025-001',
-      ppmp_project_id: 'PROJ-2025-001',
-      technical_specification: 'E-book Licenses for Academic Use',
-      quantity_required: 500,
-      unit_of_measurement: 'licenses',
-      estimated_unit_cost: 2000,
-      estimated_total_cost: 1000000,
-      classification: 'goods'
+
+  // Project 4: Smart Traffic Management System
+  {
+    id: '9',
+    office_id: 6,
+    app_id: 'APP-2025-002',
+    approvals_id: 'APR-2025-002',
+    current_approver_id: '6',
+    project: {
+      id: 'PROJ-2025-002',
+      ppmp_id: '9',
+      procurement_mode_id: 'public_bidding',
+      prepared_by: 'Angela Torres',
+      project_title: 'Smart Traffic Management System',
+      project_code: 'STMS-2025-001',
+      classifications: ['infrastructure', 'goods', 'consulting'],
+      project_description: 'Deployment of smart traffic lights, AI-driven congestion analysis, and infrastructure upgrades.',
+      contract_scope: 'Procurement of AI-powered traffic cameras, construction of smart intersections, and consultancy for predictive traffic analytics.',
+      funding_source_id: 'income',
+      abc: 4500000,
+        fiscal_year: 2025,
+
     },
-    {
-      id: 'ITEM-2025-002',
-      ppmp_project_id: 'PROJ-2025-001',
-      technical_specification: 'Consultancy for AI-powered Library Recommendations',
-      quantity_required: 1,
-      unit_of_measurement: 'service',
-      estimated_unit_cost: 1000000,
-      estimated_total_cost: 1000000,
-      classification: 'consulting'
-    }
-  ],
-  schedules: [
-    { id: 'SCH-2025-001', ppmp_id: '8', milestone: 'License Procurement', date: new Date('2025-02-15') },
-    { id: 'SCH-2025-002', ppmp_id: '8', milestone: 'Database Integration', date: new Date('2025-06-10') },
-    { id: 'SCH-2025-003', ppmp_id: '8', milestone: 'AI System Implementation', date: new Date('2025-09-01') }
-  ]
-},
-
-// Project 4: Smart Traffic Management System
-{
-  id: '9',
-  office_id: 6,
-  app_id: 'APP-2025-002',
-  approvals_id: 'APR-2025-002',
-  current_approver_id: '6',
-  project: {
-    id: 'PROJ-2025-002',
-    ppmp_id: '9',
-    procurement_mode_id: 'public_bidding',
-    prepared_by: 'Angela Torres',
-    project_title: 'Smart Traffic Management System',
-    project_code: 'STMS-2025-001',
-    classifications: ['infrastructure', 'goods', 'consulting'],
-    project_description: 'Deployment of smart traffic lights, AI-driven congestion analysis, and infrastructure upgrades.',
-    contract_scope: 'Procurement of AI-powered traffic cameras, construction of smart intersections, and consultancy for predictive traffic analytics.',
-    funding_source_id: 'income',
-    abc: 4500000,
-      fiscal_year: 2025,
-
-  },
-  items: [
-    {
-      id: 'ITEM-2025-003',
-      ppmp_project_id: 'PROJ-2025-002',
-      technical_specification: 'AI-powered Traffic Cameras',
-      quantity_required: 50,
-      unit_of_measurement: 'units',
-      estimated_unit_cost: 50000,
-      estimated_total_cost: 2500000,
-      classification: 'goods'
-    },
-    {
-      id: 'ITEM-2025-004',
-      ppmp_project_id: 'PROJ-2025-002',
-      technical_specification: 'Smart Traffic Intersections Upgrade',
-      quantity_required: 5,
-      unit_of_measurement: 'lots',
-      estimated_unit_cost: 500000,
-      estimated_total_cost: 2500000,
-      classification: 'infrastructure'
-    }
-  ],
-  schedules: [
-    { id: 'SCH-2025-004', ppmp_id: '9', milestone: 'System Design Approval', date: new Date('2025-01-10') },
-    { id: 'SCH-2025-005', ppmp_id: '9', milestone: 'Equipment Procurement', date: new Date('2025-04-15') },
-    { id: 'SCH-2025-006', ppmp_id: '9', milestone: 'Deployment & Testing', date: new Date('2025-09-30') }
-  ]
-}
-
-  ];
-    
-    
-
-  this.filterByYear();
+    items: [
+      {
+        id: 'ITEM-2025-003',
+        ppmp_project_id: 'PROJ-2025-002',
+        technical_specification: 'AI-powered Traffic Cameras',
+        quantity_required: 50,
+        unit_of_measurement: 'units',
+        estimated_unit_cost: 50000,
+        estimated_total_cost: 2500000,
+        classification: 'goods'
+      },
+      {
+        id: 'ITEM-2025-004',
+        ppmp_project_id: 'PROJ-2025-002',
+        technical_specification: 'Smart Traffic Intersections Upgrade',
+        quantity_required: 5,
+        unit_of_measurement: 'lots',
+        estimated_unit_cost: 500000,
+        estimated_total_cost: 2500000,
+        classification: 'infrastructure'
+      }
+    ],
+    schedules: [
+      { id: 'SCH-2025-004', ppmp_id: '9', quarter:'q1',  milestone: 'System Design Approval', date: new Date('2025-01-10') },
+      { id: 'SCH-2025-005', ppmp_id: '9', quarter: 'q1',milestone: 'Equipment Procurement', date: new Date('2025-04-15') },
+      { id: 'SCH-2025-006', ppmp_id: '9', quarter: 'q1',milestone: 'Deployment & Testing', date: new Date('2025-09-30') }
+    ]
   }
+
+    ];
+    
+    // Load real data
+    const ppmps = await this.crudService.getAll(PPMP);
+    const projects = await this.crudService.getAll(PPMPProject);
+    const items = await this.crudService.getAll(PPMPItem);
+    const schedules = await this.crudService.getAll(PPMPSchedule);
+
+    for(let schedule of schedules) {
+      schedule.date = new Date(schedule.date);
+    }
+
+    const joined_ppmps = [];
+    for (let ppmp of ppmps) {
+      // Find related projects for the PPMP
+      const relatedProjects = projects.filter(project => project.ppmp_id === ppmp.id);
+    
+      for (let project of relatedProjects) {
+        // Find related items for each project
+        const relatedItems = items.filter(item => item.ppmp_project_id === project.id);
+    
+        // Find related schedules for the PPMP
+        const relatedSchedules = schedules.filter(schedule => schedule.ppmp_id === ppmp.id);
+    
+        // Create the joined structure
+        const ppmpWithDetails: PPMPWithDetails = {
+          ...ppmp,
+          project: project,
+          items: relatedItems,
+          schedules: relatedSchedules
+        };
+    
+        joined_ppmps.push(ppmpWithDetails);
+      }
+    }
+
+    this.procurementModeData = await this.crudService.getAll(ProcurementMode);
+
+    this.procurementModes = this.procurementModeData.map(mode =>   { 
+      return {label: mode.mode_name, value: mode.id}
+    })
+
+    this.procurementProcess = await this.crudService.getAll(ProcurementProcess);
+
+    this.ppmps = joined_ppmps;
+
+    this.filterByYear();
+  }
+
+  getModeProcesses(){
+    this.schedules.clear();
+    const id=  this.ppmpForm.get('project.procurement_mode_id')?.value
+    const mode = this.procurementModeData.find(mode => mode.id == id);
+    const modeProcesses =  this.procurementProcess.filter(p=>p.procurement_mode_id == mode?.method);
+    for(let process of modeProcesses){
+      this.schedules.push(this.createScheduleFormGroup(process.name));
+    }
   
+  }
 
  filterPPMPs() {
   this.filteredPpmps = this.ppmps.filter(ppmp => {
@@ -494,9 +547,6 @@ export class PpmpComponent implements OnInit {
   }
 }
 
-
-
-
   procurementModes = [
     { label: 'Public Bidding', value: 'public_bidding' },
     { label: 'Limited Source Bidding', value: 'limited_source_bidding' },
@@ -506,11 +556,24 @@ export class PpmpComponent implements OnInit {
     { label: 'Negotiated Procurement', value: 'negotiated_procurement' }
   ];
 
+  quarters = [
+    { label: '1st Quarter', value: 'q1' },
+    { label: '2nd Quarter', value: 'q2' },
+    { label: '3rd Quarter', value: 'q3' },
+    { label: '4th Quarter', value: 'q4' },
+  ];
+
+  procurementModeData:ProcurementMode[] = [];
+
+  procurementProcess:ProcurementProcess[] = [];
+
   classifications = [
     { label: 'Goods', value: 'goods' },
     { label: 'Infrastructure', value: 'infrastructure' },
     { label: 'Consulting', value: 'consulting' }
   ];
+
+
 
   fundingSources = [
     { label: 'GAA', value: 'gaa' },
@@ -522,12 +585,12 @@ export class PpmpComponent implements OnInit {
   @ViewChild('ppmpPreview', { static: false }) ppmpPreview!: ElementRef
 
   
-
   constructor(
     private formBuilder: FormBuilder,
     private messageService: MessageService,
     private confirmationService: ConfirmationService,
-    private userService: UserService
+    private userService: UserService,
+    private crudService:CrudService,
   ) {
     this.currentUser = this.userService.getUser();
     
@@ -536,8 +599,11 @@ export class PpmpComponent implements OnInit {
     }
 
     this.selectedYear = new Date().getFullYear();
-    this.initializeDummyData();
+    this.initializeData();
   }
+
+  
+
 
   ngOnInit(): void {
     this.initializeForm();
@@ -556,6 +622,7 @@ export class PpmpComponent implements OnInit {
     return;
   }
 
+
   // Generate unique IDs
   const ppmpId = uuidv4();
   const projectId = uuidv4();
@@ -563,7 +630,6 @@ export class PpmpComponent implements OnInit {
   this.ppmpForm = this.formBuilder.group({
     id: [ppmpId],
     office_id: [this.currentUser.officeId],
-    fiscal_year: [this.selectedYear, [Validators.required]],
     app_id: [`APP-${this.selectedYear}-${Math.floor(100 + Math.random() * 900)}`],
     approvals_id: [uuidv4()],
     current_approver_id: [this.currentUser?.id?.toString() || '1'],
@@ -571,7 +637,7 @@ export class PpmpComponent implements OnInit {
     project: this.formBuilder.group({
       id: [projectId],
       ppmp_id: [ppmpId], // Ensure this is linked correctly
-      procurement_mode_id: ['', [Validators.required]],
+      procurement_mode_id: [this.procurementModes[0]?.value ?? '', [Validators.required]],
       prepared_by: [this.currentUser.fullname, [Validators.required]],
       project_title: ['', [Validators.required]],
       project_code: [''],
@@ -586,10 +652,8 @@ export class PpmpComponent implements OnInit {
 
     items: this.formBuilder.array([])
   });
-
-  // Add an initial empty schedule
-  this.addSchedule();
-
+  
+  this.getModeProcesses();
   // Add an initial item
   this.addItem();
 
@@ -628,18 +692,19 @@ get schedules(): FormArray {
 }
 
 // ✅ Create a new schedule entry
-createScheduleFormGroup(): FormGroup {
+createScheduleFormGroup(milestone:string): FormGroup {
   return this.formBuilder.group({
     id: [uuidv4()],
     ppmp_id: [this.ppmpForm.get('id')?.value || ''],
-    milestone: ['', [Validators.required]],
+    milestone: [milestone, [Validators.required]],
+    quarter: ['', [Validators.required]],
     date: [new Date(), [Validators.required]]  // Initialize with current date
   });
 }
   
 // ✅ Add a schedule to the form
 addSchedule(): void {
-  this.schedules.push(this.createScheduleFormGroup());
+  this.schedules.push(this.createScheduleFormGroup(''));
 }
 
 // ✅ Remove a schedule
@@ -734,23 +799,39 @@ createItemFormGroup(): FormGroup {
 }
 
 
- getAvailableYears() {
+getAvailableYears() {
   // Get unique years from PPMP projects, filtering out undefined values
-  const uniqueYears = [...new Set(this.ppmps.map(ppmp => ppmp.project?.fiscal_year).filter((year): year is number => year !== undefined))];
+  const uniqueYears = [
+    ...new Set(this.ppmps.map(ppmp => ppmp.project?.fiscal_year).filter((year): year is number => year !== undefined))
+  ];
+
+  // Get the current year and add the next 5 years if they are not already included
+  const currentYear = new Date().getFullYear();
+  const futureYears = Array.from({ length: 5 }, (_, index) => currentYear + index + 1);
+  const allYears = [...uniqueYears, ...futureYears, currentYear];
+
+  // Remove duplicates by converting to Set and then back to an array
+  const uniqueAllYears = [...new Set(allYears)];
 
   // Sort years in descending order, ensuring they are numbers
-  uniqueYears.sort((a, b) => (b ?? 0) - (a ?? 0));
+  uniqueAllYears.sort((b, a) => (b ?? 0) - (a ?? 0));
 
   // Create dropdown options, ensuring `year` is defined
-  this.years = uniqueYears.map(year => ({
+  this.years = uniqueAllYears.map(year => ({
     label: (year ?? '').toString(),
-    value: year ?? new Date().getFullYear()
+    value: year ?? currentYear
   }));
+  
 
   // Set default to current year if available, otherwise first year in list
-  const currentYear = new Date().getFullYear();
-  this.selectedYear = uniqueYears.includes(currentYear) ? currentYear : uniqueYears[0] ?? currentYear;
+  this.selectedYear = uniqueAllYears.includes(currentYear) ? currentYear : uniqueAllYears[0] ?? currentYear;
 }
+
+getFutureYears(){
+  const currentYear = new Date().getFullYear();
+  return this.years.filter(year=>year.value >=currentYear)
+}
+
 
 
   
@@ -774,7 +855,6 @@ createItemFormGroup(): FormGroup {
   current_approver_id: ppmp.current_approver_id,
   project: {
     ...ppmp.project,
-    fiscal_year: ppmp.project?.fiscal_year // Ensure this is populated correctly
   }
 });
 
@@ -788,7 +868,7 @@ createItemFormGroup(): FormGroup {
 
   // Add schedules
   ppmp.schedules?.forEach(schedule => {
-    const scheduleForm = this.createScheduleFormGroup();
+    const scheduleForm = this.createScheduleFormGroup('');
     scheduleForm.patchValue(schedule);
     this.schedules.push(scheduleForm);
   });
@@ -798,7 +878,7 @@ createItemFormGroup(): FormGroup {
 
 
  // Fixed savePpmp method that handles undefined arrays
-savePpmp(): void {
+async savePpmp(): Promise<void> {
   this.submitted = true;
 
   if (!this.currentUser) {
@@ -813,7 +893,11 @@ savePpmp(): void {
   try {
     // Check form validity
     if (this.ppmpForm.invalid) {
-      console.log('Form validation errors:', this.ppmpForm.errors);
+      for (const control in this.ppmpForm.controls) {
+        if (this.ppmpForm.controls[control].invalid) {
+          console.log(`${control} errors: `, this.ppmpForm.controls[control].errors);
+        }
+      }
       
       this.messageService.add({
         severity: 'error',
@@ -875,6 +959,7 @@ savePpmp(): void {
         schedulesData.map(schedule => ({
           id: schedule.id || uuidv4(),
           ppmp_id: this.isEditMode ? this.currentEditId! : formValue.id,
+          quarter:schedule.quarter ||  '',
           milestone: schedule.milestone || '',
           date: schedule.date ? new Date(schedule.date) : new Date()
         })) : []
@@ -890,12 +975,35 @@ savePpmp(): void {
         this.ppmps.push(ppmpData);
       }
       
+      
       this.messageService.add({
         severity: 'success',
         summary: 'Success',
         detail: 'PPMP updated successfully'
       });
     } else {
+      
+      const savedPpmp = await this.crudService.create(PPMP,ppmpData);
+      
+      const savedProject = await this.crudService.create(PPMPProject, {
+        ...ppmpData.project as PPMPProject,
+        ppmp_id: savedPpmp.id,
+      });
+
+      
+      for(const item of ppmpData.items ?? []){
+        await this.crudService.create(PPMPItem, {
+          ...item,
+          ppmp_project_id: savedProject.id
+        });
+      }
+
+      for(const schedule of ppmpData.schedules ?? []){
+        await this.crudService.create(PPMPSchedule, {
+          ...schedule,
+          ppmp_id: savedPpmp.id
+        });
+      }
       // Add new PPMP
       this.ppmps.push(ppmpData);
       this.messageService.add({
@@ -904,6 +1012,8 @@ savePpmp(): void {
         detail: 'PPMP created successfully'
       });
     }
+
+  
 
     // Refresh the filtered list
     this.filterByYear();
@@ -921,10 +1031,12 @@ savePpmp(): void {
 }
 
 
-  deletePpmp(ppmp: PPMP): void {
+  deletePpmp(event:Event,ppmp: PPMP): void {
+    event.stopPropagation();
     this.confirmationService.confirm({
       message: 'Are you sure you want to delete this PPMP?',
-      accept: () => {
+      accept: async () => {
+        await this.crudService.delete(PPMP,ppmp.id);
         this.ppmps = this.ppmps.filter(p => p.id !== ppmp.id);
         this.filterByYear();
         this.messageService.add({

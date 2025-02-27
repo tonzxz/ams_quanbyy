@@ -42,7 +42,7 @@ export class CrudService {
       const dummyData: T[] = await this.getAll<T>(model);
       dummyData.push({ ...data, id: `${Date.now()}` } as T); // Use timestamp for new ID
       localStorage.setItem(table, JSON.stringify(dummyData));
-      return data as T;
+      return dummyData[dummyData.length - 1];
     } else {
       const url = `${this.baseUrl}/${table}`;
       return firstValueFrom(this.http.post<T>(url, data));

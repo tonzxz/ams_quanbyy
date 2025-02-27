@@ -44,7 +44,7 @@ export class UserBudget {
 }
 
 
-export interface PPMP {
+export class PPMP {
   id: string
   office_id: number
   app_id?: string
@@ -53,7 +53,7 @@ export interface PPMP {
 }
 
 
-export interface PPMPProject {
+export class PPMPProject {
   id: string
   ppmp_id: string  
   procurement_mode_id: string  
@@ -68,7 +68,7 @@ export interface PPMPProject {
   fiscal_year: number
 }
 
-export interface PPMPItem {
+export class PPMPItem {
   id: string
   ppmp_project_id: string  
   quantity_required: number  
@@ -81,16 +81,15 @@ export interface PPMPItem {
   terms_of_reference?: string; // For Consulting Services
 }
 
-export interface PPMPSchedule { // end user nguna and then i veverify ni bac if pwede.
-  id: string
-  ppmp_id: string
-  milestone: string
-  edit_from?: string;
-  created_by?:string;
+export class PPMPSchedule { // end user nguna and then i veverify ni bac if pwede.
+  id: string;
+  ppmp_id: string;
+  milestone: string;
+  quarter:string;
   date: Date
 }
 
-export interface Approvals { 
+export class Approvals { 
   id: string
   approver_id: string
   approval_status: 'Approved' | 'Rejected'
@@ -106,7 +105,7 @@ export class Approver {
   approval_order: number
 }
 
-export interface Entity {
+export class Entity {
   id: number
   name: 'PPMP' | 'PurchaseRequest' | 'APP' | 'ProcurementProcess' | 'Contract' | 'InspectionAcceptance' | 'Payment'
   description?: string
@@ -190,7 +189,7 @@ export class Payment {
 
 
 
-export interface AuditTrail {
+export class AuditTrail {
   id: string
   entity_id: string             // References Entity table for type
   record_id: string             // The ID of the specific record in the entity (e.g., PPMP ID)
@@ -201,7 +200,7 @@ export interface AuditTrail {
   remarks?: string             // Additional comments if any
 }
 
-export interface Notification {
+export class Notification {
   id: number
   user_id: number
   message: string
@@ -209,7 +208,7 @@ export interface Notification {
   created_at: Date
 }
 
-export interface Document {
+export class Document {
   id: number
   procurement_process_id: string
   entity_id: number             // References Entity table for type

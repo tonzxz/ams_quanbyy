@@ -320,13 +320,13 @@ export const navItems: NavItem[] = [
     requiredRoles: ['accounting'],
   },
   { 
-    displayName: 'Obligation Request and Status',
+    displayName: 'ORS Management',
     iconName: 'solar:documents-broken',
     route: '/enduser/obligation-request',
     requiredRoles: ['accounting', 'end-user'],
   },
   {
-    displayName: 'Completion and Acceptance',
+    displayName: 'CA Certificates',
     iconName: 'solar:documents-broken',
     route: '/enduser/completion',
     requiredRoles: ['end-user'],
