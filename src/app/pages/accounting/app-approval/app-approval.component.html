@@ -2,7 +2,7 @@
     <ng-template pTemplate="title">
       Annual Procurement Plans
     </ng-template>
-    <div class="flex justify-between mb-4">
+    <div class="flex justify-between mb-4 items-center">
         <p>Review Annual Procurement Plans here.</p>
         <div class="relative w-[300px]">
             <i class="pi pi-search absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500"></i>
@@ -15,7 +15,7 @@
         </div>
     </div>
     <ng-template pTemplate="content">
-        <p-table [value]="documents" class="w-full">
+        <p-table [value]="documents" class="w-full" paginator="true" [rows]="10" [rowsPerPageOptions]="[10, 25, 50]">
             <ng-template pTemplate="header">
                 <tr>
                     <th>ID</th>
