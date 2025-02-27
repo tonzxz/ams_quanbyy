@@ -1,223 +1,202 @@
--- -- Enable the uuid-ossp extension for generating UUIDs
--- CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
-
--- Entity Table (Referenced by multiple tables)
-CREATE TABLE Entity (
-    id SERIAL PRIMARY KEY,
-    name VARCHAR(50) CHECK (name IN ('PPMP', 'PurchaseRequest', 'APP', 'ProcurementProcess', 'Contract', 'InspectionAcceptance', 'Payment')),
-    description TEXT
+CREATE TABLE procurement_process (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    name TEXT NOT NULL,
+    process_order INTEGER NOT NULL,
+    procurement_mode_id TEXT CHECK (procurement_mode_id IN ('Public', 'Alternative')) NOT NULL
 );
 
--- Department Table (Referenced by Office)
-CREATE TABLE Department (
-    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
-    name VARCHAR(255) NOT NULL
+CREATE TABLE procurement_mode (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    mode_name TEXT NOT NULL,
+    method TEXT CHECK (method IN ('Public', 'Alternative')) NOT NULL
 );
 
--- Office Table (Referenced by multiple tables)
-CREATE TABLE Office (
-    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
-    department_id UUID REFERENCES Department(id) ON DELETE CASCADE,
-    name VARCHAR(255) NOT NULL
+CREATE TABLE fund_source (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    source_name TEXT NOT NULL,
+    budget_id UUID NOT NULL REFERENCES budget(id)
 );
 
--- User Table (Referenced by multiple tables)
-CREATE TABLE Users (
-    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
-    name VARCHAR(255) NOT NULL,
-    username VARCHAR(255) UNIQUE NOT NULL,
-    password TEXT NOT NULL,
-    user_type VARCHAR(20) CHECK (user_type IN ('SuperAdmin', 'Admin', 'User')),
-    role VARCHAR(50) CHECK (role IN ('End-User', 'BAC', 'Budget', 'Accounting', 'Supply', 'Inspection', 'HOPE')),
-    office_id UUID REFERENCES Office(id) ON DELETE CASCADE
+CREATE TABLE budget (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    office_id UUID NOT NULL REFERENCES office(id),
+    created_by UUID NOT NULL REFERENCES users(id),
+    fiscal_year INTEGER NOT NULL,
+    total_budget NUMERIC NOT NULL,
+    allocated_budget NUMERIC NOT NULL,
+    used_amount NUMERIC NOT NULL,
+    date_created TIMESTAMP DEFAULT NOW()
 );
 
--- Procurement Process Table
-CREATE TABLE ProcurementProcess (
-    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
-    name VARCHAR(255) NOT NULL,
-    process_order INT NOT NULL
+CREATE TABLE user_budget (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    user_id UUID NOT NULL REFERENCES users(id),
+    budget_id UUID NOT NULL REFERENCES budget(id),
+    allocated_amount NUMERIC NOT NULL,
+    used_amount NUMERIC NOT NULL,
+    date_allocated TIMESTAMP DEFAULT NOW()
 );
 
--- Procurement Mode Table
-CREATE TABLE ProcurementMode (
-    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
-    procurement_process_id UUID REFERENCES ProcurementProcess(id) ON DELETE CASCADE,
-    mode_name VARCHAR(255) NOT NULL,
-    method VARCHAR(20) CHECK (method IN ('Public', 'Alternative'))
+CREATE TABLE ppmp (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    office_id UUID NOT NULL REFERENCES office(id),
+    app_id UUID REFERENCES app(id),
+    approvals_id UUID NOT NULL REFERENCES approvals(id),
+    current_approver_id UUID NOT NULL REFERENCES users(id)
 );
 
--- Budget Table
-CREATE TABLE Budget (
-    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
-    office_id UUID REFERENCES Office(id) ON DELETE CASCADE,
-    created_by UUID REFERENCES Users(id) ON DELETE SET NULL,
-    fiscal_year INT NOT NULL,
-    total_budget DECIMAL(18,2) NOT NULL,
-    allocated_budget DECIMAL(18,2) NOT NULL,
-    used_amount DECIMAL(18,2) NOT NULL,
-    date_created TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+CREATE TABLE ppmp_project (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    ppmp_id UUID NOT NULL REFERENCES ppmp(id),
+    procurement_mode_id UUID NOT NULL REFERENCES procurement_mode(id),
+    prepared_by UUID NOT NULL REFERENCES users(id),
+    project_title TEXT NOT NULL,
+    project_code TEXT,
+    project_description TEXT NOT NULL,
+    classifications TEXT[],
+    funding_source_id UUID NOT NULL REFERENCES budget(id),
+    abc NUMERIC,
+    contract_scope TEXT,
+    fiscal_year INTEGER NOT NULL
 );
 
--- Fund Source Table
-CREATE TABLE FundSource (
-    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
-    source_name VARCHAR(255) NOT NULL,
-    budget_id UUID REFERENCES Budget(id) ON DELETE CASCADE
+CREATE TABLE ppmp_item (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    ppmp_project_id UUID NOT NULL REFERENCES ppmp_project(id),
+    quantity_required INTEGER NOT NULL,
+    unit_of_measurement TEXT NOT NULL,
+    estimated_unit_cost NUMERIC NOT NULL,
+    estimated_total_cost NUMERIC NOT NULL,
+    classification TEXT NOT NULL,
+    technical_specification TEXT,
+    scope_of_work TEXT,
+    terms_of_reference TEXT
 );
 
--- Approver Table
-CREATE TABLE Approver (
-    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
-    user_id UUID REFERENCES Users(id) ON DELETE CASCADE,
-    entity_id INT REFERENCES Entity(id) ON DELETE CASCADE,
-    name VARCHAR(50) CHECK (name IN ('Department Head', 'BAC', 'Budget')),
-    approval_order INT NOT NULL
+CREATE TABLE ppmp_schedule (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    ppmp_id UUID NOT NULL REFERENCES ppmp(id),
+    milestone TEXT NOT NULL,
+    date TIMESTAMP NOT NULL
 );
 
--- Approvals Table
-CREATE TABLE Approvals (
-    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
-    approver_id UUID REFERENCES Approver(id) ON DELETE CASCADE,
-    approval_status VARCHAR(20) CHECK (approval_status IN ('Approved', 'Rejected')),
+CREATE TABLE approvals (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    approver_id UUID NOT NULL REFERENCES approver(id),
+    approval_status TEXT CHECK (approval_status IN ('Approved', 'Rejected')) NOT NULL,
     remarks TEXT,
     signature TEXT
 );
 
--- APP Table
-CREATE TABLE APP (
-    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
-    fund_source UUID REFERENCES FundSource(id) ON DELETE CASCADE,
-    prepared_by UUID REFERENCES Users(id) ON DELETE CASCADE,
-    approvals_id UUID REFERENCES Approvals(id) ON DELETE CASCADE,
-    fiscal_year INT NOT NULL,
-    date_prepared TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+CREATE TABLE approver (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    user_id UUID NOT NULL REFERENCES users(id),
+    entity_id UUID NOT NULL REFERENCES entity(id),
+    name TEXT CHECK (name IN ('Department Head', 'BAC', 'Budget')) NOT NULL,
+    approval_order INTEGER NOT NULL
+);
+
+CREATE TABLE entity (
+    id SERIAL PRIMARY KEY,
+    name TEXT CHECK (name IN ('PPMP', 'PurchaseRequest', 'APP', 'ProcurementProcess', 'Contract', 'InspectionAcceptance', 'Payment')) NOT NULL,
+    description TEXT
+);
+
+CREATE TABLE app (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    fund_source UUID NOT NULL REFERENCES fund_source(id),
+    prepared_by UUID NOT NULL REFERENCES users(id),
+    approvals_id UUID NOT NULL REFERENCES approvals(id),
+    fiscal_year INTEGER NOT NULL,
+    date_prepared TIMESTAMP DEFAULT NOW(),
     date_approved TIMESTAMP,
-    total_quantity_required INT NOT NULL,
-    total_estimated_cost DECIMAL(18,2) NOT NULL
+    total_quantity_required INTEGER NOT NULL,
+    total_estimated_cost NUMERIC NOT NULL
 );
 
--- PPMP Table
-CREATE TABLE PPMP (
-    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
-    office_id UUID REFERENCES Office(id) ON DELETE CASCADE,
-    app_id UUID REFERENCES APP(id) ON DELETE SET NULL,
-    fiscal_year INT NOT NULL,
-    approvals_id UUID REFERENCES Approvals(id) ON DELETE CASCADE,
-    current_approver_id UUID REFERENCES Approver(id) ON DELETE CASCADE
-);
-
--- PPMP Project Table
-CREATE TABLE PPMPProject (
-    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
-    ppmp_id UUID REFERENCES PPMP(id) ON DELETE CASCADE,
-    procurement_mode_id UUID REFERENCES ProcurementMode(id) ON DELETE CASCADE,
-    prepared_by UUID REFERENCES Users(id) ON DELETE CASCADE,
-    project_title VARCHAR(255) NOT NULL,
-    project_code VARCHAR(255),
-    classification VARCHAR(255) NOT NULL,
-    project_description TEXT NOT NULL,
-    funding_source_id UUID REFERENCES FundSource(id) ON DELETE CASCADE
-);
-
--- PPMP Item Table
-CREATE TABLE PPMPItem (
-    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
-    ppmp_project_id UUID REFERENCES PPMPProject(id) ON DELETE CASCADE,
-    technical_specification TEXT NOT NULL,
-    quantity_required INT NOT NULL,
-    unit_of_measurement VARCHAR(50) NOT NULL,
-    estimated_unit_cost DECIMAL(18,2) NOT NULL,
-    estimated_total_cost DECIMAL(18,2) NOT NULL
-);
-
--- PPMP Schedule Table
-CREATE TABLE PPMPSchedule (
-    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
-    ppmp_id UUID REFERENCES PPMP(id) ON DELETE CASCADE,
-    milestone VARCHAR(255) NOT NULL,
-    date TIMESTAMP NOT NULL
-);
-
--- Purchase Request Table
-CREATE TABLE PurchaseRequest (
-    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
-    ppmpproject_id UUID REFERENCES PPMPProject(id) ON DELETE CASCADE,
-    approvals_id UUID REFERENCES Approvals(id) ON DELETE CASCADE,
+CREATE TABLE purchase_request (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    ppmp_id UUID NOT NULL REFERENCES ppmp(id),
+    approvals_id UUID NOT NULL REFERENCES approvals(id),
     request_date TIMESTAMP NOT NULL
 );
 
--- Contract Table
-CREATE TABLE Contract (
-    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
-    purchase_request_id UUID REFERENCES PurchaseRequest(id) ON DELETE CASCADE,
-    contractor_name VARCHAR(255) NOT NULL,
-    contract_amount DECIMAL(18,2) NOT NULL,
+CREATE TABLE department (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    name TEXT NOT NULL
+);
+
+CREATE TABLE office (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    department_id UUID NOT NULL REFERENCES department(id),
+    name TEXT NOT NULL
+);
+
+CREATE TABLE users (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    name TEXT NOT NULL,
+    username TEXT UNIQUE NOT NULL,
+    password TEXT NOT NULL,
+    user_type TEXT CHECK (user_type IN ('SuperAdmin', 'Admin', 'User')) NOT NULL,
+    role TEXT CHECK (role IN ('End-User', 'BAC', 'Budget', 'Accounting', 'Supply', 'Inspection', 'HOPE')) NOT NULL,
+    office_id UUID NOT NULL REFERENCES office(id)
+);
+
+CREATE TABLE contract (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    purchase_request_id UUID NOT NULL REFERENCES purchase_request(id),
+    contractor_name TEXT NOT NULL,
+    contract_amount NUMERIC NOT NULL,
     contract_date TIMESTAMP NOT NULL,
     start_date TIMESTAMP NOT NULL,
     end_date TIMESTAMP NOT NULL,
-    status VARCHAR(20) CHECK (status IN ('Active', 'Completed', 'Terminated'))
+    status TEXT CHECK (status IN ('Active', 'Completed', 'Terminated')) NOT NULL
 );
 
--- Inspection Acceptance Table
-CREATE TABLE InspectionAcceptance (
-    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
-    contract_id UUID REFERENCES Contract(id) ON DELETE CASCADE,
-    inspected_by UUID REFERENCES Users(id) ON DELETE CASCADE,
+CREATE TABLE inspection_acceptance (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    contract_id UUID NOT NULL REFERENCES contract(id),
+    inspected_by UUID NOT NULL REFERENCES users(id),
     inspection_date TIMESTAMP NOT NULL,
     signature TEXT NOT NULL,
     remarks TEXT
 );
 
--- Payment Table
-CREATE TABLE Payment (
-    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
-    contract_id UUID REFERENCES Contract(id) ON DELETE CASCADE,
+CREATE TABLE payment (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    contract_id UUID NOT NULL REFERENCES contract(id),
     obligation_request_date TIMESTAMP NOT NULL,
     disbursement_voucher_date TIMESTAMP NOT NULL,
     payment_date TIMESTAMP NOT NULL,
-    amount_paid DECIMAL(18,2) NOT NULL,
-    payment_method VARCHAR(10) CHECK (payment_method IN ('Check', 'ADA'))
+    amount_paid NUMERIC NOT NULL,
+    payment_method TEXT CHECK (payment_method IN ('Check', 'ADA')) NOT NULL
 );
 
--- User Budget Table
-CREATE TABLE UserBudget (
-    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
-    user_id UUID REFERENCES Users(id) ON DELETE CASCADE,
-    budget_id UUID REFERENCES Budget(id) ON DELETE CASCADE,
-    allocated_amount DECIMAL(18,2) NOT NULL,
-    used_amount DECIMAL(18,2) NOT NULL,
-    date_allocated TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-);
-
--- Audit Trail Table
-CREATE TABLE AuditTrail (
-    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
-    entity_id INT REFERENCES Entity(id) ON DELETE CASCADE,
+CREATE TABLE audit_trail (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    entity_id UUID NOT NULL REFERENCES entity(id),
     record_id UUID NOT NULL,
-    approvals_id UUID REFERENCES Approvals(id) ON DELETE CASCADE,
-    action VARCHAR(20) CHECK (action IN ('Created', 'Updated', 'Approved', 'Rejected', 'Deleted')),
-    performed_by UUID REFERENCES Users(id) ON DELETE CASCADE,
-    performed_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    approvals_id UUID NOT NULL REFERENCES approvals(id),
+    action TEXT CHECK (action IN ('Created', 'Updated', 'Approved', 'Rejected', 'Deleted')) NOT NULL,
+    performed_by UUID NOT NULL REFERENCES users(id),
+    performed_at TIMESTAMP DEFAULT NOW(),
     remarks TEXT
 );
 
--- Notification Table
-CREATE TABLE Notification (
+CREATE TABLE notification (
     id SERIAL PRIMARY KEY,
-    user_id UUID REFERENCES Users(id) ON DELETE CASCADE,
+    user_id UUID NOT NULL REFERENCES users(id),
     message TEXT NOT NULL,
     is_read BOOLEAN DEFAULT FALSE,
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    created_at TIMESTAMP DEFAULT NOW()
 );
 
--- Document Table
-CREATE TABLE Document (
+CREATE TABLE document (
     id SERIAL PRIMARY KEY,
-    procurement_process_id UUID REFERENCES ProcurementProcess(id) ON DELETE CASCADE,
-    entity_id INT REFERENCES Entity(id) ON DELETE CASCADE,
+    procurement_process_id UUID NOT NULL REFERENCES procurement_process(id),
+    entity_id UUID NOT NULL REFERENCES entity(id),
     record_id UUID NOT NULL,
     file_path TEXT NOT NULL,
-    uploaded_by UUID REFERENCES Users(id) ON DELETE CASCADE,
-    upload_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    uploaded_by UUID NOT NULL REFERENCES users(id),
+    upload_date TIMESTAMP DEFAULT NOW()
 );
