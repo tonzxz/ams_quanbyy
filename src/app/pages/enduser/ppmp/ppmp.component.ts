@@ -89,6 +89,7 @@ export class PpmpComponent implements OnInit {
   selectedPpmps: PPMPWithDetails[] = [];
   isDocumentView: boolean = false; // Default is system view
   animationClass: string;
+  private uploadedFiles: Map<number, File[]> = new Map();
 
 
   get items() {
@@ -555,44 +556,72 @@ export class PpmpComponent implements OnInit {
     return;
   }
 
-this.ppmpForm = this.formBuilder.group({
-  id: [uuidv4()],
-  office_id: [this.currentUser.officeId],
-  fiscal_year: [this.selectedYear, [Validators.required]], // Add fiscal year
-  app_id: [''],
-  approvals_id: [uuidv4()],
-  current_approver_id: [''],
+  // Generate unique IDs
+  const ppmpId = uuidv4();
+  const projectId = uuidv4();
+  
+  this.ppmpForm = this.formBuilder.group({
+    id: [ppmpId],
+    office_id: [this.currentUser.officeId],
+    fiscal_year: [this.selectedYear, [Validators.required]],
+    app_id: [`APP-${this.selectedYear}-${Math.floor(100 + Math.random() * 900)}`],
+    approvals_id: [uuidv4()],
+    current_approver_id: [this.currentUser?.id?.toString() || '1'],
 
-  project: this.formBuilder.group({
-    id: [uuidv4()],
-    ppmp_id: [''],
-    procurement_mode_id: ['', [Validators.required]],
-    prepared_by: [this.currentUser.fullname, [Validators.required]],
-    project_title: ['', [Validators.required]],
-    project_code: [''],
-    classifications: [[], [Validators.required, Validators.minLength(1)]],
-    project_description: ['', [Validators.required]],
-    contract_scope: [''],
-    fiscal_year: [this.selectedYear, [Validators.required]], // Add this
-    schedules: this.formBuilder.array([])
-  }),
+    project: this.formBuilder.group({
+      id: [projectId],
+      ppmp_id: [ppmpId], // Ensure this is linked correctly
+      procurement_mode_id: ['', [Validators.required]],
+      prepared_by: [this.currentUser.fullname, [Validators.required]],
+      project_title: ['', [Validators.required]],
+      project_code: [''],
+      classifications: [[], [Validators.required, Validators.minLength(1)]],
+      project_description: ['', [Validators.required]],
+      contract_scope: [''],
+      fiscal_year: [this.selectedYear, [Validators.required]],
+      funding_source_id: ['gaa'], // Default value
+      abc: [0], // Allocated Budget for Contract
+      schedules: this.formBuilder.array([])
+    }),
 
-  items: this.formBuilder.array([])
-});
+    items: this.formBuilder.array([])
+  });
 
-  // 🔹 Add an initial empty schedule
+  // Add an initial empty schedule
   this.addSchedule();
 
-  // 🔹 Add an initial item
+  // Add an initial item
   this.addItem();
 
   // Make fields readonly
   this.ppmpForm.get('project.prepared_by')?.disable();
+  
+  // Subscribe to classification changes
   this.ppmpForm.get('project.classifications')?.valueChanges.subscribe((values: string[]) => {
     this.updateItemClassifications(values);
   });
+  
+  // Subscribe to changes in items to update ABC
+  this.items.valueChanges.subscribe(() => {
+    this.updateTotalProjectABC();
+  });
 }
 
+  updateTotalProjectABC(): void {
+  let total = 0;
+  
+  for (let i = 0; i < this.items.length; i++) {
+    const item = this.items.at(i);
+    const quantity = item.get('quantity_required')?.value || 0;
+    const unitCost = item.get('estimated_unit_cost')?.value || 0;
+    total += quantity * unitCost;
+  }
+  
+  this.ppmpForm.get('project.abc')?.setValue(total);
+}
+
+
+  
 // ✅ Get schedules array
 get schedules(): FormArray {
   return this.ppmpForm.get('project.schedules') as FormArray;
@@ -602,11 +631,12 @@ get schedules(): FormArray {
 createScheduleFormGroup(): FormGroup {
   return this.formBuilder.group({
     id: [uuidv4()],
+    ppmp_id: [this.ppmpForm.get('id')?.value || ''],
     milestone: ['', [Validators.required]],
-    date: ['', [Validators.required]]  // 🔹 `p-datepicker` expects a valid Date object or string
+    date: [new Date(), [Validators.required]]  // Initialize with current date
   });
 }
-
+  
 // ✅ Add a schedule to the form
 addSchedule(): void {
   this.schedules.push(this.createScheduleFormGroup());
@@ -657,7 +687,7 @@ removeSchedule(index: number): void {
 createItemFormGroup(): FormGroup {
   return this.formBuilder.group({
     id: [uuidv4()],
-    ppmp_project_id: [''],
+    ppmp_project_id: [this.ppmpForm.get('project.id')?.value || ''],
     technical_specification: [''],
     scope_of_work: [''],
     terms_of_reference: [''],
@@ -669,6 +699,7 @@ createItemFormGroup(): FormGroup {
   });
 }
 
+  
   addItem(): void {
     const itemForm = this.createItemFormGroup();
     this.items.push(itemForm);
@@ -766,7 +797,8 @@ createItemFormGroup(): FormGroup {
 }
 
 
- savePpmp(): void {
+ // Fixed savePpmp method that handles undefined arrays
+savePpmp(): void {
   this.submitted = true;
 
   if (!this.currentUser) {
@@ -778,50 +810,93 @@ createItemFormGroup(): FormGroup {
     return;
   }
 
-  if (this.ppmpForm.invalid) {
-    this.messageService.add({
-      severity: 'error',
-      summary: 'Validation Error',
-      detail: 'Please check all required fields'
-    });
-    return;
-  }
-
   try {
+    // Check form validity
+    if (this.ppmpForm.invalid) {
+      console.log('Form validation errors:', this.ppmpForm.errors);
+      
+      this.messageService.add({
+        severity: 'error',
+        summary: 'Validation Error',
+        detail: 'Please check all required fields'
+      });
+      return;
+    }
+
     this.loading = true;
+    
+    // Get raw form values (including disabled fields)
     const formValue = this.ppmpForm.getRawValue();
     
-    // Create PPMP with nested data
-   const ppmpData: PPMPWithDetails = {
-  id: this.isEditMode ? this.currentEditId! : formValue.id,
-  office_id: formValue.office_id,
-  app_id: formValue.app_id || undefined,
-  approvals_id: formValue.approvals_id,
-  current_approver_id: formValue.current_approver_id,
-  project: {
-    ...formValue.project,
-    ppmp_id: formValue.id,
-    fiscal_year: formValue.project.fiscal_year // Ensure fiscal year is saved correctly
-  },
-  items: formValue.items.map((item: any) => ({
-    ...item,
-    ppmp_project_id: formValue.project.id
-  })),
-  schedules: formValue.schedules.map((schedule: any) => ({
-    ...schedule,
-    ppmp_id: formValue.id
-  }))
-};
+    // Safely access nested properties with null checks
+    const projectData = formValue.project || {};
+    const itemsData = formValue.items || [];
+    const schedulesData = projectData.schedules || [];
+    
+    // Create PPMP with nested data and proper null checks
+    const ppmpData: PPMPWithDetails = {
+      id: this.isEditMode ? this.currentEditId! : formValue.id,
+      office_id: formValue.office_id,
+      app_id: formValue.app_id || `APP-${this.selectedYear}-${Math.floor(1000 + Math.random() * 9000)}`,
+      approvals_id: formValue.approvals_id,
+      current_approver_id: formValue.current_approver_id,
+      
+      // Ensure project data is properly structured
+      project: {
+        id: projectData.id || uuidv4(),
+        ppmp_id: this.isEditMode ? this.currentEditId! : formValue.id,
+        procurement_mode_id: projectData.procurement_mode_id || '',
+        prepared_by: projectData.prepared_by || this.currentUser?.fullname || '',
+        project_title: projectData.project_title || '',
+        project_code: projectData.project_code || '',
+        classifications: projectData.classifications || [],
+        project_description: projectData.project_description || '',
+        contract_scope: projectData.contract_scope || '',
+        fiscal_year: projectData.fiscal_year || this.selectedYear,
+        funding_source_id: projectData.funding_source_id || 'gaa',
+        abc: projectData.abc || 0
+      },
+      
+      // Safely map items array with null check
+      items: Array.isArray(itemsData) ? 
+        itemsData.map(item => ({
+          id: item.id || uuidv4(),
+          ppmp_project_id: projectData.id || '',
+          technical_specification: item.technical_specification || '',
+          quantity_required: item.quantity_required || 0,
+          unit_of_measurement: item.unit_of_measurement || '',
+          estimated_unit_cost: item.estimated_unit_cost || 0,
+          estimated_total_cost: (item.quantity_required || 0) * (item.estimated_unit_cost || 0),
+          classification: item.classification || ''
+        })) : [],
+      
+      // Safely map schedules array with null check
+      schedules: Array.isArray(schedulesData) ? 
+        schedulesData.map(schedule => ({
+          id: schedule.id || uuidv4(),
+          ppmp_id: this.isEditMode ? this.currentEditId! : formValue.id,
+          milestone: schedule.milestone || '',
+          date: schedule.date ? new Date(schedule.date) : new Date()
+        })) : []
+    };
 
-
+    // Update or add PPMP to the list
     if (this.isEditMode && this.currentEditId) {
-      this.ppmps = this.ppmps.map(p => p.id === this.currentEditId ? ppmpData : p);
+      // Find and update existing PPMP
+      const index = this.ppmps.findIndex(p => p.id === this.currentEditId);
+      if (index !== -1) {
+        this.ppmps[index] = ppmpData;
+      } else {
+        this.ppmps.push(ppmpData);
+      }
+      
       this.messageService.add({
         severity: 'success',
         summary: 'Success',
         detail: 'PPMP updated successfully'
       });
     } else {
+      // Add new PPMP
       this.ppmps.push(ppmpData);
       this.messageService.add({
         severity: 'success',
@@ -830,6 +905,7 @@ createItemFormGroup(): FormGroup {
       });
     }
 
+    // Refresh the filtered list
     this.filterByYear();
     this.hideDialog();
   } catch (error) {
@@ -875,9 +951,35 @@ createItemFormGroup(): FormGroup {
   }
 
   isFieldInvalid(fieldName: string): boolean {
-    const field = this.ppmpForm.get(fieldName);
-    return field ? (field.invalid && (field.dirty || field.touched || this.submitted)) : false;
+  const field = this.ppmpForm.get(fieldName);
+  return field ? (field.invalid && (field.dirty || field.touched || this.submitted)) : false;
   }
+  
+isItemFileRequired(itemIndex: number): boolean {
+  const item = this.items.at(itemIndex);
+  const classification = item.get('classification')?.value;
+  
+  // If classification is set and no file is uploaded, mark as required
+  if (classification && this.submitted) {
+    // Fix for uploadedFiles.get(itemIndex)?.length possibly undefined
+    const files = this.uploadedFiles.get(itemIndex);
+    const hasFile = files !== undefined && files.length > 0;
+                    
+    if (!hasFile) {
+      if (classification === 'goods' && !item.get('technical_specification')?.value) {
+        return true;
+      }
+      if (classification === 'infrastructure' && !item.get('scope_of_work')?.value) {
+        return true;
+      }
+      if (classification === 'consulting' && !item.get('terms_of_reference')?.value) {
+        return true;
+      }
+    }
+  }
+  
+  return false;
+}
 
   getClassificationClass(classification?: string): string {
     switch (classification) {
@@ -925,6 +1027,25 @@ createItemFormGroup(): FormGroup {
   
   // upload
 
+  getValidationMessage(fieldName: string): string {
+  const field = this.ppmpForm.get(fieldName);
+  
+  if (!field || !field.errors) return '';
+  
+  if (field.errors['required']) {
+    return 'This field is required';
+  }
+  
+  if (field.errors['minlength']) {
+    return `Minimum length is ${field.errors['minlength'].requiredLength}`;
+  }
+  
+  if (field.errors['min']) {
+    return `Minimum value is ${field.errors['min'].min}`;
+  }
+  
+  return 'Invalid value';
+}
   
  totalSize: string = '0';
 totalSizePercent: number = 0;
@@ -937,21 +1058,53 @@ formatSize(bytes: number): string {
   return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
 }
 
-onSelectedFiles(event: any) {
+  onSelectedFiles(event: any, itemIndex?: number) {
   const files = event.files;
   let size = 0;
+  
   for (const file of files) {
     size += file.size;
   }
+  
   this.totalSize = this.formatSize(size);
   this.totalSizePercent = (size / 1000000) * 100; // 1MB = 1000000B
+  
+  // Store files for specific item if index is provided
+  if (itemIndex !== undefined) {
+    this.uploadedFiles.set(itemIndex, files);
+  }
 }
 
-uploadEvent(uploadCallback: Function) {
+uploadEvent(uploadCallback: Function, itemIndex?: number) {
+  // Execute the PrimeNG upload callback
   uploadCallback();
-  this.messageService.add({ severity: 'success', summary: 'Success', detail: 'Files Uploaded' });
+  
+  // Show success message
+  this.messageService.add({ 
+    severity: 'success', 
+    summary: 'Success', 
+    detail: 'Files Uploaded' 
+  });
+  
+  // In a real application, you would actually upload the files to your server here
+  // and store the returned file URLs/paths with the item
+  if (itemIndex !== undefined && this.uploadedFiles.has(itemIndex)) {
+    const files = this.uploadedFiles.get(itemIndex);
+    const itemForm = this.items.at(itemIndex);
+    
+    // Update the appropriate field based on classification
+    const classification = itemForm.get('classification')?.value;
+    if (classification === 'goods') {
+      itemForm.patchValue({ technical_specification: files?.map(f => f.name).join(', ') });
+    } else if (classification === 'infrastructure') {
+      itemForm.patchValue({ scope_of_work: files?.map(f => f.name).join(', ') });
+    } else if (classification === 'consulting') {
+      itemForm.patchValue({ terms_of_reference: files?.map(f => f.name).join(', ') });
+    }
+  }
 }
 
+  
 choose(event: any, chooseCallback: Function) {
   chooseCallback();
 }
