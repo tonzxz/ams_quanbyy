@@ -1,0 +1,123 @@
+<mat-card class="cardWithShadow">
+  <mat-card-content>
+    <mat-card-title>Fund Source</mat-card-title>
+    <mat-card-subtitle>View, Create, and Edit Funding Sources</mat-card-subtitle>
+
+    <div class="flex justify-between items-center mt-4">
+      <p-button
+        pTooltip="Add New Fund Source"
+        (click)="openNewFundSourceDialog()"
+        [outlined]="true"
+        size="small"
+        label="Add Fund Source"
+        icon="pi pi-plus"
+      ></p-button>
+    </div>
+
+    <p-table
+      [value]="fundSources"
+      [rows]="10"
+      [paginator]="true"
+      [rowsPerPageOptions]="[5, 10, 20]"
+      [loading]="loading"
+      [responsive]="true"
+      [rowHover]="true"
+      [scrollable]="true"
+      scrollHeight="400px"
+      styleClass="p-datatable-sm mt-4"
+      [tableStyle]="{'min-width': '60rem'}"
+    >
+      <ng-template pTemplate="header">
+        <tr>
+          <th pSortableColumn="source_name">Source Name <p-sortIcon field="source_name"></p-sortIcon></th>
+          <th pSortableColumn="budget_id">Budget ID <p-sortIcon field="budget_id"></p-sortIcon></th>
+          <th>Actions</th>
+        </tr>
+      </ng-template>
+
+      <ng-template pTemplate="body" let-fundSource>
+        <tr>
+          <td>{{ fundSource.source_name }}</td>
+          <td>{{ fundSource.budget_id }}</td>
+          <td>
+            <div class="flex gap-2">
+              <button
+                pButton
+                icon="pi pi-pencil"
+                class="p-button-rounded p-button-primary p-button-sm"
+                (click)="editFundSource(fundSource)"
+                outlined="true"
+              ></button>
+              <button
+                pButton
+                icon="pi pi-trash"
+                class="p-button-rounded p-button-danger p-button-sm"
+                (click)="deleteFundSource(fundSource)"
+                outlined="true"
+                ></button>
+            </div>
+          </td>
+        </tr>
+      </ng-template>
+
+      <ng-template pTemplate="emptymessage">
+        <tr>
+          <td colspan="3">
+            <div class="flex flex-col w-full items-center justify-center py-8">
+              <span>No fund sources found.</span>
+            </div>
+          </td>
+        </tr>
+      </ng-template>
+    </p-table>
+
+   
+
+    <p-dialog
+  [(visible)]="fundSourceDialog"
+  [modal]="true"
+  [style]="{'width': '450px'}"
+  [header]="isEditMode ? 'Edit Fund Source' : 'New Fund Source'"
+  styleClass="p-fluid"
+  [dismissableMask]="true"
+  [draggable]="false"
+  [resizable]="false"
+>
+  <form [formGroup]="fundSourceForm" class="w-full">
+    <div class="flex flex-col gap-4">
+      
+      <!-- Source Name -->
+      <div class="flex flex-col">
+        <label for="source_name" class="text-sm font-medium text-gray-700">Source Name</label>
+        <p-inputText id="source_name" formControlName="source_name" class="w-full p-inputtext"></p-inputText>
+        <small class="text-red-500" *ngIf="submitted && fundSourceForm.get('source_name')?.errors?.['required']">
+          Source Name is required
+        </small>
+      </div>
+
+      <!-- Budget ID -->
+      <div class="flex flex-col">
+        <label for="budget_id" class="text-sm font-medium text-gray-700">Budget ID</label>
+        <p-inputText id="budget_id" formControlName="budget_id" class="w-full p-inputtext"></p-inputText>
+        <small class="text-red-500" *ngIf="submitted && fundSourceForm.get('budget_id')?.errors?.['required']">
+          Budget ID is required
+        </small>
+      </div>
+    </div>
+  </form>
+
+  <ng-template pTemplate="footer">
+    <div class="flex justify-end gap-2">
+      <button pButton label="Cancel" icon="pi pi-times" class="p-button-text" (click)="hideDialog()"></button>
+      <button pButton label="Save" icon="pi pi-check" class="p-button-primary" (click)="saveFundSource()"></button>
+    </div>
+  </ng-template>
+</p-dialog>
+
+
+    <p-confirmDialog header="Confirm Deletion" icon="pi pi-exclamation-triangle"></p-confirmDialog>
+
+  </mat-card-content>
+</mat-card>
+
+<p-toast></p-toast>

@@ -282,8 +282,7 @@ export const navItems: NavItem[] = [
     route: '/shared/stock-transfer',
     requiredRoles: ['supply'],
   },
-  // {
-  //   displayName: 'Delivery',
+  // {F
   //   iconName: 'solar:inbox-archive-outline',
   //   route: '/supply-management/delivery',
   //   requiredRoles: ['supply'],
@@ -300,6 +299,13 @@ export const navItems: NavItem[] = [
    {
     navCap: 'Budget',
     divider: true,
+    requiredRoles: ['accounting'],
+  },
+
+  {
+    displayName: 'Fund Source',
+    iconName: 'solar:widget-add-line-duotone',
+    route: '/accounting/funding-source',
     requiredRoles: ['accounting'],
   },
  
@@ -322,7 +328,7 @@ export const navItems: NavItem[] = [
   { 
     displayName: 'ORS Management',
     iconName: 'solar:documents-broken',
-    route: '/enduser/obligation-request',
+    route: '/accounting/ors',
     requiredRoles: ['accounting', 'end-user'],
   },
   {
