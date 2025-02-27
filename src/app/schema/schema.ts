@@ -66,10 +66,7 @@ export interface PPMPProject {
   abc?: number;  // update ig optional ko lang nguna | si budget /add
   contract_scope?: string // add 
   fiscal_year: number
-
-
 }
-
 
 export interface PPMPItem {
   id: string
@@ -88,6 +85,8 @@ export interface PPMPSchedule { // end user nguna and then i veverify ni bac if 
   id: string
   ppmp_id: string
   milestone: string
+  edit_from?: string;
+  created_by?:string;
   date: Date
 }
 
