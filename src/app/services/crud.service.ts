@@ -39,10 +39,8 @@ export class CrudService {
   async flushDummyData<T>(model: { new(): T }, data: T[]): Promise<void> {
     if(environment.use == 'local'){
       const table = this.getTableName(model.name);
-      const dummyData: T[] = await this.getAll<T>(model);
-      if(dummyData.length <= 0){
-        localStorage.setItem(table, JSON.stringify(data));
-      }
+      localStorage.setItem(table, JSON.stringify(data));
+      
     }
   }
 
@@ -64,14 +62,16 @@ export class CrudService {
   // Read (Get all records)
   async getAll<T>(model: { new(): T }): Promise<T[]> {
     const table =this.getTableName(model.name);
-    await this.flushDummyData(model, DummyData[model.name + 'Data' as keyof (typeof DummyData)] as T[]);
+    console.log(DummyData[table + 'Data' as keyof (typeof DummyData)])
+
     if (environment.use == 'local') {
       const dummyData = localStorage.getItem(table);
       if (dummyData) {
         try {
           return JSON.parse(dummyData) as T[];
         } catch (e) {
-          return [];
+          await this.flushDummyData(model, DummyData[model.name + 'Data' as keyof (typeof DummyData)] as T[]);
+          return DummyData[model.name + 'Data' as keyof (typeof DummyData)] as T[];
         }
       } else {
         return [];
