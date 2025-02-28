@@ -1,4 +1,4 @@
-import { PPMP, PPMPItem, PPMPProject, PPMPSchedule } from "./schema";
+import { PPMP, PPMPItem, PPMPProject, PPMPSchedule, Users } from "./schema";
 // PPMP Items
 export const PPMPItemData: PPMPItem[] = [
     {
@@ -288,3 +288,76 @@ export const PPMPData:PPMP[] = [
       }
     
 ]
+
+// USERS
+
+export const dummyUsers: Users[] = [
+  {
+    id: "1",
+    fullname: "John Doe",
+    username: "accounting",
+    password: "test123",
+    user_type: "Admin",
+    role: "accounting",
+    isAdmin: true,
+    profile: "profile-pic-url-1",
+    officeId: "550e8400e29b41d4a716446655440010"
+  },
+  {
+    id: "2",
+    fullname: "Jane Smith",
+    username: "superadmin",
+    password: "test123",
+    user_type: "SuperAdmin",
+    role: "superadmin",
+    isAdmin: true,
+    profile: "profile-pic-url-2",
+    officeId: "550e8400e29b41d4a716446655440011"
+  },
+  {
+    id: "3",
+    fullname: "Alice Johnson",
+    username: "supply",
+    password: "test123",
+    user_type: "Admin",
+    role: "supply",
+    isAdmin: true,
+    profile: "profile-pic-url-3",
+    officeId: "550e8400e29b41d4a716446655440012"
+  },
+  {
+    id: "4",
+    fullname: "Bob Brown",
+    username: "bac",
+    password: "test123",
+    user_type: "User",
+    role: "bac",
+    isAdmin: true,
+    profile: "profile-pic-url-4",
+    officeId: "550e8400e29b41d4a716446655440013"
+  },
+  {
+    id: "5",
+    fullname: "Charlie White",
+    username: "inspection",
+    password: "test123",
+    user_type: "Admin",
+    role: "inspection",
+    isAdmin: true,
+    profile: "profile-pic-url-5",
+    officeId: "550e8400e29b41d4a716446655440014"
+  },
+  {
+    id: "6",
+    fullname: "Diana Green",
+    username: "enduser",
+    password: "test123",
+    user_type: "User",
+    role: "end-user",
+    isAdmin: true,
+    profile: "profile-pic-url-6",
+    officeId: "550e8400e29b41d4a716446655440015"
+  },
+  
+];
+
