@@ -4,6 +4,8 @@ import { BehaviorSubject, filter, firstValueFrom, Observable } from 'rxjs';
 import { environment } from 'src/environment/environment';
 import { WebSocketSubject } from 'rxjs/webSocket'; // rxjs WebSocketSubject
 
+import * as DummyData from '../schema/dummy';
+
 
 class WebSocketService {
   private socket: WebSocketSubject<any>;
@@ -62,6 +64,7 @@ export class CrudService {
   // Read (Get all records)
   async getAll<T>(model: { new(): T }): Promise<T[]> {
     const table =this.getTableName(model.name);
+    await this.flushDummyData(model, DummyData[model.name + 'Data' as keyof (typeof DummyData)] as T[]);
     if (environment.use == 'local') {
       const dummyData = localStorage.getItem(table);
       if (dummyData) {
@@ -83,6 +86,7 @@ export class CrudService {
   getAllLive<T>(model: { new(): T }): Observable<T[]> {
     const table = this.getTableName(model.name);
     const dataSubject = new BehaviorSubject<T[]>(this.dataCache[table] || []); // Subject to hold data
+    
     // Listen to WebSocket updates for the table
     this.wsService.listenToTable(table).subscribe(() => {
       if (environment.use != 'local') {
@@ -93,6 +97,7 @@ export class CrudService {
         });
       } else {
         // In 'local', listen to changes in localStorage (though, in practice, you might need a more event-driven approach for localStorage updates)
+        this.flushDummyData(model, DummyData[model.name + 'Data' as keyof (typeof DummyData)] as T[]);
         const updatedData = this.getAll<T>(model); 
         updatedData.then(newData => {
           this.dataCache[table] = newData;
