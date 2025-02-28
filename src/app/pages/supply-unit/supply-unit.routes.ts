@@ -5,12 +5,12 @@ import { StockingComponent } from './stocking/stocking.component';
 import { RsmiComponent } from './rsmi/rsmi.component';
 import { IcsComponent } from './ics/ics.component';
 import { ParComponent } from './par/par.component';
-import { CompileReportsComponent } from './compile-reports/compile-reports.component';
 import { SupplyDashboardComponent } from './supply-dashboard/supply-dashboard.component';
 import { DeliveryComponent } from './delivery/delivery.component';
 import { PriceQuotationComponent } from '../shared/price-quotation/price-quotation.component';
 import { SuppliersComponent } from './suppliers/suppliers.component';
-
+import { IarComponent } from './iar/iar.component';
+import { RpciComponent } from './rpci/rpci.component';
 
 export const SupplyUnitRoutes: Routes = [
   {
@@ -58,12 +58,18 @@ export const SupplyUnitRoutes: Routes = [
         data: { roles: ['supply', 'superadmin'], breadcrumb: 'Generate ICS' } // specify roles here
       },
       {
-        path: 'compile-reports',
-        component: CompileReportsComponent,
+        path: 'iar',
+        component: IarComponent,
         canActivate: [roleGuard],
-        data: { roles: ['supply', 'superadmin'], breadcrumb: 'Generate ICS' } // specify roles here
+        data: { roles: ['supply', 'superadmin'], breadcrumb: 'Generate IAR' }
       },
-       {
+      {
+        path: 'rpci',
+        component: RpciComponent,
+        canActivate: [roleGuard],
+        data: { roles: ['supply', 'superadmin'], breadcrumb: 'Generate RPCI' }
+      },
+      {
         path: 'delivery',
         component: DeliveryComponent,
         canActivate: [roleGuard],
