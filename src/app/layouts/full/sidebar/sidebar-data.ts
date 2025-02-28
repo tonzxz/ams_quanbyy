@@ -584,6 +584,18 @@ export const navItems: NavItem[] = [
     requiredRoles: ['supply'],
   },
   {
+    displayName: 'IAR',
+    iconName: 'solar:ticket-sale-broken',
+    route: '/supply-management/iar',
+    requiredRoles: ['supply'],
+  },
+  {
+    displayName: 'RPCI',
+    iconName: 'solar:ticket-sale-broken',
+    route: '/supply-management/rpci',
+    requiredRoles: ['supply'],
+  },
+  {
     displayName: 'Compile Reports',
     iconName: 'solar:ticket-sale-broken',
     route: '/supply-management/compile-reports',
