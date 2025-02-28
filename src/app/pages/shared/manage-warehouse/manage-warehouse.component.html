@@ -1,0 +1,739 @@
+<mat-card class="cardWithShadow">
+  <mat-card-content>
+    <mat-card-title>Manage Stock</mat-card-title>
+    <mat-card-subtitle class="text-sm text-gray-500">
+      View and manage Stock, Stock Adjustments and Stock Transfers in this section.
+    </mat-card-subtitle>
+
+    <p-tabView>
+      <!-- Manage Stock Tab -->
+      <p-tabPanel header="Manage Stock">
+        <div class="flex justify-between items-center mb-4">
+          <p-button
+            pTooltip="Add Stock"
+            (click)="openNewStock()"
+            [outlined]="true"
+            size="small"
+            label="Add Stock"
+            icon="pi pi-plus"
+          ></p-button>
+
+          <div class="flex gap-4 items-center">
+            <div class="flex gap-2">
+              <p-dropdown
+                [options]="warehouses"
+                [(ngModel)]="selectedWarehouse"
+                placeholder="Warehouse"
+                optionLabel="name"
+                [showClear]="true"
+                (onChange)="filterStocks()"
+              ></p-dropdown>
+
+              <p-dropdown
+                [options]="stores"
+                [(ngModel)]="selectedStore"
+                placeholder="Store"
+                optionLabel="name"
+                [showClear]="true"
+                (onChange)="filterStocks()"
+              ></p-dropdown>
+
+              <p-dropdown
+                [options]="products"
+                [(ngModel)]="selectedProduct"
+                placeholder="Product"
+                optionLabel="name"
+                [showClear]="true"
+                (onChange)="filterStocks()"
+              ></p-dropdown>
+            </div>
+
+            <div class="relative w-full max-w-[300px]">
+              <i class="pi pi-search absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500"></i>
+              <input
+                pInputText
+                type="text"
+                #dtStock
+                (input)="dt1.filterGlobal(dtStock.value, 'contains')"
+                placeholder="Search stocks"
+                style="text-indent: 1.5rem;"
+                class="w-full pl-10"
+              />
+            </div>
+          </div>
+        </div>
+
+        <p-table
+          #dt1
+          [value]="stocks"
+          [rows]="10"
+          [paginator]="true"
+          [globalFilterFields]="['warehouse', 'store', 'product', 'date', 'person', 'qty']"
+          [rowHover]="true"
+          dataKey="id"
+          styleClass="p-datatable-striped"
+        >
+          <ng-template pTemplate="header">
+            <tr>
+              <th>
+                <div class="flex items-center">
+                  <p-checkbox
+                    [(ngModel)]="selectAll"
+                    [binary]="true"
+                    (onChange)="onSelectAllChange()"
+                  ></p-checkbox>
+                </div>
+              </th>
+              <th pSortableColumn="warehouse">Warehouse <p-sortIcon field="warehouse"></p-sortIcon></th>
+              <th pSortableColumn="store">Store <p-sortIcon field="store"></p-sortIcon></th>
+              <th pSortableColumn="product">Product <p-sortIcon field="product"></p-sortIcon></th>
+              <th pSortableColumn="date">Date <p-sortIcon field="date"></p-sortIcon></th>
+              <th pSortableColumn="person">Person <p-sortIcon field="person"></p-sortIcon></th>
+              <th pSortableColumn="qty">Qty <p-sortIcon field="qty"></p-sortIcon></th>
+              <th>Actions</th>
+            </tr>
+          </ng-template>
+
+          <ng-template pTemplate="body" let-stock>
+            <tr>
+              <td>
+                <div class="flex items-center">
+                  <p-checkbox
+                    [(ngModel)]="stock.selected"
+                    [binary]="true"
+                    (onChange)="onRowSelect()"
+                  ></p-checkbox>
+                </div>
+              </td>
+              <td>{{stock.warehouse}}</td>
+              <td>{{stock.store}}</td>
+              <td>
+                <div class="flex items-center gap-2">
+                  <img [src]="stock.productImage" class="w-8 h-8 object-cover rounded" />
+                  {{stock.product}}
+                </div>
+              </td>
+              <td>{{stock.date | date:'dd MMM yyyy'}}</td>
+              <td>
+                <div class="flex items-center gap-2">
+                  <img [src]="stock.personImage" class="w-8 h-8 object-cover rounded-full" />
+                  {{stock.person}}
+                </div>
+              </td>
+              <td>{{stock.qty}}</td>
+              <td>
+                <ng-container *ngTemplateOutlet="actionButtons; context: { $implicit: stock }"></ng-container>
+              </td>
+            </tr>
+          </ng-template>
+        </p-table>
+      </p-tabPanel>
+
+      <!-- Stock Adjustment Tab -->
+      <p-tabPanel header="Stock Adjustment">
+        <div class="flex justify-between items-center mb-4">
+          <div class="flex items-center gap-2">
+            <p-button
+              pTooltip="Add Adjustment"
+              (click)="openNewAdjustment()"
+              [outlined]="true"
+              size="small"
+              label="Add Adjustment"
+              icon="pi pi-plus"
+            ></p-button>
+            
+            <!-- Export Buttons -->
+            <button pButton class="p-button-danger" icon="pi pi-file-pdf" [outlined]="true"></button>
+            <button pButton class="p-button-success" icon="pi pi-file-excel" [outlined]="true"></button>
+          </div>
+
+          <div class="flex gap-2 items-center">
+            <!-- Search Box -->
+            
+
+            <!-- Filters -->
+            <p-dropdown
+              [options]="warehouses"
+              [(ngModel)]="selectedWarehouse"
+              placeholder="Warehouse"
+              [showClear]="true"
+              (onChange)="filterAdjustments()"
+            ></p-dropdown>
+
+            <p-dropdown
+              [options]="sortOptions"
+              [(ngModel)]="selectedSortOption"
+              placeholder="Sort By : Last 7 Days"
+              [showClear]="true"
+              (onChange)="filterAdjustments()"
+            ></p-dropdown>
+            
+            <div class="relative">
+              <i class="pi pi-search absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500"></i>
+              <input
+                pInputText
+                type="text"
+                #dtAdjustment
+                (input)="dt2.filterGlobal(dtAdjustment.value, 'contains')"
+                placeholder="Search"
+                style="text-indent: 1.5rem;"
+                class="w-[200px] pl-10"
+              />
+            </div>
+          </div>
+        </div>
+
+        <p-table
+          #dt2
+          [value]="adjustments"
+          [rows]="10"
+          [paginator]="true"
+          [globalFilterFields]="['warehouse', 'store', 'product', 'date', 'person', 'qty']"
+          [rowHover]="true"
+          dataKey="id"
+          styleClass="p-datatable-striped"
+        >
+          <ng-template pTemplate="header">
+            <tr>
+              <th style="width: 3rem">
+                <div class="flex items-center">
+                  <p-checkbox
+                    [(ngModel)]="selectAllAdjustments"
+                    [binary]="true"
+                    (onChange)="onSelectAllAdjustmentsChange()"
+                  ></p-checkbox>
+                </div>
+              </th>
+              <th pSortableColumn="warehouse">Warehouse <p-sortIcon field="warehouse"></p-sortIcon></th>
+              <th pSortableColumn="store">Store <p-sortIcon field="store"></p-sortIcon></th>
+              <th pSortableColumn="product">Product <p-sortIcon field="product"></p-sortIcon></th>
+              <th pSortableColumn="date">Date <p-sortIcon field="date"></p-sortIcon></th>
+              <th pSortableColumn="person">Person <p-sortIcon field="person"></p-sortIcon></th>
+              <th pSortableColumn="qty">Qty <p-sortIcon field="qty"></p-sortIcon></th>
+              <th style="width: 8rem">Actions</th>
+            </tr>
+          </ng-template>
+
+          <ng-template pTemplate="body" let-adjustment>
+            <tr>
+              <td>
+                <div class="flex items-center">
+                  <p-checkbox
+                    [(ngModel)]="adjustment.selected"
+                    [binary]="true"
+                    (onChange)="onAdjustmentRowSelect()"
+                  ></p-checkbox>
+                </div>
+              </td>
+              <td>{{adjustment.warehouse}}</td>
+              <td>{{adjustment.store}}</td>
+              <td>
+                <div class="flex items-center gap-2">
+                  <img [src]="adjustment.productImage" class="w-8 h-8 object-cover rounded" />
+                  {{adjustment.product}}
+                </div>
+              </td>
+              <td>{{adjustment.date | date:'dd MMM yyyy'}}</td>
+              <td>
+                <div class="flex items-center gap-2">
+                  <img [src]="adjustment.personImage" class="w-8 h-8 object-cover rounded-full" />
+                  {{adjustment.person}}
+                </div>
+              </td>
+              <td>{{adjustment.qty}}</td>
+              <td>
+                <ng-container *ngTemplateOutlet="actionButtons; context: { $implicit: adjustment }"></ng-container>
+              </td>
+            </tr>
+          </ng-template>
+        </p-table>
+      </p-tabPanel>
+
+      <!-- Stock Transfer Tab -->
+      <p-tabPanel header="Stock Transfer">
+        <div class="flex justify-between items-center mb-4">
+          <div class="flex items-center gap-2">
+            <p-button
+              pTooltip="Add New"
+              (click)="openNewTransfer()"
+              [outlined]="true"
+              size="small"
+              label="Add New"
+              icon="pi pi-plus"
+            ></p-button>
+
+            <p-button
+              pTooltip="Import Transfer"
+              (click)="importTransfer()"
+              [outlined]="true"
+              severity="info"
+              size="small"
+              label="Import Transfer"
+              icon="pi pi-download"
+            ></p-button>
+            
+            <!-- Export Buttons -->
+            <button pButton class="p-button-danger" icon="pi pi-file-pdf" [outlined]="true"></button>
+            <button pButton class="p-button-success" icon="pi pi-file-excel" [outlined]="true"></button>
+          </div>
+
+          <div class="flex gap-2 items-center">
+            
+
+            <!-- Filters -->
+            <p-dropdown
+              [options]="warehouses"
+              [(ngModel)]="selectedFromWarehouse"
+              placeholder="From Warehouse"
+              [showClear]="true"
+              (onChange)="filterTransfers()"
+            ></p-dropdown>
+
+            <p-dropdown
+              [options]="warehouses"
+              [(ngModel)]="selectedToWarehouse"
+              placeholder="To Warehouse"
+              [showClear]="true"
+              (onChange)="filterTransfers()"
+            ></p-dropdown>
+
+            <p-dropdown
+              [options]="sortOptions"
+              [(ngModel)]="selectedSortOption"
+              placeholder="Sort By : Last 7 Days"
+              [showClear]="true"
+              (onChange)="filterTransfers()"
+            ></p-dropdown>
+            
+            <!-- Search Box -->
+            <div class="relative">
+              <i class="pi pi-search absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500"></i>
+              <input
+                pInputText
+                type="text"
+                #dtTransfer
+                (input)="dt3.filterGlobal(dtTransfer.value, 'contains')"
+                placeholder="Search"
+                style="text-indent: 1.5rem;"
+                class="w-[200px] pl-10"
+              />
+            </div>
+          </div>
+        </div>
+
+        <p-table
+          #dt3
+          [value]="transfers"
+          [rows]="10"
+          [paginator]="true"
+          [globalFilterFields]="['fromWarehouse', 'toWarehouse', 'noOfProducts', 'quantityTransferred', 'refNumber', 'date']"
+          [rowHover]="true"
+          dataKey="id"
+          styleClass="p-datatable-striped"
+        >
+          <ng-template pTemplate="header">
+            <tr>
+              <th style="width: 3rem">
+                <div class="flex items-center">
+                  <p-checkbox
+                    [(ngModel)]="selectAllTransfers"
+                    [binary]="true"
+                    (onChange)="onSelectAllTransfersChange()"
+                  ></p-checkbox>
+                </div>
+              </th>
+              <th pSortableColumn="fromWarehouse">From Warehouse <p-sortIcon field="fromWarehouse"></p-sortIcon></th>
+              <th pSortableColumn="toWarehouse">To Warehouse <p-sortIcon field="toWarehouse"></p-sortIcon></th>
+              <th pSortableColumn="noOfProducts">No of Products <p-sortIcon field="noOfProducts"></p-sortIcon></th>
+              <th pSortableColumn="quantityTransferred">Quantity Transferred <p-sortIcon field="quantityTransferred"></p-sortIcon></th>
+              <th pSortableColumn="refNumber">Ref Number <p-sortIcon field="refNumber"></p-sortIcon></th>
+              <th pSortableColumn="date">Date <p-sortIcon field="date"></p-sortIcon></th>
+              <th style="width: 6rem">Actions</th>
+            </tr>
+          </ng-template>
+
+          <ng-template pTemplate="body" let-transfer>
+            <tr>
+              <td>
+                <div class="flex items-center">
+                  <p-checkbox
+                    [(ngModel)]="transfer.selected"
+                    [binary]="true"
+                    (onChange)="onTransferRowSelect()"
+                  ></p-checkbox>
+                </div>
+              </td>
+              <td>{{transfer.fromWarehouse}}</td>
+              <td>{{transfer.toWarehouse}}</td>
+              <td>{{transfer.noOfProducts}}</td>
+              <td>{{transfer.quantityTransferred}}</td>
+              <td>{{transfer.refNumber}}</td>
+              <td>{{transfer.date | date:'dd MMM yyyy'}}</td>
+              <td>
+                <ng-container *ngTemplateOutlet="actionButtons; context: { $implicit: transfer }"></ng-container>
+              </td>
+            </tr>
+          </ng-template>
+        </p-table>
+      </p-tabPanel>
+    </p-tabView>
+  </mat-card-content>
+</mat-card>
+
+<!-- Common action buttons template -->
+<ng-template #actionButtons let-item>
+  <div class="flex gap-2">
+    <button 
+      pButton 
+      icon="pi pi-file-edit" 
+      class="p-button-outlined p-button-rounded p-button-sm"
+      pTooltip="View"
+    ></button>
+    <button 
+      pButton 
+      icon="pi pi-pencil" 
+      class="p-button-outlined p-button-rounded p-button-sm"
+      pTooltip="Edit"
+    ></button>
+    <button 
+      pButton 
+      icon="pi pi-trash" 
+      class="p-button-outlined p-button-rounded p-button-danger p-button-sm"
+      pTooltip="Delete"
+    ></button>
+  </div>
+</ng-template>
+
+<!-- Add Stock Dialog -->
+<p-dialog 
+  [(visible)]="addStockDialog" 
+  [modal]="true" 
+  [style]="{width: '450px'}" 
+  header="Add Stock"
+  [draggable]="false"
+  [resizable]="false"
+  styleClass="p-fluid"
+>
+  <div class="flex flex-col gap-4">
+    <!-- Warehouse -->
+    <div class="field">
+      <label class="font-medium">
+        Warehouse
+        <span class="text-red-500">*</span>
+      </label>
+      <p-dropdown
+        [options]="warehouses"
+        [(ngModel)]="selectedWarehouse"
+        placeholder="Select"
+        optionLabel="name"
+        [showClear]="true"
+        styleClass="w-full"
+      ></p-dropdown>
+    </div>
+
+    <!-- Store -->
+    <div class="field">
+      <label class="font-medium">
+        Store
+        <span class="text-red-500">*</span>
+      </label>
+      <p-dropdown
+        [options]="stores"
+        [(ngModel)]="selectedStore"
+        placeholder="Select"
+        optionLabel="name"
+        [showClear]="true"
+        styleClass="w-full"
+      ></p-dropdown>
+    </div>
+
+    <!-- Responsible Person -->
+    <div class="field">
+      <label class="font-medium">
+        Responsible Person
+        <span class="text-red-500">*</span>
+      </label>
+      <p-dropdown
+        [options]="persons"
+        [(ngModel)]="selectedPerson"
+        placeholder="Select"
+        optionLabel="name"
+        [showClear]="true"
+        styleClass="w-full"
+      ></p-dropdown>
+    </div>
+
+    <!-- Product -->
+    <div class="field">
+      <label class="font-medium">
+        Product
+        <span class="text-red-500">*</span>
+      </label>
+      <div class="relative">
+        <i class="pi pi-search absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500"></i>
+        <input 
+          type="text" 
+          pInputText 
+          [(ngModel)]="searchProduct"
+          placeholder="Search Product"
+          style="text-indent: 1.5rem;"
+          class="w-full pl-10"
+        >
+      </div>
+    </div>
+  </div>
+
+  <!-- Dialog Footer -->
+  <ng-template pTemplate="footer">
+    <div class="flex gap-2 justify-end">
+      <p-button 
+        label="Cancel" 
+        (click)="hideAddStockDialog()"
+        styleClass="p-button-outlined"
+      ></p-button>
+      <p-button 
+        label="Add Stock" 
+        (click)="saveStock()"
+        [disabled]="!isStockFormValid()"
+      ></p-button>
+    </div>
+  </ng-template>
+</p-dialog>
+
+<!-- Add Transfer Dialog -->
+<p-dialog 
+  [(visible)]="addTransferDialog" 
+  [modal]="true" 
+  [style]="{width: '450px'}" 
+  header="Add Transfer"
+  [draggable]="false"
+  [resizable]="false"
+  styleClass="p-fluid"
+>
+  <div class="flex flex-col gap-4">
+    <!-- Warehouse From and To in same row -->
+    <div class="grid grid-cols-2 gap-4">
+      <!-- Warehouse From -->
+      <div class="field">
+        <label class="font-medium">
+          Warehouse From
+          <span class="text-red-500">*</span>
+        </label>
+        <p-dropdown
+          [options]="warehouses"
+          [(ngModel)]="selectedFromWarehouse"
+          placeholder="Select"
+          optionLabel="name"
+          [showClear]="true"
+          styleClass="w-full"
+        ></p-dropdown>
+      </div>
+
+      <!-- Warehouse To -->
+      <div class="field">
+        <label class="font-medium">
+          Warehouse To
+          <span class="text-red-500">*</span>
+        </label>
+        <p-dropdown
+          [options]="warehouses"
+          [(ngModel)]="selectedToWarehouse"
+          placeholder="Select"
+          optionLabel="name"
+          [showClear]="true"
+          styleClass="w-full"
+        ></p-dropdown>
+      </div>
+    </div>
+
+    <!-- Reference Number -->
+    <div class="field">
+      <label class="font-medium">
+        Reference Number
+        <span class="text-red-500">*</span>
+      </label>
+      <input 
+        type="text" 
+        pInputText 
+        [(ngModel)]="referenceNumber"
+        class="w-full"
+      >
+    </div>
+
+    <!-- Product -->
+    <div class="field">
+      <label class="font-medium">
+        Product
+        <span class="text-red-500">*</span>
+      </label>
+      <div class="relative">
+        <i class="pi pi-search absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500"></i>
+        <input 
+          type="text" 
+          pInputText 
+          [(ngModel)]="searchProduct"
+          placeholder="Search Product"
+          style="text-indent: 1.5rem;"
+          class="w-full pl-10"
+        >
+      </div>
+    </div>
+
+    <!-- Notes -->
+    <div class="field">
+      <label class="font-medium">
+        Notes
+        <span class="text-red-500">*</span>
+      </label>
+      <textarea 
+        pInputTextarea 
+        [(ngModel)]="notes"
+        [rows]="3"
+        class="w-full"
+      ></textarea>
+    </div>
+  </div>
+
+  <!-- Dialog Footer -->
+  <ng-template pTemplate="footer">
+    <div class="flex gap-2 justify-end">
+      <p-button 
+        label="Cancel" 
+        (click)="hideAddTransferDialog()"
+        styleClass="p-button-outlined"
+      ></p-button>
+      <p-button 
+        label="Create" 
+        (click)="saveTransfer()"
+        [disabled]="!isTransferFormValid()"
+      ></p-button>
+    </div>
+  </ng-template>
+</p-dialog>
+
+<!-- Add Adjustment Dialog -->
+<p-dialog 
+  [(visible)]="addAdjustmentDialog" 
+  [modal]="true" 
+  [style]="{width: '450px'}" 
+  header="Add Adjustment"
+  [draggable]="false"
+  [resizable]="false"
+  styleClass="p-fluid"
+>
+  <div class="flex flex-col gap-4">
+    <!-- Product -->
+    <div class="field">
+      <label class="font-medium">
+        Product
+        <span class="text-red-500">*</span>
+      </label>
+      <div class="relative">
+        <i class="pi pi-search absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500"></i>
+        <input 
+          type="text" 
+          pInputText 
+          [(ngModel)]="searchProduct"
+          placeholder="Search Product"
+          style="text-indent: 1.5rem;"
+          class="w-full pl-10"
+        >
+      </div>
+    </div>
+
+    <!-- Warehouse and Reference Number in same row -->
+    <div class="grid grid-cols-2 gap-4">
+      <!-- Warehouse -->
+      <div class="field">
+        <label class="font-medium">
+          Warehouse
+          <span class="text-red-500">*</span>
+        </label>
+        <p-dropdown
+          [options]="warehouses"
+          [(ngModel)]="selectedWarehouse"
+          placeholder="Select"
+          optionLabel="name"
+          [showClear]="true"
+          styleClass="w-full"
+        ></p-dropdown>
+      </div>
+
+      <!-- Reference Number -->
+      <div class="field">
+        <label class="font-medium">
+          Reference Number
+          <span class="text-red-500">*</span>
+        </label>
+        <input 
+          type="text" 
+          pInputText 
+          [(ngModel)]="referenceNumber"
+          class="w-full"
+        >
+      </div>
+    </div>
+
+    <!-- Store -->
+    <div class="field">
+      <label class="font-medium">
+        Store
+        <span class="text-red-500">*</span>
+      </label>
+      <p-dropdown
+        [options]="stores"
+        [(ngModel)]="selectedStore"
+        placeholder="Select"
+        optionLabel="name"
+        [showClear]="true"
+        styleClass="w-full"
+      ></p-dropdown>
+    </div>
+
+    <!-- Responsible Person -->
+    <div class="field">
+      <label class="font-medium">
+        Responsible Person
+        <span class="text-red-500">*</span>
+      </label>
+      <p-dropdown
+        [options]="persons"
+        [(ngModel)]="selectedPerson"
+        placeholder="Select"
+        optionLabel="name"
+        [showClear]="true"
+        styleClass="w-full"
+      ></p-dropdown>
+    </div>
+
+    <!-- Notes -->
+    <div class="field">
+      <label class="font-medium">
+        Notes
+        <span class="text-red-500">*</span>
+      </label>
+      <textarea 
+        pInputTextarea 
+        [(ngModel)]="notes"
+        [rows]="3"
+        class="w-full"
+      ></textarea>
+    </div>
+  </div>
+
+  <!-- Dialog Footer -->
+  <ng-template pTemplate="footer">
+    <div class="flex gap-2 justify-end">
+      <p-button 
+        label="Cancel" 
+        (click)="hideAddAdjustmentDialog()"
+        styleClass="p-button-outlined"
+      ></p-button>
+      <p-button 
+        label="Create Adjustment" 
+        (click)="saveAdjustment()"
+        [disabled]="!isAdjustmentFormValid()"
+      ></p-button>
+    </div>
+  </ng-template>
+</p-dialog>

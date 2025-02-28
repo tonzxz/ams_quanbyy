@@ -10,6 +10,8 @@ import { SupplyDashboardComponent } from './supply-dashboard/supply-dashboard.co
 import { DeliveryComponent } from './delivery/delivery.component';
 import { PriceQuotationComponent } from '../shared/price-quotation/price-quotation.component';
 import { SuppliersComponent } from './suppliers/suppliers.component';
+import { InventoryItemComponent } from '../shared/inventory-item/inventory-item.component';
+import { ManageWarehouseComponent } from '../shared/manage-warehouse/manage-warehouse.component';
 
 
 export const SupplyUnitRoutes: Routes = [
@@ -79,7 +81,13 @@ export const SupplyUnitRoutes: Routes = [
         path: 'suppliers',
         component: SuppliersComponent,
         canActivate: [roleGuard],
-        data: { roles: ['supply', 'superadmin'], breadcrumb: 'Suppliers' } // specify roles here
+        data: { roles: ['supply', 'superadmin'], breadcrumb: 'Inventory Item' } // specify roles here
+      },
+      {
+        path: 'manage-warehouse',
+        component: ManageWarehouseComponent,
+        canActivate: [roleGuard],
+        data: { roles: ['supply', 'superadmin'], breadcrumb: 'Manage Warehouse' } // specify roles here
       },
     ],
   },

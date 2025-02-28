@@ -544,17 +544,21 @@ export const navItems: NavItem[] = [
     requiredRoles: ['supply'],
   },
   {
-    displayName: 'Delivery Items',
-    iconName: 'solar:cart-check-broken',
-    route: '/shared/delivery-item',
-    requiredRoles: ['supply'],
-  },
-  {
     displayName: 'Inventory Items',
     iconName: 'solar:bedside-table-3-broken',
     route: '/shared/inventory-item',
     requiredRoles: ['supply','superadmin'],
   },
+  {
+    displayName: 'Manage Warehouse',
+    iconName: 'solar:archive-line-duotone',
+    route: '/shared/manage-warehouse',
+    requiredRoles: ['supply','superadmin'],
+  },
+
+
+
+  
     
      {
     navCap: 'Reports Generation',

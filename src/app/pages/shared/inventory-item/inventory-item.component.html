@@ -19,7 +19,25 @@
                 icon="pi pi-plus" />
         </div>
 
-        <p-table #dt dataKey="id" [rowHover]="true" [value]="stocks"
+        <div class="flex gap-2 mb-4">
+            <p-button 
+                label="All Items" 
+                (click)="showAllItems()" 
+                [ngClass]="{'p-button-warning': currentTable === 'all', 'p-button-secondary': currentTable !== 'all'}">
+            </p-button>
+            <p-button 
+                label="Low Stock" 
+                (click)="showLowStock()" 
+                [ngClass]="{'p-button-warning': currentTable === 'low', 'p-button-secondary': currentTable !== 'low'}">
+            </p-button>
+            <p-button 
+                label="Out of Stock" 
+                (click)="showOutOfStock()" 
+                [ngClass]="{'p-button-warning': currentTable === 'out', 'p-button-secondary': currentTable !== 'out'}">
+            </p-button>
+        </div>
+
+        <p-table #dt dataKey="id" [rowHover]="true" [value]="currentTable === 'all' ? stocks : (currentTable === 'low' ? lowStockItems : outOfStockItems)"
             [paginator]="true" [rows]="5" [rowsPerPageOptions]="[5, 10, 20]"
             sortField="name" sortMode="single" [scrollable]="true" 
             scrollHeight="600px" [tableStyle]="{'min-width': '60rem'}"
@@ -32,8 +50,9 @@
                     <th pSortableColumn="storage_name">Storage <p-sortIcon field="storage_name"></p-sortIcon></th>
                     <th pSortableColumn="product_name">Type <p-sortIcon field="product_name"></p-sortIcon></th>
                     <th pSortableColumn="quantity">Quantity <p-sortIcon field="quantity"></p-sortIcon></th>
-                    <th pSortableColumn="dateAdded">Date Added <p-sortIcon field="dateAdded"></p-sortIcon></th>
-                    <th>Description</th>
+                    <th *ngIf="currentTable === 'low'">Quantity Alert</th>
+                    <th *ngIf="currentTable === 'all'" pSortableColumn="dateAdded">Date Added <p-sortIcon field="dateAdded"></p-sortIcon></th>
+                    <th *ngIf="currentTable === 'all'">Description</th>
                     <th>Actions</th>
                 </tr>
             </ng-template>
@@ -55,11 +74,23 @@
                     <td>{{stock.ticker}}</td>
                     <td>{{stock.storage_name}}</td>
                     <td>{{stock.product_name}}</td>
-                    <td>{{stock.quantity | number}}</td>
-                    <td>{{stock.dateAdded | date: 'yyyy-MM-dd'}}</td>
-                    <td>{{stock.description || 'No description set.'}}</td>
+                    <td>
+                        <span [ngClass]="{
+                            'text-red-500': stock.quantity === 0,
+                            'text-orange-500': stock.quantity < stock.minimumQty && stock.quantity > 0
+                        }">
+                            {{stock.quantity | number}}
+                        </span>
+                    </td>
+                    <td *ngIf="currentTable === 'low'" class="text-orange-500">
+                        Only {{stock.quantity}} items left (Minimum: {{stock.minimumQty}})
+                    </td>
+                    <td *ngIf="currentTable === 'all'">{{stock.dateAdded | date: 'yyyy-MM-dd'}}</td>
+                    <td *ngIf="currentTable === 'all'">{{stock.description || 'No description set.'}}</td>
                     <td>
                         <div class="flex gap-2">
+                            <p-button icon="pi pi-eye" (click)="viewStockDetails(stock)"
+                                [outlined]="true" severity="info" size="small" />
                             <p-button icon="pi pi-pencil" (click)="openEditStockModal(stock)"
                                 [outlined]="true" severity="primary" size="small" />
                             <p-button icon="pi pi-trash" (click)="confirmDeleteStock($event, stock.id)"
@@ -87,7 +118,17 @@
     [(visible)]="showStockModal" [modal]="true" [style]="{width: '450px'}"
     [draggable]="false" [resizable]="false">
     
+    <div class="flex flex-col items-center">
+        <canvas id="barcodeCanvas"></canvas>
+    </div>
+
     <form [formGroup]="stockForm" class="flex flex-col gap-4">
+        <div class="field">
+            <label for="barcode" class="font-medium mb-2 block">Barcode</label>
+            <input pInputText id="barcode" formControlName="barcode" class="w-full" 
+                placeholder="Generated barcode" readonly />
+        </div>
+        
         <div class="field">
             <label for="name" class="font-medium mb-2 block">Item Name</label>
             <input pInputText id="name" formControlName="name" class="w-full"
@@ -101,9 +142,7 @@
             <label for="ticker" class="font-medium mb-2 block">Ticker</label>
             <input pInputText id="ticker" formControlName="ticker" class="w-full"
                 placeholder="Enter ticker" />
-            @if (stockForm.get('ticker')?.invalid && stockForm.get('ticker')?.touched) {
-                <small class="text-red-500">Ticker is required</small>
-            }
+            <small class="text-red-500" *ngIf="stockForm.get('ticker')?.invalid && stockForm.get('ticker')?.touched">Ticker is required</small>
         </div>
 
         <div class="field">
@@ -142,9 +181,9 @@
         </div>
 
         <div class="field">
-            <label for="imageUrl" class="font-medium mb-2 block">Image URL</label>
-            <input pInputText id="imageUrl" formControlName="imageUrl" class="w-full"
-                placeholder="Enter image URL" />
+            <label for="image" class="font-medium mb-2 block">Image Upload</label>
+            <input type="file" id="image" (change)="onImageSelected($event)" class="w-full" />
+            <small class="text-gray-500">Upload an image file (optional)</small>
         </div>
     </form>
 
@@ -155,6 +194,84 @@
             <p-button [label]="selectedStock ? 'Save Changes' : 'Add Item'" 
                 icon="pi pi-check" (click)="selectedStock ? editStock() : addStock()"
                 [disabled]="!stockForm.valid"></p-button>
+        </div>
+    </ng-template>
+</p-dialog>
+
+<p-dialog header="Product Details" [(visible)]="showDetailsModal" 
+    [modal]="true" [style]="{width: '800px'}" [draggable]="false" [resizable]="false">
+    <div *ngIf="selectedStock" class="p-4">
+        <!-- Barcode Section -->
+        <div class="flex flex-col items-center mb-6">
+            <canvas id="viewBarcodeCanvas"></canvas>
+        </div>
+
+        <!-- Details Grid -->
+        <div class="grid grid-cols-2 gap-4">
+            <div class="border rounded p-3">
+                <div class="font-bold mb-2">Product</div>
+                <div>{{selectedStock.name}}</div>
+            </div>
+            <div class="border rounded p-3">
+                <div class="font-bold mb-2">Category</div>
+                <div>{{selectedStock.product_name}}</div>
+            </div>
+            <div class="border rounded p-3">
+                <div class="font-bold mb-2">Sub Category</div>
+                <div>{{selectedStock.subCategory || 'None'}}</div>
+            </div>
+            <div class="border rounded p-3">
+                <div class="font-bold mb-2">Brand</div>
+                <div>{{selectedStock.brand || 'None'}}</div>
+            </div>
+            <div class="border rounded p-3">
+                <div class="font-bold mb-2">Unit</div>
+                <div>{{selectedStock.unit}}</div>
+            </div>
+            <div class="border rounded p-3">
+                <div class="font-bold mb-2">SKU</div>
+                <div>{{selectedStock.sku}}</div>
+            </div>
+            <div class="border rounded p-3">
+                <div class="font-bold mb-2">Minimum Qty</div>
+                <div>{{selectedStock.minimumQty}}</div>
+            </div>
+            <div class="border rounded p-3">
+                <div class="font-bold mb-2">Quantity</div>
+                <div>{{selectedStock.quantity}}</div>
+            </div>
+            <div class="border rounded p-3">
+                <div class="font-bold mb-2">Tax</div>
+                <div>{{selectedStock.tax}}</div>
+            </div>
+            <div class="border rounded p-3">
+                <div class="font-bold mb-2">Discount Type</div>
+                <div>{{selectedStock.discountType}}</div>
+            </div>
+            <div class="border rounded p-3">
+                <div class="font-bold mb-2">Price</div>
+                <div>{{selectedStock.price | currency}}</div>
+            </div>
+            <div class="border rounded p-3">
+                <div class="font-bold mb-2">Status</div>
+                <div>{{selectedStock.status}}</div>
+            </div>
+        </div>
+
+        <!-- Description -->
+        <div class="border rounded p-3 mt-4">
+            <div class="font-bold mb-2">Description</div>
+            <div>{{selectedStock.description}}</div>
+        </div>
+    </div>
+
+    <ng-template pTemplate="footer">
+        <div class="flex justify-end">
+            <p-button label="Print" icon="pi pi-print" (click)="printDetails()" [outlined]="true"></p-button>
+            <p-button label="Close" icon="pi pi-times" 
+                (click)="showDetailsModal = false" 
+                [outlined]="true">
+            </p-button>
         </div>
     </ng-template>
 </p-dialog>
