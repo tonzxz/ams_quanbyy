@@ -33,6 +33,16 @@ export class CrudService {
   }
 
   constructor(private http: HttpClient) {}
+  
+  async flushDummyData<T>(model: { new(): T }, data: T[]): Promise<void> {
+    if(environment.use == 'local'){
+      const table = this.getTableName(model.name);
+      const dummyData: T[] = await this.getAll<T>(model);
+      if(dummyData.length <= 0){
+        localStorage.setItem(table, JSON.stringify(data));
+      }
+    }
+  }
 
   // Create
   async create<T>(model: { new(): T }, data: Omit<T,'id'>): Promise<T> {
