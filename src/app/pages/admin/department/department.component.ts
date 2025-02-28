@@ -1,3 +1,4 @@
+// src/app/department.component.ts
 import { Component, OnInit } from '@angular/core';
 import { FormBuilder, FormGroup, Validators, FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { CommonModule } from '@angular/common';
@@ -11,8 +12,9 @@ import { TabViewModule } from 'primeng/tabview';
 import { DropdownModule } from 'primeng/dropdown';
 import { ToastModule } from 'primeng/toast';
 import { MessageService, ConfirmationService } from 'primeng/api';
-import { DepartmentService, Department, Building, Office } from 'src/app/services/departments.service';
 import { CardModule } from 'primeng/card';
+import { CrudService } from 'src/app/services/crud.service';
+import { Department, Building, Office } from 'src/app/schema/schema';
 
 @Component({
   selector: 'app-department',
@@ -60,17 +62,16 @@ export class DepartmentComponent implements OnInit {
 
   loading = false;
 
-  deleteDialogVisible: boolean = false;
+  deleteDialogVisible = false;
   deleteItemId: string | null = null;
   deleteItemType: 'department' | 'building' | 'office' | null = null;
 
-  
   currentDepartmentId: string | null = null;
   currentBuildingId: string | null = null;
   currentOfficeId: string | null = null;
 
   constructor(
-    private departmentService: DepartmentService,
+    private crudService: CrudService,
     private formBuilder: FormBuilder,
     private messageService: MessageService,
     private confirmationService: ConfirmationService
@@ -84,33 +85,35 @@ export class DepartmentComponent implements OnInit {
   async loadAll(): Promise<void> {
     this.loading = true;
     try {
-      this.departments = await this.departmentService.getAllDepartments() || [];
-      this.buildings = await this.departmentService.getAllBuildings() || [];
-      this.offices = await this.departmentService.getAllOffices() || [];
+      this.departments = (await this.crudService.getAll(Department)) || [];
+      this.buildings = (await this.crudService.getAll(Building)) || [];
+      this.offices = (await this.crudService.getAll(Office)) || [];
+    } catch (error) {
+      this.messageService.add({ severity: 'error', summary: 'Error', detail: 'Failed to load data' });
     } finally {
       this.loading = false;
     }
   }
 
-  initializeForms(): void { 
+  initializeForms(): void {
     this.departmentForm = this.formBuilder.group({
       name: ['', Validators.required]
     });
-    // this.buildingForm = this.formBuilder.group({
-    //   name: ['', Validators.required],
-    //   address: ['', Validators.required],
-    //   numberOfFloors: [1, [Validators.required, Validators.min(1)]],
-    //   notes: ['']
-    // });
+    this.buildingForm = this.formBuilder.group({
+      name: ['', Validators.required],
+      address: ['', Validators.required],
+      numberOfFloors: [1, [Validators.required, Validators.min(1)]],
+      notes: ['']
+    });
     this.officeForm = this.formBuilder.group({
       name: ['', Validators.required],
-      departmentId: ['', Validators.required]
+      department_id: ['', Validators.required] // Match schema field name
     });
   }
 
-
+  // Department Methods
   openNewDepartment(): void {
-    this.departmentForm.reset({ budget: 0 });
+    this.departmentForm.reset();
     this.isEditingDepartment = false;
     this.currentDepartmentId = null;
     this.departmentSubmitted = false;
@@ -126,78 +129,78 @@ export class DepartmentComponent implements OnInit {
 
   async saveDepartment(): Promise<void> {
     this.departmentSubmitted = true;
-    if (this.departmentForm.invalid) return;
+    if (this.departmentForm.invalid) {
+      this.messageService.add({ severity: 'warn', summary: 'Validation Error', detail: 'Please fill in all required fields' });
+      return;
+    }
 
     const departmentData = {
-      ...this.departmentForm.value,
-      dateEstablished: new Date(),
+      name: this.departmentForm.value.name
     };
 
     try {
       if (this.isEditingDepartment && this.currentDepartmentId) {
-        await this.departmentService.editDepartment({
-          ...departmentData,
-          id: this.currentDepartmentId,
-        });
+        await this.crudService.update(Department, this.currentDepartmentId, departmentData);
         this.messageService.add({ severity: 'success', summary: 'Success', detail: 'Department updated successfully' });
       } else {
-        await this.departmentService.addDepartment(departmentData);
+        await this.crudService.create(Department, departmentData);
         this.messageService.add({ severity: 'success', summary: 'Success', detail: 'Department added successfully' });
       }
       this.departmentDialog = false;
       this.loadAll();
-    } catch (error) {
-      this.messageService.add({ severity: 'error', summary: 'Error', detail: 'Failed to save department' });
+    } catch (error: any) {
+      this.messageService.add({ severity: 'error', summary: 'Error', detail: 'Failed to save department: ' + (error.message || 'Unknown error') });
     }
   }
 
-  // openNewBuilding(): void {
-  //   this.buildingForm.reset({ numberOfFloors: 1 });
-  //   this.isEditingBuilding = false;
-  //   this.currentBuildingId = null;
-  //   this.buildingSubmitted = false;
-  //   this.buildingDialog = true;
-  // }
+  // Building Methods
+  openNewBuilding(): void {
+    this.buildingForm.reset({ numberOfFloors: 1 });
+    this.isEditingBuilding = false;
+    this.currentBuildingId = null;
+    this.buildingSubmitted = false;
+    this.buildingDialog = true;
+  }
 
-  // editBuilding(building: Building): void {
-  //   this.isEditingBuilding = true;
-  //   this.currentBuildingId = building.id ?? null;
-  //   this.buildingForm.patchValue(building);
-  //   this.buildingDialog = true;
-  // }
+  editBuilding(building: Building): void {
+    this.isEditingBuilding = true;
+    this.currentBuildingId = building.id ?? null;
+    this.buildingForm.patchValue(building);
+    this.buildingDialog = true;
+  }
 
-  // async saveBuilding(): Promise<void> {
-  //   this.buildingSubmitted = true;
-  //   if (this.buildingForm.invalid) return;
+  async saveBuilding(): Promise<void> {
+    this.buildingSubmitted = true;
+    if (this.buildingForm.invalid) {
+      this.messageService.add({ severity: 'warn', summary: 'Validation Error', detail: 'Please fill in all required fields' });
+      return;
+    }
 
-  //   const buildingData = {
-  //     ...this.buildingForm.value,
-  //     dateConstructed: new Date(),
-  //   };
+    const buildingData = {
+      name: this.buildingForm.value.name,
+      address: this.buildingForm.value.address,
+      numberOfFloors: this.buildingForm.value.numberOfFloors,
+      dateConstructed: this.buildingForm.value.dateConstructed
+    };
 
-  //   try {
-  //     if (this.isEditingBuilding && this.currentBuildingId) {
-  //       await this.departmentService.editBuilding({
-  //         ...buildingData,
-  //         id: this.currentBuildingId,
-  //       });
-  //       this.messageService.add({ severity: 'success', summary: 'Success', detail: 'Building updated successfully' });
-  //     } else {
-  //       await this.departmentService.addBuilding(buildingData);
-  //       this.messageService.add({ severity: 'success', summary: 'Success', detail: 'Building added successfully' });
-  //     }
-  //     this.buildingDialog = false;
-  //     this.loadAll();
-  //   } catch (error) {
-  //     this.messageService.add({ severity: 'error', summary: 'Error', detail: 'Failed to save building' });
-  //   }
-  // }
+    try {
+      if (this.isEditingBuilding && this.currentBuildingId) {
+        await this.crudService.update(Building, this.currentBuildingId, buildingData);
+        this.messageService.add({ severity: 'success', summary: 'Success', detail: 'Building updated successfully' });
+      } else {
+        await this.crudService.create(Building, buildingData);
+        this.messageService.add({ severity: 'success', summary: 'Success', detail: 'Building added successfully' });
+      }
+      this.buildingDialog = false;
+      this.loadAll();
+    } catch (error: any) {
+      this.messageService.add({ severity: 'error', summary: 'Error', detail: 'Failed to save building: ' + (error.message || 'Unknown error') });
+    }
+  }
 
+  // Office Methods
   openNewOffice(): void {
-    this.officeForm.reset({
-      name: '',
-      departmentId: ''
-    });
+    this.officeForm.reset({ name: '', department_id: '' });
     this.isEditingOffice = false;
     this.currentOfficeId = null;
     this.officeSubmitted = false;
@@ -209,105 +212,75 @@ export class DepartmentComponent implements OnInit {
     this.currentOfficeId = office.id ?? null;
     this.officeForm.patchValue({
       name: office.name,
-      departmentId: office.departmentId  // Changed to match form control name
+      department_id: office.department_id
     });
     this.officeDialog = true;
   }
 
-
   async saveOffice(): Promise<void> {
     this.officeSubmitted = true;
-    
-    console.log('Form value:', this.officeForm.value);  // Debug log
-    console.log('Form valid:', this.officeForm.valid);  // Debug log
-    
     if (this.officeForm.invalid) {
-      console.log('Form errors:', this.officeForm.errors);  // Debug log
-      this.messageService.add({ 
-        severity: 'warn', 
-        summary: 'Validation Error', 
-        detail: 'Please fill in all required fields' 
-      });
+      this.messageService.add({ severity: 'warn', summary: 'Validation Error', detail: 'Please fill in all required fields' });
       return;
     }
-  
+
     const officeData = {
-      ...this.officeForm.value,
-      department_id: this.officeForm.value.departmentId  // Map to correct API field name
+      name: this.officeForm.value.name,
+      department_id: this.officeForm.value.department_id
     };
-  
+
     try {
       if (this.isEditingOffice && this.currentOfficeId) {
-        await this.departmentService.editOffice({
-          ...officeData,
-          id: this.currentOfficeId
-        });
-        this.messageService.add({ 
-          severity: 'success', 
-          summary: 'Success', 
-          detail: 'Office updated successfully' 
-        });
+        await this.crudService.update(Office, this.currentOfficeId, officeData);
+        this.messageService.add({ severity: 'success', summary: 'Success', detail: 'Office updated successfully' });
       } else {
-        await this.departmentService.addOffice(officeData);
-        this.messageService.add({ 
-          severity: 'success', 
-          summary: 'Success', 
-          detail: 'Office added successfully' 
-        });
+        await this.crudService.create(Office, officeData);
+        this.messageService.add({ severity: 'success', summary: 'Success', detail: 'Office added successfully' });
       }
       this.officeDialog = false;
       this.loadAll();
     } catch (error: any) {
-      console.error('Save office error:', error);  // Debug log
-      this.messageService.add({ 
-        severity: 'error', 
-        summary: 'Error', 
-        detail: 'Failed to save office: ' + (error.message || 'Unknown error') 
-      });
+      this.messageService.add({ severity: 'error', summary: 'Error', detail: 'Failed to save office: ' + (error.message || 'Unknown error') });
     }
   }
 
-  // confirmDelete(type: 'department' | 'building' | 'office', id: string): void {
-  //   this.confirmationService.confirm({
-  //     message: `Are you sure you want to delete this ${type}?`,
-  //     accept: () => this.delete(type, id),
-  //   });
-  // }
-
+  // Delete Methods
   confirmDelete(type: 'department' | 'building' | 'office', id: string): void {
-  this.confirmationService.confirm({
-    message: `Are you sure you want to delete this ${type}?`,
-    header: 'Confirm Deletion',
-    icon: 'pi pi-exclamation-triangle',
-    acceptLabel: 'Delete',
-    rejectLabel: 'Cancel',
-    acceptButtonStyleClass: 'p-button-danger',
-    rejectButtonStyleClass: 'p-button-text',
-    accept: () => this.delete(type, id),
-  });
-}
-
+    this.confirmationService.confirm({
+      message: `Are you sure you want to delete this ${type}?`,
+      header: 'Confirm Deletion',
+      icon: 'pi pi-exclamation-triangle',
+      acceptLabel: 'Delete',
+      rejectLabel: 'Cancel',
+      acceptButtonStyleClass: 'p-button-danger',
+      rejectButtonStyleClass: 'p-button-text',
+      accept: () => this.delete(type, id),
+    });
+  }
 
   private async delete(type: 'department' | 'building' | 'office', id: string): Promise<void> {
     try {
       switch (type) {
         case 'department':
-          await this.departmentService.deleteDepartment(id);
+          await this.crudService.delete(Department, id);
+          this.messageService.add({ severity: 'success', summary: 'Success', detail: 'Department deleted successfully' });
           break;
         case 'building':
-          await this.departmentService.deleteBuilding(id);
+          await this.crudService.delete(Building, id);
+          this.messageService.add({ severity: 'success', summary: 'Success', detail: 'Building deleted successfully' });
           break;
         case 'office':
-          await this.departmentService.deleteOffice(id);
+          await this.crudService.delete(Office, id);
+          this.messageService.add({ severity: 'success', summary: 'Success', detail: 'Office deleted successfully' });
           break;
       }
-      this.messageService.add({ severity: 'success', summary: 'Success', detail: `${type} deleted successfully` });
       this.loadAll();
-    } catch (error) {
-      this.messageService.add({ severity: 'error', summary: 'Error', detail: `Failed to delete ${type}` });
+    } catch (error: any) {
+      this.messageService.add({ severity: 'error', summary: 'Error', detail: `Failed to delete ${type}: ${error.message || 'Unknown error'}` });
     }
   }
 
+  // Utility Methods
   getDepartmentName(departmentId: string): string {
     const department = this.departments.find(d => d.id === departmentId);
     return department?.name || 'N/A';
@@ -318,30 +291,19 @@ export class DepartmentComponent implements OnInit {
     return building?.name || 'N/A';
   }
 
-  showDeleteDialog(type: 'department' | 'building' | 'office', id: string): void {
-  this.deleteDialogVisible = true;
-  this.deleteItemType = type;
-  this.deleteItemId = id;
-}
-
-
-
-deleteType: 'department' | 'building' | 'office' | null = null;
-deleteId: string | null = null;
-
-openDeleteDialog(type: 'department' | 'building' | 'office', id: string): void {
-  this.deleteDialogVisible = true;
-  this.deleteType = type;
-  this.deleteId = id;
-}
-
-confirmDeleteAction(): void {
-  if (this.deleteType && this.deleteId) {
-    this.delete(this.deleteType, this.deleteId);
+  // Custom Delete Dialog
+  openDeleteDialog(type: 'department' | 'building' | 'office', id: string): void {
+    this.deleteDialogVisible = true;
+    this.deleteItemType = type;
+    this.deleteItemId = id;
   }
-  this.deleteDialogVisible = false;
-  this.deleteType = null;
-  this.deleteId = null;
-}
 
+  confirmDeleteAction(): void {
+    if (this.deleteItemType && this.deleteItemId) {
+      this.delete(this.deleteItemType, this.deleteItemId);
+    }
+    this.deleteDialogVisible = false;
+    this.deleteItemType = null;
+    this.deleteItemId = null;
+  }
 }

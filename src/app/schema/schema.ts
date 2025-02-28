@@ -136,14 +136,22 @@ export class PurchaseRequest {
 }
 
 export class Department {
-  id: string
-  name: string
+  id!: string
+  name!: string
+}
+
+export class Building {
+  id!: string
+  name!: string
+  address!: string
+  numberOfFloors!: number
+  dateConstructed?: Date
 }
 
 export class Office {
-  id: string
-  department_id: string
-  name: string
+  id!: string
+  department_id!: string
+  name!: string
 }
 
 export class Users {

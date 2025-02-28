@@ -208,7 +208,7 @@ class="p-button-rounded p-button-danger p-button-sm"
         <ng-template pTemplate="body" let-office>
           <tr>
             <td>{{ office.name }}</td>
-            <td>{{ getDepartmentName(office.departmentId) }}</td>
+            <td>{{ getDepartmentName(office.department_id) }}</td>
             <td>{{ office.id }}</td>
             <td>
               <div class="flex gap-2">
@@ -316,7 +316,7 @@ class="p-button-rounded p-button-danger p-button-sm"
       <p-dropdown
         id="office-department"
         [options]="departments"
-        formControlName="departmentId"
+        formControlName="department_id"
         optionLabel="name"
         optionValue="id"
         placeholder="Select Department"
@@ -324,11 +324,11 @@ class="p-button-rounded p-button-danger p-button-sm"
         [dropdownIcon]="'pi pi-chevron-down'"
         [panelStyle]="{ 'min-width': '100%' }"
         appendTo="body"
-        [ngClass]="{ 'p-invalid': officeSubmitted && officeForm.get('departmentId')?.invalid }"
+        [ngClass]="{ 'p-invalid': officeSubmitted && officeForm.get('department_id')?.invalid }"
       ></p-dropdown>
       <small 
         class="p-error block mt-1" 
-        *ngIf="officeSubmitted && officeForm.get('departmentId')?.errors?.['required']"
+        *ngIf="officeSubmitted && officeForm.get('department_id')?.errors?.['required']"
       >
         Department is required.
       </small>
@@ -357,7 +357,7 @@ class="p-button-rounded p-button-danger p-button-sm"
 <p-dialog [(visible)]="deleteDialogVisible" header="Confirm Delete" [style]="{ width: '400px' }" [closable]="false">
   <div class="flex flex-col items-center text-center">
     <i class="pi pi-exclamation-triangle text-red-500 text-4xl mb-4"></i>
-    <p>Are you sure you want to delete this <strong>{{ deleteType }}</strong>?</p>
+    <p>Are you sure you want to delete this <strong>{{ deleteItemType }}</strong>?</p>
   </div>
   <ng-template pTemplate="footer">
     <button
