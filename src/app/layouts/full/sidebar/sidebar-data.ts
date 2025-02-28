@@ -473,19 +473,19 @@ export const navItems: NavItem[] = [
     displayName: 'Price Quotation',
     iconName: 'solar:checklist-minimalistic-line-duotone',
     route: '/bac/price-quotation',
-      requiredRoles: ['bac','supply','superadmin'],
+      requiredRoles: ['bac','supply'],
   },
   {
     displayName: 'Resolution to Award',
     iconName: 'solar:checklist-minimalistic-line-duotone',
     route: '/bac/resolution-to-award',
-      requiredRoles: ['bac','supply','superadmin'],
+      requiredRoles: ['bac','supply'],
   },
   {
     displayName: 'Abstract of Quotation',
     iconName: 'solar:checklist-minimalistic-line-duotone',
     route: '/bac/abstract-quotation',
-      requiredRoles: ['bac','superadmin'],
+      requiredRoles: ['bac'],
   },
   
 
