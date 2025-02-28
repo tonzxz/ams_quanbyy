@@ -297,7 +297,7 @@ export const ProcurementModeData:ProcurementMode[]=[
     { "id": "shopping", "mode_name": "Shopping", "method": "Public" },
     { "id": "negotiated_procurement", "mode_name": "Negotiated Procurement", "method": "Alternative" }
 ]
-export const ProcurementProcessModeData:ProcurementProcess[]=[
+export const ProcurementProcessData:ProcurementProcess[]=[
     { "id": "process_1", "name": "Initial Planning", "process_order": 1, "procurement_mode_id": "Public" },
     { "id": "process_2", "name": "Tender Preparation", "process_order": 2, "procurement_mode_id": "Public" },
     { "id": "process_3", "name": "Evaluation", "process_order": 3, "procurement_mode_id": "Public" },
