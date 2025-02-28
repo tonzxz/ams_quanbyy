@@ -296,6 +296,7 @@ export const navItems: NavItem[] = [
   },
   // {
   //   displayName: 'Delivery',
+  // {F
   //   iconName: 'solar:inbox-archive-outline',
   //   route: '/supply-management/delivery',
   //   requiredRoles: ['supply'],
@@ -310,6 +311,13 @@ export const navItems: NavItem[] = [
    {
     navCap: 'Budget',
     divider: true,
+    requiredRoles: ['accounting'],
+  },
+
+  {
+    displayName: 'Fund Source',
+    iconName: 'solar:widget-add-line-duotone',
+    route: '/accounting/funding-source',
     requiredRoles: ['accounting'],
   },
  
@@ -330,13 +338,13 @@ export const navItems: NavItem[] = [
     requiredRoles: ['accounting'],
   },
   { 
-    displayName: 'Obligation Request and Status',
+    displayName: 'ORS Management',
     iconName: 'solar:documents-broken',
-    route: '/enduser/obligation-request',
+    route: '/accounting/ors',
     requiredRoles: ['accounting', 'end-user'],
   },
   {
-    displayName: 'Completion and Acceptance',
+    displayName: 'CA Certificates',
     iconName: 'solar:documents-broken',
     route: '/enduser/completion',
     requiredRoles: ['end-user'],
@@ -477,19 +485,19 @@ export const navItems: NavItem[] = [
     displayName: 'Price Quotation',
     iconName: 'solar:checklist-minimalistic-line-duotone',
     route: '/bac/price-quotation',
-      requiredRoles: ['bac','supply','superadmin'],
+      requiredRoles: ['bac','supply'],
   },
   {
     displayName: 'Resolution to Award',
     iconName: 'solar:checklist-minimalistic-line-duotone',
     route: '/bac/resolution-to-award',
-      requiredRoles: ['bac','supply','superadmin'],
+      requiredRoles: ['bac','supply'],
   },
   {
     displayName: 'Abstract of Quotation',
     iconName: 'solar:checklist-minimalistic-line-duotone',
     route: '/bac/abstract-quotation',
-      requiredRoles: ['bac','superadmin'],
+      requiredRoles: ['bac'],
   },
   
 

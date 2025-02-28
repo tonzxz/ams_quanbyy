@@ -4,6 +4,8 @@ import { BehaviorSubject, filter, firstValueFrom, Observable } from 'rxjs';
 import { environment } from 'src/environment/environment';
 import { WebSocketSubject } from 'rxjs/webSocket'; // rxjs WebSocketSubject
 
+import * as DummyData from '../schema/dummy';
+
 
 class WebSocketService {
   private socket: WebSocketSubject<any>;
@@ -33,6 +35,15 @@ export class CrudService {
   }
 
   constructor(private http: HttpClient) {}
+  
+  async flushDummyData<T>(model: { new(): T }, data: T[]): Promise<void> {
+    if(environment.use == 'local'){
+      console.log('??',data)
+      const table = this.getTableName(model.name);
+      localStorage.setItem(table, JSON.stringify(data));
+      
+    }
+  }
 
   // Create
   async create<T>(model: { new(): T }, data: Omit<T,'id'>): Promise<T> {
@@ -42,7 +53,7 @@ export class CrudService {
       const dummyData: T[] = await this.getAll<T>(model);
       dummyData.push({ ...data, id: `${Date.now()}` } as T); // Use timestamp for new ID
       localStorage.setItem(table, JSON.stringify(dummyData));
-      return data as T;
+      return dummyData[dummyData.length - 1];
     } else {
       const url = `${this.baseUrl}/${table}`;
       return firstValueFrom(this.http.post<T>(url, data));
@@ -52,6 +63,7 @@ export class CrudService {
   // Read (Get all records)
   async getAll<T>(model: { new(): T }): Promise<T[]> {
     const table =this.getTableName(model.name);
+
     if (environment.use == 'local') {
       const dummyData = localStorage.getItem(table);
       if (dummyData) {
@@ -61,7 +73,8 @@ export class CrudService {
           return [];
         }
       } else {
-        return [];
+        await this.flushDummyData(model, DummyData[model.name + 'Data' as keyof (typeof DummyData)] as T[]);
+        return DummyData[model.name + 'Data' as keyof (typeof DummyData)] as T[];
       }
     } else {
       const url = `${this.baseUrl}/${table}${environment.use == 'assets' ? '.json' : ''}`;
@@ -73,6 +86,7 @@ export class CrudService {
   getAllLive<T>(model: { new(): T }): Observable<T[]> {
     const table = this.getTableName(model.name);
     const dataSubject = new BehaviorSubject<T[]>(this.dataCache[table] || []); // Subject to hold data
+    
     // Listen to WebSocket updates for the table
     this.wsService.listenToTable(table).subscribe(() => {
       if (environment.use != 'local') {
@@ -83,6 +97,7 @@ export class CrudService {
         });
       } else {
         // In 'local', listen to changes in localStorage (though, in practice, you might need a more event-driven approach for localStorage updates)
+        this.flushDummyData(model, DummyData[model.name + 'Data' as keyof (typeof DummyData)] as T[]);
         const updatedData = this.getAll<T>(model); 
         updatedData.then(newData => {
           this.dataCache[table] = newData;
