@@ -1,4 +1,8 @@
+<<<<<<< HEAD
 import { PPMP, PPMPItem, PPMPProject, PPMPSchedule, Users } from "./schema";
+=======
+import { PPMP, PPMPItem, PPMPProject, PPMPSchedule, ProcurementMode, ProcurementProcess } from "./schema";
+>>>>>>> b6e19360dbe643422fc09c2d8ea39c77998a964d
 // PPMP Items
 export const PPMPItemData: PPMPItem[] = [
     {
@@ -289,6 +293,7 @@ export const PPMPData:PPMP[] = [
     
 ]
 
+<<<<<<< HEAD
 // USERS
 
 export const dummyUsers: Users[] = [
@@ -361,3 +366,21 @@ export const dummyUsers: Users[] = [
   
 ];
 
+=======
+export const ProcurementModeData:ProcurementMode[]=[
+    { "id": "public_bidding", "mode_name": "Public Bidding", "method": "Public" },
+    { "id": "limited_source_bidding", "mode_name": "Limited Source Bidding", "method": "Alternative" },
+    { "id": "direct_contracting", "mode_name": "Direct Contracting", "method": "Alternative" },
+    { "id": "repeat_order", "mode_name": "Repeat Order", "method": "Alternative" },
+    { "id": "shopping", "mode_name": "Shopping", "method": "Public" },
+    { "id": "negotiated_procurement", "mode_name": "Negotiated Procurement", "method": "Alternative" }
+]
+export const ProcurementProcessData:ProcurementProcess[]=[
+    { "id": "process_1", "name": "Initial Planning", "process_order": 1, "procurement_mode_id": "Public" },
+    { "id": "process_2", "name": "Tender Preparation", "process_order": 2, "procurement_mode_id": "Public" },
+    { "id": "process_3", "name": "Evaluation", "process_order": 3, "procurement_mode_id": "Public" },
+    { "id": "process_4", "name": "Contract Awarding", "process_order": 4, "procurement_mode_id": "Alternative" },
+    { "id": "process_5", "name": "Negotiation", "process_order": 5, "procurement_mode_id": "Alternative" },
+    { "id": "process_6", "name": "Contract Signing", "process_order": 6, "procurement_mode_id": "Alternative" }
+]
+>>>>>>> b6e19360dbe643422fc09c2d8ea39c77998a964d
