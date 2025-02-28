@@ -264,7 +264,7 @@ export class PpmpComponent implements OnInit {
     project: this.formBuilder.group({
       id: [projectId],
       ppmp_id: [ppmpId], // Ensure this is linked correctly
-      procurement_mode_id: [this.procurementModes[0]?.value ?? '', [Validators.required]],
+      procurement_mode_id: [ '', [Validators.required]],
       prepared_by: [this.currentUser.fullname, [Validators.required]],
       project_title: ['', [Validators.required]],
       project_code: [''],
