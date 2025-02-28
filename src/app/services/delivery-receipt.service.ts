@@ -51,13 +51,15 @@ export class DeliveryReceiptService {
   ) {}
 
   async getAll(): Promise<DeliveryReceipt[]> {
-    // Replace localStorage with HTTP request
     try {
       const response = await this.http.get<DeliveryReceipt[]>(this.apiUrl).toPromise();
-      return response || [];
+      if (!response) {
+        throw new Error('No data received from server');
+      }
+      return response;
     } catch (error) {
       console.error('Error fetching delivery receipts:', error);
-      return [];
+      throw error;
     }
   }
 

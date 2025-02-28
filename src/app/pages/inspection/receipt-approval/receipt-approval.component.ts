@@ -27,6 +27,8 @@ import { DeliveredItem, DeliveryItem } from '../../shared/delivered-items/delive
 import { PdfGeneratorService } from 'src/app/services/pdf-generator.service';
 import { ChecklistModalComponent } from './checklist-modal.component';
 import { MatDialog } from '@angular/material/dialog';
+import { Table } from 'primeng/table';
+
 @Component({
   selector: 'app-receipt-approval',
   standalone: true,
@@ -42,6 +44,7 @@ import { MatDialog } from '@angular/material/dialog';
 export class ReceiptApprovalComponent implements OnInit {
 
   @ViewChild('fileUpload') fileUpload: FileUpload;
+  @ViewChild('dt') dt!: Table;
 
   activeStep:number = 1;
   receipts:DeliveryReceipt[]=[];
@@ -55,6 +58,8 @@ export class ReceiptApprovalComponent implements OnInit {
     notes:  new FormControl(''),
     files:  new FormControl<any>(null,[ Validators.required]), // You can later manage file upload logic in the component
   });
+
+  isLoading: boolean = false;
 
   constructor(
     private router:Router,
@@ -287,8 +292,25 @@ export class ReceiptApprovalComponent implements OnInit {
     });
   }
 
-  async fetchItems(){
-    this.receipts = await this.deliveryService.getAll();
-    this.filterByStatus('processing');
+  async fetchItems() {
+    try {
+      this.isLoading = true;
+      this.receipts = await this.deliveryService.getAll();
+      this.filterByStatus('processing');
+    } catch (error: any) {
+      console.error('Error fetching delivery receipts:', error);
+      this.messageService.add({
+        severity: 'error',
+        summary: 'Error',
+        detail: error.message || 'Failed to fetch delivery receipts. Please try again later.',
+        life: 5000,
+        closable: true,
+        key: 'fetchError'
+      });
+      this.receipts = [];
+      this.filteredReceipts = [];
+    } finally {
+      this.isLoading = false;
+    }
   }
 }
