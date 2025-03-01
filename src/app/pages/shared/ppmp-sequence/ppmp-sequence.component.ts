@@ -12,6 +12,8 @@ import { InputSwitchModule } from 'primeng/inputswitch';
 import { ToastModule } from 'primeng/toast';
 import { finalize } from 'rxjs/operators';
 import { MatCard, MatCardContent, MatCardSubtitle, MatCardTitle } from '@angular/material/card';
+import { IconField } from 'primeng/iconfield';
+import { InputIcon } from 'primeng/inputicon';
 
 export class PPMPApprover {
   id!: string
@@ -39,7 +41,9 @@ export class PPMPApprover {
     MatCard,
     MatCardContent,
     MatCardTitle,
-    MatCardSubtitle
+    MatCardSubtitle,
+    IconField,
+    InputIcon
   ],
   templateUrl: './ppmp-sequence.component.html',
   providers: [MessageService, ConfirmationService],

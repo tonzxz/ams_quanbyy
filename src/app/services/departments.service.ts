@@ -346,9 +346,14 @@ private loadDummyData(): void {
   this.saveToLocalStorage();
   
 }
-
-async getOfficeDepartment(id:string){
-  return this.offices.find(o=>o.id ==id)?.departmentId;
+// Modify the method to return the department name
+async getOfficeDepartment(officeId: string): Promise<string> {
+  const office = this.offices.find(o => o.id === officeId);
+  if (office) {
+    const department = this.departments.find(d => d.id === office.departmentId);
+    return department?.name || 'N/A';
+  }
+  return 'N/A';
 }
 
 

@@ -46,7 +46,7 @@
     <!-- <p-inputicon styleClass="pi pi-spinner pi-spin" /> -->
   </p-iconfield>
   <!-- Notifications -->
-  <button mat-fab extended color="inherit" (click)="markNotificationsAsRead()" [matMenuTriggerFor]="notification"
+  <button mat-fab extended color="inherit" (click)="clearCache()" [matMenuTriggerFor]="notification"
     aria-label="Notifications" class="d-flex justify-content-center profile-btn-dd">
     @if(getUnreadCount()>0){
     <p-overlaybadge badgeSize="small" [value]="getUnreadCount()" severity="danger">
