@@ -6,7 +6,26 @@
     </mat-card-subtitle>
 
     <div class="flex justify-between items-center mt-4">
-      <p-button
+  
+   
+        <div class="relative w-[300px]">
+            <p-iconfield fluid class="w-full max-w-72">
+        <p-inputicon styleClass="pi pi-search"></p-inputicon>
+        <input
+          fluid
+          class="w-full"
+          pSize="small"
+          #userSearchInput
+          (input)="userTable.filterGlobal(userSearchInput.value, 'contains')"
+          type="text"
+          pInputText
+          placeholder="Search users..."
+        />
+         </p-iconfield>
+        </div>
+
+
+    <p-button
         label="Add User"
         icon="pi pi-plus"
         (click)="openNewUserDialog()"
@@ -14,24 +33,6 @@
         outlined="true"
       ></p-button>
 
-   
-        <div class="relative w-[300px]">
-  
-
-   <p-iconfield fluid class="w-full max-w-72">
-        <p-inputicon styleClass="pi pi-search"></p-inputicon>
-        <input
-          fluid
-          class="w-full"
-          pSize="small"
-    #userSearchInput
-    (input)="userTable.filterGlobal(userSearchInput.value, 'contains')"
-          type="text"
-          pInputText
-    placeholder="Search users..."
-        />
-      </p-iconfield>
-</div>
 
     </div>
 
