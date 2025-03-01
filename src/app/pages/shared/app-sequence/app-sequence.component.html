@@ -5,22 +5,38 @@
       Configure the sequence of approvers for APP approval workflows.
     </mat-card-subtitle>
 
-    <div class="flex items-center gap-2 mt-4">
-      <!-- Add Sequence Button -->
-      <p-button
-        pTooltip="Add Approval Sequence"
-        (click)="openNewApproverDialog()"
-        class="p-button-outlined p-button-md flex items-center justify-center rounded-md border border-gray-400"
-        icon="pi pi-plus"
-        label="Add Sequence"
-      ></p-button>
-    
-      <!-- Search Input with Icon -->
-      <div class="relative flex items-center w-[250px] border border-gray-300 rounded-md px-3 py-2 bg-white">
-        <i class="pi pi-search text-gray-500"></i>
-        <input #searchInput pInputText type="text" (input)="dt.filter(searchInput.value, 'global', 'contains')"
-          placeholder="Search Sequences" class="search-input w-full border-0 outline-none ml-2" />
+
+
+
+       <div class="flex justify-between items-center mt-4">
+      <div class="flex gap-2">
+     
+
+        <div class="relative w-[300px]">
+        <p-iconfield fluid class="w-full max-w-72">
+        <p-inputicon styleClass="pi pi-search"></p-inputicon>
+        <input
+          fluid
+          class="w-full"
+          pSize="small"
+          #searchInput
+        (input)="dt.filter(searchInput.value, 'global', 'contains')"
+          type="text"
+          pInputText
+        placeholder="Search Sequences"
+        />
+      </p-iconfield>
+        </div>
       </div>
+
+         <p-button
+          pTooltip="Add Approval Sequence"
+          (click)="openNewApproverDialog()"
+          [outlined]="true"
+          size="small"
+          label="Add Sequence"
+          icon="pi pi-plus"
+        ></p-button>
     </div>
     
 

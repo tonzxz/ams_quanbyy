@@ -11,6 +11,8 @@ import { DropdownModule } from 'primeng/dropdown'
 import { InputTextModule } from 'primeng/inputtext'
 import { ToastModule } from 'primeng/toast'
 import { MatCardModule } from '@angular/material/card'
+import { IconField } from 'primeng/iconfield'
+import { InputIcon } from 'primeng/inputicon'
 
 export class AppSequenceApprover {
   id!: string
@@ -33,6 +35,8 @@ export class AppSequenceApprover {
     ToastModule,
     MatCardModule,
     ReactiveFormsModule,
+    IconField,
+    InputIcon
   ],
   templateUrl: './app-sequence.component.html',
   styleUrls: ['./app-sequence.component.scss'],
