@@ -1,25 +1,24 @@
-import { Component, OnInit, ViewChild } from '@angular/core'
-import { FormBuilder, FormGroup, Validators, FormsModule, ReactiveFormsModule } from '@angular/forms'
-import { MessageService, ConfirmationService } from 'primeng/api'
-import { CrudService } from 'src/app/services/crud.service'
-import { Approver, Users, Entity } from 'src/app/schema/schema'
-import { Table } from 'primeng/table'
+import { Component, OnInit, ViewChild } from '@angular/core';
+import { FormBuilder, FormGroup, Validators, FormsModule, ReactiveFormsModule } from '@angular/forms';
+import { MessageService, ConfirmationService } from 'primeng/api';
+import { CrudService } from 'src/app/services/crud.service';
+import { Approver, Users, Entity } from 'src/app/schema/schema';
+import { Table, TableModule, TableRowReorderEvent } from 'primeng/table';
+import { CommonModule } from '@angular/common';
 
 // PrimeNG and Angular Material Components
-import { TableModule, TableRowReorderEvent } from 'primeng/table';
-
-import { ButtonModule } from 'primeng/button'
-import { InputTextModule } from 'primeng/inputtext'
-import { DialogModule } from 'primeng/dialog'
-import { ConfirmDialogModule } from 'primeng/confirmdialog'
-import { DropdownModule } from 'primeng/dropdown'
-import { ToastModule } from 'primeng/toast'
-import { MatCard, MatCardContent, MatCardSubtitle, MatCardTitle } from '@angular/material/card'
-import { IconField } from 'primeng/iconfield'
-import { InputIcon } from 'primeng/inputicon'
+import { ButtonModule } from 'primeng/button';
+import { InputTextModule } from 'primeng/inputtext';
+import { DialogModule } from 'primeng/dialog';
+import { ConfirmDialogModule } from 'primeng/confirmdialog';
+import { DropdownModule } from 'primeng/dropdown';
+import { ToastModule } from 'primeng/toast';
+import { MatCard, MatCardContent, MatCardSubtitle, MatCardTitle } from '@angular/material/card';
+import { IconField } from 'primeng/iconfield';
+import { InputIcon } from 'primeng/inputicon';
 
 // Import dummy data
-import { dummyPPMPSequence, dummyUsers, dummyEntity } from 'src/app/schema/dummy'
+import { dummyPPMPSequence, dummyUsers, dummyEntity } from 'src/app/schema/dummy';
 
 interface DropdownOption {
   label: string;
@@ -30,6 +29,7 @@ interface DropdownOption {
   selector: 'app-ppmp-sequence',
   standalone: true,
   imports: [
+    CommonModule,
     FormsModule,
     ReactiveFormsModule,
     TableModule,
@@ -44,8 +44,7 @@ interface DropdownOption {
     MatCardTitle,
     MatCardSubtitle,
     IconField,
-    InputIcon,
-    
+    InputIcon
   ],
   templateUrl: './ppmp-sequence.component.html',
   providers: [MessageService, ConfirmationService],
@@ -64,6 +63,11 @@ export class PpmpSequenceComponent implements OnInit {
   loading = false;
   deleteDialogVisible = false;
   approverToDelete: Approver | null = null;
+  
+  // Reordering variables
+  reorderConfirmVisible = false;
+  draggedApprover: any = null;
+  newPosition: number = 0;
   
   // Dropdown options
   userOptions: DropdownOption[] = [];
@@ -90,7 +94,6 @@ export class PpmpSequenceComponent implements OnInit {
     });
   }
 
-  // Initialize data by checking if data exists in localStorage, and if not, initializing with dummy data
   async initializeData(): Promise<void> {
     try {
       let usersExist = false;
@@ -98,7 +101,6 @@ export class PpmpSequenceComponent implements OnInit {
       let approversExist = false;
       
       try {
-        // Check if data exists in localStorage
         const users = await this.crudService.getAll<Users>(Users);
         usersExist = users && users.length > 0;
         
@@ -111,7 +113,6 @@ export class PpmpSequenceComponent implements OnInit {
         console.warn('Error checking if data exists:', error);
       }
       
-      // Initialize with dummy data if needed
       if (!usersExist) {
         console.log('Initializing users with dummy data');
         await this.crudService.flushDummyData(Users, dummyUsers);
@@ -127,7 +128,6 @@ export class PpmpSequenceComponent implements OnInit {
         await this.crudService.flushDummyData(Approver, dummyPPMPSequence);
       }
       
-      // Then load the data
       await this.loadApprovers();
     } catch (error) {
       console.error('Failed to initialize data:', error);
@@ -190,8 +190,15 @@ export class PpmpSequenceComponent implements OnInit {
       if (!storedApprovers || storedApprovers.length === 0) {
         console.warn('No approvers found in localStorage after loading, reinitializing...');
         await this.crudService.flushDummyData(Approver, dummyPPMPSequence);
-        await this.loadApprovers(); // Reload after reinitializing
+        await this.loadApprovers();
       }
+
+      // Debug: Log the loaded sequences
+      console.log('Loaded sequences:', this.sequences.map(s => ({
+        id: s.id,
+        name: s.name,
+        approval_order: s.approval_order
+      })));
     } catch (error) {
       console.error('Error loading approvers:', error);
       this.messageService.add({ 
@@ -210,7 +217,7 @@ export class PpmpSequenceComponent implements OnInit {
     this.approverForm.reset();
     this.approverForm.patchValue({ 
       approval_order: this.getNextOrder(),
-      entity_id: '1' // Default to PPMP entity
+      entity_id: '1'
     });
     this.approverDialog = true;
     this.submitted = false;
@@ -235,7 +242,6 @@ export class PpmpSequenceComponent implements OnInit {
     this.loading = true;
     try {
       if (this.isEditMode && this.currentApproverId) {
-        // Edit existing approver
         const updateData = { 
           user_id: this.approverForm.value.user_id,
           name: this.approverForm.value.name,
@@ -250,7 +256,6 @@ export class PpmpSequenceComponent implements OnInit {
           detail: 'Approver updated successfully' 
         });
       } else {
-        // Create new approver
         const newId = this.generateUniqueId();
         const newApproverData = {
           id: newId,
@@ -260,7 +265,6 @@ export class PpmpSequenceComponent implements OnInit {
           entity_id: this.approverForm.value.entity_id
         };
         
-        // For create, we need to separate the ID from the data
         const { id, ...dataWithoutId } = newApproverData;
         await this.crudService.create<Approver>(Approver, dataWithoutId as any);
         this.messageService.add({ 
@@ -270,7 +274,6 @@ export class PpmpSequenceComponent implements OnInit {
         });
       }
       
-      // Reload the data
       await this.loadApprovers();
       this.hideDialog();
     } catch (error) {
@@ -309,26 +312,18 @@ export class PpmpSequenceComponent implements OnInit {
     
     this.loading = true;
     try {
-      // Make sure we're using the correct ID
       const idToDelete = this.approverToDelete.id;
       const deletedOrderNumber = this.approverToDelete.approval_order;
       
-      // First delete the approver
       await this.crudService.delete<Approver>(Approver, idToDelete);
       
-      // Then update the order numbers of the remaining approvers
       const allApprovers = await this.crudService.getAll<Approver>(Approver);
       const ppmpApprovers = allApprovers.filter(a => a.entity_id === '1');
       
-      // Update order numbers for all approvers with higher order than the deleted one
       for (const approver of ppmpApprovers) {
         if (approver.approval_order > deletedOrderNumber) {
-          // Decrement the order number
-          await this.crudService.update<Approver>(
-            Approver, 
-            approver.id, 
-            { ...approver, approval_order: approver.approval_order - 1 } as any
-          );
+          const updatedApprover = { ...approver, approval_order: approver.approval_order - 1 };
+          await this.crudService.update<Approver>(Approver, approver.id, updatedApprover as any);
         }
       }
       
@@ -338,7 +333,6 @@ export class PpmpSequenceComponent implements OnInit {
         detail: 'Approver deleted successfully' 
       });
       
-      // Reload data after deletion and reordering
       await this.loadApprovers();
     } catch (error) {
       console.error('Delete failed:', error);
@@ -360,83 +354,147 @@ export class PpmpSequenceComponent implements OnInit {
     this.approverForm.reset();
   }
 
-  // Handle row reordering event from drag and drop
-  async onRowReorder(event: any): Promise<void> {
-    // Get the moved item
-    const movedItem = this.sequences[event.dragIndex];
-    
-    // Calculate the new order of items
-    const newIndex = event.dropIndex;
-    const oldOrder = movedItem.approval_order;
-    const newOrder = this.sequences[newIndex].approval_order;
-    
-    this.loading = true;
-    try {
-      // Get all approvers that need to be updated
-      const allApprovers = await this.crudService.getAll<Approver>(Approver);
-      const ppmpApprovers = allApprovers.filter(a => a.entity_id === '1');
-      
-      if (oldOrder < newOrder) {
-        // Moving down: decrement orders for items between old and new positions
-        for (const approver of ppmpApprovers) {
-          if (approver.approval_order > oldOrder && approver.approval_order <= newOrder) {
-            await this.crudService.update<Approver>(
-              Approver,
-              approver.id,
-              { ...approver, approval_order: approver.approval_order - 1 } as any
-            );
-          }
-        }
-      } else if (oldOrder > newOrder) {
-        // Moving up: increment orders for items between new and old positions
-        for (const approver of ppmpApprovers) {
-          if (approver.approval_order >= newOrder && approver.approval_order < oldOrder) {
-            await this.crudService.update<Approver>(
-              Approver,
-              approver.id,
-              { ...approver, approval_order: approver.approval_order + 1 } as any
-            );
-          }
-        }
-      }
-      
-      // Update the moved item's order
-      await this.crudService.update<Approver>(
-        Approver,
-        movedItem.id,
-        { ...movedItem, approval_order: newOrder } as any
+  // Fixed onRowReorder to ensure correct modal data
+  async onRowReorder(event: TableRowReorderEvent): Promise<void> {
+    const dragIndex = event.dragIndex ?? 0;
+    const dropIndex = event.dropIndex ?? 0;
+
+    if (dragIndex === dropIndex) return;
+
+    // Ensure the sequences array is in sync with localStorage before proceeding
+    await this.loadApprovers();
+
+    // Debug: Log the current state of sequences
+    console.log('Sequences before drag:', this.sequences.map(s => ({
+      id: s.id,
+      name: s.name,
+      approval_order: s.approval_order
+    })));
+
+    // Capture the dragged approver from the updated sequences
+    this.draggedApprover = { ...this.sequences[dragIndex] };
+    this.newPosition = dropIndex + 1; // Adjusting for 1-based approval_order
+
+    // Debug: Log the drag and drop details
+    console.log(`Dragging from index ${dragIndex} (Level ${this.draggedApprover.approval_order}) to index ${dropIndex} (Level ${this.newPosition})`);
+    console.log('Dragged Approver:', this.draggedApprover);
+
+    // Show the confirmation dialog
+    this.reorderConfirmVisible = true;
+  }
+
+  cancelReorder(): void {
+    this.reorderConfirmVisible = false;
+    this.draggedApprover = null;
+    this.newPosition = 0;
+    // Reload to ensure the table reflects the original state
+    this.loadApprovers();
+  }
+
+  confirmReorder(): void {
+    if (this.draggedApprover && this.newPosition) {
+      this.executeReorder(
+        this.draggedApprover.id,
+        this.draggedApprover.approval_order,
+        this.newPosition
       );
-      
+    }
+  }
+
+  // Fixed executeReorder to ensure saving works
+  async executeReorder(approverIdToMove: string, fromOrder: number, toOrder: number): Promise<void> {
+    this.loading = true;
+
+    try {
+      // Fetch all approvers directly from localStorage to ensure we're working with the latest data
+      const allApprovers = await this.crudService.getAll<Approver>(Approver);
+      let ppmpApprovers = allApprovers
+        .filter(a => a.entity_id === '1')
+        .sort((a, b) => a.approval_order - b.approval_order);
+
+      // Debug: Log the current state of approvers
+      console.log('Before reordering:', ppmpApprovers.map(a => ({
+        id: a.id,
+        name: a.name,
+        approval_order: a.approval_order
+      })));
+
+      // Find the approver to move
+      const approverToMove = ppmpApprovers.find(a => a.id === approverIdToMove);
+      if (!approverToMove) throw new Error('Approver not found');
+
+      // Remove the approver from its current position
+      ppmpApprovers = ppmpApprovers.filter(a => a.id !== approverIdToMove);
+
+      // Insert the approver at the new position (adjusting for 0-based index)
+      const newIndex = toOrder - 1; // Convert toOrder (1-based) to 0-based index
+      ppmpApprovers.splice(newIndex, 0, approverToMove);
+
+      // Reassign approval_order values sequentially starting from 1
+      ppmpApprovers = ppmpApprovers.map((approver, index) => ({
+        ...approver,
+        approval_order: index + 1
+      }));
+
+      // Debug: Log the new order before saving
+      console.log('After reordering (before saving):', ppmpApprovers.map(a => ({
+        id: a.id,
+        name: a.name,
+        approval_order: a.approval_order
+      })));
+
+      // Update all approvers in the database
+      for (const approver of ppmpApprovers) {
+        const updatedApprover = {
+          user_id: approver.user_id,
+          name: approver.name,
+          approval_order: approver.approval_order,
+          entity_id: approver.entity_id
+        };
+        await this.crudService.update<Approver>(Approver, approver.id, updatedApprover as any);
+      }
+
+      // Verify the data was saved by fetching it again
+      const savedApprovers = await this.crudService.getAll<Approver>(Approver);
+      const savedPPMPApprovers = savedApprovers
+        .filter(a => a.entity_id === '1')
+        .sort((a, b) => a.approval_order - b.approval_order);
+
+      console.log('After saving:', savedPPMPApprovers.map(a => ({
+        id: a.id,
+        name: a.name,
+        approval_order: a.approval_order
+      })));
+
       this.messageService.add({
         severity: 'success',
-        summary: 'Success',
+        summary: 'Reordered',
         detail: 'Approval sequence reordered successfully'
       });
-      
-      // Reload data to show the updated order
+
+      // Reload the table to reflect the new order
       await this.loadApprovers();
     } catch (error) {
       console.error('Reordering failed:', error);
       this.messageService.add({
         severity: 'error',
         summary: 'Error',
-        detail: `Failed to reorder approval sequence: ${error}`
+        detail: 'Failed to reorder approval sequence: ' + (error)
       });
-      
-      // Reload to restore the original order if there was an error
       await this.loadApprovers();
     } finally {
       this.loading = false;
+      this.reorderConfirmVisible = false;
+      this.draggedApprover = null;
+      this.newPosition = 0;
     }
   }
 
-  // Helper function to generate unique ID in APR-YYYY-XXX format
   generateUniqueId(): string {
     const year = new Date().getFullYear();
     const existingIds = this.sequences.map(s => s.id);
     let sequence = 1;
     
-    // Extract the highest sequence number from existing IDs
     existingIds.forEach(id => {
       if (id.startsWith(`APR-${year}-`)) {
         const seqStr = id.split('-')[2];
@@ -447,7 +505,6 @@ export class PpmpSequenceComponent implements OnInit {
       }
     });
     
-    // Pad sequence with leading zeros
     const paddedSequence = sequence.toString().padStart(3, '0');
     return `APR-${year}-${paddedSequence}`;
   }
