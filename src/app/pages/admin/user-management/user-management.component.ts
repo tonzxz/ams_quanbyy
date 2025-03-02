@@ -51,6 +51,8 @@ export class UserManagementComponent implements OnInit {
   selectedUserId: string | null = null
   userLoading = false
   userSubmitted = false
+  deleteDialogVisible = false
+  userToDelete: User | null = null
 
   userTypes = [
     { label: 'SuperAdmin', value: 'SuperAdmin' },
@@ -146,59 +148,68 @@ export class UserManagementComponent implements OnInit {
     this.userDialog = true
   }
 
+ 
   saveUser() {
-    this.userSubmitted = true
+  this.userSubmitted = true;
 
-    if (this.userForm.valid) {
-      const userData = this.userForm.value
+  if (this.userForm.valid) {
+    const userData = this.userForm.value;
 
-      if (this.isUserEditMode && this.selectedUserId) {
-        // Update existing user
-        this.userService.addUser({ ...userData, id: this.selectedUserId }).subscribe({
-          next: () => {
-            this.messageService.add({ severity: 'success', summary: 'Success', detail: 'User updated successfully' })
-            this.loadUsers()
-            this.userDialog = false
-          },
-          error: (error) => {
-            this.messageService.add({ severity: 'error', summary: 'Error', detail: error.message || 'Operation failed' })
-          },
-          complete: () => {
-            this.userSubmitted = false
-          }
-        })
-      } else {
-        // Add new user
-        this.userService.addUser(userData).subscribe({
-          next: () => {
-            this.messageService.add({ severity: 'success', summary: 'Success', detail: 'User created successfully' })
-            this.loadUsers()
-            this.userDialog = false
-          },
-          error: (error) => {
-            this.messageService.add({ severity: 'error', summary: 'Error', detail: error.message || 'Operation failed' })
-          },
-          complete: () => {
-            this.userSubmitted = false
-          }
-        })
-      }
+    if (this.isUserEditMode && this.selectedUserId) {
+      // ✅ Update existing user
+      this.userService.updateUser(this.selectedUserId, userData).subscribe({
+        next: () => {
+          this.messageService.add({ severity: 'success', summary: 'Success', detail: 'User updated successfully' });
+          this.loadUsers();
+          this.userDialog = false;
+        },
+        error: (error) => {
+          this.messageService.add({ severity: 'error', summary: 'Error', detail: error.message || 'Operation failed' });
+        },
+        complete: () => {
+          this.userSubmitted = false;
+        }
+      });
+    } else {
+      // ✅ Add new user
+      this.userService.addUser(userData).subscribe({
+        next: () => {
+          this.messageService.add({ severity: 'success', summary: 'Success', detail: 'User created successfully' });
+          this.loadUsers();
+          this.userDialog = false;
+        },
+        error: (error) => {
+          this.messageService.add({ severity: 'error', summary: 'Error', detail: error.message || 'Operation failed' });
+        },
+        complete: () => {
+          this.userSubmitted = false;
+        }
+      });
     }
   }
-
-  deleteUser(user: User) {
-    this.confirmationService.confirm({
-      message: `Are you sure you want to delete user "${user.fullname}"?`,
-      header: 'Confirm Delete',
-      icon: 'pi pi-exclamation-triangle',
-      accept: () => {
-        const updatedUsers = this.users.filter(u => u.id !== user.id)
-        localStorage.setItem('users', JSON.stringify(updatedUsers))
-        this.messageService.add({ severity: 'success', summary: 'Success', detail: 'User deleted successfully' })
-        this.loadUsers()
       }
-    })
-  }
+
+      deleteUser(user: User) {
+        this.userToDelete = user // Store user for deletion
+        this.deleteDialogVisible = true // Show modal
+      }
+
+      confirmDeleteAction() {
+        if (this.userToDelete) {
+          this.userService.deleteUser(this.userToDelete.id).subscribe({
+            next: () => {
+              this.messageService.add({ severity: 'success', summary: 'Success', detail: 'User deleted successfully' })
+              this.loadUsers()
+              this.deleteDialogVisible = false // Close modal
+              this.userToDelete = null // Reset selected user
+            },
+            error: (error) => {
+              this.messageService.add({ severity: 'error', summary: 'Error', detail: error.message || 'Failed to delete user' })
+            }
+          })
+        }
+      }
+
 
   hideUserDialog() {
     this.userDialog = false
@@ -209,4 +220,6 @@ export class UserManagementComponent implements OnInit {
     const office = this.offices.find(o => o.id === officeId)
     return office?.name || 'N/A'
   }
+  
+  
 }

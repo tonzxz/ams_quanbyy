@@ -79,7 +79,7 @@ export class UserService {
 
   async logout() {
     localStorage.removeItem('user')
-    this.user = undefined
+    this.user = undefined 
     this.router.navigate(['/authentication/login'])
   }
 
@@ -87,4 +87,32 @@ export class UserService {
     const userString = localStorage.getItem('user')
     return userString ? (JSON.parse(userString) as User) : undefined
   }
+
+  updateUser(userId: string, updatedData: Partial<User>): Observable<User> {
+  const userIndex = this.users.findIndex(user => user.id === userId)
+
+  if (userIndex === -1) {
+    return throwError(() => new Error('User not found'))
+  }
+
+  // ✅ Keep existing values and update only the provided fields
+  this.users[userIndex] = { ...this.users[userIndex], ...updatedData }
+
+  this.saveUsers()
+  return of(this.users[userIndex]) // ✅ Return updated user
+}
+
+  deleteUser(userId: string): Observable<boolean> {
+  const userIndex = this.users.findIndex(user => user.id === userId)
+
+  if (userIndex === -1) {
+    return throwError(() => new Error('User not found'))
+  }
+
+  this.users.splice(userIndex, 1) // ✅ Remove user from the array
+  this.saveUsers()
+  
+  return of(true) // ✅ Return success
+}
+
 }
