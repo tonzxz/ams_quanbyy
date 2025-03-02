@@ -25,13 +25,13 @@
         </div>
 
 
-    <p-button
-        label="Add User"
-        icon="pi pi-plus"
-        (click)="openNewUserDialog()"
-        size="small"
-        outlined="true"
-      ></p-button>
+      <p-button
+          label="Add User"
+          icon="pi pi-plus"
+          (click)="openNewUserDialog()"
+          size="small"
+          outlined="true"
+        ></p-button>
 
 
     </div>
@@ -150,5 +150,17 @@
       <button pButton label="Cancel" outlined="true" class="p-button-text" (click)="hideUserDialog()" size="small"></button>
       <button pButton label="Save" outlined="true" (click)="saveUser()" size="small"></button>
     </div>
+  </ng-template>
+</p-dialog>
+
+
+<p-dialog [(visible)]="deleteDialogVisible" header="Confirm Delete" [style]="{ width: '400px' }" [closable]="false">
+  <div class="flex flex-col items-center text-center">
+    <i class="pi pi-exclamation-triangle text-red-500 text-4xl mb-4"></i>
+    <p>Are you sure you want to delete <strong>{{ userToDelete?.fullname }}</strong>?</p>
+  </div>
+  <ng-template pTemplate="footer">
+    <button pButton label="Cancel" icon="pi pi-times" class="p-button-text" (click)="deleteDialogVisible = false"></button>
+    <button pButton label="Delete" icon="pi pi-trash" class="p-button-danger" (click)="confirmDeleteAction()"></button>
   </ng-template>
 </p-dialog>
