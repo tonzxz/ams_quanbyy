@@ -1,5 +1,5 @@
 
-import { PPMP, PPMPItem, PPMPProject, PPMPSchedule, ProcurementMode, ProcurementProcess, Users, Entity, Approver} from "./schema";
+import { PPMP, PPMPItem, PPMPProject, PPMPSchedule, ProcurementMode, ProcurementProcess, Users, Department, Building, Office, Entity, Approver} from "./schema";
 
 // PPMP Items
 export const PPMPItemData: PPMPItem[] = [
@@ -224,8 +224,8 @@ export const PPMPItemData: PPMPItem[] = [
   ]
   
 
-// PPMP
-export const PPMPData:PPMP[] = [
+  // PPMP
+  export const PPMPData:PPMP[] = [
     // Single Classification: Goods
           {
             id: '1',
@@ -443,3 +443,76 @@ export const PPMPSequenceData: Approver[] = [
   }
 ];
 
+
+
+  
+// Dummy Departments (moved from departments.service.ts)
+export const DepartmentData: Department[] = [
+  {
+    id: '550e8400e29b41d4a716446655440000',
+    name: 'College of Engineering'
+  },
+  {
+    id: '550e8400e29b41d4a716446655440001',
+    name: 'College of Business Administration'
+  },
+  {
+    id: '550e8400e29b41d4a716446655440002',
+    name: 'College of Education'
+  },
+  {
+    id: '550e8400e29b41d4a716446655440003',
+    name: 'College of Information Technology'
+  },
+  {
+    id: '550e8400e29b41d4a716446655440004',
+    name: 'College of Agriculture'
+  },
+  {
+    id: '550e8400e29b41d4a716446655440005',
+    name: 'College of Nursing'
+  },
+  {
+    id: '550e8400e29b41d4a716446655440006',
+    name: 'College of Arts and Sciences'
+  },
+  {
+    id: '550e8400e29b41d4a716446655440007',
+    name: 'College of Criminal Justice Education'
+  }
+];
+
+// Optionally include Buildings and Offices if you want them in CrudService too
+export const BuildingData: Building[] = [
+  {
+    id: '550e8400e29b41d4a716446655440008',
+    name: 'Engineering Building',
+    address: 'DDOSC Main Campus, Nabunturan, Davao de Oro',
+    numberOfFloors: 4,
+    dateConstructed: new Date('1996-03-25')
+  },
+  {
+    id: '550e8400e29b41d4a716446655440009',
+    name: 'Business Administration Building',
+    address: 'DDOSC Main Campus, Nabunturan, Davao de Oro',
+    numberOfFloors: 3,
+    dateConstructed: new Date('1991-07-12')
+  },
+  // Add remaining buildings as needed
+];
+
+export const OfficeData: Office[] = [
+  {
+    id: '550e8400e29b41d4a716446655440010',
+    name: 'Dean\'s Office - COE',
+    department_id: '550e8400e29b41d4a716446655440000', // Matches DepartmentData[0]
+    building_id: '550e8400e29b41d4a716446655440008'
+  },
+  {
+    id: '550e8400e29b41d4a716446655440011',
+    name: 'Registrar\'s Office - CBA',
+    department_id: '550e8400e29b41d4a716446655440001', // Matches DepartmentData[1]
+    building_id: '550e8400e29b41d4a716446655440009'
+  },
+  // Add remaining offices as needed
+];
