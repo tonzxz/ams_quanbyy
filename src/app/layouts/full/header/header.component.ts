@@ -29,6 +29,7 @@ import { InputIcon, InputIconModule } from 'primeng/inputicon';
 import {  InputTextModule } from 'primeng/inputtext';
 import {AutoCompleteCompleteEvent, AutoCompleteModule} from 'primeng/autocomplete';
 import { FormsModule } from '@angular/forms';
+import { UtilsService } from 'src/app/services/utils.service';
 @Component({
   selector: 'app-header',
   standalone: true,
@@ -66,6 +67,7 @@ export class HeaderComponent implements OnInit {
 
   constructor(private userService:UserService, 
     private router:Router,
+    private utilService: UtilsService,
     private activatedRoute:ActivatedRoute,
     private messageService:MessageService,
     private notificationService:NotificationService,
@@ -153,6 +155,14 @@ markNotificationsAsRead(){
     this.notificationService.markAsRead(notification.id);
   }
 }
+
+isDarkModeEnabled(){
+  return this.utilService.isDarkModeEnabled();
+}
+
+toggleDarkMode(){
+  this.utilService.toggleDarkMode();
+} 
 
   logout(){
     this.userService.logout();

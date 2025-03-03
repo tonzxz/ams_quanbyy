@@ -29,6 +29,13 @@
 
 
   <span class="flex-1-auto"></span>
+    <!-- Dark Mode Icon -->
+    <button
+     class="ml-2 relative flex items-center justify-center w-9 h-9 rounded-full hover:bg-primary-100"
+     (click)="toggleDarkMode()"
+   >
+     <i class="pi {{isDarkModeEnabled() ? 'pi-moon text-primary-900':'pi-sun text-yellow-500'}}  text-lg"></i>
+   </button>
   <p-iconfield fluid class="w-full max-w-60" [iconPosition]="'left'">
     <!-- <input fluid class="w-full" pSize="small" 
       type="text" pInputText placeholder="Find..." /> -->
@@ -45,6 +52,7 @@
     <p-inputicon styleClass="pi pi-search z-10"  />
     <!-- <p-inputicon styleClass="pi pi-spinner pi-spin" /> -->
   </p-iconfield>
+
   <!-- Notifications -->
   <button mat-fab extended color="inherit" (click)="markNotificationsAsRead()" [matMenuTriggerFor]="notification"
     aria-label="Notifications" class="d-flex justify-content-center profile-btn-dd">
