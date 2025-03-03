@@ -131,7 +131,46 @@ export class PurchaseRequest {
   current_approver_id: string
   request_date: Date
   status: 'Draft' | 'Pending' | 'Approved'
+  
+  prNo: string
+  saiNo?: string
+  alobsNo?: string
+  saiDate?: Date | null
+  alobsDate?: Date | null
+  requisitioningOffice: string
+  items: PurchaseRequestItem[]
+  totalAmount: number
+  purpose: string
+  requestedBy: Signatory
+  recommendedBy: Signatory
+  approvedBy: Signatory
+  certification?: Signatory
+  ppmpId?: string
+  appId?: string
+  coaInfo?: {
+    annexNo: string
+    circularNo: string
+  }
+date: string|number|Date
+    static Pending: string
+    static Approved: string
+    static Rejected: string
 }
+// remove if existing for signatory
+export interface Signatory {
+  name: string
+  designation: string
+}
+
+export interface PurchaseRequestItem {
+  unit: string
+  description: string
+  qty: number
+  unitCost: number
+  totalCost: number
+  itemNo: string
+}
+
 
 export class Department {
   id!: string

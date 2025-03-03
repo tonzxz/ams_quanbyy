@@ -537,13 +537,39 @@ export const OfficeData: Office[] = [
   // Add remaining offices as needed
 ];
 
-export const PurchaseRequestData: PurchaseRequest[]= [
+export const PurchaseRequestData: PurchaseRequest[] = [
   {
     id: 'PR-2026-001',
     project_id: 'PROJ-2025-001',
     current_approver_id: '1',
     request_date: new Date('2025-03-01'),
     status: 'Draft',
+    prNo: 'PR-2026-001',
+    saiNo: 'SAI-2026-001',
+    alobsNo: 'ALOBS-2026-001',
+    saiDate: new Date('2025-02-28'),
+    alobsDate: new Date('2025-03-01'),
+    requisitioningOffice: 'Procurement Department',
+    items: [
+      {
+        unit: 'pcs',
+        description: 'Laptop - Intel i7, 16GB RAM, 512GB SSD',
+        qty: 2,
+        unitCost: 80000,
+        totalCost: 160000,
+        itemNo: 'ITM-001'
+      }
+    ],
+    totalAmount: 160000,
+    purpose: 'Office Upgrade',
+    requestedBy: { name: 'John Doe', designation: 'IT Manager' },
+    recommendedBy: { name: 'Jane Smith', designation: 'Procurement Officer' },
+    approvedBy: { name: 'Dr. Robert Brown', designation: 'Director' },
+    certification: { name: 'Emily White', designation: 'Finance Officer' },
+    ppmpId: 'PPMP-2026-001',
+    appId: 'APP-2026-001',
+    coaInfo: { annexNo: 'A-101', circularNo: 'C-2026-001' },
+    date: ""
   },
   {
     id: 'PR-2025-002',
@@ -551,6 +577,40 @@ export const PurchaseRequestData: PurchaseRequest[]= [
     current_approver_id: '1',
     request_date: new Date('2025-03-02'),
     status: 'Pending',
+    prNo: 'PR-2025-002',
+    saiNo: 'SAI-2025-002',
+    alobsNo: 'ALOBS-2025-002',
+    saiDate: new Date('2025-02-27'),
+    alobsDate: new Date('2025-03-01'),
+    requisitioningOffice: 'Finance Department',
+    items: [
+      {
+        unit: 'box',
+        description: 'Bond Paper A4, 70gsm',
+        qty: 50,
+        unitCost: 200,
+        totalCost: 10000,
+        itemNo: 'ITM-002'
+      },
+      {
+        unit: 'pcs',
+        description: 'Printer Ink Cartridge - Black',
+        qty: 5,
+        unitCost: 1200,
+        totalCost: 6000,
+        itemNo: 'ITM-003'
+      }
+    ],
+    totalAmount: 16000,
+    purpose: 'Office Supplies Replenishment',
+    requestedBy: { name: 'Alice Green', designation: 'Admin Officer' },
+    recommendedBy: { name: 'Mark Evans', designation: 'Finance Head' },
+    approvedBy: { name: 'Sarah Black', designation: 'Chief Accountant' },
+    certification: { name: 'Emily White', designation: 'Finance Officer' },
+    ppmpId: 'PPMP-2025-002',
+    appId: 'APP-2025-002',
+    coaInfo: { annexNo: 'A-102', circularNo: 'C-2025-002' },
+    date: ""
   },
   {
     id: 'PR-2025-003',
@@ -558,6 +618,40 @@ export const PurchaseRequestData: PurchaseRequest[]= [
     current_approver_id: '1',
     request_date: new Date('2025-03-03'),
     status: 'Pending',
+    prNo: 'PR-2025-003',
+    saiNo: 'SAI-2025-003',
+    alobsNo: 'ALOBS-2025-003',
+    saiDate: new Date('2025-02-26'),
+    alobsDate: new Date('2025-02-28'),
+    requisitioningOffice: 'HR Department',
+    items: [
+      {
+        unit: 'pcs',
+        description: 'Ergonomic Office Chairs',
+        qty: 10,
+        unitCost: 5000,
+        totalCost: 50000,
+        itemNo: 'ITM-004'
+      },
+      {
+        unit: 'pcs',
+        description: 'Standing Desk',
+        qty: 5,
+        unitCost: 15000,
+        totalCost: 75000,
+        itemNo: 'ITM-005'
+      }
+    ],
+    totalAmount: 125000,
+    purpose: 'Workplace Enhancement',
+    requestedBy: { name: 'Laura Scott', designation: 'HR Manager' },
+    recommendedBy: { name: 'James Wilson', designation: 'Admin Supervisor' },
+    approvedBy: { name: 'Ethan Adams', designation: 'Executive Director' },
+    certification: { name: 'Emily White', designation: 'Finance Officer' },
+    ppmpId: 'PPMP-2025-003',
+    appId: 'APP-2025-003',
+    coaInfo: { annexNo: 'A-103', circularNo: 'C-2025-003' },
+    date: ""
   },
   {
     id: 'PR-2025-004',
@@ -565,5 +659,39 @@ export const PurchaseRequestData: PurchaseRequest[]= [
     current_approver_id: '1',
     request_date: new Date('2025-03-04'),
     status: 'Draft',
-  },
+    prNo: 'PR-2025-004',
+    saiNo: 'SAI-2025-004',
+    alobsNo: 'ALOBS-2025-004',
+    saiDate: new Date('2025-02-25'),
+    alobsDate: new Date('2025-02-27'),
+    requisitioningOffice: 'IT Department',
+    items: [
+      {
+        unit: 'pcs',
+        description: 'Wireless Router - Dual Band',
+        qty: 5,
+        unitCost: 3500,
+        totalCost: 17500,
+        itemNo: 'ITM-006'
+      },
+      {
+        unit: 'rolls',
+        description: 'Ethernet Cable Cat6 - 50m',
+        qty: 3,
+        unitCost: 2500,
+        totalCost: 7500,
+        itemNo: 'ITM-007'
+      }
+    ],
+    totalAmount: 25000,
+    purpose: 'Network Infrastructure Upgrade',
+    requestedBy: { name: 'Michael Brown', designation: 'IT Specialist' },
+    recommendedBy: { name: 'Sophia Taylor', designation: 'Tech Lead' },
+    approvedBy: { name: 'William Anderson', designation: 'CIO' },
+    certification: { name: 'Emily White', designation: 'Finance Officer' },
+    ppmpId: 'PPMP-2025-004',
+    appId: 'APP-2025-004',
+    coaInfo: { annexNo: 'A-104', circularNo: 'C-2025-004' },
+    date: ""
+  }
 ]
