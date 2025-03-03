@@ -111,6 +111,7 @@ export class PrSequenceComponent implements OnInit {
           shape: 'rounded',
           tooltip: 'Click to delete approver',
           icon: 'pi pi-trash',
+          confirmation: 'Are you sure you want to delete this approver?',
           color:'danger',
           function: async(event:Event, process: Approver & {approver:string}) => {
             // TODO: Implement deleting procurement process
