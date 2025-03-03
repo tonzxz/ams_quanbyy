@@ -132,8 +132,6 @@ export class PurchaseRequest {
   current_approver_id?: string
   request_date: Date
   status: 'Draft' | 'Pending' | 'Approved'
-  
-  prNo: string
   saiNo?: string
   alobsNo?: string
   saiDate?: Date | null
