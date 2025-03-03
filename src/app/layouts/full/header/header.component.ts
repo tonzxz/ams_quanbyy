@@ -167,4 +167,14 @@ toggleDarkMode(){
   logout(){
     this.userService.logout();
   }
+
+  clearCache(): void {
+  localStorage.clear() // Clears local storage
+  sessionStorage.clear() // Clears session storage
+  caches.keys().then(names => {
+    names.forEach(name => caches.delete(name)) // Clears browser cache
+  })
+  window.location.reload() // Optionally reload the app
+}
+
 }

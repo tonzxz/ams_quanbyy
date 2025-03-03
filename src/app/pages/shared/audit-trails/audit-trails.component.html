@@ -1,1 +1,10 @@
-<p>audit-trails works!</p>
+<div class="quote-container">
+  <div *ngFor="let quote of quotes; let i = index" 
+       class="quote" 
+       [style.backgroundColor]="getRandomColor()"
+       [style.fontFamily]="getRandomFont()"
+       [style.clipPath]="getRandomPaperShape()"
+       [style.transform]="getRandomRotation()">
+    {{ quote }}
+  </div>
+</div>

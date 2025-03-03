@@ -1,4 +1,6 @@
-import { PPMP, PPMPItem, PPMPProject, PPMPSchedule, ProcurementMode, ProcurementProcess } from "./schema";
+
+import { PPMP, PPMPItem, PPMPProject, PPMPSchedule, ProcurementMode, ProcurementProcess, Users, Entity, Approver} from "./schema";
+
 // PPMP Items
 export const PPMPItemData: PPMPItem[] = [
     {
@@ -305,3 +307,139 @@ export const ProcurementProcessData:ProcurementProcess[]=[
     { "id": "process_5", "name": "Negotiation", "process_order": 5, "procurement_mode_id": "Alternative" },
     { "id": "process_6", "name": "Contract Signing", "process_order": 6, "procurement_mode_id": "Alternative" }
 ]
+
+
+
+// USERS
+export const dummyUsers: Users[] = [
+  {
+    id: "1",
+    fullname: "John Doe",
+    username: "accounting",
+    password: "test123",
+    user_type: "Admin",
+    role: "accounting",
+    isAdmin: true,
+    profile: "profile-pic-url-1",
+    officeId: "550e8400e29b41d4a716446655440010"
+  },
+  {
+    id: "2",
+    fullname: "Jane Smith",
+    username: "superadmin",
+    password: "test123",
+    user_type: "SuperAdmin",
+    role: "superadmin",
+    isAdmin: true,
+    profile: "profile-pic-url-2",
+    officeId: "550e8400e29b41d4a716446655440011"
+  },
+  {
+    id: "3",
+    fullname: "Alice Johnson",
+    username: "supply",
+    password: "test123",
+    user_type: "Admin",
+    role: "supply",
+    isAdmin: true,
+    profile: "profile-pic-url-3",
+    officeId: "550e8400e29b41d4a716446655440012"
+  },
+  {
+    id: "4",
+    fullname: "Bob Brown",
+    username: "bac",
+    password: "test123",
+    user_type: "User",
+    role: "bac",
+    isAdmin: true,
+    profile: "profile-pic-url-4",
+    officeId: "550e8400e29b41d4a716446655440013"
+  },
+  {
+    id: "5",
+    fullname: "Charlie White",
+    username: "inspection",
+    password: "test123",
+    user_type: "Admin",
+    role: "inspection",
+    isAdmin: true,
+    profile: "profile-pic-url-5",
+    officeId: "550e8400e29b41d4a716446655440014"
+  },
+  {
+    id: "6",
+    fullname: "Diana Green",
+    username: "enduser",
+    password: "test123",
+    user_type: "User",
+    role: "end-user",
+    isAdmin: true,
+    profile: "profile-pic-url-6",
+    officeId: "550e8400e29b41d4a716446655440015"
+  },
+];
+
+
+export const dummyEntity: Entity[] = [
+   {
+    id: 1,
+    name: 'PPMP',
+    description: 'Project Procurement Management Plan'
+  },
+  {
+    id: 2,
+    name: 'PurchaseRequest',
+    description: 'Request for purchase of goods/services'
+  },
+  {
+    id: 3,
+    name: 'APP',
+    description: 'Annual Procurement Plan'
+  },
+  {
+    id: 4,
+    name: 'ProcurementProcess',
+    description: 'Processes related to procurement'
+  },
+  {
+    id: 5,
+    name: 'Contract',
+    description: 'Contract management and tracking'
+  },
+  {
+    id: 6,
+    name: 'InspectionAcceptance',
+    description: 'Inspection and acceptance of deliveries'
+  },
+  {
+    id: 7,
+    name: 'Payment',
+    description: 'Processing payments for procurement'
+  }
+];
+
+export const dummyPPMPSequence: Approver[] = [
+  {
+    id: 'APR-2025-001',
+    user_id: '1', // This maps to "John Doe"
+    entity_id: '1', // Only PPMP entity
+    name: 'Department Head Approver', // Approval Sequence Name
+    approval_order: 1
+  },
+  {
+    id: 'APR-2025-002',
+    user_id: '2', // This maps to "Jane Smith"
+    entity_id: '1', // Only PPMP entity
+    name: 'BAC Approver', // Approval Sequence Name
+    approval_order: 2
+  },
+  {
+    id: 'APR-2025-003',
+    user_id: '3', // This maps to "Alice Johnson"
+    entity_id: '1', // Only PPMP entity
+    name: 'Budget Approver', // Approval Sequence Name
+    approval_order: 3
+  }
+];
+

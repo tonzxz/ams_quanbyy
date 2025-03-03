@@ -101,7 +101,7 @@ export class Approver {
   id: string
   user_id: string 
   entity_id: string
-  name: 'Department Head' | 'BAC' | 'Budget'
+  name: string
   approval_order: number
 }
 
@@ -148,12 +148,14 @@ export class Office {
 
 export class Users {
   id: string
-  name: string
+  fullname: string
   username: string
   password: string
   user_type: 'SuperAdmin' | 'Admin' | 'User'
-  role: 'End-User' | 'BAC' | 'Budget' | 'Accounting' | 'Supply' | 'Inspection' | 'HOPE'
-  office_id: string
+  role: 'superadmin' | 'accounting' | 'supply' | 'bac' | 'inspection' | 'end-user' | 'president'
+  isAdmin?: boolean
+  profile: string
+  officeId: string
 }
 
 

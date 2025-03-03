@@ -13,17 +13,10 @@ import { BadgeModule } from 'primeng/badge'
 import { TabViewModule } from 'primeng/tabview'
 import { ConfirmDialog } from 'primeng/confirmdialog'
 import { InputSwitchModule } from 'primeng/inputswitch'
-
-export class User {
-  id: string
-  name: string
-  username: string
-  password: string
-  user_type: 'SuperAdmin' | 'Admin' | 'User'
-  role: 'End-User' | 'BAC' | 'Budget' | 'Accounting' | 'Supply' | 'Inspection' | 'HOPE'
-  department_id: string
-  office_id: string
-}
+import { UserService, User } from 'src/app/services/user.service'
+import { DepartmentService, Office } from 'src/app/services/departments.service'
+import { IconField } from 'primeng/iconfield'
+import { InputIcon } from 'primeng/inputicon'
 
 @Component({
   selector: 'app-user-management',
@@ -43,98 +36,95 @@ export class User {
     BadgeModule,
     TabViewModule,
     ConfirmDialog,
-    InputSwitchModule
+    InputSwitchModule,
+    IconField,
+    InputIcon
   ],
   providers: [ConfirmationService, MessageService]
 })
 export class UserManagementComponent implements OnInit {
   users: User[] = []
+  offices: Office[] = []
   userDialog = false
   userForm!: FormGroup
   isUserEditMode = false
   selectedUserId: string | null = null
   userLoading = false
   userSubmitted = false
+  deleteDialogVisible = false
+  userToDelete: User | null = null
 
-  // User Type Options
   userTypes = [
     { label: 'SuperAdmin', value: 'SuperAdmin' },
     { label: 'Admin', value: 'Admin' },
     { label: 'User', value: 'User' }
   ]
 
-  // Role Options
   roles = [
-    { label: 'End-User', value: 'End-User' },
-    { label: 'BAC', value: 'BAC' },
-    { label: 'Budget', value: 'Budget' },
-    { label: 'Accounting', value: 'Accounting' },
-    { label: 'Supply', value: 'Supply' },
-    { label: 'Inspection', value: 'Inspection' },
-    { label: 'HOPE', value: 'HOPE' }
+    { label: 'End-User', value: 'end-user' },
+    { label: 'BAC', value: 'bac' },
+    { label: 'Budget', value: 'budget' },
+    { label: 'Accounting', value: 'accounting' },
+    { label: 'Supply', value: 'supply' },
+    { label: 'Inspection', value: 'inspection' },
+    { label: 'HOPE', value: 'president' }
   ]
 
-  officeDropdownOptions = [
-    { label: 'Office 1', value: 'office1' },
-    { label: 'Office 2', value: 'office2' },
-    { label: 'Office 3', value: 'office3' }
-  ]
+  officeDropdownOptions: { label: string; value: string }[] = []
 
   constructor(
     private fb: FormBuilder,
     private confirmationService: ConfirmationService,
-    private messageService: MessageService
+    private messageService: MessageService,
+    private userService: UserService,
+    private departmentService: DepartmentService
   ) {}
 
   ngOnInit(): void {
     this.initializeUserForm()
-    this.loadDummyUsers()
+    this.loadUsers()
+    this.loadOffices()
   }
 
   initializeUserForm() {
     this.userForm = this.fb.group({
-      name: ['', Validators.required],
+      fullname: ['', Validators.required],
       username: ['', Validators.required],
       password: ['', Validators.required],
-      user_type: ['', Validators.required],  // Added user_type control
+      user_type: ['', Validators.required],
       role: ['', Validators.required],
-      office_id: ['', Validators.required]
+      officeId: ['', Validators.required]
     })
   }
 
-  loadDummyUsers() {
-    this.users = [
-      {
-        id: '1',
-        name: 'John Doe',
-        username: 'johndoe',
-        password: 'password123',
-        user_type: 'Admin',
-        role: 'Accounting',
-        department_id: 'dept1',
-        office_id: 'office1'
-      },
-      {
-        id: '2',
-        name: 'Jane Smith',
-        username: 'janesmith',
-        password: 'password123',
-        user_type: 'SuperAdmin',
-        role: 'HOPE',
-        department_id: 'dept2',
-        office_id: 'office2'
-      },
-      {
-        id: '3',
-        name: 'Bob Johnson',
-        username: 'bobjohnson',
-        password: 'password123',
-        user_type: 'User',
-        role: 'End-User',
-        department_id: 'dept3',
-        office_id: 'office3'
-      }
-    ]
+  loadUsers() {
+  this.userLoading = true
+  this.userService.getAllUsers().subscribe({
+    next: (data) => {
+      // Replace officeId with office name so filtering works properly
+      this.users = data.map(user => ({
+        ...user,
+        officeName: this.getOfficeName(user.officeId) // Add office name for filtering
+      }))
+      console.log('Users loaded:', this.users)
+    },
+    error: (error) => {
+      console.error('Failed to load users:', error)
+      this.messageService.add({ severity: 'error', summary: 'Error', detail: 'Failed to load users' })
+    },
+    complete: () => {
+      this.userLoading = false
+    }
+  })
+}
+
+
+  loadOffices() {
+    this.offices = this.departmentService.getOffices()
+    this.officeDropdownOptions = this.offices.map((office) => ({
+      label: office.name,
+      value: office.id ??  ''
+    }))
   }
 
   openNewUserDialog() {
@@ -147,62 +137,89 @@ export class UserManagementComponent implements OnInit {
   editUser(user: User) {
     this.isUserEditMode = true
     this.selectedUserId = user.id
-    this.userForm.patchValue(user)
+    this.userForm.patchValue({
+      fullname: user.fullname,
+      username: user.username,
+      password: user.password,
+      user_type: user.user_type,
+      role: user.role,
+      officeId: user.officeId
+    })
     this.userDialog = true
   }
 
+ 
   saveUser() {
-    this.userSubmitted = true
+  this.userSubmitted = true;
 
-    if (this.userForm.valid) {
-      const userData = this.userForm.value
+  if (this.userForm.valid) {
+    const userData = this.userForm.value;
 
-      if (this.isUserEditMode && this.selectedUserId) {
-        const index = this.users.findIndex(user => user.id === this.selectedUserId)
-        this.users[index] = { ...userData, id: this.selectedUserId }
-        this.messageService.add({ severity: 'success', summary: 'Success', detail: 'User updated successfully' })
-      } else {
-        const newUser: User = { ...userData, id: (this.users.length + 1).toString(), department_id: '', office_id: userData.office_id }
-        this.users.push(newUser)
-        this.messageService.add({ severity: 'success', summary: 'Success', detail: 'User created successfully' })
-      }
-
-      this.userDialog = false
-      this.userForm.reset()
-      this.userSubmitted = false
+    if (this.isUserEditMode && this.selectedUserId) {
+      // ✅ Update existing user
+      this.userService.updateUser(this.selectedUserId, userData).subscribe({
+        next: () => {
+          this.messageService.add({ severity: 'success', summary: 'Success', detail: 'User updated successfully' });
+          this.loadUsers();
+          this.userDialog = false;
+        },
+        error: (error) => {
+          this.messageService.add({ severity: 'error', summary: 'Error', detail: error.message || 'Operation failed' });
+        },
+        complete: () => {
+          this.userSubmitted = false;
+        }
+      });
+    } else {
+      // ✅ Add new user
+      this.userService.addUser(userData).subscribe({
+        next: () => {
+          this.messageService.add({ severity: 'success', summary: 'Success', detail: 'User created successfully' });
+          this.loadUsers();
+          this.userDialog = false;
+        },
+        error: (error) => {
+          this.messageService.add({ severity: 'error', summary: 'Error', detail: error.message || 'Operation failed' });
+        },
+        complete: () => {
+          this.userSubmitted = false;
+        }
+      });
     }
   }
-
-  deleteUser(user: User) {
-    this.confirmationService.confirm({
-      message: `Are you sure you want to delete user "${user.name}"?`,
-      header: 'Confirm Delete',
-      icon: 'pi pi-exclamation-triangle',
-      accept: () => {
-        this.users = this.users.filter(u => u.id !== user.id)
-        this.messageService.add({ severity: 'success', summary: 'Success', detail: 'User deleted successfully' })
       }
-    })
-  }
+
+      deleteUser(user: User) {
+        this.userToDelete = user // Store user for deletion
+        this.deleteDialogVisible = true // Show modal
+      }
+
+      confirmDeleteAction() {
+        if (this.userToDelete) {
+          this.userService.deleteUser(this.userToDelete.id).subscribe({
+            next: () => {
+              this.messageService.add({ severity: 'success', summary: 'Success', detail: 'User deleted successfully' })
+              this.loadUsers()
+              this.deleteDialogVisible = false // Close modal
+              this.userToDelete = null // Reset selected user
+            },
+            error: (error) => {
+              this.messageService.add({ severity: 'error', summary: 'Error', detail: error.message || 'Failed to delete user' })
+            }
+          })
+        }
+      }
+
 
   hideUserDialog() {
     this.userDialog = false
     this.userForm.reset()
   }
 
-  getRoleSeverity(role: string, isAdmin: boolean): 'success' | 'info' | 'warn' | 'danger' | 'secondary' {
-    if (isAdmin) {
-      return 'success'
-    }
-
-    switch (role) {
-      case 'Accounting': return 'info'
-      case 'Supply': return 'warn'
-      case 'BAC': return 'info'
-      case 'Inspection': return 'danger'
-      case 'End-User': return 'secondary'
-      case 'HOPE': return 'success'
-      default: return 'secondary'
-    }
+  getOfficeName(officeId: string): string { 
+    const office = this.offices.find(o => o.id === officeId)
+    return office?.name || 'N/A'
   }
+  
+  
 }
