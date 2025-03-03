@@ -17,6 +17,7 @@ import { IconFieldModule } from 'primeng/iconfield';
 import { InputIconModule } from 'primeng/inputicon';
 import { LottieAnimationComponent } from 'src/app/pages/ui-components/lottie-animation/lottie-animation.component';
 import { ConfirmPopupModule } from 'primeng/confirmpopup';
+import { SkeletonModule } from 'primeng/skeleton';
 
 
 
@@ -83,6 +84,7 @@ export interface MultiTableData<T, K extends keyof T | undefined = undefined> {
     InputIconModule,
     TabsModule,
     ConfirmPopupModule,
+    SkeletonModule,
     TableModule,],
   templateUrl: './multi-table.component.html',
   styleUrl: './multi-table.component.scss',

@@ -193,7 +193,10 @@ export class ProcurementProcessComponent implements OnInit {
   }
   async loadData(){   
     this.procurementMethod.data = await this.crudService.getAll(ProcurementMode);
+    this.procurementMethod.dataLoaded = true;
     this.procurementProcess.data = await this.crudService.getAll(ProcurementProcess);
+    this.procurementProcess.data =  this.procurementProcess.data.sort((a,b)=> a.process_order - b.process_order);
+    this.procurementProcess.dataLoaded = true;
 
     this.modeForm.formfields = [
       {
@@ -247,8 +250,6 @@ export class ProcurementProcessComponent implements OnInit {
       }
     ]
 
-    this.procurementProcess.data =  this.procurementProcess.data.sort((a,b)=> a.process_order - b.process_order);
-    this.procurementMethod.dataLoaded = true;
-    this.procurementProcess.dataLoaded = true;
+  
   }
 }
