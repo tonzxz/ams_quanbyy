@@ -147,8 +147,44 @@ export class ProcurementProcessComponent implements OnInit {
     }
   }
 
-  modeForm: DynamicFormData<Partial<ProcurementMode>>;
-  processForm: DynamicFormData<Partial<ProcurementProcess>>;
+  modeForm: DynamicFormData<Partial<ProcurementMode>>  = {
+    show: false,
+    title: "Add Procurement Mode",
+    description: "Add new procurement mode",
+    data: {},
+    submit: async (value)=>{
+      this.procurementMethod.dataLoaded = false;
+      if(value.id){
+        await this.crudService.partial_update(ProcurementMode,value.id,value as Omit<ProcurementMode,'id'>) // await this.loadData();
+      }else{
+        await this.crudService.create(ProcurementMode, value as Omit<ProcurementMode,'id'>) // await this.loadData();
+      }
+      this.loadData();
+      this.procurementMethod.dataLoaded = true;
+    },
+    formfields: []
+  };
+  processForm: DynamicFormData<Partial<ProcurementProcess>> = {
+    show: false,
+    title: "Add Procurement Process",
+    description: "Add new procurement process",
+    data: {},
+    submit: async (value)=>{
+      this.procurementProcess.dataLoaded = false;
+      if(value.id){
+        await this.crudService.partial_update(ProcurementProcess,value.id,value as Omit<ProcurementProcess,'id'>) // await this.loadData();
+      }else{
+        await this.crudService.create(ProcurementProcess, {
+          ...value as Omit<ProcurementProcess,'id'>,
+          procurement_mode_id: this.procurementProcess.tabs?.[this.procurementProcess.activeTab!].id!,
+          process_order: this.procurementProcess.data.length + 1
+        }) // await this.loadData();
+      }
+      this.loadData();
+      this.procurementProcess.dataLoaded = true;
+    },
+    formfields: []
+  };
 
   constructor(private crudService:CrudService){}
 
@@ -159,93 +195,57 @@ export class ProcurementProcessComponent implements OnInit {
     this.procurementMethod.data = await this.crudService.getAll(ProcurementMode);
     this.procurementProcess.data = await this.crudService.getAll(ProcurementProcess);
 
-    this.modeForm ={
-      show: false,
-      title: "Add Procurement Mode",
-      description: "Add new procurement mode",
-      data: {},
-      submit: async (value)=>{
-        this.procurementMethod.dataLoaded = false;
-        if(value.id){
-          await this.crudService.partial_update(ProcurementMode,value.id,value as Omit<ProcurementMode,'id'>) // await this.loadData();
-        }else{
-          await this.crudService.create(ProcurementMode, value as Omit<ProcurementMode,'id'>) // await this.loadData();
-        }
-        this.loadData();
-        this.procurementMethod.dataLoaded = true;
+    this.modeForm.formfields = [
+      {
+        id: 'method',
+        label: 'Method',
+        placeholder: 'Select method',
+        type: 'select',
+        options: [
+          {
+            'label': 'Public',
+            'value': 'Public'
+          },
+          {
+            'label': 'Alternative',
+            'value': 'Alternative'
+          },
+        ],
+        validators: [
+          {
+            'message':'Method type is required.',
+            'validator': Validators.required,
+          }
+        ]
       },
-      formfields: [
-        {
-          id: 'method',
-          label: 'Method',
-          placeholder: 'Select method',
-          type: 'select',
-          options: [
-            {
-              'label': 'Public',
-              'value': 'Public'
-            },
-            {
-              'label': 'Alternative',
-              'value': 'Alternative'
-            },
-          ],
-          validators: [
-            {
-              'message':'Method type is required.',
-              'validator': Validators.required,
-            }
-          ]
-        },
-        {
-          id: 'mode_name',
-          label: 'Mode Name',
-          placeholder: 'Input Mode Name',
-          type: 'input',
-          validators: [
-            {
-              'message':'Mode name is required.',
-              'validator': Validators.required,
-            }
-          ]
-        },
-      ]
-    }
+      {
+        id: 'mode_name',
+        label: 'Mode Name',
+        placeholder: 'Input Mode Name',
+        type: 'input',
+        validators: [
+          {
+            'message':'Mode name is required.',
+            'validator': Validators.required,
+          }
+        ]
+      },
+    ]
 
-    this.processForm = {
-      show: false,
-      title: "Add Procurement Process",
-      description: "Add new procurement process",
-      data: {},
-      submit: async (value)=>{
-        this.procurementProcess.dataLoaded = false;
-        if(value.id){
-          await this.crudService.partial_update(ProcurementProcess,value.id,value as Omit<ProcurementProcess,'id'>) // await this.loadData();
-        }else{
-          await this.crudService.create(ProcurementProcess, {
-            ...value as Omit<ProcurementProcess,'id'>,
-            procurement_mode_id: this.procurementProcess.tabs?.[this.procurementProcess.activeTab!].id!,
-            process_order: this.procurementProcess.data.length + 1
-          }) // await this.loadData();
-        }
-        this.loadData();
-        this.procurementProcess.dataLoaded = true;
-      },
-      formfields:[
-        {
-          'id':'name',
-          'label':'Process Name',
-          'placeholder':'Enter Process Name',
-          'type':'input',
-          'validators':[
-            {
-              'message':'Process Name is required',
-              'validator':Validators.required
-            }
-          ]
-        }
-      ]
-    }
+    this.processForm.formfields = [
+      {
+        'id':'name',
+        'label':'Process Name',
+        'placeholder':'Enter Process Name',
+        'type':'input',
+        'validators':[
+          {
+            'message':'Process Name is required',
+            'validator':Validators.required
+          }
+        ]
+      }
+    ]
 
     this.procurementProcess.data =  this.procurementProcess.data.sort((a,b)=> a.process_order - b.process_order);
     this.procurementMethod.dataLoaded = true;

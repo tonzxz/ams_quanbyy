@@ -138,7 +138,26 @@ export class PrSequenceComponent implements OnInit {
       }
     }
 
-    approverForm: DynamicFormData<Partial<Approver>> ;
+    approverForm: DynamicFormData<Partial<Approver>> = {
+      show: false,
+      title: "Add Procurement Mode",
+      description: "Add new procurement mode",
+      data: {},
+      submit: async (value)=>{
+        this.approvalSequence.dataLoaded = false;
+        if(value.id){
+          await this.crudService.partial_update(Approver,value.id,value as Omit<Approver,'id'>) // await this.loadData();
+        }else{
+          await this.crudService.create(Approver, {
+            ...value as Omit<Approver,'id'>,
+            entity_id: '2'
+          }) // await this.loadData();
+        }
+        this.loadData();
+        this.approvalSequence.dataLoaded = true;
+      },
+      formfields: []
+    };
 
     async loadData(){
       const approvers = await this.crudService.getAll(Approver);
@@ -157,51 +176,32 @@ export class PrSequenceComponent implements OnInit {
 
       this.approvalSequence.dataLoaded = true;
 
-      this.approverForm ={
-            show: false,
-            title: "Add Procurement Mode",
-            description: "Add new procurement mode",
-            data: {},
-            submit: async (value)=>{
-              this.approvalSequence.dataLoaded = false;
-              if(value.id){
-                await this.crudService.partial_update(Approver,value.id,value as Omit<Approver,'id'>) // await this.loadData();
-              }else{
-                await this.crudService.create(Approver, {
-                  ...value as Omit<Approver,'id'>,
-                  entity_id: '2'
-                }) // await this.loadData();
-              }
-              this.loadData();
-              this.approvalSequence.dataLoaded = true;
-            },
-            formfields: [
-              {
-                id: 'user_id',
-                label: 'User',
-                placeholder: 'Select Approver',
-                type: 'select',
-                options: users.filter(user=>user.role != 'end-user').map(u=> ({'label': u.fullname, 'value':u.id})),
-                validators: [
-                  {
-                    'message':'Approver is required.',
-                    'validator': Validators.required,
-                  }
-                ]
-              },
-              {
-                id: 'name',
-                label: 'Approval Name',
-                placeholder: 'Enter approval name',
-                type: 'input',
-                validators: [
-                  {
-                    'message':'Approval name is required.',
-                    'validator': Validators.required,
-                  }
-                ]
-              },
-            ]
-          }
+      this.approverForm.formfields = [
+        {
+          id: 'user_id',
+          label: 'User',
+          placeholder: 'Select Approver',
+          type: 'select',
+          options: users.filter(user=>user.role != 'end-user').map(u=> ({'label': u.fullname, 'value':u.id})),
+          validators: [
+            {
+              'message':'Approver is required.',
+              'validator': Validators.required,
+            }
+          ]
+        },
+        {
+          id: 'name',
+          label: 'Approval Name',
+          placeholder: 'Enter approval name',
+          type: 'input',
+          validators: [
+            {
+              'message':'Approval name is required.',
+              'validator': Validators.required,
+            }
+          ]
+        },
+      ] 
     }
 }
