@@ -1,5 +1,5 @@
 
-import { PPMP, PPMPItem, PPMPProject, PPMPSchedule, ProcurementMode, ProcurementProcess, Users, Department, Building, Office} from "./schema";
+import { PPMP, PPMPItem, PPMPProject, PPMPSchedule, ProcurementMode, ProcurementProcess, Users, Department, Building, Office, Entity, Approver} from "./schema";
 
 // PPMP Items
 export const PPMPItemData: PPMPItem[] = [
@@ -378,10 +378,74 @@ export const dummyUsers: Users[] = [
     profile: "profile-pic-url-6",
     officeId: "550e8400e29b41d4a716446655440015"
   },
-
-  
 ];
 
+
+export const dummyEntity: Entity[] = [
+   {
+    id: 1,
+    name: 'PPMP',
+    description: 'Project Procurement Management Plan'
+  },
+  {
+    id: 2,
+    name: 'PurchaseRequest',
+    description: 'Request for purchase of goods/services'
+  },
+  {
+    id: 3,
+    name: 'APP',
+    description: 'Annual Procurement Plan'
+  },
+  {
+    id: 4,
+    name: 'ProcurementProcess',
+    description: 'Processes related to procurement'
+  },
+  {
+    id: 5,
+    name: 'Contract',
+    description: 'Contract management and tracking'
+  },
+  {
+    id: 6,
+    name: 'InspectionAcceptance',
+    description: 'Inspection and acceptance of deliveries'
+  },
+  {
+    id: 7,
+    name: 'Payment',
+    description: 'Processing payments for procurement'
+  }
+];
+
+export const dummyPPMPSequence: Approver[] = [
+  {
+    id: 'APR-2025-001',
+    user_id: '1', // This maps to "John Doe"
+    entity_id: '1', // Only PPMP entity
+    name: 'Department Head Approver', // Approval Sequence Name
+    approval_order: 1
+  },
+  {
+    id: 'APR-2025-002',
+    user_id: '2', // This maps to "Jane Smith"
+    entity_id: '1', // Only PPMP entity
+    name: 'BAC Approver', // Approval Sequence Name
+    approval_order: 2
+  },
+  {
+    id: 'APR-2025-003',
+    user_id: '3', // This maps to "Alice Johnson"
+    entity_id: '1', // Only PPMP entity
+    name: 'Budget Approver', // Approval Sequence Name
+    approval_order: 3
+  }
+];
+
+
+
+  
 // Dummy Departments (moved from departments.service.ts)
 export const DepartmentData: Department[] = [
   {
