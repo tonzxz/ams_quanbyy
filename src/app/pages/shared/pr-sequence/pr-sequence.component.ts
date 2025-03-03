@@ -1,52 +1,14 @@
-import { Component, OnInit, ViewChild } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import {
-  FormBuilder,
-  FormGroup,
   Validators,
-  FormsModule,
-  ReactiveFormsModule
 } from '@angular/forms';
-import {
-  MatCard,
-  MatCardContent,
-  MatCardTitle,
-  MatCardSubtitle
-} from '@angular/material/card';
 
-// PrimeNG imports
-import { Table, TableModule } from 'primeng/table';
-import { ButtonModule } from 'primeng/button';
-import { InputTextModule } from 'primeng/inputtext';
-import { DialogModule } from 'primeng/dialog';
-import { ConfirmDialogModule } from 'primeng/confirmdialog';
-import { DropdownModule } from 'primeng/dropdown';
-import { InputSwitchModule } from 'primeng/inputswitch';
-import { ToastModule } from 'primeng/toast';
-import { InputGroupModule } from 'primeng/inputgroup';
-import { IconFieldModule } from 'primeng/iconfield';
-import { InputIconModule } from 'primeng/inputicon';
 import { MessageService, ConfirmationService } from 'primeng/api';
-
-// If using the Lottie animation component (remove if not needed)
-import { LottieAnimationComponent } from '../../ui-components/lottie-animation/lottie-animation.component';
 import { MultiTableComponent, MultiTableData } from 'src/app/components/multi-table/multi-table.component';
 import { Approver, Users } from 'src/app/schema/schema';
 import { CrudService } from 'src/app/services/crud.service';
 import { DynamicFormComponent, DynamicFormData } from 'src/app/components/dynamic-form/dynamic-form.component';
-
-export interface PRApprover {
-  id: string;
-  user_id: string;
-  // Must match the 'code' for your role array
-  approver_role: 'Department Head' | 'BAC' | 'Budget' | 'Supply Officer' | 'Procurement Officer';
-  approval_order: number;
-  title: string;
-  department?: string;
-  can_modify: boolean;
-  can_approve: boolean;
-  email_notification: boolean;
-}
 
 @Component({
   selector: 'app-pr-sequence',
@@ -70,7 +32,7 @@ export class PrSequenceComponent implements OnInit {
     this.loadData();
   }
 
-   approvalSequence: MultiTableData<Approver & {approver:string; role:string}> = {
+  approvalSequence: MultiTableData<Approver & {approver:string; role:string}> = {
       title: 'Purchase Request Approval Sequence',
       description: 'Configure and manage approval workflows for purchase requests.',
       type: 'sequence',

@@ -478,7 +478,6 @@ getFutureYears(){
   id: ppmp.id,
   office_id: ppmp.office_id,
   app_id: ppmp.app_id,
-  approvals_id: ppmp.approvals_id,
   current_approver_id: ppmp.current_approver_id,
   project: {
     ...ppmp.project,
@@ -549,7 +548,6 @@ async savePpmp(): Promise<void> {
       id: this.isEditMode ? this.currentEditId! : formValue.id,
       office_id: formValue.office_id,
       app_id: formValue.app_id || `APP-${this.selectedYear}-${Math.floor(1000 + Math.random() * 9000)}`,
-      approvals_id: formValue.approvals_id,
       current_approver_id: formValue.current_approver_id,
       
       // Ensure project data is properly structured

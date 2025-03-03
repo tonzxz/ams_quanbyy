@@ -97,18 +97,6 @@ export class DisbursementVouchersComponent {
         id:'pending',
         label:'Pending',
         icon:'pi pi-inbox',
-        actions: [
-          {
-            icon:'pi pi-print',
-            shape:'rounded',
-            function: (event:Event, voucher:DisbursementVoucher)=>this.printVoucher(voucher)
-          },
-          {
-            icon:'pi pi-arrow-right',
-            shape:'rounded',
-            function:  (event:Event, voucher:DisbursementVoucher)=>this.confirmToAccounting(event,voucher)
-          }
-        ]
        },
        {
         id:'processing',
@@ -120,15 +108,31 @@ export class DisbursementVouchersComponent {
         id:'recorded',
         label:'Recorded',
         icon:'pi pi-verified',
-        actions: [
-          {
-            icon:'pi pi-spinner',
-            shape:'rounded'
-          }
-        ]
        },
       ],
-      data:[]
+      data:[],
+      rowActions: [
+        // Pending
+        {
+          hidden: (voucher: DisbursementVoucher)=> voucher.status !='pending',
+          icon:'pi pi-print',
+          shape:'rounded',
+          function: (event:Event, voucher:DisbursementVoucher)=>this.printVoucher(voucher)
+        },
+        {
+          hidden: (voucher: DisbursementVoucher)=> voucher.status !='pending',
+          icon:'pi pi-arrow-right',
+          shape:'rounded',
+          confirmation: 'Are you sure you want to confirm this to accounting?',
+          function:  (event:Event, voucher:DisbursementVoucher)=>this.confirmToAccounting(event,voucher)
+        },
+        // Processing
+        {
+          hidden: (voucher: DisbursementVoucher)=> voucher.status !='processing',
+          icon:'pi pi-spinner',
+          shape:'rounded'
+        }
+      ]
     }
 
     async fetchItems(){

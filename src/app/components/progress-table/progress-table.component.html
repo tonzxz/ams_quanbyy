@@ -1,14 +1,13 @@
 <mat-card class="cardWithShadow">
     <mat-card-content>
-      <mat-card-title>{{config.title}}</mat-card-title>
-      <mat-card-subtitle class="mat-body-1 mb-10 !flex justify-between items-center">
+      <h1 class="font-semibold text-xl">{{config.title}}</h1>
+      <p class="flex justify-between items-center">
         <span> {{config.description}} </span>
         <p-iconfield fluid class="w-full max-w-72">
           <p-inputicon styleClass="pi pi-search" />
           <input
             fluid
             class="w-full"
-            pSize="small"
             [(ngModel)]="searchValue"
             (input)="dt.filterGlobal(searchValue, 'contains')"
             type="text"
@@ -16,9 +15,9 @@
             placeholder="Search"
           />
         </p-iconfield>
-      </mat-card-subtitle>
+      </p>
   
-      <div class="card flex items-center w-full py-3 px-4 gap-3">
+      <div class="card mb-1 flex items-center w-full py-3 px-4 gap-3">
         <div class="flex-1 px-6 border-dotted rounded-xl border-gray-700/25 border-2">
           <p-stepper [(value)]="config.activeStep" class="w-full" fluid>
             <p-step-list>
@@ -52,9 +51,15 @@
             </p-step-list>
           </p-stepper>
         </div>
-        @if(config.topAction){
-          <p-button [pTooltip]="config.topAction.tooltip" [outlined]="true" size="small" [label]="config.topAction.label"
-        (click)="config.topAction.function()" [icon]="config.topAction.icon" />
+       <!-- Add Action Buttons -->
+          @for (action of config?.topActions; track action){
+            <p-button
+                [pTooltip]="action.tooltip"
+                (click)="action.function()"
+                [outlined]="true"
+                [label]="action.label"
+                [icon]="action.icon"
+            ></p-button>
         }
       </div>
   
@@ -85,27 +90,26 @@
             @for(field of getFields(); track field){
               <td>{{formatValue(field,row)}}</td>
             }
-            @for(step of config.steps; track step.id){
-              @if(isActiveStep(step.id) && hasActions()){
-                <td>
-                  <div class="flex gap-3">
-                    @for(action of step.actions; track action.label){
-                      @if(action.hidden ? !action.hidden(row):true){
-                        <p-button
-                          [severity]="action.color"
-                          [pTooltip]="action.tooltip"
-                          [outlined]="true"
-                          size="small"
-                          [disabled]="action.disabled ? action.disabled(row):false"
-                          [icon]="action.icon"
-                          [rounded]="action.shape == 'rounded'"
-                          (click)="action.function ? action.function($event,row):null"
-                        ></p-button>
-                      }
+            @if(hasActions()){
+              <td>
+                <div class="flex gap-3">
+                  @for(action of getRowActions() ; track action.label; let r = $index){
+                    @if(action.hidden ? !action.hidden(row):true){
+                      <p-button
+                        [severity]="action.color"
+                        [pTooltip]="action.tooltip"
+                        [outlined]="true"
+                        size="small"
+                        [disabled]="action.disabled ? action.disabled(row):false"
+                        [icon]="action.icon"
+                        [label]="action.label"
+                        [rounded]="action.shape == 'rounded'"
+                        (click)="action.function ? action.confirmation ? confirm($event, row, action) : action.function($event,row):null"
+                      ></p-button>
                     }
-                  </div>
-                </td>
-              }
+                  }
+                </div>
+              </td>
             }
           </tr>
         </ng-template>

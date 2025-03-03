@@ -23,7 +23,7 @@ import { MaterialModule } from 'src/app/material.module';
  * @param label: (Optional) A string to display as label
  * @param tooltip: (Optional) A string to display when hovered
  */
-interface TopAction<T> {
+interface TopAction{
   icon:string,
   function: ()=>void
   color?: 'success' | 'info' | 'warn' | 'danger' | 'help' | 'primary' | 'secondary' | 'contrast',
@@ -45,6 +45,7 @@ interface RowAction<T> {
   icon:string,
   shape:'rounded'|'default',
   function?: (event:Event,args:T)=>void
+  confirmation?: string,
   disabled?:(args:T)=>boolean,
   hidden?:(args:T)=>boolean,
   color?: 'success' | 'info' | 'warn' | 'danger' | 'help' | 'primary' | 'secondary' | 'contrast',
@@ -63,7 +64,6 @@ interface RowAction<T> {
 interface Step<T, K extends keyof T>{
   id:T[K],
   label:string,
-  actions?: RowAction<T>[]
   tooltip?:string,
   icon?:string,
   function?:(event:Event,id:T[K])=>void
@@ -126,7 +126,8 @@ export interface ProgressTableData<T, K extends keyof T>{
   steps: [Step<T, K>, Step<T, K>] | [Step<T, K>, Step<T, K>, Step<T, K>];
   data: T[],
   formatters?:{[K in keyof Partial<T>]:(value:T[keyof T])=>string},
-  topAction?:TopAction<T>,
+  topActions?:TopAction[],
+  rowActions?: RowAction<T>[]
   searchFields?:(keyof T)[],
   dataLoaded?:boolean,
 }
@@ -146,6 +147,8 @@ export class ProgressTableComponent<T,K extends keyof T> {
   @Input() config:ProgressTableData<T,K>;
 
   searchValue:string='';
+
+  constructor(private confirmationService:ConfirmationService){}
 
   
   formatValue(field: keyof T,row:T){
@@ -168,6 +171,13 @@ export class ProgressTableComponent<T,K extends keyof T> {
     }else{
       throw new Error('Progress Table config has not been loaded')
     }
+  }
+
+  getRowActions(): RowAction<T>[] {
+    if (this.config) {
+      return this.config.rowActions ?? []
+    }
+    return [];
   }
 
   getFieldNames(): string[]{
@@ -193,11 +203,34 @@ export class ProgressTableComponent<T,K extends keyof T> {
 
   hasActions(){
     if(this.config){
-      const step = this.config.steps[this.config.activeStep]
-      return  step.actions?.length
+      return  this.config.rowActions?.length
     }else{
       throw new Error('Progress Table config has not been loaded')
     }
+  }
+
+  confirm(event: Event, data:T ,rowAction:RowAction<T>) {
+    this.confirmationService.confirm({
+      target: event.target as EventTarget,
+      message: rowAction.confirmation,
+      icon: 'pi pi-exclamation-triangle',
+      rejectButtonProps: {
+        label: 'Cancel',
+        severity: 'secondary',
+        outlined: true
+      },
+      acceptButtonProps: {
+        label: 'Confirm'
+      },
+      accept: async () => {
+        if(rowAction.function){
+          rowAction.function(event,data);
+        }
+      },
+      reject: () => {
+
+      }
+    });
   }
 
   isActiveStep(stepId:T[K]){

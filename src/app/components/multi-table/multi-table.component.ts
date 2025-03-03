@@ -23,7 +23,6 @@ import { ConfirmPopupModule } from 'primeng/confirmpopup';
 interface Tab<T, K extends keyof T> {
   id: T[K],
   label: string,
-  actions?: RowAction<T>[]
   tooltip?: string,
   icon?: string,
   function?: (event: Event, id: T[K]) => void
@@ -40,7 +39,7 @@ interface RowAction<T> {
   label?: string,
   tooltip?: string;
 }
-interface TopAction<T> {
+interface TopAction{
   icon: string,
   function: () => void
   color?: 'success' | 'info' | 'warn' | 'danger' | 'help' | 'primary' | 'secondary' | 'contrast',
@@ -59,7 +58,7 @@ export interface MultiTableData<T, K extends keyof T | undefined = undefined> {
   dragEvent?: (event: TableRowReorderEvent) => void;
   formatters?: { [K in keyof Partial<T>]: (value: T[keyof T]) => string },
   searchFields?: (keyof T)[],
-  topActions?: TopAction<T>[],
+  topActions?: TopAction[],
   rowActions?: RowAction<T>[],
   dataLoaded?: boolean
 }
@@ -138,15 +137,7 @@ export class MultiTableComponent<T, K extends keyof T | undefined = undefined> {
 
   hasActions() {
     if (this.config) {
-      if (this.config.rowActions) {
-        return this.config.rowActions?.length
-      } else {
-        if (this.config.tabs) {
-          return this.config.tabs[this.config.activeTab!].actions?.length;
-        } else {
-          return false
-        }
-      }
+      return this.config.rowActions?.length;
     } else {
       return false;
     }
@@ -154,15 +145,7 @@ export class MultiTableComponent<T, K extends keyof T | undefined = undefined> {
 
   getRowActions(): RowAction<T>[] {
     if (this.config) {
-      if (this.config.rowActions) {
-        return this.config.rowActions
-      } else {
-        if (this.config.tabs) {
-          if (this.config.tabs[this.config.activeTab!].actions) {
-            return this.config.tabs[this.config.activeTab!].actions!;
-          }
-        }
-      }
+      return this.config.rowActions ?? []
     }
     return [];
   }

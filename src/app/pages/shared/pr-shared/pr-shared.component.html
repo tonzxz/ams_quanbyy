@@ -1,31 +1,5 @@
-<div class="pr-shared-container">
-  <h3 class="table-title">Purchase Requests</h3>
-  <table class="pr-table">
-    <thead>
-      <tr>
-        <th>PR #</th>
-        <th>Requisitioning Office</th>
-        <th>Date</th>
-        <th>Total Amount</th>
-        <th>Status</th>
-        <th>Actions</th>
-      </tr>
-    </thead>
-    <tbody>
-      <tr *ngFor="let pr of filteredRequests">
-        <td>{{ pr.prNo }}</td>
-        <td>{{ pr.requisitioningOffice }}</td>
-        <td>{{ formatDate(pr.date) }}</td>
-        <td>{{ formatCurrency(pr.totalAmount) }}</td>
-        <td>
-          <span [ngClass]="getStatusClass(pr.status)">{{ pr.status }}</span>
-        </td>
-        <td>
-          <button class="action-btn" (click)="viewRequest(pr)">
-            <i class="pi pi-eye"></i> View
-          </button>
-        </td>
-      </tr>
-    </tbody>
-  </table>
-</div>
+<app-progress-table class="" [config]="prRequests" />
+
+<!-- @if(approverForm.show){
+  <app-dynamic-form [config]="approverForm"></app-dynamic-form>
+} -->

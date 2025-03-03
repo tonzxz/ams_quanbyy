@@ -248,7 +248,7 @@ export const navItems: NavItem[] = [
   {
     displayName: 'Purchase Requests',
     iconName: 'solar:documents-broken',
-    route: '/inspection/purchase-request',
+    route: '/shared/app-pr-shared',
     requiredRoles: ['inspection', 'end-user'],
   },
   {

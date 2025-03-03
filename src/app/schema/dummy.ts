@@ -1,5 +1,5 @@
 
-import { PPMP, PPMPItem, PPMPProject, PPMPSchedule, ProcurementMode, ProcurementProcess, Users, Department, Building, Office, Entity, Approver} from "./schema";
+import { PPMP, PPMPItem, PPMPProject, PPMPSchedule, ProcurementMode, ProcurementProcess, Users, Department, Building, Office, Entity, Approver, PurchaseRequest} from "./schema";
 
 // PPMP Items
 export const PPMPItemData: PPMPItem[] = [
@@ -229,34 +229,30 @@ export const PPMPItemData: PPMPItem[] = [
     // Single Classification: Goods
           {
             id: '1',
-            office_id: 1,
+            office_id: '550e8400e29b41d4a716446655440015',
             app_id: 'APP-2026-001',
-            approvals_id: 'APR-2026-001',
             current_approver_id: '1',
           },
           // Single Classification: Infrastructure
           {
             id: '2',
-            office_id: 1,
+            office_id: '550e8400e29b41d4a716446655440015',
             app_id: 'APP-2025-002',
-            approvals_id: 'APR-2025-002',
             current_approver_id: '1',
           },
           // Single Classification: Goods
           {
             id: '3',
-            office_id: 1,
+            office_id: '550e8400e29b41d4a716446655440015',
             app_id: 'APP-2025-001',
-            approvals_id: 'APR-2025-001',
             current_approver_id: '1',
           
           },
           // Single Classification: Consulting
           {
             id: '4',
-            office_id: 1,
+            office_id: '550e8400e29b41d4a716446655440015',
             app_id: 'APP-2025-002',
-            approvals_id: 'APR-2025-002',
             current_approver_id: '1',
           
       },
@@ -264,18 +260,16 @@ export const PPMPItemData: PPMPItem[] = [
       // Project 2: Hospital Modernization Program
       {
         id: '7',
-        office_id: 4,
+        office_id: '550e8400e29b41d4a716446655440015',
         app_id: 'APP-2025-005',
-        approvals_id: 'APR-2025-005',
         current_approver_id: '4',
       },
     
       // Project 3: Digital Library Expansion
       {
         id: '8',
-        office_id: 5,
+        office_id: '550e8400e29b41d4a716446655440015',
         app_id: 'APP-2025-001',
-        approvals_id: 'APR-2025-001',
         current_approver_id: '5',
         
       },
@@ -283,9 +277,8 @@ export const PPMPItemData: PPMPItem[] = [
       // Project 4: Smart Traffic Management System
       {
         id: '9',
-        office_id: 6,
+        office_id: '550e8400e29b41d4a716446655440015',
         app_id: 'APP-2025-002',
-        approvals_id: 'APR-2025-002',
         current_approver_id: '6',
       }
     
@@ -535,5 +528,42 @@ export const OfficeData: Office[] = [
     department_id: '550e8400e29b41d4a716446655440001', // Matches DepartmentData[1]
     building_id: '550e8400e29b41d4a716446655440009'
   },
+  {
+    id: '550e8400e29b41d4a716446655440015',
+    name: 'Faculty\'s Office - CBA',
+    department_id: '550e8400e29b41d4a716446655440001', // Matches DepartmentData[1]
+    building_id: '550e8400e29b41d4a716446655440009'
+  },
   // Add remaining offices as needed
 ];
+
+export const PurchaseRequestData: PurchaseRequest[]= [
+  {
+    id: 'PR-2026-001',
+    project_id: 'PROJ-2025-001',
+    current_approver_id: '1',
+    request_date: new Date('2025-03-01'),
+    status: 'Draft',
+  },
+  {
+    id: 'PR-2025-002',
+    project_id: 'PROJ-2025-002',
+    current_approver_id: '1',
+    request_date: new Date('2025-03-02'),
+    status: 'Pending',
+  },
+  {
+    id: 'PR-2025-003',
+    project_id: 'PROJ-2025-004',
+    current_approver_id: '1',
+    request_date: new Date('2025-03-03'),
+    status: 'Pending',
+  },
+  {
+    id: 'PR-2025-004',
+    project_id: 'PROJ-2025-005',
+    current_approver_id: '1',
+    request_date: new Date('2025-03-04'),
+    status: 'Draft',
+  },
+]

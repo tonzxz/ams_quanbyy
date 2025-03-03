@@ -1,19 +1,18 @@
 <mat-card class="cardWithShadow w-full h-full">
     <mat-card-content>
-      <mat-card-title>{{config?.title ?? 'Sequence Table'}}</mat-card-title>
-      <mat-card-subtitle class="text-sm text-gray-500">
+      <h1 class="text-xl font-semibold">{{config?.title ?? 'Sequence Table'}}</h1>
+      <p class="mt-2 text-gray-500">
         {{config?.description ?? 'This is a sequence table example.'}}
-      </mat-card-subtitle>
+      </p>
   
       <!-- Add Sequence Button and Search Input -->
-      <div class="flex justify-between items-center mt-4 w-full">
+      <div class="flex justify-between items-center my-4 w-full">
         <div class="flex gap-4 items-center w-full">         
           <p-iconfield fluid class="w-full max-w-72">
             <p-inputicon styleClass="pi pi-search" />
             <input
               fluid
               class="w-full"
-              pSize="small"
               #searchInput
               (input)="dt.filterGlobal(searchInput.value, 'contains')"
               type="text"
@@ -25,7 +24,6 @@
         <!-- Add Action Buttons -->
           @for (action of config?.topActions; track action){
               <p-button
-                  size="small"
                   [pTooltip]="action.tooltip"
                   (click)="action.function()"
                   [outlined]="true"

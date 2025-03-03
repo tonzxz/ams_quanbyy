@@ -241,11 +241,13 @@ export class DeliveryReceiptsComponent implements OnInit {
   progressTable: ProgressTableData<DeliveryReceipt,'status'> = {
       title: 'Delivery Receipts',
       description: 'Track and manage delivery receipts in this section.',
-      topAction: {
-        icon: 'pi pi-plus',
-        function: ()=> this.openReceiptModal(),
-        label:'Add Receipt'
-      },
+      topActions: [
+        {
+          icon: 'pi pi-plus',
+          function: ()=> this.openReceiptModal(),
+          label:'Add Receipt'
+        },
+      ],
       columns: {
         receipt_number:'Receipt No.',
         supplier_name: 'Supplier',
@@ -264,35 +266,7 @@ export class DeliveryReceiptsComponent implements OnInit {
        {
         id:'unverified',
         label:'Unverified',
-        icon:'pi pi-inbox',
-        actions: [
-          {
-            icon:'pi pi-file-pdf',
-            shape:'rounded',
-            tooltip:'Click to export receipt PDF',
-            function: (event:Event, dr:DeliveryReceipt)=>this.pdfService.generateDeliveryReceipt(dr)
-          },
-          {
-            icon:'pi pi-pencil',
-            shape:'rounded',
-            tooltip: 'Click to edit receipt',
-            function: (event:Event, dr:DeliveryReceipt)=>this.openEditReceiptModal(dr)
-          },
-          {
-            icon:'pi pi-trash',
-            color:'danger',
-            shape:'rounded',
-            tooltip: 'Click to delete receipt',
-            function: (event:Event, dr:DeliveryReceipt)=>this.confirmDeleteReceipt(event,dr)
-          },
-          {
-            icon:'pi pi-arrow-right',
-            shape:'rounded',
-            color:'success',
-            tooltip: 'Click to submit this receipt for inspection',
-            function:  (event:Event, dr:DeliveryReceipt)=>this.confirmForInspection(event,dr)
-          }
-        ]
+        icon:'pi pi-inbox'
        },
        {
           id:'processing',
@@ -303,26 +277,60 @@ export class DeliveryReceiptsComponent implements OnInit {
         id:'verified',
         label:'Verified',
         icon:'pi pi-verified',
-        actions: [
-          {
-            hidden: (dr:DeliveryReceipt) => !dr.stocked,
-            disabled: (dr:DeliveryReceipt)=> true,
-            icon:'pi pi-box',
-            shape:'rounded',
-            color:'secondary',
-          },
-          {
-            hidden: (dr:DeliveryReceipt) => dr.stocked,
-            icon:'pi pi-arrow-right',
-            shape:'rounded',
-            color:'success',
-            tooltip: 'Click to submit this receipt for inspection',
-            function:  (event:Event, dr:DeliveryReceipt)=>this.proceedToStocking()
-          }
-        ]
        },
       ],
-      data:[]
+      data:[],
+      rowActions: [
+        // Unverified
+        {
+          hidden: (dr:DeliveryReceipt) =>  dr.status !='unverified',
+          icon:'pi pi-file-pdf',
+          shape:'rounded',
+          tooltip:'Click to export receipt PDF',
+          function: (event:Event, dr:DeliveryReceipt)=>this.pdfService.generateDeliveryReceipt(dr)
+        },
+        {
+          hidden: (dr:DeliveryReceipt) =>  dr.status !='unverified',
+          icon:'pi pi-pencil',
+          shape:'rounded',
+          tooltip: 'Click to edit receipt',
+          function: (event:Event, dr:DeliveryReceipt)=>this.openEditReceiptModal(dr)
+        },
+        {
+          hidden: (dr:DeliveryReceipt) =>  dr.status !='unverified',
+          icon:'pi pi-trash',
+          color:'danger',
+          shape:'rounded',
+          tooltip: 'Click to delete receipt',
+          confirmation: 'Are you sure you want to delete this receipt?',
+          function: (event:Event, dr:DeliveryReceipt)=>this.confirmDeleteReceipt(event,dr)
+        },
+        {
+          hidden: (dr:DeliveryReceipt) =>  dr.status !='unverified',
+          icon:'pi pi-arrow-right',
+          shape:'rounded',
+          color:'success',
+          tooltip: 'Click to submit this receipt for inspection',
+          confirmation: 'Are you sure you want to submit this for inspection?',
+          function:  (event:Event, dr:DeliveryReceipt)=>this.confirmForInspection(event,dr)
+        },
+        // Verified
+        {
+          hidden: (dr:DeliveryReceipt) => !dr.stocked || dr.status !='verified',
+          disabled: (dr:DeliveryReceipt)=> true,
+          icon:'pi pi-box',
+          shape:'rounded',
+          color:'secondary',
+        },
+        {
+          hidden: (dr:DeliveryReceipt) => dr.stocked || dr.status !='verified',
+          icon:'pi pi-arrow-right',
+          shape:'rounded',
+          color:'success',
+          tooltip: 'Click to proceed to stocking section',
+          function:  (event:Event, dr:DeliveryReceipt)=>this.proceedToStocking()
+        }
+      ]
     }
   
   async fetchItems(){

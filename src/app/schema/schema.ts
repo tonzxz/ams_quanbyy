@@ -46,9 +46,8 @@ export class UserBudget {
 
 export class PPMP {
   id: string
-  office_id: number
+  office_id: string;
   app_id?: string
-  approvals_id: string
   current_approver_id: string
 }
 
@@ -92,6 +91,8 @@ export class PPMPSchedule { // end user nguna and then i veverify ni bac if pwed
 export class Approvals { 
   id: string
   approver_id: string
+  document_id:string
+  entity_id:string
   approval_status: 'Approved' | 'Rejected'
   remarks?: string
   signature?: string
@@ -111,10 +112,6 @@ export class Entity {
   description?: string
 }
 
-
-
-//
-
 export class APP {
   id: string
   fund_source: string
@@ -130,9 +127,10 @@ export class APP {
 
 export class PurchaseRequest {
   id: string
-  ppmp_id: string
-  approvals_id: string
+  project_id: string
+  current_approver_id: string
   request_date: Date
+  status: 'Draft' | 'Pending' | 'Approved'
 }
 
 export class Department {
