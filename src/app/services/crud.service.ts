@@ -74,7 +74,7 @@ export class CrudService {
         }
       } else {
         await this.flushDummyData(model, DummyData[model.name + 'Data' as keyof (typeof DummyData)] as T[]);
-        return DummyData[model.name + 'Data' as keyof (typeof DummyData)] as T[];
+        return DummyData[model.name + 'Data' as keyof (typeof DummyData)] as T[] | undefined ?? [];
       }
     } else {
       const url = `${this.baseUrl}/${table}${environment.use == 'assets' ? '.json' : ''}`;
