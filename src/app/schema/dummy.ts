@@ -419,7 +419,7 @@ export const EntityData: Entity[] = [
   }
 ];
 
-export const PPMPSequenceData: Approver[] = [
+export const ApproverData: Approver[] = [
   {
     id: 'APR-2025-001',
     user_id: '1', // This maps to "John Doe"

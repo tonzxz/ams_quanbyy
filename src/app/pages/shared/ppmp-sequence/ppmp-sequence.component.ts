@@ -18,7 +18,7 @@ import { IconField } from 'primeng/iconfield';
 import { InputIcon } from 'primeng/inputicon';
 
 // Import dummy data
-import { PPMPSequenceData, UsersData, EntityData } from 'src/app/schema/dummy';
+import { ApproverData, UsersData, EntityData } from 'src/app/schema/dummy';
 
 interface DropdownOption {
   label: string;
@@ -96,38 +96,20 @@ export class PpmpSequenceComponent implements OnInit {
 
   async initializeData(): Promise<void> {
     try {
-      let usersExist = false;
-      let entitiesExist = false;
-      let approversExist = false;
+
       
       try {
         const users = await this.crudService.getAll<Users>(Users);
-        usersExist = users && users.length > 0;
         
         const entities = await this.crudService.getAll<Entity>(Entity);
-        entitiesExist = entities && entities.length > 0;
         
         const approvers = await this.crudService.getAll<Approver>(Approver);
-        approversExist = approvers && approvers.length > 0;
+     
       } catch (error) {
         console.warn('Error checking if data exists:', error);
       }
       
-      if (!usersExist) {
-        console.log('Initializing users with dummy data');
-        await this.crudService.flushDummyData(Users, UsersData);
-      }
-      
-      if (!entitiesExist) {
-        console.log('Initializing entities with dummy data');
-        await this.crudService.flushDummyData(Entity, EntityData);
-      }
-      
-      if (!approversExist) {
-        console.log('Initializing approvers with dummy data');
-        await this.crudService.flushDummyData(Approver, PPMPSequenceData);
-      }
-      
+    
       await this.loadApprovers();
     } catch (error) {
       console.error('Failed to initialize data:', error);
@@ -167,7 +149,7 @@ export class PpmpSequenceComponent implements OnInit {
       const loadedSequences = await this.crudService.getAll<Approver>(Approver);
       const ppmpSequences = loadedSequences.length > 0
         ? loadedSequences.filter(seq => seq.entity_id === '1')
-        : PPMPSequenceData.filter(seq => seq.entity_id === '1');
+        : ApproverData.filter(seq => seq.entity_id === '1');
       
       // Sort sequences by approval_order
       const sortedSequences = [...ppmpSequences].sort((a, b) => a.approval_order - b.approval_order);
@@ -189,7 +171,7 @@ export class PpmpSequenceComponent implements OnInit {
       const storedApprovers = await this.crudService.getAll<Approver>(Approver);
       if (!storedApprovers || storedApprovers.length === 0) {
         console.warn('No approvers found in localStorage after loading, reinitializing...');
-        await this.crudService.flushDummyData(Approver, PPMPSequenceData);
+        await this.crudService.flushDummyData(Approver, ApproverData);
         await this.loadApprovers();
       }
 
