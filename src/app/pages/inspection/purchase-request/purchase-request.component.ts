@@ -22,6 +22,8 @@ import jsPDF from 'jspdf'
 import html2canvas from 'html2canvas'
 import { CalendarModule } from 'primeng/calendar';
 import { ActivatedRoute, Router, RouterModule } from '@angular/router';
+import { Approver, Users } from 'src/app/schema/schema';
+import { CrudService } from 'src/app/services/crud.service';
 
 
 @Component({
@@ -87,6 +89,7 @@ export class PurchaseRequestComponent implements OnInit {
         private router: Router,
         private messageService: MessageService,
         private confirmationService: ConfirmationService,
+        private crudService:CrudService,
         private prService: PurchaseRequestService
     ) {}
     goBack(): void {
@@ -136,8 +139,18 @@ export class PurchaseRequestComponent implements OnInit {
         }
     }
 
+    approvers:(Approver & {approver: string})[]=[];
+
     private async loadData() {
         try {
+            const  users = await this.crudService.getAll(Users);
+            this.approvers = (await this.crudService.getAll(Approver)).filter(a=>a.entity_id == '2' && users.find(u=>u.id == a.user_id)).sort((a,b)=>a.approval_order-b.approval_order).map(a=>{
+                const user = users.find(u=>u.id == a.user_id)!
+                return {
+                    ...a,
+                    approver: user.fullname
+                }
+            });
             this.allRequests = await this.prService.getAll();
             if (this.allRequests.length > 0) {
                 this.currentRequest = this.allRequests[0];

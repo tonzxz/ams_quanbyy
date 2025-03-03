@@ -204,9 +204,9 @@
             </div>
 
             <!-- Signature Section -->
-            <div class="signature-section">
-                <div class="signature-content">
-                    <div class="signature-left">
+            <div class="signature-section ">
+                <div class="px-[50px] flex justify-center gap-y-10 flex-wrap">
+                    <div class="text-center  w-1/3">
                         <p>Recommended by:</p>
                         <div class="editable-field">
                             <p class="name" *ngIf="!isEditMode">{{currentRequest.recommendedBy.name}}</p>
@@ -223,23 +223,19 @@
                                    class="p-inputtext-sm"/>
                         </div>
                     </div>
-                    <div class="signature-right">
+                   @for(approver of approvers; track approver.id){
+                    <div class="text-center w-1/3">
                         <p>Approved by:</p>
                         <div class="editable-field">
-                            <p class="name" *ngIf="!isEditMode">{{currentRequest.approvedBy.name}}</p>
-                            <input *ngIf="isEditMode" 
-                                   pInputText 
-                                   [(ngModel)]="currentRequest.approvedBy.name"
-                                   class="p-inputtext-sm"/>
+                            <p class="name" >{{approver.approver}}</p>
+        
                         </div>
                         <div class="editable-field">
-                            <p class="designation" *ngIf="!isEditMode">{{currentRequest.approvedBy.designation}}</p>
-                            <input *ngIf="isEditMode" 
-                                   pInputText 
-                                   [(ngModel)]="currentRequest.approvedBy.designation"
-                                   class="p-inputtext-sm"/>
+                            <p class="designation" >{{approver.name}}</p>
                         </div>
                     </div>
+                   }
+
                 </div>
             </div>
         </div>
