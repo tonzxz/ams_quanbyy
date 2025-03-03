@@ -75,10 +75,10 @@ export class PrSequenceComponent implements OnInit {
           icon: 'pi pi-trash',
           confirmation: 'Are you sure you want to delete this approver?',
           color:'danger',
-          function: async(event:Event, process: Approver & {approver:string}) => {
+          function: async(event:Event, row: Approver & {approver:string}) => {
             // TODO: Implement deleting procurement process
             this.approvalSequence.dataLoaded = false;
-            await this.crudService.delete(Approver, process.id)
+            await this.crudService.delete(Approver, row.id)
             await this.loadData();
             this.approvalSequence.dataLoaded = true;
           }
@@ -86,14 +86,14 @@ export class PrSequenceComponent implements OnInit {
       ],
       dragEvent: async (event)=>{
         this.approvalSequence.dataLoaded = false;
-        const process_1 = this.approvalSequence.data[event.dragIndex!]
-        const process_2 = this.approvalSequence.data[event.dropIndex!]
+        const item_1 = this.approvalSequence.data[event.dragIndex!]
+        const item_2 = this.approvalSequence.data[event.dropIndex!]
   
-        await this.crudService.partial_update(Approver, process_1.id,{
-          approval_order: process_2.approval_order,
+        await this.crudService.partial_update(Approver, item_1.id,{
+          approval_order: item_2.approval_order,
         })
-        await this.crudService.partial_update(Approver, process_2.id,{
-          approval_order: process_1.approval_order,
+        await this.crudService.partial_update(Approver, item_2.id,{
+          approval_order: item_1.approval_order,
         })
         await this.loadData();
         this.approvalSequence.dataLoaded = true;

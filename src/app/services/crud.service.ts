@@ -51,7 +51,7 @@ export class CrudService {
     if (environment.use == 'local') {
       // For 'local', we modify localStorage
       const dummyData: T[] = await this.getAll<T>(model);
-      dummyData.push({ ...data, id: `${Date.now()}` } as T); // Use timestamp for new ID
+      dummyData.push({  id: `${Date.now()}`,...data } as T); // Use timestamp for new ID
       localStorage.setItem(table, JSON.stringify(dummyData));
       return dummyData[dummyData.length - 1];
     } else {
@@ -65,6 +65,7 @@ export class CrudService {
     const table =this.getTableName(model.name);
 
     if (environment.use == 'local') {
+      await new Promise(resolve => setTimeout(resolve, 200));
       const dummyData = localStorage.getItem(table);
       if (dummyData) {
         try {

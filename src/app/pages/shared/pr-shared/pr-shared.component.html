@@ -1,5 +1,5 @@
-<app-progress-table class="" [config]="prRequests" />
+<app-progress-table [config]="prRequests" />
 
-<!-- @if(approverForm.show){
-  <app-dynamic-form [config]="approverForm"></app-dynamic-form>
-} -->
+@if(prForm.show){
+  <app-dynamic-form [config]="prForm"></app-dynamic-form>
+}

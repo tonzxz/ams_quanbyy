@@ -174,7 +174,7 @@ export const PPMPItemData: PPMPItem[] = [
       fiscal_year: 2025,
     },
     {
-      id: 'PROJ-2025-001',
+      id: 'PROJ-2025-006',
       ppmp_id: '8',
       procurement_mode_id: 'limited_source_bidding',
       prepared_by: 'Robert Lee',
@@ -188,7 +188,7 @@ export const PPMPItemData: PPMPItem[] = [
       fiscal_year: 2025,
     },
     {
-      id: 'PROJ-2025-002',
+      id: 'PROJ-2025-007',
       ppmp_id: '9',
       procurement_mode_id: 'public_bidding',
       prepared_by: 'Angela Torres',
@@ -540,6 +540,7 @@ export const OfficeData: Office[] = [
 export const PurchaseRequestData: PurchaseRequest[] = [
   {
     id: 'PR-2026-001',
+    prNo: 'PR-2026-001',
     project_id: 'PROJ-2025-001',
     current_approver_id: '1',
     request_date: new Date('2025-03-01'),
@@ -573,6 +574,7 @@ export const PurchaseRequestData: PurchaseRequest[] = [
   },
   {
     id: 'PR-2025-002',
+    prNo: 'PR-2025-002',
     project_id: 'PROJ-2025-002',
     current_approver_id: '1',
     request_date: new Date('2025-03-02'),
@@ -614,6 +616,7 @@ export const PurchaseRequestData: PurchaseRequest[] = [
   },
   {
     id: 'PR-2025-003',
+    prNo: 'PR-2025-003',
     project_id: 'PROJ-2025-004',
     current_approver_id: '1',
     request_date: new Date('2025-03-03'),
@@ -655,6 +658,7 @@ export const PurchaseRequestData: PurchaseRequest[] = [
   },
   {
     id: 'PR-2025-004',
+    prNo: 'PR-2025-004',
     project_id: 'PROJ-2025-005',
     current_approver_id: '1',
     request_date: new Date('2025-03-04'),

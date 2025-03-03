@@ -45,11 +45,11 @@ export class ProcurementProcessComponent implements OnInit {
         shape: 'rounded',
         tooltip: 'Click to edit method',
         icon: 'pi pi-pencil',
-        function: async (event:Event,process: ProcurementMode) => {
+        function: async (event:Event,row: ProcurementMode) => {
           // TODO: Implement editing procurement process
           this.modeForm.title = 'Edit Procurement Method';
           this.modeForm.description = 'Edit exisiting procurement method.';
-          this.modeForm.data = process,
+          this.modeForm.data = row,
           this.modeForm.show = true;
         }
       },
@@ -59,10 +59,10 @@ export class ProcurementProcessComponent implements OnInit {
         tooltip: 'Click to delete method',
         confirmation: 'Are you sure you want to delete this method?',
         color:'danger',
-        function: async (event:Event, process: ProcurementMode) => {
+        function: async (event:Event, row: ProcurementMode) => {
           this.procurementMethod.dataLoaded = false;
           // TODO: Implement deleting procurement process
-          await this.crudService.delete(ProcurementMode, process.id)
+          await this.crudService.delete(ProcurementMode, row.id)
           await this.loadData();
           this.procurementMethod.dataLoaded = true;
         }
@@ -108,10 +108,10 @@ export class ProcurementProcessComponent implements OnInit {
         shape: 'rounded',
         icon: 'pi pi-pencil',
         tooltip: 'Click to edit process',
-        function: async (event:Event,process: ProcurementProcess) => {
+        function: async (event:Event,row: ProcurementProcess) => {
           this.processForm.title = 'Edit Procurement Process';
           this.processForm.description = 'Edit existing procurement process';
-          this.processForm.data = process;
+          this.processForm.data = row;
           this.processForm.show = true;
         }
       },
@@ -121,10 +121,10 @@ export class ProcurementProcessComponent implements OnInit {
         tooltip: 'Click to delete process',
         confirmation: 'Are you sure you want to delete this process?',
         color:'danger',
-        function: async(event:Event, process: ProcurementProcess) => {
+        function: async(event:Event, row: ProcurementProcess) => {
           // TODO: Implement deleting procurement process
           this.procurementProcess.dataLoaded = false;
-          await this.crudService.delete(ProcurementProcess, process.id)
+          await this.crudService.delete(ProcurementProcess, row.id)
           await this.loadData();
           this.procurementProcess.dataLoaded = true;
         }
@@ -132,14 +132,14 @@ export class ProcurementProcessComponent implements OnInit {
     ],
     dragEvent: async (event)=>{
       this.procurementProcess.dataLoaded = false;
-      const process_1 = this.procurementProcess.data[event.dragIndex!]
-      const process_2 = this.procurementProcess.data[event.dropIndex!]
+      const item_1 = this.procurementProcess.data[event.dragIndex!]
+      const item_2 = this.procurementProcess.data[event.dropIndex!]
 
-      await this.crudService.partial_update(ProcurementProcess, process_1.id,{
-        process_order: process_2.process_order,
+      await this.crudService.partial_update(ProcurementProcess, item_1.id,{
+        process_order: item_2.process_order,
       })
-      await this.crudService.partial_update(ProcurementProcess, process_2.id,{
-        process_order: process_1.process_order,
+      await this.crudService.partial_update(ProcurementProcess, item_2.id,{
+        process_order: item_1.process_order,
       })
       await this.loadData();
       this.procurementProcess.dataLoaded = true;
@@ -193,7 +193,10 @@ export class ProcurementProcessComponent implements OnInit {
   }
   async loadData(){   
     this.procurementMethod.data = await this.crudService.getAll(ProcurementMode);
+    this.procurementMethod.dataLoaded = true;
     this.procurementProcess.data = await this.crudService.getAll(ProcurementProcess);
+    this.procurementProcess.data =  this.procurementProcess.data.sort((a,b)=> a.process_order - b.process_order);
+    this.procurementProcess.dataLoaded = true;
 
     this.modeForm.formfields = [
       {
@@ -247,8 +250,6 @@ export class ProcurementProcessComponent implements OnInit {
       }
     ]
 
-    this.procurementProcess.data =  this.procurementProcess.data.sort((a,b)=> a.process_order - b.process_order);
-    this.procurementMethod.dataLoaded = true;
-    this.procurementProcess.dataLoaded = true;
+  
   }
 }
