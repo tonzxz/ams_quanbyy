@@ -51,7 +51,7 @@ export class CrudService {
     if (environment.use == 'local') {
       // For 'local', we modify localStorage
       const dummyData: T[] = await this.getAll<T>(model);
-      dummyData.push({ ...data, id: `${Date.now()}` } as T); // Use timestamp for new ID
+      dummyData.push({  id: `${Date.now()}`,...data } as T); // Use timestamp for new ID
       localStorage.setItem(table, JSON.stringify(dummyData));
       return dummyData[dummyData.length - 1];
     } else {

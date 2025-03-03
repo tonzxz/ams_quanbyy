@@ -55,13 +55,17 @@ export class PrSharedComponent implements OnInit {
       if (value.id) {
         await this.crudService.partial_update(PurchaseRequest, value.id, value as Omit<PurchaseRequest, 'id'>) // await this.loadData();
       } else {
+        const projects = await this.crudService.getAll(PPMPProject);
+        const project = projects.find(p=>p.id == value.project_id)
+        const code = project?.project_code?.split('-')!;
         await this.crudService.create(PurchaseRequest, {
           ...value as Omit<PurchaseRequest, 'id'>,
+          prNo: 'PR' +'-'  + project?.project_code,
           request_date: new Date(),
           status: 'Draft'
         }) // await this.loadData();
       }
-      this.loadData();
+      await this.loadData();
       this.prRequests.dataLoaded = true;
     },
     formfields: []
@@ -72,7 +76,7 @@ export class PrSharedComponent implements OnInit {
     title: 'Purchase Requests',
     description: 'Create, view and track purchase requests in this section.',
     columns: {
-      id: 'PR No.',
+      prNo: 'PR No.',
       office: 'Requisitioning Office',
       request_date: "Request Date",
       totalAmount: "Total Amount",
@@ -137,7 +141,7 @@ export class PrSharedComponent implements OnInit {
           // TODO: Implement deleting procurement process
           this.router.navigate(['/inspection/purchase-request'], {
             queryParams: {
-              prNo: row.id,
+              id: row.id,
               view: 'true'
             }
           });
@@ -195,7 +199,7 @@ export class PrSharedComponent implements OnInit {
         type: 'select',
         options: projects.filter(pr=> {
           const ppmp =  ppmps.find(p => p.id == pr?.ppmp_id);
-          return ppmp?.office_id == this.user?.officeId
+          return ppmp?.office_id == this.user?.officeId && !prs.map(p=>p.project_id).includes(pr.id)
         }).map(p=>{
           return {
             'label':p.project_title,

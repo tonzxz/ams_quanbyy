@@ -11,6 +11,7 @@ import { FluidModule } from 'primeng/fluid';
 import { TooltipModule } from 'primeng/tooltip';
 import { DialogModule } from 'primeng/dialog';
 import { ConfirmPopupModule } from 'primeng/confirmpopup';
+import { SkeletonModule } from 'primeng/skeleton';
 import { LottieAnimationComponent } from 'src/app/pages/ui-components/lottie-animation/lottie-animation.component';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
@@ -137,7 +138,7 @@ export interface ProgressTableData<T, K extends keyof T>{
   selector: 'app-progress-table',
   standalone: true,
   imports: [
-    CommonModule,FormsModule,MaterialModule,
+    CommonModule,FormsModule,MaterialModule, SkeletonModule,
     LottieAnimationComponent,ButtonModule,IconFieldModule,InputIcon,InputTextModule,StepperModule,TableModule,ToastModule,FluidModule,TooltipModule,DialogModule,ConfirmPopupModule],
   providers:[MessageService,ConfirmationService],
   templateUrl: './progress-table.component.html',
