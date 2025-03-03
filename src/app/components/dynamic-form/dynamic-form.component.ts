@@ -93,6 +93,10 @@ export class DynamicFormComponent<T> implements OnInit {
       }
     });
   }
+
+  isRequired(field:FormField<T>){
+    return field.validators?.some(validator => validator.validator.name === 'required')
+  }
   
   onSubmit(){
     if(this.form.invalid){

@@ -65,6 +65,7 @@ export class CrudService {
     const table =this.getTableName(model.name);
 
     if (environment.use == 'local') {
+      await new Promise(resolve => setTimeout(resolve, 200));
       const dummyData = localStorage.getItem(table);
       if (dummyData) {
         try {

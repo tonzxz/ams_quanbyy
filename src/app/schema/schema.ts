@@ -128,7 +128,7 @@ export class APP {
 export class PurchaseRequest {
   id: string
   project_id: string
-  current_approver_id: string
+  current_approver_id?: string
   request_date: Date
   status: 'Draft' | 'Pending' | 'Approved'
 }
