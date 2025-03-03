@@ -2,7 +2,7 @@ import { Injectable } from '@angular/core'
 import { Router } from '@angular/router'
 import { Observable, of, throwError } from 'rxjs'
 import { Users } from '../schema/schema' // Import Users class
-import { dummyUsers } from '../schema/dummy'
+import { UsersData } from '../schema/dummy'
 
 export type User = Users // Correctly export `User` type
 
@@ -28,7 +28,7 @@ export class UserService {
     if (storedUsers) {
       this.users = JSON.parse(storedUsers)
     } else {
-      this.users = [...dummyUsers] // Load dummy data if no stored users
+      this.users = [...UsersData] // Load dummy data if no stored users
       this.saveUsers()
     }
   }

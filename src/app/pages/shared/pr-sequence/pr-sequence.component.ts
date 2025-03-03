@@ -30,6 +30,10 @@ import { MessageService, ConfirmationService } from 'primeng/api';
 
 // If using the Lottie animation component (remove if not needed)
 import { LottieAnimationComponent } from '../../ui-components/lottie-animation/lottie-animation.component';
+import { MultiTableComponent, MultiTableData } from 'src/app/components/multi-table/multi-table.component';
+import { Approver, Users } from 'src/app/schema/schema';
+import { CrudService } from 'src/app/services/crud.service';
+import { DynamicFormComponent, DynamicFormData } from 'src/app/components/dynamic-form/dynamic-form.component';
 
 export interface PRApprover {
   id: string;
@@ -50,323 +54,154 @@ export interface PRApprover {
   imports: [
     // Angular
     CommonModule,
-    FormsModule,
-    ReactiveFormsModule,
-
-    // Angular Material
-    MatCard,
-    MatCardContent,
-    MatCardTitle,
-    MatCardSubtitle,
-
-    // PrimeNG
-    TableModule,
-    ButtonModule,
-    InputTextModule,
-    DialogModule,
-    ConfirmDialogModule,
-    DropdownModule,
-    InputSwitchModule,
-    ToastModule,
-
-    // Additional PrimeNG modules for iconfield/inputicon/inputgroup
-    InputGroupModule,
-    IconFieldModule,
-    InputIconModule,
-
-    // Lottie animation (remove if not needed in HTML)
-    LottieAnimationComponent
+    MultiTableComponent,
+    DynamicFormComponent,
   ],
   templateUrl: './pr-sequence.component.html',
   providers: [MessageService, ConfirmationService]
 })
 export class PrSequenceComponent implements OnInit {
-  @ViewChild('dt') table!: Table;
-
-  // For the search input
-  searchValue: string = '';
-
-  // Example data list
-  sequences: PRApprover[] = [];
-
-  // Form
-  approverForm!: FormGroup;
-  approverDialog = false;
-  isEditMode = false;
-  currentApproverId: string | null = null;
-  submitted = false;
-  loading = false;
-
-  /**
-   * Here we define the available roles, each with a colorClass.
-   * Eventually, you can load these from a DB or config table
-   * so super admin can set them dynamically.
-   */
-  roles = [
-    {
-      name: 'Department Head',
-      code: 'Department Head',
-      colorClass: 'bg-purple-100 text-purple-800'
-    },
-    {
-      name: 'BAC',
-      code: 'BAC',
-      colorClass: 'bg-blue-100 text-blue-800'
-    },
-    {
-      name: 'Budget',
-      code: 'Budget',
-      colorClass: 'bg-green-100 text-green-800'
-    },
-    {
-      name: 'Supply Officer',
-      code: 'Supply Officer',
-      colorClass: 'bg-yellow-100 text-yellow-800'
-    },
-    {
-      name: 'Procurement Officer',
-      code: 'Procurement Officer',
-      colorClass: 'bg-red-100 text-red-800'
-    }
-  ];
-
-  /**
-   * Similarly for departments; each has a colorClass.
-   * Super admin can manage these as well.
-   */
-  departments = [
-    { name: 'Finance', code: 'FIN', colorClass: 'bg-gray-200 text-gray-900' },
-    { name: 'Human Resources', code: 'HR', colorClass: 'bg-pink-200 text-pink-800' },
-    { name: 'Information Technology', code: 'IT', colorClass: 'bg-indigo-200 text-indigo-800' },
-    { name: 'Operations', code: 'OPS', colorClass: 'bg-green-200 text-green-900' },
-    { name: 'Procurement', code: 'PROC', colorClass: 'bg-yellow-200 text-yellow-900' }
-  ];
-
+ 
   constructor(
-    private formBuilder: FormBuilder,
-    private messageService: MessageService,
-    private confirmationService: ConfirmationService
+    private crudService:CrudService,
   ) {}
 
   ngOnInit(): void {
-    this.initializeForm();
-    this.loadDummyData();
+    this.loadData();
   }
 
-  // ------------------------------------------
-  // Initialize form controls
-  // ------------------------------------------
-  initializeForm(): void {
-    this.approverForm = this.formBuilder.group({
-      user_id: ['', Validators.required],
-      approver_role: ['', Validators.required],
-      approval_order: [1, [Validators.required, Validators.min(1)]],
-      title: ['', Validators.required],
-      department: [''],
-      can_modify: [false],
-      can_approve: [true],
-      email_notification: [true]
-    });
-  }
-
-  // ------------------------------------------
-  // Example: Load or mock some data
-  // ------------------------------------------
-  loadDummyData(): void {
-    this.sequences = [
-      {
-        id: '1',
-        user_id: 'john_doe',
-        approver_role: 'Department Head',
-        approval_order: 1,
-        title: 'Department Manager',
-        department: 'FIN',
-        can_modify: true,
-        can_approve: true,
-        email_notification: true
+   approvalSequence: MultiTableData<Approver & {approver:string; role:string}> = {
+      title: 'Purchase Request Approval Sequence',
+      description: 'Configure and manage approval workflows for purchase requests.',
+      type: 'sequence',
+      columns: { 
+        name: 'Name',
+        approver: "Approver's Name",
+        role: "Role",
       },
-      {
-        id: '2',
-        user_id: 'jane_budg',
-        approver_role: 'Budget',
-        approval_order: 2,
-        title: 'Budget Officer',
-        department: 'FIN',
-        can_modify: true,
-        can_approve: true,
-        email_notification: true
-      },
-      {
-        id: '3',
-        user_id: 'mike_supply',
-        approver_role: 'Supply Officer',
-        approval_order: 3,
-        title: 'Supply Management Head',
-        department: 'PROC',
-        can_modify: true,
-        can_approve: true,
-        email_notification: true
+      data: [],
+      activeTab: 0,
+      searchFields: ['name'],
+      topActions: [
+        {
+          label: 'Add Approver',
+          icon: 'pi pi-plus',
+          tooltip: 'Click to add approver',
+          function: async () => {
+            // TODO: Implement adding new procurement process
+            this.approverForm.title = 'Add Approval Sequence';
+            this.approverForm.description = 'Add new approval sequence';
+            this.approverForm.show = true;
+          }
+        }
+      ],
+      rowActions : [
+        {
+          shape: 'rounded',
+          tooltip: 'Click to edit approver',
+          icon: 'pi pi-pencil',
+          function: async (event:Event,row:Approver & {approver:string}) => {
+            this.approverForm.title = 'Edit Approval Sequence';
+            this.approverForm.description = 'Edit existing approval sequence';
+            this.approverForm.data = row;
+            this.approverForm.show = true;
+          }
+        },
+        {
+          shape: 'rounded',
+          tooltip: 'Click to delete approver',
+          icon: 'pi pi-trash',
+          color:'danger',
+          function: async(event:Event, process: Approver & {approver:string}) => {
+            // TODO: Implement deleting procurement process
+            this.approvalSequence.dataLoaded = false;
+            await this.crudService.delete(Approver, process.id)
+            await this.loadData();
+            this.approvalSequence.dataLoaded = true;
+          }
+        }
+      ],
+      dragEvent: async (event)=>{
+        this.approvalSequence.dataLoaded = false;
+        const process_1 = this.approvalSequence.data[event.dragIndex!]
+        const process_2 = this.approvalSequence.data[event.dropIndex!]
+  
+        await this.crudService.partial_update(Approver, process_1.id,{
+          approval_order: process_2.approval_order,
+        })
+        await this.crudService.partial_update(Approver, process_2.id,{
+          approval_order: process_1.approval_order,
+        })
+        await this.loadData();
+        this.approvalSequence.dataLoaded = true;
+        
       }
-    ];
-  }
-
-  // ------------------------------------------
-  // Create a new sequence
-  // ------------------------------------------
-  openNewApproverDialog(): void {
-    this.approverForm.reset();
-    this.approverForm.patchValue({
-      approval_order: this.getNextOrder(),
-      can_modify: false,
-      can_approve: true,
-      email_notification: true
-    });
-    this.isEditMode = false;
-    this.approverDialog = true;
-  }
-
-  getNextOrder(): number {
-    return this.sequences.length > 0
-      ? this.sequences[this.sequences.length - 1].approval_order + 1
-      : 1;
-  }
-
-  // ------------------------------------------
-  // Save (Create or Update) an approver
-  // ------------------------------------------
-  saveApprover(): void {
-    this.submitted = true;
-    if (this.approverForm.invalid) return;
-
-    const formValue = this.approverForm.value;
-    const newApprover: PRApprover = {
-      id: this.isEditMode && this.currentApproverId
-        ? this.currentApproverId
-        : Math.random().toString(),
-      user_id: formValue.user_id,
-      approver_role: formValue.approver_role,
-      approval_order: formValue.approval_order,
-      title: formValue.title,
-      department: formValue.department,
-      can_modify: formValue.can_modify,
-      can_approve: formValue.can_approve,
-      email_notification: formValue.email_notification
-    };
-
-    if (this.isEditMode) {
-      // update existing
-      const index = this.sequences.findIndex(a => a.id === this.currentApproverId);
-      if (index !== -1) {
-        this.sequences[index] = newApprover;
-        this.messageService.add({
-          severity: 'success',
-          summary: 'Updated',
-          detail: 'Approver updated successfully!'
-        });
-      }
-    } else {
-      // add new
-      this.sequences.push(newApprover);
-      this.messageService.add({
-        severity: 'success',
-        summary: 'Created',
-        detail: 'New approver added successfully!'
-      });
     }
 
-    this.hideDialog();
-  }
+    approverForm: DynamicFormData<Partial<Approver>> ;
 
-  // ------------------------------------------
-  // Edit sequence
-  // ------------------------------------------
-  editApprover(approver: PRApprover): void {
-    this.approverForm.patchValue({
-      user_id: approver.user_id,
-      approver_role: approver.approver_role,
-      approval_order: approver.approval_order,
-      title: approver.title,
-      department: approver.department,
-      can_modify: approver.can_modify,
-      can_approve: approver.can_approve,
-      email_notification: approver.email_notification
-    });
-    this.isEditMode = true;
-    this.currentApproverId = approver.id;
-    this.approverDialog = true;
-  }
+    async loadData(){
+      const approvers = await this.crudService.getAll(Approver);
+      const users = await this.crudService.getAll(Users);
+      this.approvalSequence.data = approvers.filter(a=>{
+        const user = users.find(u=>u.id == a.user_id);  
+        return a.entity_id == '2' && user
+      }).map(a=> {
+        const user = users.find(u=>u.id == a.user_id)!;
+        return {
+          ...a,
+          approver: user.fullname,
+          role: user.role
+        }
+      });
 
-  // ------------------------------------------
-  // Delete sequence
-  // ------------------------------------------
-  deleteApprover(approver: PRApprover): void {
-    this.confirmationService.confirm({
-      message: 'Are you sure you want to delete this approver from the sequence?',
-      header: 'Confirm Deletion',
-      icon: 'pi pi-exclamation-triangle',
-      accept: () => {
-        this.sequences = this.sequences.filter(a => a.id !== approver.id);
-        this.messageService.add({
-          severity: 'success',
-          summary: 'Deleted',
-          detail: 'Approver removed from sequence'
-        });
-      }
-    });
-  }
+      this.approvalSequence.dataLoaded = true;
 
-  // ------------------------------------------
-  // Hide the add/edit dialog
-  // ------------------------------------------
-  hideDialog(): void {
-    this.approverDialog = false;
-    this.submitted = false;
-    this.approverForm.reset();
-  }
-
-  // ------------------------------------------
-  // Reorder (if needed)
-  // ------------------------------------------
-  reorderSequence(): void {
-    this.sequences = this.sequences
-      .sort((a, b) => a.approval_order - b.approval_order)
-      .map((approver, index) => ({
-        ...approver,
-        approval_order: index + 1
-      }));
-  }
-
-  // ------------------------------------------
-  // Return the user-friendly role name for display
-  // ------------------------------------------
-  getRoleName(code: string): string {
-    const role = this.roles.find(r => r.code === code);
-    return role ? role.name : code;
-  }
-
-  // ------------------------------------------
-  // Return the user-friendly department name for display
-  // ------------------------------------------
-  getDepartmentName(code: string | undefined): string {
-    if (!code) return '';
-    const dept = this.departments.find(d => d.code === code);
-    return dept ? dept.name : code;
-  }
-
-  // ------------------------------------------
-  // Return the role color class from roles array
-  // ------------------------------------------
-  getRoleColor(roleCode: string): string {
-    const role = this.roles.find(r => r.code === roleCode);
-    return role ? role.colorClass : 'bg-gray-100 text-gray-800';
-  }
-
-  // ------------------------------------------
-  // Return the department color class
-  // ------------------------------------------
-  getDepartmentColor(deptCode: string | undefined): string {
-    if (!deptCode) return 'bg-gray-100 text-gray-800';
-    const dept = this.departments.find(d => d.code === deptCode);
-    return dept ? dept.colorClass : 'bg-gray-100 text-gray-800';
-  }
+      this.approverForm ={
+            show: false,
+            title: "Add Procurement Mode",
+            description: "Add new procurement mode",
+            data: {},
+            submit: async (value)=>{
+              this.approvalSequence.dataLoaded = false;
+              if(value.id){
+                await this.crudService.partial_update(Approver,value.id,value as Omit<Approver,'id'>) // await this.loadData();
+              }else{
+                await this.crudService.create(Approver, {
+                  ...value as Omit<Approver,'id'>,
+                  entity_id: '2'
+                }) // await this.loadData();
+              }
+              this.loadData();
+              this.approvalSequence.dataLoaded = true;
+            },
+            formfields: [
+              {
+                id: 'user_id',
+                label: 'User',
+                placeholder: 'Select Approver',
+                type: 'select',
+                options: users.filter(user=>user.role != 'end-user').map(u=> ({'label': u.fullname, 'value':u.id})),
+                validators: [
+                  {
+                    'message':'Approver is required.',
+                    'validator': Validators.required,
+                  }
+                ]
+              },
+              {
+                id: 'name',
+                label: 'Approval Name',
+                placeholder: 'Enter approval name',
+                type: 'input',
+                validators: [
+                  {
+                    'message':'Approval name is required.',
+                    'validator': Validators.required,
+                  }
+                ]
+              },
+            ]
+          }
+    }
 }

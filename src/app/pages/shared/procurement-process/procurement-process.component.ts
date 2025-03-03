@@ -31,6 +31,7 @@ export class ProcurementProcessComponent implements OnInit {
       {
         label: 'Add Method',
         icon: 'pi pi-plus',
+        tooltip: 'Click to add method',
         function: async  () => {
           // TODO: Implement adding new procurement process
           this.modeForm.title = 'Add Procurement Method';
@@ -42,7 +43,7 @@ export class ProcurementProcessComponent implements OnInit {
     rowActions : [
       {
         shape: 'rounded',
-        label: 'Edit Process',
+        tooltip: 'Click to edit method',
         icon: 'pi pi-pencil',
         function: async (event:Event,process: ProcurementMode) => {
           // TODO: Implement editing procurement process
@@ -54,8 +55,9 @@ export class ProcurementProcessComponent implements OnInit {
       },
       {
         shape: 'rounded',
-        label: 'Delete Process',
         icon: 'pi pi-trash',
+        tooltip: 'Click to delete method',
+        confirmation: 'Are you sure you want to delete this method?',
         color:'danger',
         function: async (event:Event, process: ProcurementMode) => {
           this.procurementMethod.dataLoaded = false;
@@ -92,28 +94,32 @@ export class ProcurementProcessComponent implements OnInit {
       {
         label: 'Add Process',
         icon: 'pi pi-plus',
+        tooltip: 'Click to add process',
         function: async () => {
           // TODO: Implement adding new procurement process
           this.processForm.show = true;
+          this.processForm.title = 'Add Procurement Process';
+          this.processForm.description = 'Add new procurement process';
         }
       }
     ],
     rowActions : [
       {
         shape: 'rounded',
-        label: 'Edit Process',
         icon: 'pi pi-pencil',
+        tooltip: 'Click to edit process',
         function: async (event:Event,process: ProcurementProcess) => {
-          this.processForm.title = 'Add Procurement Process';
-          this.processForm.description = 'Add new procurement process';
+          this.processForm.title = 'Edit Procurement Process';
+          this.processForm.description = 'Edit existing procurement process';
           this.processForm.data = process;
           this.processForm.show = true;
         }
       },
       {
         shape: 'rounded',
-        label: 'Delete Process',
         icon: 'pi pi-trash',
+        tooltip: 'Click to delete process',
+        confirmation: 'Are you sure you want to delete this process?',
         color:'danger',
         function: async(event:Event, process: ProcurementProcess) => {
           // TODO: Implement deleting procurement process

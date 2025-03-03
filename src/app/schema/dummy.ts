@@ -311,7 +311,7 @@ export const ProcurementProcessData:ProcurementProcess[]=[
 
 
 // USERS
-export const dummyUsers: Users[] = [
+export const UsersData: Users[] = [
   {
     id: "1",
     fullname: "John Doe",
@@ -381,7 +381,7 @@ export const dummyUsers: Users[] = [
 ];
 
 
-export const dummyEntity: Entity[] = [
+export const EntityData: Entity[] = [
    {
     id: 1,
     name: 'PPMP',
@@ -419,7 +419,7 @@ export const dummyEntity: Entity[] = [
   }
 ];
 
-export const dummyPPMPSequence: Approver[] = [
+export const PPMPSequenceData: Approver[] = [
   {
     id: 'APR-2025-001',
     user_id: '1', // This maps to "John Doe"

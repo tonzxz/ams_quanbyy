@@ -181,7 +181,7 @@ export const navItems: NavItem[] = [
 
   
    {
-    displayName: 'Purchase Request Sequence',
+    displayName: 'PR Sequence',
     iconName: 'solar:widget-add-line-duotone',
     route: '/shared/pr-sequence',
     requiredRoles: ['superadmin'],
