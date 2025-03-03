@@ -107,11 +107,13 @@ export class DepartmentComponent implements OnInit {
       name: ['', Validators.required],
       address: ['', Validators.required],
       numberOfFloors: [1, [Validators.required, Validators.min(1)]],
+      dateConstructed: [null],
       notes: ['']
     });
     this.officeForm = this.formBuilder.group({
       name: ['', Validators.required],
-      department_id: ['', Validators.required] // Match schema field name
+      department_id: ['', Validators.required],
+      building_id: ['', Validators.required] 
     });
   }
 
@@ -180,11 +182,12 @@ export class DepartmentComponent implements OnInit {
       return;
     }
 
+    const dateValue = this.buildingForm.value.dateConstructed;
     const buildingData = {
       name: this.buildingForm.value.name,
       address: this.buildingForm.value.address,
       numberOfFloors: this.buildingForm.value.numberOfFloors,
-      dateConstructed: this.buildingForm.value.dateConstructed
+      dateConstructed: dateValue ? new Date(dateValue) : undefined
     };
 
     try {
@@ -204,7 +207,11 @@ export class DepartmentComponent implements OnInit {
 
   // Office Methods
   openNewOffice(): void {
-    this.officeForm.reset({ name: '', department_id: '' });
+    this.officeForm.reset({ 
+      name: '', 
+      department_id: '',
+      building_id: ''
+    });
     this.isEditingOffice = false;
     this.currentOfficeId = null;
     this.officeSubmitted = false;
@@ -216,7 +223,8 @@ export class DepartmentComponent implements OnInit {
     this.currentOfficeId = office.id ?? null;
     this.officeForm.patchValue({
       name: office.name,
-      department_id: office.department_id
+      department_id: office.department_id,
+      building_id: office.building_id || ''
     });
     this.officeDialog = true;
   }
@@ -230,7 +238,8 @@ export class DepartmentComponent implements OnInit {
 
     const officeData = {
       name: this.officeForm.value.name,
-      department_id: this.officeForm.value.department_id
+      department_id: this.officeForm.value.department_id,
+      building_id: this.officeForm.value.building_id
     };
 
     try {

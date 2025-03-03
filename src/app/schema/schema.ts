@@ -151,6 +151,7 @@ export class Building {
 export class Office {
   id!: string
   department_id!: string
+  building_id?: string
   name!: string
 }
 
