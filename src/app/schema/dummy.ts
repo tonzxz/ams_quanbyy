@@ -440,6 +440,27 @@ export const ApproverData: Approver[] = [
     entity_id: '1', // Only PPMP entity
     name: 'Budget Approver', // Approval Sequence Name
     approval_order: 3
+  },
+  {
+    id: 'APR-2025-001',
+    user_id: '1', // This maps to "John Doe"
+    entity_id: '2', // Only PPMP entity
+    name: 'Department Head Approver', // Approval Sequence Name
+    approval_order: 1
+  },
+  {
+    id: 'APR-2025-002',
+    user_id: '2', // This maps to "Jane Smith"
+    entity_id: '2', // Only PPMP entity
+    name: 'BAC Approver', // Approval Sequence Name
+    approval_order: 2
+  },
+  {
+    id: 'APR-2025-003',
+    user_id: '3', // This maps to "Alice Johnson"
+    entity_id: '2', // Only PPMP entity
+    name: 'Budget Approver', // Approval Sequence Name
+    approval_order: 3
   }
 ];
 
