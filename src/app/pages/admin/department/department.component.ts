@@ -13,6 +13,8 @@ import { DropdownModule } from 'primeng/dropdown';
 import { ToastModule } from 'primeng/toast';
 import { MessageService, ConfirmationService } from 'primeng/api';
 import { CardModule } from 'primeng/card';
+import { IconField } from 'primeng/iconfield';
+import { InputIcon } from 'primeng/inputicon';
 import { CrudService } from 'src/app/services/crud.service';
 import { Department, Building, Office } from 'src/app/schema/schema';
 
@@ -32,7 +34,9 @@ import { Department, Building, Office } from 'src/app/schema/schema';
     TabViewModule,
     DropdownModule,
     ToastModule,
-    CardModule
+    CardModule,
+    IconField,
+    InputIcon
   ],
   providers: [MessageService, ConfirmationService],
   templateUrl: './department.component.html',

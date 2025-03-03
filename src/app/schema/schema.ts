@@ -156,12 +156,14 @@ export class Office {
 
 export class Users {
   id: string
-  name: string
+  fullname: string
   username: string
   password: string
   user_type: 'SuperAdmin' | 'Admin' | 'User'
-  role: 'End-User' | 'BAC' | 'Budget' | 'Accounting' | 'Supply' | 'Inspection' | 'HOPE'
-  office_id: string
+  role: 'superadmin' | 'accounting' | 'supply' | 'bac' | 'inspection' | 'end-user' | 'president'
+  isAdmin?: boolean
+  profile: string
+  officeId: string
 }
 
 
